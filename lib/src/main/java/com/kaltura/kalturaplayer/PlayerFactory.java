@@ -18,7 +18,6 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
-import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 
 import java.util.Map;
 
@@ -101,7 +100,7 @@ public class PlayerFactory {
         }
 
         Player player = PlayKitManager.loadPlayer(context, combined);
-        KalturaPlaybackRequestAdapter.install(player, getReferrer());
+        PlaymanifestRequestAdapter.install(player, getReferrer());
 
         return player;
     }
