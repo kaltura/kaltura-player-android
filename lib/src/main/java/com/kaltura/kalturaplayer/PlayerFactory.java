@@ -7,20 +7,14 @@ import android.os.Looper;
 import android.text.TextUtils;
 
 import com.google.gson.JsonObject;
-import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.executor.RequestQueue;
-import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.GsonParser;
-import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.api.ovp.OvpConfigs;
-import com.kaltura.playkit.api.ovp.OvpRequestBuilder;
 import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
@@ -84,32 +78,8 @@ public class PlayerFactory {
         return this;
     }
 
-    public void loadUIConfig(int id, final OnUiConfLoaded onUiConfLoaded) {
-        // Load UIConf, store result as member.
-        uiConfId = id;
-
-        if (requestsExecutor == null) {
-            this.requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        }
-
-        String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
-
-        OvpRequestBuilder request = UIConfService.uiConfById(apiServerUrl, partnerId, uiConfId, ks).completion(new OnRequestCompletion() {
-            @Override
-            public void onComplete(ResponseElement response) {
-                if (response.isSuccess()) {
-                    String uiConfString = response.getResponse();
-                    uiConf = (JsonObject) GsonParser.toJson(uiConfString);
-                    onUiConfLoaded.configLoaded(uiConf, null);
-                } else {
-                    onUiConfLoaded.configLoaded(null, response.getError());
-                }
-            }
-        });
-        requestsExecutor.queue(request.build());
-    }
-
     private void configureKalturaPlugins(PKPluginConfigs configs) {
+        // Configure Kava
     }
 
     public Player loadPlayer(Context context) {
@@ -154,11 +124,6 @@ public class PlayerFactory {
                 });
     }
 
-    public PlaybackControlsView getPlaybackControls(Context context) {
-        // Returns a UI controls view that matches the loaded UIConf.
-        return new PlaybackControlsView(context);
-    }
-
     public String getReferrer() {
         if (referrer == null) {
             setReferrer(appContext.getPackageName());
@@ -181,10 +146,6 @@ public class PlayerFactory {
 
     public interface OnMediaEntryLoaded {
         void entryLoaded(PKMediaEntry entry, ErrorElement error);
-    }
-
-    public interface OnUiConfLoaded {
-        void configLoaded(JsonObject uiConf, ErrorElement error);
     }
 }
 

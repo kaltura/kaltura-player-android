@@ -2,7 +2,6 @@ package com.kaltura.kalturaplayer;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -36,7 +35,7 @@ class TestData {
     
     static String[] names() {
         String[] names = new String[entries.length];
-        
+
         for (int i=0; i<entries.length; i++) {
             names[i] = entries[i].name();
         }
@@ -52,7 +51,6 @@ class TestData {
 public class MainActivity extends AppCompatActivity {
 
     PlayerFactory playerFactory;
-    PKMediaEntry currentEntry;
     private ViewGroup playerContainer;
     private ViewGroup controlsContainer;
     private Player player;
@@ -93,12 +91,11 @@ public class MainActivity extends AppCompatActivity {
         playerFactory.loadEntry(entry.id, new PlayerFactory.OnMediaEntryLoaded() {
             @Override
             public void entryLoaded(final PKMediaEntry entry, ErrorElement error) {
-                currentEntry = entry;
                 if (entry == null) {
-                    Snackbar.make(view, "Failed to load entry", BaseTransientBottomBar.LENGTH_SHORT).show();
+                    Snackbar.make(view, "Failed to load entry", Snackbar.LENGTH_SHORT).show();
                 } else {
-                    Snackbar.make(view, "Entry loaded", BaseTransientBottomBar.LENGTH_SHORT).show();
-                    player.prepare(new PKMediaConfig().setMediaEntry(currentEntry));
+                    Snackbar.make(view, "Entry loaded", Snackbar.LENGTH_SHORT).show();
+                    player.prepare(new PKMediaConfig().setMediaEntry(entry));
                 }
             }
         });
@@ -125,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (controlsView == null) {
-            controlsView = playerFactory.getPlaybackControls(this);
+            controlsView = new PlaybackControlsView(this);
             controlsView.setPlayer(player);
             controlsContainer = findViewById(R.id.controls_container);
             controlsContainer.addView(controlsView);
