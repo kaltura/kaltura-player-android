@@ -22,16 +22,18 @@ import static com.kaltura.playkit.Utils.toBase64;
 
 public class PlaymanifestRequestAdapter implements PKRequestParams.Adapter {
 
-    private final String applicationName;
+    private final String referrer;
     private String playSessionId;
 
-    public static void install(Player player, String applicationName) {
-        PlaymanifestRequestAdapter decorator = new PlaymanifestRequestAdapter(applicationName, player);
+    public static PlaymanifestRequestAdapter install(Player player, String referrer) {
+        PlaymanifestRequestAdapter decorator = new PlaymanifestRequestAdapter(player, referrer);
         player.getSettings().setContentRequestAdapter(decorator);
+        
+        return decorator;
     }
 
-    private PlaymanifestRequestAdapter(String applicationName, Player player) {
-        this.applicationName = applicationName;
+    private PlaymanifestRequestAdapter(Player player, String referrer) {
+        this.referrer = referrer;
         updateParams(player);
     }
 
@@ -42,7 +44,7 @@ public class PlaymanifestRequestAdapter implements PKRequestParams.Adapter {
         if (url.getPath().contains("/playManifest/")) {
             Uri alt = url.buildUpon()
                     .appendQueryParameter("clientTag", CLIENT_TAG)
-                    .appendQueryParameter("referrer", toBase64(applicationName.getBytes()))
+                    .appendQueryParameter("referrer", toBase64(referrer.getBytes()))
                     .appendQueryParameter("playSessionId", playSessionId)
                     .build();
 

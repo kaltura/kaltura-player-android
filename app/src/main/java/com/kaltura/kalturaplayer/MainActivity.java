@@ -50,7 +50,7 @@ class TestData {
 
 public class MainActivity extends AppCompatActivity {
 
-    PlayerFactory playerFactory;
+    KalturaPlayerFactory playerFactory;
     private ViewGroup playerContainer;
     private ViewGroup controlsContainer;
     private Player player;
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         
-        playerFactory = new PlayerFactory(this.getApplicationContext(), TestData.partnerId, TestData.ks);
+        playerFactory = new KalturaPlayerFactory(this.getApplicationContext(), TestData.partnerId, TestData.ks);
 
         loadPlayer();
         
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadTestEntry(TestData.Entry entry) {
         final View view = controlsView;
         Snackbar.make(view, "Selected item: " + entry, Snackbar.LENGTH_SHORT).show();
-        playerFactory.loadEntry(entry.id, new PlayerFactory.OnMediaEntryLoaded() {
+        playerFactory.loadEntry(entry.id, new KalturaPlayerFactory.OnMediaEntryLoaded() {
             @Override
             public void entryLoaded(final PKMediaEntry entry, ErrorElement error) {
                 if (entry == null) {
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (player == null) {
             player = playerFactory.loadPlayer(this);
-            playerContainer = findViewById(R.id.player_container);
+            playerContainer = ((ViewGroup) findViewById(R.id.player_container));
             playerContainer.addView(player.getView());
             
             player.addEventListener(new PKEvent.Listener() {
@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         if (controlsView == null) {
             controlsView = new PlaybackControlsView(this);
             controlsView.setPlayer(player);
-            controlsContainer = findViewById(R.id.controls_container);
+            controlsContainer = (ViewGroup) findViewById(R.id.controls_container);
             controlsContainer.addView(controlsView);
         }
     }
