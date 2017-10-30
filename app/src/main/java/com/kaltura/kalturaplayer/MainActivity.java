@@ -20,7 +20,7 @@ import com.kaltura.playkit.PlayerEvent;
 class TestData {
     static final int partnerId = 2215841;
     static final String ks = null;
-    static final Entry[] entries = Entry.values();
+    private static final Entry[] entries = Entry.values();
     
     enum Entry {
         sintelShort("1_9bwuo813"),
@@ -103,29 +103,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadPlayer() {
 
-        if (player == null) {
-            player = playerFactory.loadPlayer(this);
-            playerContainer = ((ViewGroup) findViewById(R.id.player_container));
-            playerContainer.addView(player.getView());
-            
-            player.addEventListener(new PKEvent.Listener() {
-                @Override
-                public void onEvent(PKEvent event) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Snackbar.make(controlsView, "Ready to play", Snackbar.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }, PlayerEvent.Type.CAN_PLAY);
-        }
+        player = playerFactory.loadPlayer(this);
+        playerContainer = ((ViewGroup) findViewById(R.id.player_container));
+        playerContainer.addView(player.getView());
 
-        if (controlsView == null) {
-            controlsView = new PlaybackControlsView(this);
-            controlsView.setPlayer(player);
-            controlsContainer = (ViewGroup) findViewById(R.id.controls_container);
-            controlsContainer.addView(controlsView);
-        }
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Snackbar.make(controlsView, "Ready to play", Snackbar.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }, PlayerEvent.Type.CAN_PLAY);
+
+        controlsView = new PlaybackControlsView(this);
+        controlsView.setPlayer(player);
+        controlsContainer = (ViewGroup) findViewById(R.id.controls_container);
+        controlsContainer.addView(controlsView);
     }
 }
