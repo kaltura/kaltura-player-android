@@ -13,17 +13,16 @@
     <FrameLayout
         android:id="@+id/player_container"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="300dp"
         android:background="@android:color/holo_blue_light">
 
     </FrameLayout>
 
-    <FrameLayout
-        android:id="@+id/controls_container"
-        android:layout_width="match_parent"
+    <CheckBox
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:color/holo_green_dark">
-
-    </FrameLayout>
+        android:id="@+id/autoplay"
+        android:text="Autoplay"
+        />
 
 </LinearLayout>

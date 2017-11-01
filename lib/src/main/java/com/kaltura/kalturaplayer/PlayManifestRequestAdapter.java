@@ -20,19 +20,19 @@ import com.kaltura.playkit.Player;
 import static com.kaltura.playkit.PlayKitManager.CLIENT_TAG;
 import static com.kaltura.playkit.Utils.toBase64;
 
-public class PlaymanifestRequestAdapter implements PKRequestParams.Adapter {
+public class PlayManifestRequestAdapter implements PKRequestParams.Adapter {
 
     private final String referrer;
     private String playSessionId;
 
-    public static PlaymanifestRequestAdapter install(Player player, String referrer) {
-        PlaymanifestRequestAdapter decorator = new PlaymanifestRequestAdapter(player, referrer);
+    public static PlayManifestRequestAdapter install(Player player, String referrer) {
+        PlayManifestRequestAdapter decorator = new PlayManifestRequestAdapter(player, referrer);
         player.getSettings().setContentRequestAdapter(decorator);
         
         return decorator;
     }
 
-    private PlaymanifestRequestAdapter(Player player, String referrer) {
+    private PlayManifestRequestAdapter(Player player, String referrer) {
         this.referrer = referrer;
         updateParams(player);
     }

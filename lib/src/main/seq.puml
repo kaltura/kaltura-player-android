@@ -1,0 +1,46 @@
+@startuml
+
+participant App as app
+participant KalturaPlayer as player 
+participant KalturaPlayerFactory as factory
+participant OvpMediaProvider as provider
+
+app->factory: newPlayer(partnerId, ks)
+factory-->app: player
+
+== App wants to load and auto-play an entry ==
+
+app->player: loadAndPlay(entryId, startPos)
+player->provider: load(entryId)
+alt success
+    provider-->player: entry
+    player-->app: entry
+    player->player: prepareAndPlay(entry, startPos)
+    player->player: play()
+else Load fail
+    provider-->player: error
+    player-->app: error
+end
+
+== App wants to load an entry but play manually ==
+
+app->player: load(entryId)
+player->provider: load(entryId)
+alt success
+    provider-->player: entry
+    player-->app: entry
+    ...
+    alt prepareAndPlay
+        app->player: prepareAndPlay(entry, startPos)
+        player->player: play()
+    else prepare, then play
+        app->player: prepare(entry, startPos)
+        ...
+        app->player: play()
+    end
+else Load fail
+    provider-->player: error
+    player-->app: error
+end
+
+@enduml

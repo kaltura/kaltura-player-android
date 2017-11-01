@@ -12,7 +12,6 @@ import android.widget.TextView;
 import com.google.android.exoplayer2.C;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 
@@ -25,7 +24,7 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
     private static final PKLog log = PKLog.get("PlaybackControlsView");
     private static final int PROGRESS_BAR_MAX = 100;
 
-    private Player player;
+    private KalturaPlayer player;
     private PlayerState playerState;
 
     private Formatter formatter;
@@ -140,7 +139,7 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
                 : formatter.format("%02d:%02d", minutes, seconds).toString();
     }
 
-    public void setPlayer(Player player) {
+    public void setPlayer(KalturaPlayer player) {
         this.player = player;
         player.addStateChangeListener(new PKEvent.Listener() {
             @Override
