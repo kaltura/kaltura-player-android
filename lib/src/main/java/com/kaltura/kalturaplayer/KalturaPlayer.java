@@ -26,8 +26,8 @@ import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
-import com.kaltura.playkit.plugins.ovp.KavaAnalyticsConfig;
-import com.kaltura.playkit.plugins.ovp.KavaAnalyticsPlugin;
+import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
+import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 
 import java.util.Map;
 
