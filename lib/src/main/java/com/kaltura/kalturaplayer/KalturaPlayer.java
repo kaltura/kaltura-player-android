@@ -7,8 +7,9 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.widget.FrameLayout;
 
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
@@ -119,16 +120,17 @@ public class KalturaPlayer {
         if (this.view != null) {
             return this.view;
         }
-        
-        LinearLayout view = new LinearLayout(context);
-        
-        view.setOrientation(LinearLayout.VERTICAL);
-        
-        view.addView(player.getView(), LinearLayout.LayoutParams.MATCH_PARENT, 550);
+
+        FrameLayout view = new FrameLayout(context);
+        view.addView(player.getView(), FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+
         PlaybackControlsView controlsView = new PlaybackControlsView(context);
+
+        final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.BOTTOM | Gravity.START);
+        view.addView(controlsView, layoutParams);
+
         controlsView.setPlayer(this);
-        view.addView(controlsView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-     
+
         this.view = view;
         
         return view;
