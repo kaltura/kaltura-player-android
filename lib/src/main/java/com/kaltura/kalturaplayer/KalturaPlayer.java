@@ -50,6 +50,7 @@ public class KalturaPlayer {
     private final String referrer;
     
     private static boolean pluginsRegistered;
+    private View view;
 
     public KalturaPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
 
@@ -115,6 +116,10 @@ public class KalturaPlayer {
     }
     
     public View getView() {
+        if (this.view != null) {
+            return this.view;
+        }
+        
         LinearLayout view = new LinearLayout(context);
         
         view.setOrientation(LinearLayout.VERTICAL);
@@ -124,6 +129,8 @@ public class KalturaPlayer {
         controlsView.setPlayer(this);
         view.addView(controlsView, LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
      
+        this.view = view;
+        
         return view;
     }
 
@@ -192,6 +199,8 @@ public class KalturaPlayer {
         if (sessionProvider != null) {
             sessionProvider.setKs(ks);
         }
+        
+        // Update Kava
         player.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
     }
 
