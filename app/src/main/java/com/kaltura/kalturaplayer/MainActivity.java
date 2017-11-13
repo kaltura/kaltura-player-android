@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 if (error != null) {
                     Log.d("onMediaEntryLoaded", " error: " + error);
                 } else {
-                    player.prepare(entry);
+                    player.prepare();
                 }
             }
         });

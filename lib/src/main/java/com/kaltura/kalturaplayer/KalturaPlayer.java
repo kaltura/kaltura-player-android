@@ -39,31 +39,29 @@ import java.util.Map;
 public class KalturaPlayer {
     private static final String DEFAULT_SERVER_URL = "https://cdnapisec.kaltura.com/";
     private static final PKLog log = PKLog.get("KalturaPlayer");
-
+    private static boolean pluginsRegistered;
     private final Context context;
     private final int partnerId;
+    
     private String ks;
-
     private SimpleOvpSessionProvider sessionProvider;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
-    
     private Player player;
     
     // Options
     private boolean autoPlay;
     private boolean autoPrepare;
     private double startPosition;
-    
-    // Init-only options
+    private View view;
+    private PKMediaEntry mediaEntry;
+
+    // Final options
     private final boolean useStaticMediaProvider;
     private final PKMediaFormat preferredFormat;
     private final String serverUrl;
     private final String referrer;
-    
-    private static boolean pluginsRegistered;
-    private View view;
-    private PKMediaEntry mediaEntry;
 
+    
     public KalturaPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
 
         this.context = context;
@@ -111,7 +109,19 @@ public class KalturaPlayer {
         this(context, partnerId, ks, null, null);
     }
     
-    
+    private static String buildReferrer(Context context, String referrer) {
+        if (referrer == null) {
+            referrer = context.getPackageName();
+        }
+
+        // If referrer does not have a scheme, add 'app' as scheme.
+        Uri uri = Uri.parse(referrer);
+        if (TextUtils.isEmpty(uri.getScheme())) {
+            return uri.buildUpon().scheme("app").build().toString();
+        } else {
+            return referrer;
+        }
+    }
     
     private void loadPlayer(PKPluginConfigs pluginConfigs) {
         // Load a player preconfigured to use stats plugins and the playManifest adapter.
@@ -159,7 +169,7 @@ public class KalturaPlayer {
 
         viewGroup.addView(view);
     }
-    
+
     /**
      * Load entry using the media provider and call the listener.
      * If {@link #autoPrepare} is true, send the loaded media to the player.
@@ -181,13 +191,15 @@ public class KalturaPlayer {
                 final PKMediaEntry entry = response.getResponse();
                 
                 maybeRemoveUnpreferredFormats(entry);
+                
+                mediaEntry = entry;
 
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         onEntryLoadListener.onMediaEntryLoaded(entry, response.getError());
                         if (autoPrepare && response.isSuccess()) {
-                            prepare(entry);
+                            prepare();
                         }
                     }
                 });
@@ -196,6 +208,10 @@ public class KalturaPlayer {
     }
 
     private void maybeRemoveUnpreferredFormats(PKMediaEntry entry) {
+        if (preferredFormat == null) {
+            return;
+        }
+        
         List<PKMediaSource> preferredSources = new ArrayList<>(1);
         for (PKMediaSource source : entry.getSources()) {
             if (source.getMediaFormat() == preferredFormat) {
@@ -219,15 +235,10 @@ public class KalturaPlayer {
     }
 
     public void prepare() {
-        prepare(mediaEntry);
-    }
-
-    public void prepare(PKMediaEntry mediaEntry) {
-        
         final PKMediaConfig config = new PKMediaConfig()
                 .setMediaEntry(mediaEntry)
                 .setStartPosition((long) (startPosition * 1000));
-        
+
         player.prepare(config);
 
         if (autoPlay) {
@@ -252,20 +263,6 @@ public class KalturaPlayer {
     private KavaAnalyticsConfig getKavaAnalyticsConfig() {
         return new KavaAnalyticsConfig()
                 .setKs(ks).setPartnerId(partnerId).setReferrer(referrer);
-    }
-
-    private static String buildReferrer(Context context, String referrer) {
-        if (referrer == null) {
-            referrer = context.getPackageName();
-        }
-
-        // If referrer does not have a scheme, add 'app' as scheme.
-        Uri uri = Uri.parse(referrer);
-        if (TextUtils.isEmpty(uri.getScheme())) {
-            return uri.buildUpon().scheme("app").build().toString();
-        } else {
-            return referrer;
-        }
     }
     
     // Player controls
@@ -376,6 +373,10 @@ public class KalturaPlayer {
         return this;
     }
 
+    public interface OnEntryLoadListener {
+        void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error);
+    }
+
     public static class Options {
         public boolean autoPlay;
         public boolean autoPrepare;
@@ -396,9 +397,5 @@ public class KalturaPlayer {
         }
 
         public Options() {}
-    }
-
-    public interface OnEntryLoadListener {
-        void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error);
     }
 }
