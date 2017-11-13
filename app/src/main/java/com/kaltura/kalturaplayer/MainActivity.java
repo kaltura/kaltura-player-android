@@ -10,7 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.Toast;
+import android.widget.CompoundButton;
 
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKMediaEntry;
@@ -62,9 +62,10 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         
         player = new KalturaPlayer(this, TestData.partnerId, TestData.ks);
+        
+        player.setAutoPrepare(true);    // prepare after media provider has finished.
 
-        ViewGroup playerContainer = ((ViewGroup) findViewById(R.id.player_container));
-        playerContainer.addView(player.getView());
+        player.setParentView(((ViewGroup) findViewById(R.id.player_container)));
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -81,37 +82,28 @@ public class MainActivity extends AppCompatActivity {
                 }).show();
             }
         });
+
+        ((CheckBox) findViewById(R.id.autoplay)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                player.setAutoPlay(isChecked);
+            }
+        });
     }
 
-    private boolean shouldAutoPlay() {
-        CheckBox checkBox = (CheckBox) findViewById(R.id.autoplay);
-        return checkBox.isChecked();
-    }
-    
     private void loadTestEntry(TestData.Entry entry) {
         final View view = controlsView;
         player.stop();
 
-        if (shouldAutoPlay()) {
-            player.loadAndPlay(entry.id, 0, new KalturaPlayer.OnEntryLoadListener() {
-                @Override
-                public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
-                    if (error != null) {
-                        Toast.makeText(MainActivity.this, "Load failed", Toast.LENGTH_SHORT).show();
-                    }
+        player.loadMedia(entry.id, new KalturaPlayer.OnEntryLoadListener() {
+            @Override
+            public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
+                if (error != null) {
+                    Log.d("onMediaEntryLoaded", " error: " + error);
+                } else {
+                    player.prepare(entry);
                 }
-            });
-        } else {
-            player.loadMedia(entry.id, new KalturaPlayer.OnEntryLoadListener() {
-                @Override
-                public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
-                    if (error != null) {
-                        Log.d("onMediaEntryLoaded", " error: " + error);
-                    } else {
-                        player.prepare(entry, 0);
-                    }
-                }
-            });
-        }
+            }
+        });
     }
 }

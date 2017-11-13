@@ -9,6 +9,8 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import com.kaltura.netkit.connect.response.ResultElement;
@@ -19,6 +21,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
@@ -29,6 +32,8 @@ import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class KalturaPlayer {
@@ -45,13 +50,19 @@ public class KalturaPlayer {
     private Player player;
     
     // Options
-    private final boolean skipMediaProvider;
+    private boolean autoPlay;
+    private boolean autoPrepare;
+    private double startPosition;
+    
+    // Init-only options
+    private final boolean useStaticMediaProvider;
     private final PKMediaFormat preferredFormat;
     private final String serverUrl;
     private final String referrer;
     
     private static boolean pluginsRegistered;
     private View view;
+    private PKMediaEntry mediaEntry;
 
     public KalturaPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
 
@@ -70,11 +81,16 @@ public class KalturaPlayer {
             this.serverUrl = DEFAULT_SERVER_URL;
         }
         
-        this.skipMediaProvider = options.skipMediaProvider;
+
+        this.autoPrepare = options.autoPrepare;
+        this.autoPlay = options.autoPlay;
+
+
+        this.useStaticMediaProvider = options.useStaticMediaProvider;
         this.preferredFormat = options.preferredFormat;
         this.referrer = buildReferrer(context, options.referrer);
         
-        if (!skipMediaProvider) {
+        if (!useStaticMediaProvider) {
             sessionProvider = new SimpleOvpSessionProvider(this.serverUrl, partnerId, ks);
         }
 
@@ -94,6 +110,8 @@ public class KalturaPlayer {
     public KalturaPlayer(Context context, int partnerId, String ks) {
         this(context, partnerId, ks, null, null);
     }
+    
+    
     
     private void loadPlayer(PKPluginConfigs pluginConfigs) {
         // Load a player preconfigured to use stats plugins and the playManifest adapter.
@@ -116,49 +134,41 @@ public class KalturaPlayer {
         PlayManifestRequestAdapter.install(player, referrer);
     }
     
-    public View getView() {
+    public void setParentView(ViewGroup viewGroup) {
+
         if (this.view != null) {
-            return this.view;
+            // Remove from current parent
+            final ViewParent parent = view.getParent();
+            if (parent != null) {
+                ((ViewGroup) parent).removeView(this.view);
+            }
+            
+        } else {
+            FrameLayout view = new FrameLayout(context);
+            view.addView(player.getView(), FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+
+            PlaybackControlsView controlsView = new PlaybackControlsView(context);
+
+            final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.BOTTOM | Gravity.START);
+            view.addView(controlsView, layoutParams);
+
+            controlsView.setPlayer(this);
+
+            this.view = view;
         }
 
-        FrameLayout view = new FrameLayout(context);
-        view.addView(player.getView(), FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-
-        PlaybackControlsView controlsView = new PlaybackControlsView(context);
-
-        final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.BOTTOM | Gravity.START);
-        view.addView(controlsView, layoutParams);
-
-        controlsView.setPlayer(this);
-
-        this.view = view;
-        
-        return view;
+        viewGroup.addView(view);
     }
-
+    
     /**
      * Load entry using the media provider and call the listener.
+     * If {@link #autoPrepare} is true, send the loaded media to the player.
      */
      
-    public void loadMedia(@NonNull String entryId, @NonNull OnEntryLoadListener onEntryLoadListener) {
-        loadMedia(entryId, 0, false, onEntryLoadListener);
-    }
-
-    public void loadAndPlay(@NonNull String entryId, final double startPosition, @NonNull final OnEntryLoadListener onEntryLoadListener) {
-        loadMedia(entryId, startPosition, true, onEntryLoadListener);
-    }
-
-    /**
-     * Load entry using the media provider and call the listener. If startPosition is not null,
-     * prepare and play the media in the specified position.
-     * @param entryId
-     * @param startPosition
-     * @param onEntryLoadListener
-     */
-    private void loadMedia(@NonNull String entryId, final double startPosition, final boolean autoPlay, @NonNull final OnEntryLoadListener onEntryLoadListener) {
+    public void loadMedia(@NonNull String entryId, @NonNull final OnEntryLoadListener onEntryLoadListener) {
 
         MediaEntryProvider provider;
-        if (skipMediaProvider) {
+        if (useStaticMediaProvider) {
             provider = StaticMediaEntryBuilder.provider(partnerId, ks, serverUrl, entryId, preferredFormat);
         } else {
             provider = new KalturaOvpMediaProvider()
@@ -169,27 +179,60 @@ public class KalturaPlayer {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
                 final PKMediaEntry entry = response.getResponse();
+                
+                maybeRemoveUnpreferredFormats(entry);
 
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
                         onEntryLoadListener.onMediaEntryLoaded(entry, response.getError());
-                        if (autoPlay && response.isSuccess()) {
-                            prepareAndPlay(entry, startPosition);
+                        if (autoPrepare && response.isSuccess()) {
+                            prepare(entry);
                         }
                     }
                 });
             }
         });
     }
-    
-    public void prepareAndPlay(PKMediaEntry mediaEntry, double startPosition) {
-        prepare(mediaEntry, startPosition);
-        player.play();
+
+    private void maybeRemoveUnpreferredFormats(PKMediaEntry entry) {
+        List<PKMediaSource> preferredSources = new ArrayList<>(1);
+        for (PKMediaSource source : entry.getSources()) {
+            if (source.getMediaFormat() == preferredFormat) {
+                preferredSources.add(source);
+            }
+        }
+        
+        if (!preferredSources.isEmpty()) {
+            entry.setSources(preferredSources);
+        }
+        
+        // otherwise, leave the original source list.
     }
-    
-    public void prepare(PKMediaEntry mediaEntry, double startPosition) {
-        player.prepare(new PKMediaConfig().setMediaEntry(mediaEntry).setStartPosition((long) (startPosition*1000)));
+
+    public void setMedia(PKMediaEntry mediaEntry) {
+        this.mediaEntry = mediaEntry;
+        
+        if (autoPrepare) {
+            prepare();
+        }
+    }
+
+    public void prepare() {
+        prepare(mediaEntry);
+    }
+
+    public void prepare(PKMediaEntry mediaEntry) {
+        
+        final PKMediaConfig config = new PKMediaConfig()
+                .setMediaEntry(mediaEntry)
+                .setStartPosition((long) (startPosition * 1000));
+        
+        player.prepare(config);
+
+        if (autoPlay) {
+            player.play();
+        }
     }
 
     public String getKs() {
@@ -305,20 +348,48 @@ public class KalturaPlayer {
     public boolean isLiveStream() {
         return player.isLiveStream();
     }
-    
+
+    public double getStartPosition() {
+        return startPosition;
+    }
+
+    public KalturaPlayer setStartPosition(double startPosition) {
+        this.startPosition = startPosition;
+        return this;
+    }
+
+    public boolean isAutoPrepare() {
+        return autoPrepare;
+    }
+
+    public KalturaPlayer setAutoPrepare(boolean autoPrepare) {
+        this.autoPrepare = autoPrepare;
+        return this;
+    }
+
+    public boolean isAutoPlay() {
+        return autoPlay;
+    }
+
+    public KalturaPlayer setAutoPlay(boolean autoPlay) {
+        this.autoPlay = autoPlay;
+        return this;
+    }
+
     public static class Options {
-        public boolean skipMediaProvider;
+        public boolean autoPlay;
+        public boolean autoPrepare;
+        public boolean useStaticMediaProvider;
         public PKMediaFormat preferredFormat;
         public String serverUrl;
         public String referrer;
-
-        public Options(boolean skipMediaProvider, PKMediaFormat preferredFormat) {
-            this(skipMediaProvider, preferredFormat, null, null);
-        }
-
-        public Options(boolean skipMediaProvider, PKMediaFormat preferredFormat,
+        
+        public Options(boolean autoPlay, boolean autoPrepare, boolean useStaticMediaProvider, PKMediaFormat preferredFormat,
                        String serverUrl, String referrer) {
-            this.skipMediaProvider = skipMediaProvider;
+            
+            this.autoPlay = autoPlay;
+            this.autoPrepare = autoPrepare;
+            this.useStaticMediaProvider = useStaticMediaProvider;
             this.preferredFormat = preferredFormat;
             this.serverUrl = serverUrl;
             this.referrer = referrer;
