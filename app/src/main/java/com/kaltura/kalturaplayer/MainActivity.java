@@ -26,7 +26,8 @@ class TestData {
     enum Entry {
         sintelShort("1_9bwuo813"),
         sintelFull("1_w9zx2eti"),
-        player("http://cdnapi.kaltura.com/p/243342/playManifest/entryId/1_sf5ovm7u/format/applehttp/protocol/http/a.m3u8");
+        player("http://cdnapi.kaltura.com/p/243342/playManifest/entryId/1_sf5ovm7u/format/applehttp/protocol/http/a.m3u8"),
+        oren("http://85.21.100.234/dnetime/testsd7-dash.isml/manifest.mpd");
 
         final String id;
 
@@ -52,7 +53,7 @@ class TestData {
 
 public class MainActivity extends AppCompatActivity {
 
-    private KalturaPlayer player;
+    private KalturaOvpPlayer player;
     private PlaybackControlsView controlsView;
 
     // Benchmark
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         
-        player = new KalturaPlayer(this, TestData.partnerId, TestData.ks);
+        player = new KalturaOvpPlayer(this, TestData.partnerId, TestData.ks);
         
         player.setAutoPrepare(true);    // prepare after media provider has finished.
 
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
             player.setMedia(new PKMediaEntry().setSources(Collections.singletonList(new PKMediaSource().setUrl(entry.id))));
             return;
         } 
-        player.loadMedia(entry.id, new KalturaPlayer.OnEntryLoadListener() {
+        player.loadMedia(entry.id, new KalturaPlayerBase.OnEntryLoadListener() {
             @Override
             public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
                 if (error != null) {

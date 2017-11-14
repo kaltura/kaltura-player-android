@@ -14,9 +14,7 @@ import android.widget.FrameLayout;
 
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKEvent;
-import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -25,27 +23,19 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
-import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
-import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
-import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class KalturaPlayer {
-    private static final String DEFAULT_SERVER_URL = "https://cdnapisec.kaltura.com/";
-    private static final PKLog log = PKLog.get("KalturaPlayer");
-    private static boolean pluginsRegistered;
+public abstract class KalturaPlayerBase {
     private final Context context;
-    private final int partnerId;
+    final int partnerId;
     
-    private String ks;
-    private SimpleOvpSessionProvider sessionProvider;
+    String ks;
     private Handler mainHandler = new Handler(Looper.getMainLooper());
-    private Player player;
+    Player player;
     
     // Options
     private boolean autoPlay;
@@ -55,13 +45,13 @@ public class KalturaPlayer {
     private PKMediaEntry mediaEntry;
 
     // Final options
-    private final boolean useStaticMediaProvider;
-    private final PKMediaFormat preferredFormat;
-    private final String serverUrl;
-    private final String referrer;
+    PKMediaFormat preferredFormat;
+    boolean useStaticMediaProvider;
+    final String serverUrl;
+    final String referrer;
 
     
-    public KalturaPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
+    public KalturaPlayerBase(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
 
         this.context = context;
         this.partnerId = partnerId;
@@ -75,7 +65,7 @@ public class KalturaPlayer {
         if (serverUrl != null) {
             this.serverUrl = serverUrl.endsWith("/") ? serverUrl : serverUrl + "/";
         } else {
-            this.serverUrl = DEFAULT_SERVER_URL;
+            this.serverUrl = getDefaultServerUrl();
         }
         
 
@@ -86,27 +76,20 @@ public class KalturaPlayer {
         this.useStaticMediaProvider = options.useStaticMediaProvider;
         this.preferredFormat = options.preferredFormat;
         this.referrer = buildReferrer(context, options.referrer);
-        
-        if (!useStaticMediaProvider) {
-            sessionProvider = new SimpleOvpSessionProvider(this.serverUrl, partnerId, ks);
-        }
 
-        // Plugin registration is static and only done once, but requires a Context.
-        if (!pluginsRegistered) {
-            PlayKitManager.registerPlugins(context, KavaAnalyticsPlugin.factory);
-            pluginsRegistered = true;
-        }
+        initializeBackendComponents();
+
+
+        registerPlugins(context);
 
         loadPlayer(pluginConfigs);
     }
-    
-    public KalturaPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs) {
-        this(context, partnerId, ks, pluginConfigs, null);
-    }
 
-    public KalturaPlayer(Context context, int partnerId, String ks) {
-        this(context, partnerId, ks, null, null);
-    }
+    protected abstract void initializeBackendComponents();
+
+    protected abstract void registerPlugins(Context context);
+
+    abstract String getDefaultServerUrl();
     
     private static String buildReferrer(Context context, String referrer) {
         if (referrer == null) {
@@ -127,9 +110,7 @@ public class KalturaPlayer {
 
         PKPluginConfigs combined = new PKPluginConfigs();
 
-        KavaAnalyticsConfig kavaConfig = getKavaAnalyticsConfig();
-
-        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
+        addKalturaPluginConfigs(combined);
 
         // Copy application-provided configs.
         if (pluginConfigs != null) {
@@ -142,9 +123,10 @@ public class KalturaPlayer {
 
         PlayManifestRequestAdapter.install(player, referrer);
     }
-    
-    
-    
+
+    protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
+
+
     public View getView() {
 
         if (this.view != null) {
@@ -168,43 +150,15 @@ public class KalturaPlayer {
         return view;
     }
 
-    /**
-     * Load entry using the media provider and call the listener.
-     * If {@link #autoPrepare} is true, send the loaded media to the player.
-     */
-     
-    public void loadMedia(@NonNull String entryId, @NonNull final OnEntryLoadListener onEntryLoadListener) {
-
-        MediaEntryProvider provider;
-        if (useStaticMediaProvider) {
-            provider = StaticMediaEntryBuilder.provider(partnerId, ks, serverUrl, entryId, preferredFormat);
-        } else {
-            provider = new KalturaOvpMediaProvider()
-                    .setSessionProvider(sessionProvider).setEntryId(entryId);
-        }
-
-        provider.load(new OnMediaLoadCompletion() {
+    OnMediaLoadCompletion mediaLoadCompletion(@NonNull final OnEntryLoadListener onEntryLoadListener) {
+        return new OnMediaLoadCompletion() {
             @Override
             public void onComplete(final ResultElement<PKMediaEntry> response) {
-                final PKMediaEntry entry = response.getResponse();
-                
-                maybeRemoveUnpreferredFormats(entry);
-                
-                mediaEntry = entry;
 
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        onEntryLoadListener.onMediaEntryLoaded(entry, response.getError());
-                        if (autoPrepare && response.isSuccess()) {
-                            prepare();
-                        }
-                    }
-                });
             }
-        });
+        };
     }
-
+    
     private void maybeRemoveUnpreferredFormats(PKMediaEntry entry) {
         if (preferredFormat == null) {
             return;
@@ -250,19 +204,11 @@ public class KalturaPlayer {
 
     public void setKs(String ks) {
         this.ks = ks;
-        if (sessionProvider != null) {
-            sessionProvider.setKs(ks);
-        }
-        
-        // Update Kava
-        player.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
+        updateKs(ks);
     }
 
-    private KavaAnalyticsConfig getKavaAnalyticsConfig() {
-        return new KavaAnalyticsConfig()
-                .setKs(ks).setPartnerId(partnerId).setReferrer(referrer);
-    }
-    
+    protected abstract void updateKs(String ks);
+
     // Player controls
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         player.updatePluginConfig(pluginName, pluginConfig);
@@ -348,7 +294,7 @@ public class KalturaPlayer {
         return startPosition;
     }
 
-    public KalturaPlayer setStartPosition(double startPosition) {
+    public KalturaPlayerBase setStartPosition(double startPosition) {
         this.startPosition = startPosition;
         return this;
     }
@@ -357,7 +303,7 @@ public class KalturaPlayer {
         return autoPrepare;
     }
 
-    public KalturaPlayer setAutoPrepare(boolean autoPrepare) {
+    public KalturaPlayerBase setAutoPrepare(boolean autoPrepare) {
         this.autoPrepare = autoPrepare;
         return this;
     }
@@ -366,9 +312,45 @@ public class KalturaPlayer {
         return autoPlay;
     }
 
-    public KalturaPlayer setAutoPlay(boolean autoPlay) {
+    public KalturaPlayerBase setAutoPlay(boolean autoPlay) {
         this.autoPlay = autoPlay;
         return this;
+    }
+
+    public PKMediaFormat getPreferredFormat() {
+        return preferredFormat;
+    }
+
+    public KalturaPlayerBase setPreferredFormat(PKMediaFormat preferredFormat) {
+        this.preferredFormat = preferredFormat;
+        return this;
+    }
+
+    public boolean isUseStaticMediaProvider() {
+        return useStaticMediaProvider;
+    }
+
+    public KalturaPlayerBase useStaticMediaProvider(boolean useStaticMediaProvider) {
+        this.useStaticMediaProvider = useStaticMediaProvider;
+        return this;
+    }
+
+    protected void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
+        final PKMediaEntry entry = response.getResponse();
+
+        maybeRemoveUnpreferredFormats(entry);
+
+        mediaEntry = entry;
+
+        mainHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                onEntryLoadListener.onMediaEntryLoaded(entry, response.getError());
+                if (autoPrepare && response.isSuccess()) {
+                    prepare();
+                }
+            }
+        });
     }
 
     public interface OnEntryLoadListener {
