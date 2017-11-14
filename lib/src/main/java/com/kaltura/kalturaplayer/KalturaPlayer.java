@@ -1,6 +1,7 @@
 package com.kaltura.kalturaplayer;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
@@ -9,8 +10,6 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import com.kaltura.netkit.connect.response.ResultElement;
@@ -144,17 +143,16 @@ public class KalturaPlayer {
         PlayManifestRequestAdapter.install(player, referrer);
     }
     
-    public void setParentView(ViewGroup viewGroup) {
+    
+    
+    public View getView() {
 
         if (this.view != null) {
-            // Remove from current parent
-            final ViewParent parent = view.getParent();
-            if (parent != null) {
-                ((ViewGroup) parent).removeView(this.view);
-            }
+            return view;
             
         } else {
             FrameLayout view = new FrameLayout(context);
+            view.setBackgroundColor(Color.BLACK);
             view.addView(player.getView(), FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
 
             PlaybackControlsView controlsView = new PlaybackControlsView(context);
@@ -167,7 +165,7 @@ public class KalturaPlayer {
             this.view = view;
         }
 
-        viewGroup.addView(view);
+        return view;
     }
 
     /**

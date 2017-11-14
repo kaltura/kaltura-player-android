@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         
         player.setAutoPrepare(true);    // prepare after media provider has finished.
 
-        player.setParentView(((ViewGroup) findViewById(R.id.player_container)));
+        ((ViewGroup) findViewById(R.id.player_container)).addView(player.getView());
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -83,12 +83,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        ((CheckBox) findViewById(R.id.autoplay)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        final CheckBox checkBox = (CheckBox) findViewById(R.id.autoplay);
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 player.setAutoPlay(isChecked);
             }
         });
+        checkBox.setChecked(true);
     }
 
     private void loadTestEntry(TestData.Entry entry) {
