@@ -5,7 +5,7 @@ import android.content.Context;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPluginConfigs;
 
-public class KalturaPhoenixPlayer extends KalturaPlayerBase {
+public class KalturaPhoenixPlayer extends KalturaPlayer {
 
     private static final String DEFAULT_SERVER_URL = null; // TODO: default server url
     

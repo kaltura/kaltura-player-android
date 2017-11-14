@@ -29,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class KalturaPlayerBase {
+public abstract class KalturaPlayer {
     private final Context context;
     final int partnerId;
     
@@ -51,7 +51,7 @@ public abstract class KalturaPlayerBase {
     final String referrer;
 
     
-    public KalturaPlayerBase(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
+    public KalturaPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
 
         this.context = context;
         this.partnerId = partnerId;
@@ -294,7 +294,7 @@ public abstract class KalturaPlayerBase {
         return startPosition;
     }
 
-    public KalturaPlayerBase setStartPosition(double startPosition) {
+    public KalturaPlayer setStartPosition(double startPosition) {
         this.startPosition = startPosition;
         return this;
     }
@@ -303,7 +303,7 @@ public abstract class KalturaPlayerBase {
         return autoPrepare;
     }
 
-    public KalturaPlayerBase setAutoPrepare(boolean autoPrepare) {
+    public KalturaPlayer setAutoPrepare(boolean autoPrepare) {
         this.autoPrepare = autoPrepare;
         return this;
     }
@@ -312,7 +312,7 @@ public abstract class KalturaPlayerBase {
         return autoPlay;
     }
 
-    public KalturaPlayerBase setAutoPlay(boolean autoPlay) {
+    public KalturaPlayer setAutoPlay(boolean autoPlay) {
         this.autoPlay = autoPlay;
         return this;
     }
@@ -321,7 +321,7 @@ public abstract class KalturaPlayerBase {
         return preferredFormat;
     }
 
-    public KalturaPlayerBase setPreferredFormat(PKMediaFormat preferredFormat) {
+    public KalturaPlayer setPreferredFormat(PKMediaFormat preferredFormat) {
         this.preferredFormat = preferredFormat;
         return this;
     }
@@ -330,7 +330,7 @@ public abstract class KalturaPlayerBase {
         return useStaticMediaProvider;
     }
 
-    public KalturaPlayerBase useStaticMediaProvider(boolean useStaticMediaProvider) {
+    public KalturaPlayer useStaticMediaProvider(boolean useStaticMediaProvider) {
         this.useStaticMediaProvider = useStaticMediaProvider;
         return this;
     }

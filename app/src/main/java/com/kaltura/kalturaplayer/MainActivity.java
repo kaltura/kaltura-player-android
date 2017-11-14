@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
             player.setMedia(new PKMediaEntry().setSources(Collections.singletonList(new PKMediaSource().setUrl(entry.id))));
             return;
         } 
-        player.loadMedia(entry.id, new KalturaPlayerBase.OnEntryLoadListener() {
+        player.loadMedia(entry.id, new KalturaPlayer.OnEntryLoadListener() {
             @Override
             public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
                 if (error != null) {

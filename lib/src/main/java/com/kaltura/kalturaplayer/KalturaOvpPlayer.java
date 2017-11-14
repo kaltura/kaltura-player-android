@@ -15,10 +15,10 @@ import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 
-public class KalturaOvpPlayer extends KalturaPlayerBase {
+public class KalturaOvpPlayer extends KalturaPlayer {
 
     private static final String DEFAULT_SERVER_URL = "https://cdnapisec.kaltura.com/";
-    private static final PKLog log = PKLog.get("KalturaPlayerBase");
+    private static final PKLog log = PKLog.get("KalturaPlayer");
     private static boolean pluginsRegistered;
 
     private SimpleOvpSessionProvider sessionProvider;

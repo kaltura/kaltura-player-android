@@ -24,7 +24,7 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
     private static final PKLog log = PKLog.get("PlaybackControlsView");
     private static final int PROGRESS_BAR_MAX = 100;
 
-    private KalturaPlayerBase player;
+    private KalturaPlayer player;
     private PlayerState playerState;
 
     private Formatter formatter;
@@ -139,7 +139,7 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
                 : formatter.format("%02d:%02d", minutes, seconds).toString();
     }
 
-    public void setPlayer(KalturaPlayerBase player) {
+    public void setPlayer(KalturaPlayer player) {
         this.player = player;
         player.addStateChangeListener(new PKEvent.Listener() {
             @Override
