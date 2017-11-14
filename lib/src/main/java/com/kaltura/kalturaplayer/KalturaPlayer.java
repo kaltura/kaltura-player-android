@@ -23,7 +23,6 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,9 +84,9 @@ public abstract class KalturaPlayer {
         loadPlayer(pluginConfigs);
     }
 
-    protected abstract void initializeBackendComponents();
+    abstract void initializeBackendComponents();
 
-    protected abstract void registerPlugins(Context context);
+    abstract void registerPlugins(Context context);
 
     abstract String getDefaultServerUrl();
     
@@ -124,7 +123,7 @@ public abstract class KalturaPlayer {
         PlayManifestRequestAdapter.install(player, referrer);
     }
 
-    protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
+    abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
 
 
     public View getView() {
@@ -150,15 +149,6 @@ public abstract class KalturaPlayer {
         return view;
     }
 
-    OnMediaLoadCompletion mediaLoadCompletion(@NonNull final OnEntryLoadListener onEntryLoadListener) {
-        return new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(final ResultElement<PKMediaEntry> response) {
-
-            }
-        };
-    }
-    
     private void maybeRemoveUnpreferredFormats(PKMediaEntry entry) {
         if (preferredFormat == null) {
             return;
@@ -207,7 +197,7 @@ public abstract class KalturaPlayer {
         updateKs(ks);
     }
 
-    protected abstract void updateKs(String ks);
+    abstract void updateKs(String ks);
 
     // Player controls
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
@@ -335,7 +325,7 @@ public abstract class KalturaPlayer {
         return this;
     }
 
-    protected void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
+    void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
         final PKMediaEntry entry = response.getResponse();
 
         maybeRemoveUnpreferredFormats(entry);
