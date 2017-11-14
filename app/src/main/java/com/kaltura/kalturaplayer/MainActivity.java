@@ -14,6 +14,9 @@ import android.widget.CompoundButton;
 
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaSource;
+
+import java.util.Collections;
 
 class TestData {
     static final int partnerId = 2215841;
@@ -22,7 +25,8 @@ class TestData {
     
     enum Entry {
         sintelShort("1_9bwuo813"),
-        sintelFull("1_w9zx2eti");
+        sintelFull("1_w9zx2eti"),
+        player("http://cdnapi.kaltura.com/p/243342/playManifest/entryId/1_sf5ovm7u/format/applehttp/protocol/http/a.m3u8");
 
         final String id;
 
@@ -97,6 +101,10 @@ public class MainActivity extends AppCompatActivity {
         final View view = controlsView;
         player.stop();
 
+        if (entry.id.startsWith("http")) {
+            player.setMedia(new PKMediaEntry().setSources(Collections.singletonList(new PKMediaSource().setUrl(entry.id))));
+            return;
+        } 
         player.loadMedia(entry.id, new KalturaPlayer.OnEntryLoadListener() {
             @Override
             public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
