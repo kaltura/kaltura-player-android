@@ -32,7 +32,6 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
 
     private SeekBar seekBar;
     private TextView tvCurTime, tvTime;
-    private ImageButton btnPlay, btnPause, btnFastForward, btnRewind, btnNext, btnPrevious;
 
     private boolean dragging = false;
 
@@ -61,11 +60,10 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
 
     private void initPlaybackControls() {
 
-        btnPlay = (ImageButton) this.findViewById(R.id.play);
-        btnPause = (ImageButton) this.findViewById(R.id.pause);
+        ImageButton btnPlay = this.findViewById(R.id.play);
 
         btnPlay.setOnClickListener(this);
-        btnPause.setOnClickListener(this);
+        this.<ImageButton>findViewById(R.id.pause).setOnClickListener(this);
 
         seekBar = (SeekBar) this.findViewById(R.id.mediacontroller_progress);
         seekBar.setOnSeekBarChangeListener(this);
