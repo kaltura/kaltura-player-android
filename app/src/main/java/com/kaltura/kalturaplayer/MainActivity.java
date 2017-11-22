@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         
         player = new KalturaOvpPlayer(this, TestData.partnerId, TestData.ks);
         
-        player.setAutoPrepare(true);    // prepare after media provider has finished.
+        player.setPreload(true);    // prepare after media provider has finished.
 
         ((ViewGroup) findViewById(R.id.player_container)).addView(player.getView());
 

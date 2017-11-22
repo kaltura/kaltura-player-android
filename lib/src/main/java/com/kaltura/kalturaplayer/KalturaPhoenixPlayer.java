@@ -1,9 +1,15 @@
 package com.kaltura.kalturaplayer;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.api.phoenix.APIDefines;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class KalturaPhoenixPlayer extends KalturaPlayer {
 
@@ -52,4 +58,47 @@ public class KalturaPhoenixPlayer extends KalturaPlayer {
     protected void initializeBackendComponents() {
         // TODO: initialize session manager etc
     }
+
+    public void loadMedia(@NonNull String assetId, @Nullable LoadMediaOptions options, @NonNull OnEntryLoadListener onEntryLoadListener) {
+        
+        // TODO: Load media using the provider
+    }
+
+    public static class LoadMediaOptions {
+        public APIDefines.KalturaAssetType assetType;
+        public APIDefines.PlaybackContextType contextType;
+        public List<String> formats;
+        public List<String> mediaFileIds;
+        
+        public LoadMediaOptions setAssetType(APIDefines.KalturaAssetType assetType) {
+            this.assetType = assetType;
+            return this;
+        }
+
+        public LoadMediaOptions setContextType(APIDefines.PlaybackContextType contextType) {
+            this.contextType = contextType;
+            return this;
+        }
+
+        public LoadMediaOptions setFormats(List<String> formats) {
+            this.formats = formats;
+            return this;
+        }
+
+        public LoadMediaOptions setFormats(String... formats) {
+            this.formats = Arrays.asList(formats);
+            return this;
+        }
+
+        public LoadMediaOptions setMediaFileIds(List<String> mediaFileIds) {
+            this.mediaFileIds = mediaFileIds;
+            return this;
+        }
+
+        public LoadMediaOptions setMediaFileIds(String... mediaFileIds) {
+            this.mediaFileIds = Arrays.asList(mediaFileIds);
+            return this;
+        }
+    }
+
 }

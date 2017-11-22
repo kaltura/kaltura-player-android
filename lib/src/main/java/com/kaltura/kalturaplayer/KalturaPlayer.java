@@ -38,14 +38,13 @@ public abstract class KalturaPlayer {
     
     // Options
     private boolean autoPlay;
-    private boolean autoPrepare;
+    private boolean preload;
     private double startPosition;
     private View view;
     private PKMediaEntry mediaEntry;
 
     // Final options
     PKMediaFormat preferredFormat;
-    boolean useStaticMediaProvider;
     final String serverUrl;
     final String referrer;
 
@@ -68,11 +67,9 @@ public abstract class KalturaPlayer {
         }
         
 
-        this.autoPrepare = options.autoPrepare;
+        this.preload = options.preload || options.autoPlay; // autoPlay implies preload
         this.autoPlay = options.autoPlay;
 
-
-        this.useStaticMediaProvider = options.useStaticMediaProvider;
         this.preferredFormat = options.preferredFormat;
         this.referrer = buildReferrer(context, options.referrer);
 
@@ -171,7 +168,7 @@ public abstract class KalturaPlayer {
     public void setMedia(PKMediaEntry mediaEntry) {
         this.mediaEntry = mediaEntry;
         
-        if (autoPrepare) {
+        if (preload) {
             prepare();
         }
     }
@@ -289,12 +286,12 @@ public abstract class KalturaPlayer {
         return this;
     }
 
-    public boolean isAutoPrepare() {
-        return autoPrepare;
+    public boolean isPreload() {
+        return preload;
     }
 
-    public KalturaPlayer setAutoPrepare(boolean autoPrepare) {
-        this.autoPrepare = autoPrepare;
+    public KalturaPlayer setPreload(boolean preload) {
+        this.preload = preload;
         return this;
     }
 
@@ -316,15 +313,6 @@ public abstract class KalturaPlayer {
         return this;
     }
 
-    public boolean isUseStaticMediaProvider() {
-        return useStaticMediaProvider;
-    }
-
-    public KalturaPlayer useStaticMediaProvider(boolean useStaticMediaProvider) {
-        this.useStaticMediaProvider = useStaticMediaProvider;
-        return this;
-    }
-
     void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
         final PKMediaEntry entry = response.getResponse();
 
@@ -336,7 +324,7 @@ public abstract class KalturaPlayer {
             @Override
             public void run() {
                 onEntryLoadListener.onMediaEntryLoaded(entry, response.getError());
-                if (autoPrepare && response.isSuccess()) {
+                if (preload && response.isSuccess()) {
                     prepare();
                 }
             }
@@ -349,21 +337,36 @@ public abstract class KalturaPlayer {
 
     public static class Options {
         public boolean autoPlay;
-        public boolean autoPrepare;
-        public boolean useStaticMediaProvider;
+        public boolean preload;
         public PKMediaFormat preferredFormat;
         public String serverUrl;
         public String referrer;
-        
-        public Options(boolean autoPlay, boolean autoPrepare, boolean useStaticMediaProvider, PKMediaFormat preferredFormat,
-                       String serverUrl, String referrer) {
+
+        public Options(boolean autoPlay, boolean preload) {
+            this(autoPlay, preload, null);
+        }
+
+        public Options(boolean autoPlay, boolean preload, PKMediaFormat preferredFormat) {
+            this(autoPlay, preload, preferredFormat, null);
+        }
+
+        public Options(boolean autoPlay, boolean preload, PKMediaFormat preferredFormat,
+                       String referrer) {
+            this(autoPlay, preload, preferredFormat, referrer, null);
+        }
+
+        public Options(boolean autoPlay, boolean preload, PKMediaFormat preferredFormat,
+                       String referrer, String serverUrl) {
             
             this.autoPlay = autoPlay;
-            this.autoPrepare = autoPrepare;
-            this.useStaticMediaProvider = useStaticMediaProvider;
+            this.preload = preload;
             this.preferredFormat = preferredFormat;
             this.serverUrl = serverUrl;
             this.referrer = referrer;
+        }
+        
+        public static Options autoPlay() {
+            return new Options(true, true, null, null, null);
         }
 
         public Options() {}

@@ -56,7 +56,8 @@ public class KalturaOvpPlayer extends KalturaPlayer {
         }
 
         // Update Kava
-        player.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
+        // FIXME temporarily disabled Kava
+//        player.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
     }
 
     private KavaAnalyticsConfig getKavaAnalyticsConfig() {
@@ -66,32 +67,24 @@ public class KalturaOvpPlayer extends KalturaPlayer {
 
     @Override
     protected void addKalturaPluginConfigs(PKPluginConfigs combined) {
-        KavaAnalyticsConfig kavaConfig = getKavaAnalyticsConfig();
-
-        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
+        // FIXME temporarily disabled Kava
+//        KavaAnalyticsConfig kavaConfig = getKavaAnalyticsConfig();
+//
+//        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
     }
 
     @Override
     protected void initializeBackendComponents() {
-        if (!useStaticMediaProvider) {
-            sessionProvider = new SimpleOvpSessionProvider(this.serverUrl, partnerId, ks);
-        }
+        sessionProvider = new SimpleOvpSessionProvider(this.serverUrl, partnerId, ks);
     }
 
     /**
      * Load entry using the media provider and call the listener.
-     * If {@link #autoPrepare} is true, send the loaded media to the player.
      */
-     
     public void loadMedia(@NonNull String entryId, @NonNull final OnEntryLoadListener onEntryLoadListener) {
 
-        MediaEntryProvider provider;
-        if (useStaticMediaProvider) {
-            provider = StaticMediaEntryBuilder.provider(partnerId, ks, serverUrl, entryId, preferredFormat);
-        } else {
-            provider = new KalturaOvpMediaProvider()
-                    .setSessionProvider(sessionProvider).setEntryId(entryId);
-        }
+        MediaEntryProvider provider = new KalturaOvpMediaProvider()
+                .setSessionProvider(sessionProvider).setEntryId(entryId);
 
         provider.load(new OnMediaLoadCompletion() {
             @Override
