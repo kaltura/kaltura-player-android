@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -59,17 +58,13 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
     }
 
     private void initPlaybackControls() {
+        setOnClickListener(this);
 
-        ImageButton btnPlay = this.findViewById(R.id.play);
-
-        btnPlay.setOnClickListener(this);
-        this.<ImageButton>findViewById(R.id.pause).setOnClickListener(this);
-
-        seekBar = (SeekBar) this.findViewById(R.id.mediacontroller_progress);
+        seekBar = this.findViewById(R.id.mediacontroller_progress);
         seekBar.setOnSeekBarChangeListener(this);
 
-        tvCurTime = (TextView) this.findViewById(R.id.time_current);
-        tvTime = (TextView) this.findViewById(R.id.time);
+        tvCurTime = this.findViewById(R.id.time_current);
+        tvTime = this.findViewById(R.id.time);
     }
 
 
@@ -84,12 +79,10 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         }
 
         if(duration != C.TIME_UNSET){
-//            log.d("updateProgress Set Duration:" + duration);
             tvTime.setText(stringForTime(duration));
         }
 
         if (!dragging && position != C.POSITION_UNSET && duration != C.TIME_UNSET) {
-//            log.d("updateProgress Set Position:" + position);
             tvCurTime.setText(stringForTime(position));
             seekBar.setProgress(progressBarValue(position));
         }
@@ -144,7 +137,6 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
             public void onEvent(PKEvent event) {
                 if (event instanceof PlayerEvent.StateChanged) {
                     PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
-//                    log.d("State changed from " + stateChanged.oldState + " to " + stateChanged.newState);
 
                     setPlayerState(stateChanged.newState);
                 }
@@ -163,12 +155,11 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         if (player == null) {
             return;
         }
-
-        int id = v.getId();
-        if (id == R.id.play) {
-            player.play();
-        } else if (id == R.id.pause) {
+        
+        if (player.isPlaying()) {
             player.pause();
+        } else {
+            player.play();
         }
     }
 
