@@ -23,82 +23,70 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class KalturaPlayer {
+public abstract class KalturaPlayer <MediaOptions> {
     private final Context context;
-    final int partnerId;
-    
-    String ks;
+    final SimpleOvpSessionProvider sessionProvider;
+
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     Player player;
     
-    // Options
     private boolean autoPlay;
     private boolean preload;
     private double startPosition;
     private View view;
     private PKMediaEntry mediaEntry;
 
-    // Final options
     PKMediaFormat preferredFormat;
-    final String serverUrl;
     final String referrer;
 
     
-    public KalturaPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
+    public KalturaPlayer(Context context, int partnerId, InitOptions initOptions) {
 
         this.context = context;
-        this.partnerId = partnerId;
-        this.ks = ks;
 
-        if (options == null) {
-            options = new Options();
-        }
-
-        String serverUrl = options.serverUrl;
-        if (serverUrl != null) {
-            this.serverUrl = serverUrl.endsWith("/") ? serverUrl : serverUrl + "/";
-        } else {
-            this.serverUrl = getDefaultServerUrl();
+        if (initOptions == null) {
+            initOptions = new InitOptions();
         }
         
+        if (initOptions.serverUrl == null) {
+            initOptions.serverUrl = getDefaultServerUrl();
+        }
+        
+        this.sessionProvider = new SimpleOvpSessionProvider(initOptions.serverUrl, partnerId, initOptions.ks);
 
-        this.preload = options.preload || options.autoPlay; // autoPlay implies preload
-        this.autoPlay = options.autoPlay;
+        this.preload = initOptions.preload || initOptions.autoPlay; // autoPlay implies preload
+        this.autoPlay = initOptions.autoPlay;
 
-        this.preferredFormat = options.preferredFormat;
-        this.referrer = buildReferrer(context, options.referrer);
-
-        initializeBackendComponents();
-
+        this.preferredFormat = initOptions.preferredFormat;
+        this.referrer = buildReferrer(context, initOptions.referrer);
 
         registerPlugins(context);
 
-        loadPlayer(pluginConfigs);
+        loadPlayer(initOptions.pluginConfigs);
     }
-
-    abstract void initializeBackendComponents();
 
     abstract void registerPlugins(Context context);
 
     abstract String getDefaultServerUrl();
     
     private static String buildReferrer(Context context, String referrer) {
-        if (referrer == null) {
-            referrer = context.getPackageName();
+        if (referrer != null) {
+            // If a referrer is given, it must be a valid URL.
+            // Parse and check that scheme and authority are not empty.
+            final Uri uri = Uri.parse(referrer);
+            if (!TextUtils.isEmpty(uri.getScheme()) && !TextUtils.isEmpty(uri.getAuthority())) {
+                return referrer;
+            }
+            // If referrer is not a valid URL, fall back to the generated default.
         }
-
-        // If referrer does not have a scheme, add 'app' as scheme.
-        Uri uri = Uri.parse(referrer);
-        if (TextUtils.isEmpty(uri.getScheme())) {
-            return uri.buildUpon().scheme("app").build().toString();
-        } else {
-            return referrer;
-        }
+        
+        return new Uri.Builder().scheme("app").authority(context.getPackageName()).toString();
     }
     
     private void loadPlayer(PKPluginConfigs pluginConfigs) {
@@ -167,11 +155,22 @@ public abstract class KalturaPlayer {
 
     public void setMedia(PKMediaEntry mediaEntry) {
         this.mediaEntry = mediaEntry;
-        
+
         if (preload) {
             prepare();
         }
     }
+    
+    public abstract void setMedia(PKMediaEntry mediaEntry, MediaOptions mediaOptions);
+    public abstract void loadMedia(MediaOptions mediaOptions, OnEntryLoadListener listener);
+
+    public void setKS(String ks) {
+        sessionProvider.setKs(ks);
+        updateKS(ks);
+    }
+
+    protected abstract void updateKS(String ks);
+
 
     public void prepare() {
         final PKMediaConfig config = new PKMediaConfig()
@@ -184,17 +183,6 @@ public abstract class KalturaPlayer {
             player.play();
         }
     }
-
-    public String getKs() {
-        return ks;
-    }
-
-    public void setKs(String ks) {
-        this.ks = ks;
-        updateKs(ks);
-    }
-
-    abstract void updateKs(String ks);
 
     // Player controls
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
@@ -273,10 +261,6 @@ public abstract class KalturaPlayer {
         return player.getSessionId();
     }
 
-    public boolean isLiveStream() {
-        return player.isLiveStream();
-    }
-
     public double getStartPosition() {
         return startPosition;
     }
@@ -324,9 +308,7 @@ public abstract class KalturaPlayer {
             @Override
             public void run() {
                 onEntryLoadListener.onMediaEntryLoaded(entry, response.getError());
-                if (preload && response.isSuccess()) {
-                    prepare();
-                }
+                setMedia(entry);
             }
         });
     }
@@ -335,28 +317,30 @@ public abstract class KalturaPlayer {
         void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error);
     }
 
-    public static class Options {
+    public static class InitOptions {
+        public String ks;
+        public PKPluginConfigs pluginConfigs;
         public boolean autoPlay;
         public boolean preload;
         public PKMediaFormat preferredFormat;
         public String serverUrl;
         public String referrer;
 
-        public Options(boolean autoPlay, boolean preload) {
+        public InitOptions(boolean autoPlay, boolean preload) {
             this(autoPlay, preload, null);
         }
 
-        public Options(boolean autoPlay, boolean preload, PKMediaFormat preferredFormat) {
+        public InitOptions(boolean autoPlay, boolean preload, PKMediaFormat preferredFormat) {
             this(autoPlay, preload, preferredFormat, null);
         }
 
-        public Options(boolean autoPlay, boolean preload, PKMediaFormat preferredFormat,
-                       String referrer) {
+        public InitOptions(boolean autoPlay, boolean preload, PKMediaFormat preferredFormat,
+                           String referrer) {
             this(autoPlay, preload, preferredFormat, referrer, null);
         }
 
-        public Options(boolean autoPlay, boolean preload, PKMediaFormat preferredFormat,
-                       String referrer, String serverUrl) {
+        public InitOptions(boolean autoPlay, boolean preload, PKMediaFormat preferredFormat,
+                           String referrer, String serverUrl) {
             
             this.autoPlay = autoPlay;
             this.preload = preload;
@@ -365,10 +349,18 @@ public abstract class KalturaPlayer {
             this.referrer = referrer;
         }
         
-        public static Options autoPlay() {
-            return new Options(true, true, null, null, null);
+        public static InitOptions autoPlay() {
+            return new InitOptions(true, true, null, null, null);
         }
 
-        public Options() {}
+        public InitOptions() {}
+    }
+    
+    public interface KSProvider {
+        void getKS(KSResult result);
+    }
+    
+    public interface KSResult {
+        void complete(String ks, Exception error);
     }
 }

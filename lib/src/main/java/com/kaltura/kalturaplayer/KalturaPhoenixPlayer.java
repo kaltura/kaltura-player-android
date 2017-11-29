@@ -1,33 +1,21 @@
 package com.kaltura.kalturaplayer;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.api.phoenix.APIDefines;
 
-import java.util.Arrays;
-import java.util.List;
-
-public class KalturaPhoenixPlayer extends KalturaPlayer {
+public class KalturaPhoenixPlayer extends KalturaPlayer <KalturaPhoenixPlayer.MediaOptions> {
 
     private static final String DEFAULT_SERVER_URL = null; // TODO: default server url
     
     private static final PKLog log = PKLog.get("KalturaPhoenixPlayer");
     private static boolean pluginsRegistered;
 
-    public KalturaPhoenixPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
-        super(context, partnerId, ks, pluginConfigs, options);
-    }
-
-    public KalturaPhoenixPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs) {
-        this(context, partnerId, ks, pluginConfigs, null);
-    }
-
-    public KalturaPhoenixPlayer(Context context, int partnerId, String ks) {
-        this(context, partnerId, ks, null);
+    public KalturaPhoenixPlayer(Context context, int partnerId, InitOptions initOptions) {
+        super(context, partnerId, initOptions);
     }
 
     @Override
@@ -45,7 +33,7 @@ public class KalturaPhoenixPlayer extends KalturaPlayer {
     }
 
     @Override
-    protected void updateKs(String ks) {
+    protected void updateKS(String ks) {
         // TODO: update plugins and provider
     }
 
@@ -55,50 +43,58 @@ public class KalturaPhoenixPlayer extends KalturaPlayer {
     }
 
     @Override
-    protected void initializeBackendComponents() {
-        // TODO: initialize session manager etc
-    }
-
-    public void loadMedia(@NonNull String assetId, @Nullable LoadMediaOptions options, @NonNull OnEntryLoadListener onEntryLoadListener) {
-        
+    public void loadMedia(MediaOptions mediaOptions, OnEntryLoadListener listener) {
         // TODO: Load media using the provider
     }
 
-    public static class LoadMediaOptions {
-        public APIDefines.KalturaAssetType assetType;
-        public APIDefines.PlaybackContextType contextType;
-        public List<String> formats;
-        public List<String> mediaFileIds;
-        
-        public LoadMediaOptions setAssetType(APIDefines.KalturaAssetType assetType) {
+    @Override
+    public void setMedia(PKMediaEntry entry, MediaOptions mediaOptions) {
+        setStartPosition(mediaOptions.startPosition);
+        setMedia(entry);
+    }
+
+    public static class MediaOptions {
+        String assetId;
+        APIDefines.KalturaAssetType assetType;
+        APIDefines.PlaybackContextType contextType;
+        String[] formats;
+        String[] fileIds;
+        String ks;
+        double startPosition;
+
+        public MediaOptions setAssetId(String assetId) {
+            this.assetId = assetId;
+            return this;
+        }
+
+        public MediaOptions setAssetType(APIDefines.KalturaAssetType assetType) {
             this.assetType = assetType;
             return this;
         }
 
-        public LoadMediaOptions setContextType(APIDefines.PlaybackContextType contextType) {
+        public MediaOptions setContextType(APIDefines.PlaybackContextType contextType) {
             this.contextType = contextType;
             return this;
         }
 
-        public LoadMediaOptions setFormats(List<String> formats) {
+        public MediaOptions setFormats(String[] formats) {
             this.formats = formats;
             return this;
         }
 
-        public LoadMediaOptions setFormats(String... formats) {
-            this.formats = Arrays.asList(formats);
+        public MediaOptions setFileIds(String[] fileIds) {
+            this.fileIds = fileIds;
             return this;
         }
 
-        public LoadMediaOptions setMediaFileIds(List<String> mediaFileIds) {
-            this.mediaFileIds = mediaFileIds;
+        public MediaOptions setStartPosition(double startPosition) {
+            this.startPosition = startPosition;
             return this;
         }
 
-        public LoadMediaOptions setMediaFileIds(String... mediaFileIds) {
-            this.mediaFileIds = Arrays.asList(mediaFileIds);
+        public MediaOptions setKS(String ks) {
+            this.ks = ks;
             return this;
         }
     }
-
 }

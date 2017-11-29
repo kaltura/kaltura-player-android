@@ -66,9 +66,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         
-        player = new KalturaOvpPlayer(this, TestData.partnerId, TestData.ks);
+        player = new KalturaOvpPlayer(this, TestData.partnerId);
         
-        player.setPreload(true);    // prepare after media provider has finished.
+        player.setPreload(true);
 
         ((ViewGroup) findViewById(R.id.player_container)).addView(player.getView());
 
@@ -99,14 +99,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadTestEntry(TestData.Entry entry) {
-        final View view = controlsView;
+
         player.stop();
 
         if (entry.id.startsWith("http")) {
             player.setMedia(new PKMediaEntry().setSources(Collections.singletonList(new PKMediaSource().setUrl(entry.id))));
             return;
-        } 
-        player.loadMedia(entry.id, new KalturaPlayer.OnEntryLoadListener() {
+        }
+        
+        player.loadMedia(new KalturaOvpPlayer.MediaOptions().setEntryId(entry.id), new KalturaPlayer.OnEntryLoadListener() {
             @Override
             public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
                 if (error != null) {

@@ -1,7 +1,6 @@
 package com.kaltura.kalturaplayer;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.MediaEntryProvider;
@@ -9,30 +8,27 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
-import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 
-public class KalturaOvpPlayer extends KalturaPlayer {
+public class KalturaOvpPlayer extends KalturaPlayer <KalturaOvpPlayer.MediaOptions> {
 
     private static final String DEFAULT_SERVER_URL = "https://cdnapisec.kaltura.com/";
-    private static final PKLog log = PKLog.get("KalturaPlayer");
+    private static final PKLog log = PKLog.get("KalturaOvpPlayer");
     private static boolean pluginsRegistered;
 
-    private SimpleOvpSessionProvider sessionProvider;
-
-    public KalturaOvpPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs, Options options) {
-        super(context, partnerId, ks, pluginConfigs, options);
+    public KalturaOvpPlayer(Context context, int partnerId, InitOptions initOptions) {
+        super(context, partnerId, initOptions);
     }
 
-    public KalturaOvpPlayer(Context context, int partnerId, String ks, PKPluginConfigs pluginConfigs) {
-        this(context, partnerId, ks, pluginConfigs, null);
+    public KalturaOvpPlayer(Context context, int partnerId) {
+        this(context, partnerId, null);
     }
-
-    public KalturaOvpPlayer(Context context, int partnerId, String ks) {
-        this(context, partnerId, ks, null);
+    
+    int getPartnerId() {
+        return sessionProvider.partnerId();
     }
 
     @Override
@@ -50,48 +46,63 @@ public class KalturaOvpPlayer extends KalturaPlayer {
     }
 
     @Override
-    protected void updateKs(String ks) {
-        if (sessionProvider != null) {
-            sessionProvider.setKs(ks);
-        }
-
+    protected void updateKS(String ks) {
         // Update Kava
-        // FIXME temporarily disabled Kava
-//        player.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
+        player.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig(ks));
     }
 
-    private KavaAnalyticsConfig getKavaAnalyticsConfig() {
+    private KavaAnalyticsConfig getKavaAnalyticsConfig(String ks) {
         return new KavaAnalyticsConfig()
-                .setKs(ks).setPartnerId(partnerId).setReferrer(referrer);
+                .setKs(ks).setPartnerId(getPartnerId()).setReferrer(referrer);
     }
 
     @Override
     protected void addKalturaPluginConfigs(PKPluginConfigs combined) {
+        KavaAnalyticsConfig kavaConfig = getKavaAnalyticsConfig(null);
+
         // FIXME temporarily disabled Kava
-//        KavaAnalyticsConfig kavaConfig = getKavaAnalyticsConfig();
-//
 //        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
     }
 
     @Override
-    protected void initializeBackendComponents() {
-        sessionProvider = new SimpleOvpSessionProvider(this.serverUrl, partnerId, ks);
-    }
-
-    /**
-     * Load entry using the media provider and call the listener.
-     */
-    public void loadMedia(@NonNull String entryId, @NonNull final OnEntryLoadListener onEntryLoadListener) {
-
+    public void loadMedia(MediaOptions mediaOptions, final OnEntryLoadListener listener) {
         MediaEntryProvider provider = new KalturaOvpMediaProvider()
-                .setSessionProvider(sessionProvider).setEntryId(entryId);
+                .setSessionProvider(sessionProvider).setEntryId(mediaOptions.entryId);
 
         provider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {
-                mediaLoadCompleted(response, onEntryLoadListener);
+                mediaLoadCompleted(response, listener);
             }
         });
     }
 
+    @Override
+    public void setMedia(PKMediaEntry entry, MediaOptions mediaOptions) {
+        setStartPosition(mediaOptions.startPosition);
+        setKS(mediaOptions.ks);
+        
+        setMedia(entry);
+    }
+
+    public static class MediaOptions {
+        String entryId;
+        String ks;
+        double startPosition;
+
+        public MediaOptions setEntryId(String entryId) {
+            this.entryId = entryId;
+            return this;
+        }
+
+        public MediaOptions setKS(String ks) {
+            this.ks = ks;
+            return this;
+        }
+
+        public MediaOptions setStartPosition(double startPosition) {
+            this.startPosition = startPosition;
+            return this;
+        }
+    }
 }
