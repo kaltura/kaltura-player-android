@@ -30,20 +30,17 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class KalturaPlayer <MediaOptions> {
-    private final Context context;
     final SimpleOvpSessionProvider sessionProvider;
-
-    private Handler mainHandler = new Handler(Looper.getMainLooper());
+    final String referrer;
+    private final Context context;
     Player player;
-    
+    PKMediaFormat preferredFormat;
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean autoPlay;
     private boolean preload;
     private double startPosition;
     private View view;
     private PKMediaEntry mediaEntry;
-
-    PKMediaFormat preferredFormat;
-    final String referrer;
 
     
     public KalturaPlayer(Context context, int partnerId, InitOptions initOptions) {
@@ -71,10 +68,6 @@ public abstract class KalturaPlayer <MediaOptions> {
         loadPlayer(initOptions.pluginConfigs);
     }
 
-    abstract void registerPlugins(Context context);
-
-    abstract String getDefaultServerUrl();
-    
     private static String buildReferrer(Context context, String referrer) {
         if (referrer != null) {
             // If a referrer is given, it must be a valid URL.
@@ -88,6 +81,10 @@ public abstract class KalturaPlayer <MediaOptions> {
         
         return new Uri.Builder().scheme("app").authority(context.getPackageName()).toString();
     }
+
+    abstract void registerPlugins(Context context);
+    
+    abstract String getDefaultServerUrl();
     
     private void loadPlayer(PKPluginConfigs pluginConfigs) {
         // Load a player preconfigured to use stats plugins and the playManifest adapter.
@@ -317,6 +314,14 @@ public abstract class KalturaPlayer <MediaOptions> {
         void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error);
     }
 
+    public interface KSProvider {
+        void getKS(KSResult result);
+    }
+    
+    public interface KSResult {
+        void complete(String ks, Exception error);
+    }
+    
     public static class InitOptions {
         public String ks;
         public PKPluginConfigs pluginConfigs;
@@ -349,18 +354,10 @@ public abstract class KalturaPlayer <MediaOptions> {
             this.referrer = referrer;
         }
         
+        public InitOptions() {}
+
         public static InitOptions autoPlay() {
             return new InitOptions(true, true, null, null, null);
         }
-
-        public InitOptions() {}
-    }
-    
-    public interface KSProvider {
-        void getKS(KSResult result);
-    }
-    
-    public interface KSResult {
-        void complete(String ks, Exception error);
     }
 }
