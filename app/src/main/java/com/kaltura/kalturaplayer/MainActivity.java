@@ -66,6 +66,14 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         
+        KalturaOvpAnonymousSession.start(TestData.partnerId, new KSResultCallback() {
+            @Override
+            public void complete(String ks, ErrorElement error) {
+                Log.d("KS", ks);
+                player.setKS(ks);
+            }
+        });
+        
         player = new KalturaOvpPlayer(this, TestData.partnerId);
         
         player.setPreload(true);
@@ -112,8 +120,6 @@ public class MainActivity extends AppCompatActivity {
             public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
                 if (error != null) {
                     Log.d("onMediaEntryLoaded", " error: " + error);
-                } else {
-                    player.prepare();
                 }
             }
         });

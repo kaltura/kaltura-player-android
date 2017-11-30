@@ -41,7 +41,7 @@ public abstract class KalturaPlayer <MediaOptions> {
     private double startPosition;
     private View view;
     private PKMediaEntry mediaEntry;
-
+    private boolean prepared;
     
     public KalturaPlayer(Context context, int partnerId, InitOptions initOptions) {
 
@@ -152,6 +152,7 @@ public abstract class KalturaPlayer <MediaOptions> {
 
     public void setMedia(PKMediaEntry mediaEntry) {
         this.mediaEntry = mediaEntry;
+        prepared = false;
 
         if (preload) {
             prepare();
@@ -170,11 +171,17 @@ public abstract class KalturaPlayer <MediaOptions> {
 
 
     public void prepare() {
+        
+        if (prepared) {
+            return;
+        }
+        
         final PKMediaConfig config = new PKMediaConfig()
                 .setMediaEntry(mediaEntry)
                 .setStartPosition((long) (startPosition * 1000));
 
         player.prepare(config);
+        prepared = true;
 
         if (autoPlay) {
             player.play();
@@ -203,6 +210,10 @@ public abstract class KalturaPlayer <MediaOptions> {
     }
 
     public void play() {
+        if (!prepared) {
+            prepare();
+        }
+        
         player.play();
     }
 
@@ -294,6 +305,7 @@ public abstract class KalturaPlayer <MediaOptions> {
         return this;
     }
 
+    // Called by implementation of loadMedia().
     void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
         final PKMediaEntry entry = response.getResponse();
 
@@ -314,14 +326,6 @@ public abstract class KalturaPlayer <MediaOptions> {
         void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error);
     }
 
-    public interface KSProvider {
-        void getKS(KSResult result);
-    }
-    
-    public interface KSResult {
-        void complete(String ks, Exception error);
-    }
-    
     public static class InitOptions {
         public String ks;
         public PKPluginConfigs pluginConfigs;

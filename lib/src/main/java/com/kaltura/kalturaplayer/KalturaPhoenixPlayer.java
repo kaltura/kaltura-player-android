@@ -9,7 +9,7 @@ import com.kaltura.playkit.api.phoenix.APIDefines;
 
 public class KalturaPhoenixPlayer extends KalturaPlayer <KalturaPhoenixPlayer.MediaOptions> {
 
-    private static final String DEFAULT_SERVER_URL = null; // TODO: default server url
+    public static final String DEFAULT_SERVER_URL = null; // TODO: default server url
     
     private static final PKLog log = PKLog.get("KalturaPhoenixPlayer");
     private static boolean pluginsRegistered;
