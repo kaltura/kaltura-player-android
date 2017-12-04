@@ -10,8 +10,8 @@ public class KalturaPhoenixAnonymousSession extends KalturaAnonymousSession {
         send(login, callback);
     }
 
-    public static void start(int partnerId, String udid, KSResultCallback callback) {
-        start(partnerId, udid, KalturaPhoenixPlayer.DEFAULT_SERVER_URL, callback);
+    public static void start(String serverUrl, int partnerId, String udid, KSResultCallback callback) {
+        start(partnerId, udid, serverUrl, callback);
     }
 }
 

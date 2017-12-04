@@ -304,6 +304,18 @@ public abstract class KalturaPlayer <MediaOptions> {
         this.preferredFormat = preferredFormat;
         return this;
     }
+    
+    public int getPartnerId() {
+        return sessionProvider.partnerId();
+    }
+    
+    public String getKS() {
+        return null;    // TODO!
+    }
+    
+    public String getServerUrl() {
+        return sessionProvider.baseUrl();
+    }
 
     // Called by implementation of loadMedia().
     void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {

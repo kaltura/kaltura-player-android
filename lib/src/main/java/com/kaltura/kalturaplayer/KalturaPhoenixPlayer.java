@@ -1,18 +1,29 @@
 package com.kaltura.kalturaplayer;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 
+import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.api.phoenix.APIDefines;
+import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
+import com.kaltura.playkit.mediaproviders.ott.PhoenixMediaProvider;
+import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
+import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
+import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
+import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 
 public class KalturaPhoenixPlayer extends KalturaPlayer <KalturaPhoenixPlayer.MediaOptions> {
 
-    public static final String DEFAULT_SERVER_URL = null; // TODO: default server url
-    
     private static final PKLog log = PKLog.get("KalturaPhoenixPlayer");
     private static boolean pluginsRegistered;
+
+    public KalturaPhoenixPlayer(Context context, int partnerId) {
+        this(context, partnerId, null);
+    }
 
     public KalturaPhoenixPlayer(Context context, int partnerId, InitOptions initOptions) {
         super(context, partnerId, initOptions);
@@ -20,13 +31,15 @@ public class KalturaPhoenixPlayer extends KalturaPlayer <KalturaPhoenixPlayer.Me
 
     @Override
     String getDefaultServerUrl() {
-        return DEFAULT_SERVER_URL;
+        return null;
     }
 
     @Override
     protected void registerPlugins(Context context) {
         if (!pluginsRegistered) {
-            // TODO: register OTT plugins
+            PlayKitManager.registerPlugins(context, 
+                    PhoenixAnalyticsPlugin.factory,
+                    KavaAnalyticsPlugin.factory);
             
             pluginsRegistered = true;
         }
@@ -34,17 +47,54 @@ public class KalturaPhoenixPlayer extends KalturaPlayer <KalturaPhoenixPlayer.Me
 
     @Override
     protected void updateKS(String ks) {
-        // TODO: update plugins and provider
+        // update plugins and provider
+        player.updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), getPhoenixAnalyticsConfig());
+//        player.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
     }
 
     @Override
     protected void addKalturaPluginConfigs(PKPluginConfigs combined) {
-        // TODO: add plugins config
+        combined.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), getPhoenixAnalyticsConfig());
+//        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
+    }
+
+    private KavaAnalyticsConfig getKavaAnalyticsConfig() {
+        return new KavaAnalyticsConfig().setPartnerId(getPartnerId()).setReferrer(referrer);
+    }
+
+    @NonNull
+    private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
+        return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), 30);
     }
 
     @Override
-    public void loadMedia(MediaOptions mediaOptions, OnEntryLoadListener listener) {
-        // TODO: Load media using the provider
+    public void loadMedia(MediaOptions mediaOptions, final OnEntryLoadListener listener) {
+        final PhoenixMediaProvider provider = new PhoenixMediaProvider()
+                .setAssetId(mediaOptions.assetId)
+                .setSessionProvider(sessionProvider);
+
+        if (mediaOptions.fileIds != null) {
+            provider.setFileIds(mediaOptions.fileIds);
+        }
+        
+        if (mediaOptions.contextType != null) {
+            provider.setContextType(mediaOptions.contextType);
+        }
+        
+        if (mediaOptions.assetType != null) {
+            provider.setAssetType(mediaOptions.assetType);
+        }
+        
+        if (mediaOptions.formats != null) {
+            provider.setFormats(mediaOptions.formats);
+        }
+        
+        provider.load(new OnMediaLoadCompletion() {
+            @Override
+            public void onComplete(ResultElement<PKMediaEntry> response) {
+                mediaLoadCompleted(response, listener);
+            }
+        });
     }
 
     @Override

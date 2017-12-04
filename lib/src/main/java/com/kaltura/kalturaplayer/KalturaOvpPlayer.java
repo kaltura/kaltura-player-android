@@ -27,10 +27,6 @@ public class KalturaOvpPlayer extends KalturaPlayer <KalturaOvpPlayer.MediaOptio
         this(context, partnerId, null);
     }
     
-    int getPartnerId() {
-        return sessionProvider.partnerId();
-    }
-
     @Override
     String getDefaultServerUrl() {
         return DEFAULT_SERVER_URL;
