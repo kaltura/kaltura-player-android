@@ -2,7 +2,9 @@ package com.kaltura.kalturaplayer;
 
 import android.content.Context;
 
+import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.ResultElement;
+import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -13,13 +15,27 @@ import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 
-class KalturaOvpPlayer extends KalturaPlayer {
+public class KalturaOvpPlayer extends KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaOvpPlayer");
     private static boolean pluginsRegistered;
 
-    public KalturaOvpPlayer(Context context, PlayerInitOptions initOptions) {
-        super(context, initOptions);
+    public static void create(final Context context, PlayerInitOptions options, final PlayerReadyCallback callback) {
+        
+        final PlayerInitOptions initOptions = options != null ? options : new PlayerInitOptions();
+        
+        loadUIConfig(initOptions, new OnUiConfLoaded() {
+            @Override
+            public void configLoaded(JsonObject uiConf, ErrorElement error) {
+                callback.onPlayerReady(new KalturaOvpPlayer(context, initOptions, uiConf));
+            }
+        });
+    }
+    
+    private KalturaOvpPlayer(Context context, PlayerInitOptions initOptions, JsonObject uiConf) {
+        super(context, initOptions, uiConf);
+
+        this.serverUrl = safeServerUrl(initOptions.serverUrl, DEFAULT_OVP_SERVER_URL);
     }
 
     @Override

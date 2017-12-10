@@ -46,7 +46,7 @@ public abstract class KalturaPlayer {
 
     private JsonObject uiConf;
     
-    private String serverUrl;
+    String serverUrl;
     private String ks;
     private int partnerId;
     
@@ -62,76 +62,7 @@ public abstract class KalturaPlayer {
     private PKMediaEntry mediaEntry;
     private boolean prepared;
 
-    private enum ServiceType {ovp, ott}
-
-    public static void createOvpPlayer(Context context, PlayerInitOptions options, PlayerReadyCallback callback) {
-        load(context, ServiceType.ovp, options, callback);
-    }
-    
-    public static void createTvPlayer(Context context, PlayerInitOptions options, PlayerReadyCallback callback) {
-        load(context, ServiceType.ott, options, callback);
-    }
-    
-    private static KalturaPlayer load(Context context, ServiceType serviceType, PlayerInitOptions options, JsonObject uiConf) {
-        options.uiConf = uiConf;
-        switch (serviceType) {
-            case ovp:
-                return new KalturaOvpPlayer(context, options);
-            case ott:
-                return new KalturaPhoenixPlayer(context, options);
-        }
-        return null;
-    }
-
-    private static void load(final Context context, final ServiceType serviceType, PlayerInitOptions initOptions, final PlayerReadyCallback callback) {
-
-        if (initOptions == null) {
-            initOptions = new PlayerInitOptions();
-        }
-
-        // Load UIConf
-        if (initOptions.uiConfId <= 0) {
-            callback.onPlayerReady(load(context, serviceType, initOptions, (JsonObject) null));
-        } else {
-            if (initOptions.uiConfId == cachedUIConfId && cachedUIConf != null) {
-                callback.onPlayerReady(load(context, serviceType, initOptions, cachedUIConf));
-            } else {
-                final PlayerInitOptions finalInitOptions = initOptions;
-                loadUIConfig(initOptions.uiConfId, firstNotNull(initOptions.uiConfServerUrl, DEFAULT_OVP_SERVER_URL), initOptions.partnerId, initOptions.ks, new OnUiConfLoaded() {
-                    @Override
-                    public void configLoaded(final JsonObject uiConf, final ErrorElement error) {
-                        mainHandler.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (error != null) {
-                                    // TODO handle error
-                                } else {
-                                    cachedUIConf = uiConf;
-                                    cachedUIConfId = finalInitOptions.uiConfId;
-                                    
-                                    callback.onPlayerReady(load(context, serviceType, finalInitOptions, uiConf));
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-        }
-    }
-
-    @SafeVarargs
-    private static <T> T firstNotNull(T... objects) {
-        if (objects != null) {
-            for (T object : objects) {
-                if (object != null) {
-                    return object;
-                }
-            }
-        }
-        return null;
-    }
-
-    protected KalturaPlayer(Context context, PlayerInitOptions initOptions) {
+    protected KalturaPlayer(Context context, PlayerInitOptions initOptions, JsonObject uiConf) {
 
         this.context = context;
         
@@ -144,7 +75,6 @@ public abstract class KalturaPlayer {
 
         this.preferredFormat = initOptions.preferredFormat;
         this.referrer = buildReferrer(context, initOptions.referrer);
-        this.serverUrl = safeServerUrl(initOptions.serverUrl, this instanceof KalturaOvpPlayer ? DEFAULT_OVP_SERVER_URL : null);
         this.partnerId = initOptions.partnerId;
         this.ks = initOptions.ks;
         
@@ -153,12 +83,31 @@ public abstract class KalturaPlayer {
         loadPlayer(initOptions.pluginConfigs);
     }
 
-    private static String safeServerUrl(String url, String defaultUrl) {
+    static String safeServerUrl(String url, String defaultUrl) {
         return url == null ? defaultUrl :
                 url.endsWith("/") ? url : url + "/";
     }
+    
+    static void loadUIConfig(PlayerInitOptions options, OnUiConfLoaded onUiConfLoaded) {
+        
+        int uiConfId = options.uiConfId;
+        if (uiConfId <= 0) {
+            onUiConfLoaded.configLoaded(null, null);
+            return;
+        }
+        
+        String uiConfServerUrl = options.uiConfServerUrl;
+        if (uiConfServerUrl == null) {
+            uiConfServerUrl = DEFAULT_OVP_SERVER_URL;
+        }
+        
+        final int partnerId = options.partnerId;
+        final String ks = options.ks;
+        
+        loadUIConfig(uiConfId, uiConfServerUrl, partnerId, ks, onUiConfLoaded);
+    }
 
-    private static void loadUIConfig(int id, String serverUrl, int partnerId, String ks, final OnUiConfLoaded onUiConfLoaded) {
+    static void loadUIConfig(int id, String serverUrl, int partnerId, String ks, final OnUiConfLoaded onUiConfLoaded) {
 
         final APIOkRequestsExecutor requestsExecutor = APIOkRequestsExecutor.getSingleton();
 
@@ -166,14 +115,19 @@ public abstract class KalturaPlayer {
 
         OvpRequestBuilder request = UIConfService.uiConfById(apiServerUrl, partnerId, id, ks).completion(new OnRequestCompletion() {
             @Override
-            public void onComplete(ResponseElement response) {
-                if (response.isSuccess()) {
-                    String uiConfString = response.getResponse();
-                    JsonObject uiConf = (JsonObject) GsonParser.toJson(uiConfString);
-                    onUiConfLoaded.configLoaded(uiConf, null);
-                } else {
-                    onUiConfLoaded.configLoaded(null, response.getError());
-                }
+            public void onComplete(final ResponseElement response) {
+                mainHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (response.isSuccess()) {
+                            String uiConfString = response.getResponse();
+                            JsonObject uiConf = (JsonObject) GsonParser.toJson(uiConfString);
+                            onUiConfLoaded.configLoaded(uiConf, null);
+                        } else {
+                            onUiConfLoaded.configLoaded(null, response.getError());
+                        }
+                    }
+                });
             }
         });
         requestsExecutor.queue(request.build());

@@ -12,6 +12,8 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
+import com.kaltura.kalturaplayer.KalturaOvpPlayer;
+import com.kaltura.kalturaplayer.KalturaPhoenixPlayer;
 import com.kaltura.kalturaplayer.KalturaPlayer;
 import com.kaltura.kalturaplayer.MediaOptions;
 import com.kaltura.kalturaplayer.OVPMediaOptions;
@@ -33,6 +35,8 @@ class TestData {
     static final String ottServerUrl = "http://api-preprod.ott.kaltura.com/v4_5/api_v3/";
     static final int ottPartnerId = 198;
     static final int partnerId = 2215841;
+//    static final int partnerId = 1851571;
+    static final int uiConfId = 31956421;
     static final String ks = null;
     private static final Entry[] entries = Entry.values();
     
@@ -85,14 +89,14 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         
         if (TestData.ott) {
-            KalturaPlayer.createTvPlayer(this, new PlayerInitOptions().setServerUrl(TestData.ottServerUrl).setPartnerId(TestData.ottPartnerId), new KalturaPlayer.PlayerReadyCallback() {
+            KalturaPhoenixPlayer.create(this, new PlayerInitOptions().setServerUrl(TestData.ottServerUrl).setPartnerId(TestData.ottPartnerId), new KalturaPlayer.PlayerReadyCallback() {
                 @Override
                 public void onPlayerReady(KalturaPlayer player) {
                     MainActivity.this.player = player;
                 }
             });
         } else {
-            KalturaPlayer.createOvpPlayer(this, new PlayerInitOptions().setPartnerId(TestData.partnerId), new KalturaPlayer.PlayerReadyCallback() {
+            KalturaOvpPlayer.create(this, new PlayerInitOptions().setPartnerId(TestData.partnerId), new KalturaPlayer.PlayerReadyCallback() {
                 @Override
                 public void onPlayerReady(KalturaPlayer player) {
                     MainActivity.this.player = player;
