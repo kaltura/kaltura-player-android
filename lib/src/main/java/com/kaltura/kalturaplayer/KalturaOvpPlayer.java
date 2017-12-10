@@ -13,23 +13,13 @@ import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 
-public class KalturaOvpPlayer extends KalturaPlayer <KalturaOvpPlayer.MediaOptions> {
+class KalturaOvpPlayer extends KalturaPlayer {
 
-    public static final String DEFAULT_SERVER_URL = "https://cdnapisec.kaltura.com/";
     private static final PKLog log = PKLog.get("KalturaOvpPlayer");
     private static boolean pluginsRegistered;
 
-    public KalturaOvpPlayer(Context context, int partnerId, InitOptions initOptions) {
-        super(context, partnerId, initOptions);
-    }
-
-    public KalturaOvpPlayer(Context context, int partnerId) {
-        this(context, partnerId, null);
-    }
-    
-    @Override
-    String getDefaultServerUrl() {
-        return DEFAULT_SERVER_URL;
+    public KalturaOvpPlayer(Context context, PlayerInitOptions initOptions) {
+        super(context, initOptions);
     }
 
     @Override
@@ -44,7 +34,7 @@ public class KalturaOvpPlayer extends KalturaPlayer <KalturaOvpPlayer.MediaOptio
     @Override
     protected void updateKS(String ks) {
         // Update Kava
-        player.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig(ks));
+        pkPlayer.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig(ks));
     }
 
     private KavaAnalyticsConfig getKavaAnalyticsConfig(String ks) {
@@ -60,10 +50,14 @@ public class KalturaOvpPlayer extends KalturaPlayer <KalturaOvpPlayer.MediaOptio
 //        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
     }
 
-    @Override
-    public void loadMedia(MediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    private void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+
+        if (mediaOptions.ks != null) {
+            setKS(mediaOptions.ks);
+        }
+
         MediaEntryProvider provider = new KalturaOvpMediaProvider()
-                .setSessionProvider(sessionProvider).setEntryId(mediaOptions.entryId);
+                .setSessionProvider(newSimpleSessionProvider()).setEntryId(mediaOptions.entryId);
 
         provider.load(new OnMediaLoadCompletion() {
             @Override
@@ -74,31 +68,7 @@ public class KalturaOvpPlayer extends KalturaPlayer <KalturaOvpPlayer.MediaOptio
     }
 
     @Override
-    public void setMedia(PKMediaEntry entry, MediaOptions mediaOptions) {
-        setStartPosition(mediaOptions.startPosition);
-        setKS(mediaOptions.ks);
-        
-        setMedia(entry);
-    }
-
-    public static class MediaOptions {
-        String entryId;
-        String ks;
-        double startPosition;
-
-        public MediaOptions setEntryId(String entryId) {
-            this.entryId = entryId;
-            return this;
-        }
-
-        public MediaOptions setKS(String ks) {
-            this.ks = ks;
-            return this;
-        }
-
-        public MediaOptions setStartPosition(double startPosition) {
-            this.startPosition = startPosition;
-            return this;
-        }
+    public void loadMedia(MediaOptions mediaOptions, OnEntryLoadListener listener) {
+        loadMedia(((OVPMediaOptions) mediaOptions), listener);
     }
 }

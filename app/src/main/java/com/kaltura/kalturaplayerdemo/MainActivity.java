@@ -1,4 +1,4 @@
-package com.kaltura.kalturaplayer;
+package com.kaltura.kalturaplayerdemo;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -12,27 +12,49 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
+import com.kaltura.kalturaplayer.KalturaPlayer;
+import com.kaltura.kalturaplayer.MediaOptions;
+import com.kaltura.kalturaplayer.OVPMediaOptions;
+import com.kaltura.kalturaplayer.PlayerInitOptions;
+import com.kaltura.kalturaplayer.TVMediaOptions;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 
 import java.util.Collections;
 
+
+//let ottServerUrl = "http://api-preprod.ott.kaltura.com/v4_5/api_v3"
+//        let ottPartnerId: Int64 = 198
+//        let ottAssetId = "259153"
+//        let ottFileId = "804398"
+
 class TestData {
+    static final String ottServerUrl = "http://api-preprod.ott.kaltura.com/v4_5/api_v3/";
+    static final int ottPartnerId = 198;
     static final int partnerId = 2215841;
     static final String ks = null;
     private static final Entry[] entries = Entry.values();
     
+    static final boolean ott = false;
+    
     enum Entry {
+        ott1("259153", "804398"),
         sintelShort("1_9bwuo813"),
         sintelFull("1_w9zx2eti"),
         player("http://cdnapi.kaltura.com/p/243342/playManifest/entryId/1_sf5ovm7u/format/applehttp/protocol/http/a.m3u8"),
         oren("http://85.21.100.234/dnetime/testsd7-dash.isml/manifest.mpd");
 
         final String id;
+        final String fileId;
+        
+        Entry(String id, String fileId) {
+            this.id = id;
+            this.fileId = fileId;
+        }
 
         Entry(String id) {
-            this.id = id;
+            this(id, null);
         }
     }
     
@@ -53,11 +75,7 @@ class TestData {
 
 public class MainActivity extends AppCompatActivity {
 
-    private KalturaOvpPlayer player;
-    private PlaybackControlsView controlsView;
-
-    // Benchmark
-    private double loadStartTime, loadEndTime, prepareStartTime, canPlayTime;
+    private KalturaPlayer player;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,21 +84,29 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         
-        KalturaOvpAnonymousSession.start(TestData.partnerId, new KSResultCallback() {
-            @Override
-            public void complete(String ks, ErrorElement error) {
-                Log.d("KS", ks);
-                player.setKS(ks);
-            }
-        });
+        if (TestData.ott) {
+            KalturaPlayer.tvPlayer(this, new PlayerInitOptions().setServerUrl(TestData.ottServerUrl).setPartnerId(TestData.ottPartnerId), new KalturaPlayer.PlayerReadyCallback() {
+                @Override
+                public void onPlayerReady(KalturaPlayer player) {
+                    MainActivity.this.player = player;
+                }
+            });
+        } else {
+            KalturaPlayer.ovpPlayer(this, new PlayerInitOptions().setPartnerId(TestData.partnerId), new KalturaPlayer.PlayerReadyCallback() {
+                @Override
+                public void onPlayerReady(KalturaPlayer player) {
+                    MainActivity.this.player = player;
+                }
+            });
+        }
         
-        player = new KalturaOvpPlayer(this, TestData.partnerId);
         
         player.setPreload(true);
 
-        ((ViewGroup) findViewById(R.id.player_container)).addView(player.getView());
+        final ViewGroup playerContainer = findViewById(R.id.player_container);
+        playerContainer.addView(player.getView());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
@@ -96,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final CheckBox checkBox = (CheckBox) findViewById(R.id.autoplay);
+        final CheckBox checkBox = findViewById(R.id.autoplay);
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -115,7 +141,14 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         
-        player.loadMedia(new KalturaOvpPlayer.MediaOptions().setEntryId(entry.id), new KalturaPlayer.OnEntryLoadListener() {
+        MediaOptions mediaOptions;
+        if (TestData.ott) {
+            mediaOptions = new TVMediaOptions().setAssetId(entry.id).setFileIds(new String[]{entry.fileId});
+        } else {
+            mediaOptions = new OVPMediaOptions().setEntryId(entry.id);
+        }
+        
+        player.loadMedia(mediaOptions, new KalturaPlayer.OnEntryLoadListener() {
             @Override
             public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
                 if (error != null) {

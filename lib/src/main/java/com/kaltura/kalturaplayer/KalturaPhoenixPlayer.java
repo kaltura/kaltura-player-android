@@ -8,7 +8,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
-import com.kaltura.playkit.api.phoenix.APIDefines;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
@@ -16,22 +15,13 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 
-public class KalturaPhoenixPlayer extends KalturaPlayer <KalturaPhoenixPlayer.MediaOptions> {
+class KalturaPhoenixPlayer extends KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaPhoenixPlayer");
     private static boolean pluginsRegistered;
 
-    public KalturaPhoenixPlayer(Context context, int partnerId) {
-        this(context, partnerId, null);
-    }
-
-    public KalturaPhoenixPlayer(Context context, int partnerId, InitOptions initOptions) {
-        super(context, partnerId, initOptions);
-    }
-
-    @Override
-    String getDefaultServerUrl() {
-        return null;
+    public KalturaPhoenixPlayer(Context context, PlayerInitOptions initOptions) {
+        super(context, initOptions);
     }
 
     @Override
@@ -48,8 +38,8 @@ public class KalturaPhoenixPlayer extends KalturaPlayer <KalturaPhoenixPlayer.Me
     @Override
     protected void updateKS(String ks) {
         // update plugins and provider
-        player.updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), getPhoenixAnalyticsConfig());
-//        player.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
+        pkPlayer.updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), getPhoenixAnalyticsConfig());
+//        pkPlayer.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
     }
 
     @Override
@@ -67,11 +57,21 @@ public class KalturaPhoenixPlayer extends KalturaPlayer <KalturaPhoenixPlayer.Me
         return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), 30);
     }
 
+
     @Override
-    public void loadMedia(MediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    public void loadMedia(MediaOptions mediaOptions, OnEntryLoadListener listener) {
+        loadMedia(((TVMediaOptions) mediaOptions), listener);
+    }
+
+    private void loadMedia(TVMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+        
+        if (mediaOptions.ks != null) {
+            setKS(mediaOptions.ks);
+        }
+        
         final PhoenixMediaProvider provider = new PhoenixMediaProvider()
                 .setAssetId(mediaOptions.assetId)
-                .setSessionProvider(sessionProvider);
+                .setSessionProvider(newSimpleSessionProvider());
 
         if (mediaOptions.fileIds != null) {
             provider.setFileIds(mediaOptions.fileIds);
@@ -95,56 +95,5 @@ public class KalturaPhoenixPlayer extends KalturaPlayer <KalturaPhoenixPlayer.Me
                 mediaLoadCompleted(response, listener);
             }
         });
-    }
-
-    @Override
-    public void setMedia(PKMediaEntry entry, MediaOptions mediaOptions) {
-        setStartPosition(mediaOptions.startPosition);
-        setMedia(entry);
-    }
-
-    public static class MediaOptions {
-        String assetId;
-        APIDefines.KalturaAssetType assetType;
-        APIDefines.PlaybackContextType contextType;
-        String[] formats;
-        String[] fileIds;
-        String ks;
-        double startPosition;
-
-        public MediaOptions setAssetId(String assetId) {
-            this.assetId = assetId;
-            return this;
-        }
-
-        public MediaOptions setAssetType(APIDefines.KalturaAssetType assetType) {
-            this.assetType = assetType;
-            return this;
-        }
-
-        public MediaOptions setContextType(APIDefines.PlaybackContextType contextType) {
-            this.contextType = contextType;
-            return this;
-        }
-
-        public MediaOptions setFormats(String[] formats) {
-            this.formats = formats;
-            return this;
-        }
-
-        public MediaOptions setFileIds(String[] fileIds) {
-            this.fileIds = fileIds;
-            return this;
-        }
-
-        public MediaOptions setStartPosition(double startPosition) {
-            this.startPosition = startPosition;
-            return this;
-        }
-
-        public MediaOptions setKS(String ks) {
-            this.ks = ks;
-            return this;
-        }
     }
 }

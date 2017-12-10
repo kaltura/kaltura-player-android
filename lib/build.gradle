@@ -24,8 +24,9 @@ android {
 print gradle.startParameter.taskNames
 
 dependencies {
-//    compile 'com.kaltura.playkit:playkit:3.1.2'
-    compile 'com.kaltura:playkit-android:develop-SNAPSHOT'
+//    compile 'com.kaltura.playkit:playkit:3.3.0'
+//    compile 'com.kaltura.playkit:playkit:3.3.0'
+    compile 'com.kaltura:playkit-android:phoenix-analytics-onUpdateConfig-fix-SNAPSHOT'
     compile 'com.kaltura.playkit:kavaplugin:0.1.0'
 
     compile 'com.android.support:appcompat-v7:26.1.0'

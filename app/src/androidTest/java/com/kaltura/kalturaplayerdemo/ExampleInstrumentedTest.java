@@ -1,4 +1,4 @@
-package com.kaltura.kalturaplayer;
+package com.kaltura.kalturaplayerdemo;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.kaltura.kalturaplayer", appContext.getPackageName());
+        assertEquals("com.kaltura.kalturaplayerdemo", appContext.getPackageName());
     }
 }
