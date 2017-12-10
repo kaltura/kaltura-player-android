@@ -35,8 +35,7 @@ class TestData {
     static final String ottServerUrl = "http://api-preprod.ott.kaltura.com/v4_5/api_v3/";
     static final int ottPartnerId = 198;
     static final int partnerId = 2215841;
-//    static final int partnerId = 1851571;
-    static final int uiConfId = 31956421;
+    static final int uiConfId = 41188731;
     static final String ks = null;
     private static final Entry[] entries = Entry.values();
     
@@ -77,7 +76,7 @@ class TestData {
     }
 }
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements KalturaPlayer.PlayerReadyCallback {
 
     private KalturaPlayer player;
 
@@ -92,23 +91,19 @@ public class MainActivity extends AppCompatActivity {
             KalturaPhoenixPlayer.create(this, new PlayerInitOptions().setServerUrl(TestData.ottServerUrl).setPartnerId(TestData.ottPartnerId), new KalturaPlayer.PlayerReadyCallback() {
                 @Override
                 public void onPlayerReady(KalturaPlayer player) {
-                    MainActivity.this.player = player;
                 }
             });
         } else {
-            KalturaOvpPlayer.create(this, new PlayerInitOptions().setPartnerId(TestData.partnerId), new KalturaPlayer.PlayerReadyCallback() {
+            KalturaOvpPlayer.create(this, new PlayerInitOptions().setPartnerId(TestData.partnerId).setUiConfId(TestData.uiConfId), new KalturaPlayer.PlayerReadyCallback() {
                 @Override
                 public void onPlayerReady(KalturaPlayer player) {
+                    player.setPreload(true);
                     MainActivity.this.player = player;
                 }
             });
         }
         
         
-        player.setPreload(true);
-
-        final ViewGroup playerContainer = findViewById(R.id.player_container);
-        playerContainer.addView(player.getView());
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -125,6 +120,16 @@ public class MainActivity extends AppCompatActivity {
                 }).show();
             }
         });
+
+    }
+
+
+    @Override
+    public void onPlayerReady(final KalturaPlayer player) {
+        player.setPreload(true);
+        MainActivity.this.player = player;
+        final ViewGroup playerContainer = findViewById(R.id.player_container);
+        playerContainer.addView(player.getView());
 
         final CheckBox checkBox = findViewById(R.id.autoplay);
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
