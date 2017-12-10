@@ -85,14 +85,14 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         
         if (TestData.ott) {
-            KalturaPlayer.tvPlayer(this, new PlayerInitOptions().setServerUrl(TestData.ottServerUrl).setPartnerId(TestData.ottPartnerId), new KalturaPlayer.PlayerReadyCallback() {
+            KalturaPlayer.createTvPlayer(this, new PlayerInitOptions().setServerUrl(TestData.ottServerUrl).setPartnerId(TestData.ottPartnerId), new KalturaPlayer.PlayerReadyCallback() {
                 @Override
                 public void onPlayerReady(KalturaPlayer player) {
                     MainActivity.this.player = player;
                 }
             });
         } else {
-            KalturaPlayer.ovpPlayer(this, new PlayerInitOptions().setPartnerId(TestData.partnerId), new KalturaPlayer.PlayerReadyCallback() {
+            KalturaPlayer.createOvpPlayer(this, new PlayerInitOptions().setPartnerId(TestData.partnerId), new KalturaPlayer.PlayerReadyCallback() {
                 @Override
                 public void onPlayerReady(KalturaPlayer player) {
                     MainActivity.this.player = player;

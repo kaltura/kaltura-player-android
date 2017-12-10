@@ -62,22 +62,20 @@ public abstract class KalturaPlayer {
     private PKMediaEntry mediaEntry;
     private boolean prepared;
 
-    public static void ovpPlayer(Context context, PlayerInitOptions options, PlayerReadyCallback callback) {
+    private enum ServiceType {ovp, ott}
+
+    public static void createOvpPlayer(Context context, PlayerInitOptions options, PlayerReadyCallback callback) {
         load(context, ServiceType.ovp, options, callback);
     }
-    public static void tvPlayer(Context context, PlayerInitOptions options, PlayerReadyCallback callback) {
+    
+    public static void createTvPlayer(Context context, PlayerInitOptions options, PlayerReadyCallback callback) {
         load(context, ServiceType.ott, options, callback);
     }
-    
-    private enum ServiceType {ovp, ott}
     
     private static KalturaPlayer load(Context context, ServiceType serviceType, PlayerInitOptions options, JsonObject uiConf) {
         options.uiConf = uiConf;
         switch (serviceType) {
             case ovp:
-                if (options.serverUrl == null) {
-                    options.serverUrl = DEFAULT_OVP_SERVER_URL;
-                }
                 return new KalturaOvpPlayer(context, options);
             case ott:
                 return new KalturaPhoenixPlayer(context, options);
@@ -146,7 +144,7 @@ public abstract class KalturaPlayer {
 
         this.preferredFormat = initOptions.preferredFormat;
         this.referrer = buildReferrer(context, initOptions.referrer);
-        this.serverUrl = safeServerUrl(initOptions.serverUrl);
+        this.serverUrl = safeServerUrl(initOptions.serverUrl, this instanceof KalturaOvpPlayer ? DEFAULT_OVP_SERVER_URL : null);
         this.partnerId = initOptions.partnerId;
         this.ks = initOptions.ks;
         
@@ -155,8 +153,9 @@ public abstract class KalturaPlayer {
         loadPlayer(initOptions.pluginConfigs);
     }
 
-    private static String safeServerUrl(String url) {
-        return url.endsWith("/") ? url : url + "/";
+    private static String safeServerUrl(String url, String defaultUrl) {
+        return url == null ? defaultUrl :
+                url.endsWith("/") ? url : url + "/";
     }
 
     private static void loadUIConfig(int id, String serverUrl, int partnerId, String ks, final OnUiConfLoaded onUiConfLoaded) {
