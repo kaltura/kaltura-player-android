@@ -13,12 +13,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.google.gson.JsonObject;
-import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
-import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.GsonParser;
-import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
@@ -28,8 +24,6 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.api.ovp.OvpConfigs;
-import com.kaltura.playkit.api.ovp.OvpRequestBuilder;
 import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
 
 import java.util.ArrayList;
@@ -62,7 +56,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     private PKMediaEntry mediaEntry;
     private boolean prepared;
 
-    protected KalturaPlayer(Context context, PlayerInitOptions initOptions, JsonObject uiConf) {
+    protected KalturaPlayer(Context context, PlayerInitOptions initOptions) {
 
         this.context = context;
         
@@ -86,51 +80,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     static String safeServerUrl(String url, String defaultUrl) {
         return url == null ? defaultUrl :
                 url.endsWith("/") ? url : url + "/";
-    }
-    
-    static void loadUIConfig(PlayerInitOptions options, OnUiConfLoaded onUiConfLoaded) {
-        
-        int uiConfId = options.uiConfId;
-        if (uiConfId <= 0) {
-            onUiConfLoaded.configLoaded(null, null);
-            return;
-        }
-        
-        String uiConfServerUrl = options.uiConfServerUrl;
-        if (uiConfServerUrl == null) {
-            uiConfServerUrl = DEFAULT_OVP_SERVER_URL;
-        }
-        
-        final int partnerId = options.partnerId;
-        final String ks = options.ks;
-        
-        loadUIConfig(uiConfId, uiConfServerUrl, partnerId, ks, onUiConfLoaded);
-    }
-
-    static void loadUIConfig(int id, String serverUrl, int partnerId, String ks, final OnUiConfLoaded onUiConfLoaded) {
-
-        final APIOkRequestsExecutor requestsExecutor = APIOkRequestsExecutor.getSingleton();
-
-        String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
-
-        OvpRequestBuilder request = UIConfService.uiConfById(apiServerUrl, partnerId, id, ks).completion(new OnRequestCompletion() {
-            @Override
-            public void onComplete(final ResponseElement response) {
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (response.isSuccess()) {
-                            String uiConfString = response.getResponse();
-                            JsonObject uiConf = (JsonObject) GsonParser.toJson(uiConfString);
-                            onUiConfLoaded.configLoaded(uiConf, null);
-                        } else {
-                            onUiConfLoaded.configLoaded(null, response.getError());
-                        }
-                    }
-                });
-            }
-        });
-        requestsExecutor.queue(request.build());
     }
     
     private static String buildReferrer(Context context, String referrer) {
@@ -411,9 +360,5 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     public interface OnEntryLoadListener {
         void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error);
-    }
-
-    public interface OnUiConfLoaded {
-        void configLoaded(JsonObject uiConf, ErrorElement error);
     }
 }

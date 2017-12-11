@@ -3,9 +3,7 @@ package com.kaltura.kalturaplayer;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.ResultElement;
-import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
@@ -22,20 +20,15 @@ public class KalturaPhoenixPlayer extends KalturaPlayer <TVMediaOptions> {
     private static final PKLog log = PKLog.get("KalturaPhoenixPlayer");
     private static boolean pluginsRegistered;
 
-    public static void create(final Context context, PlayerInitOptions options, final PlayerReadyCallback callback) {
+    public static KalturaPhoenixPlayer create(final Context context, PlayerInitOptions options) {
 
         final PlayerInitOptions initOptions = options != null ? options : new PlayerInitOptions();
 
-        loadUIConfig(initOptions, new OnUiConfLoaded() {
-            @Override
-            public void configLoaded(JsonObject uiConf, ErrorElement error) {
-                callback.onPlayerReady(new KalturaPhoenixPlayer(context, initOptions, uiConf));
-            }
-        });
+        return new KalturaPhoenixPlayer(context, initOptions);
     }
 
-    private KalturaPhoenixPlayer(Context context, PlayerInitOptions initOptions, JsonObject uiConf) {
-        super(context, initOptions, uiConf);
+    private KalturaPhoenixPlayer(Context context, PlayerInitOptions initOptions) {
+        super(context, initOptions);
         
         this.serverUrl = safeServerUrl(initOptions.serverUrl, null);
     }
@@ -107,9 +100,5 @@ public class KalturaPhoenixPlayer extends KalturaPlayer <TVMediaOptions> {
                 mediaLoadCompleted(response, listener);
             }
         });
-    }
-
-    public interface PlayerReadyCallback {
-        void onPlayerReady(KalturaPhoenixPlayer player);
     }
 }

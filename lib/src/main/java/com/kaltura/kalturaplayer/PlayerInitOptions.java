@@ -5,7 +5,6 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 
 public class PlayerInitOptions {
-    public int uiConfId;
     public JsonObject uiConf;
     public int partnerId;
     public String ks;
@@ -14,13 +13,7 @@ public class PlayerInitOptions {
     public boolean preload;
     public PKMediaFormat preferredFormat;
     public String serverUrl;
-    public String uiConfServerUrl;
     public String referrer;
-
-    public PlayerInitOptions setUiConfServerUrl(String uiConfServerUrl) {
-        this.uiConfServerUrl = uiConfServerUrl;
-        return this;
-    }
 
     public PlayerInitOptions setPartnerId(int partnerId) {
         this.partnerId = partnerId;
@@ -29,11 +22,6 @@ public class PlayerInitOptions {
 
     public PlayerInitOptions setKs(String ks) {
         this.ks = ks;
-        return this;
-    }
-
-    public PlayerInitOptions setUiConfId(int uiConfId) {
-        this.uiConfId = uiConfId;
         return this;
     }
 
