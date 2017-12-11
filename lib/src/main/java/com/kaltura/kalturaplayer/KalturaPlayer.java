@@ -33,10 +33,6 @@ import java.util.Map;
 public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     public static final String DEFAULT_OVP_SERVER_URL = "https://cdnapisec.kaltura.com/";
-    private int uiConfId;
-    
-    private static JsonObject cachedUIConf;
-    private static int cachedUIConfId;
 
     private JsonObject uiConf;
     
