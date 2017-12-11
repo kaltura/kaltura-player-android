@@ -1,8 +1,10 @@
-package com.kaltura.kalturaplayer;
+package com.kaltura.tvplayer;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
 
+import com.kaltura.kalturaplayer.KalturaPlayer;
+import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -15,7 +17,7 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 
-public class KalturaPhoenixPlayer extends KalturaPlayer <TVMediaOptions> {
+public class KalturaPhoenixPlayer extends KalturaPlayer<TVMediaOptions> {
 
     private static final PKLog log = PKLog.get("KalturaPhoenixPlayer");
     private static boolean pluginsRegistered;
@@ -30,7 +32,7 @@ public class KalturaPhoenixPlayer extends KalturaPlayer <TVMediaOptions> {
     private KalturaPhoenixPlayer(Context context, PlayerInitOptions initOptions) {
         super(context, initOptions);
         
-        this.serverUrl = safeServerUrl(initOptions.serverUrl, null);
+        this.serverUrl = KalturaPlayer.safeServerUrl(initOptions.serverUrl, null);
     }
 
     @Override

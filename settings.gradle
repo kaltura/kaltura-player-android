@@ -1,1 +1,1 @@
-include ':base', ':tvplayerdemo', ':ovpplayerdemo'
+include ':base', ':tvplayerdemo', ':ovpplayerdemo', ':ovpplayer', ':tvplayer'

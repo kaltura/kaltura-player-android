@@ -36,13 +36,13 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     private JsonObject uiConf;
     
-    String serverUrl;
+    protected String serverUrl;
     private String ks;
     private int partnerId;
     
-    final String referrer;
+    protected final String referrer;
     private final Context context;
-    Player pkPlayer;
+    protected Player pkPlayer;
     PKMediaFormat preferredFormat;
     private static Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean autoPlay;
@@ -73,7 +73,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         loadPlayer(initOptions.pluginConfigs);
     }
 
-    static String safeServerUrl(String url, String defaultUrl) {
+    protected static String safeServerUrl(String url, String defaultUrl) {
         return url == null ? defaultUrl :
                 url.endsWith("/") ? url : url + "/";
     }
@@ -336,7 +336,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     // Called by implementation of loadMedia().
-    void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
+    protected void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
         final PKMediaEntry entry = response.getResponse();
 
         maybeRemoveUnpreferredFormats(entry);

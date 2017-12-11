@@ -2,7 +2,7 @@ package com.kaltura.kalturaplayer;
 
 
 public class MediaOptions {
-    String ks;
+    public String ks;
     double startPosition;
 
     public MediaOptions setKS(String ks) {

@@ -1,5 +1,6 @@
-package com.kaltura.kalturaplayer;
+package com.kaltura.tvplayer;
 
+import com.kaltura.kalturaplayer.MediaOptions;
 import com.kaltura.playkit.api.phoenix.APIDefines;
 
 public class TVMediaOptions extends MediaOptions {

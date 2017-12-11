@@ -1,7 +1,9 @@
-package com.kaltura.kalturaplayer;
+package com.kaltura.ovpplayer;
 
 import android.content.Context;
 
+import com.kaltura.kalturaplayer.KalturaPlayer;
+import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKLog;
@@ -13,7 +15,7 @@ import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 
-public class KalturaOvpPlayer extends KalturaPlayer <OVPMediaOptions> {
+public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
 
     private static final PKLog log = PKLog.get("KalturaOvpPlayer");
     private static boolean pluginsRegistered;
@@ -28,7 +30,7 @@ public class KalturaOvpPlayer extends KalturaPlayer <OVPMediaOptions> {
     private KalturaOvpPlayer(Context context, PlayerInitOptions initOptions) {
         super(context, initOptions);
 
-        this.serverUrl = safeServerUrl(initOptions.serverUrl, DEFAULT_OVP_SERVER_URL);
+        this.serverUrl = KalturaPlayer.safeServerUrl(initOptions.serverUrl, KalturaPlayer.DEFAULT_OVP_SERVER_URL);
     }
 
     @Override

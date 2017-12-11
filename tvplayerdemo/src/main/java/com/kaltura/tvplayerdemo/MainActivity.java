@@ -17,13 +17,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.kaltura.kalturaplayer.KalturaPhoenixPlayer;
 import com.kaltura.kalturaplayer.KalturaPlayer;
 import com.kaltura.kalturaplayer.PlayerInitOptions;
-import com.kaltura.kalturaplayer.TVMediaOptions;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.tvplayer.KalturaPhoenixPlayer;
+import com.kaltura.tvplayer.TVMediaOptions;
 
 import java.util.Collections;
 

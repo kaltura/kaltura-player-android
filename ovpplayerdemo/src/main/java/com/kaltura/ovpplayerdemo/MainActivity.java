@@ -17,11 +17,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.kaltura.kalturaplayer.KalturaOvpPlayer;
 import com.kaltura.kalturaplayer.KalturaPlayer;
-import com.kaltura.kalturaplayer.OVPMediaOptions;
 import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.ovpplayer.KalturaOvpPlayer;
+import com.kaltura.ovpplayer.OVPMediaOptions;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 
