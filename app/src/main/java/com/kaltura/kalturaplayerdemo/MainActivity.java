@@ -15,10 +15,8 @@ import android.widget.CompoundButton;
 import com.kaltura.kalturaplayer.KalturaOvpPlayer;
 import com.kaltura.kalturaplayer.KalturaPhoenixPlayer;
 import com.kaltura.kalturaplayer.KalturaPlayer;
-import com.kaltura.kalturaplayer.MediaOptions;
 import com.kaltura.kalturaplayer.OVPMediaOptions;
 import com.kaltura.kalturaplayer.PlayerInitOptions;
-import com.kaltura.kalturaplayer.TVMediaOptions;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
@@ -76,31 +74,21 @@ class TestData {
     }
 }
 
-public class MainActivity extends AppCompatActivity implements KalturaPlayer.PlayerReadyCallback {
+public class MainActivity extends AppCompatActivity implements KalturaOvpPlayer.PlayerReadyCallback, KalturaPhoenixPlayer.PlayerReadyCallback, KalturaPlayer.OnEntryLoadListener {
 
-    private KalturaPlayer player;
+    private KalturaOvpPlayer player;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         
         if (TestData.ott) {
-            KalturaPhoenixPlayer.create(this, new PlayerInitOptions().setServerUrl(TestData.ottServerUrl).setPartnerId(TestData.ottPartnerId), new KalturaPlayer.PlayerReadyCallback() {
-                @Override
-                public void onPlayerReady(KalturaPlayer player) {
-                }
-            });
+            KalturaPhoenixPlayer.create(this, new PlayerInitOptions().setServerUrl(TestData.ottServerUrl).setPartnerId(TestData.ottPartnerId), this);
         } else {
-            KalturaOvpPlayer.create(this, new PlayerInitOptions().setPartnerId(TestData.partnerId).setUiConfId(TestData.uiConfId), new KalturaPlayer.PlayerReadyCallback() {
-                @Override
-                public void onPlayerReady(KalturaPlayer player) {
-                    player.setPreload(true);
-                    MainActivity.this.player = player;
-                }
-            });
+            KalturaOvpPlayer.create(this, new PlayerInitOptions().setPartnerId(TestData.partnerId).setUiConfId(TestData.uiConfId), this);
         }
         
         
@@ -120,12 +108,11 @@ public class MainActivity extends AppCompatActivity implements KalturaPlayer.Pla
                 }).show();
             }
         });
-
     }
 
 
     @Override
-    public void onPlayerReady(final KalturaPlayer player) {
+    public void onPlayerReady(final KalturaOvpPlayer player) {
         player.setPreload(true);
         MainActivity.this.player = player;
         final ViewGroup playerContainer = findViewById(R.id.player_container);
@@ -141,6 +128,12 @@ public class MainActivity extends AppCompatActivity implements KalturaPlayer.Pla
         checkBox.setChecked(true);
     }
 
+
+    @Override
+    public void onPlayerReady(KalturaPhoenixPlayer player) {
+
+    }
+
     private void loadTestEntry(TestData.Entry entry) {
 
         player.stop();
@@ -150,20 +143,21 @@ public class MainActivity extends AppCompatActivity implements KalturaPlayer.Pla
             return;
         }
         
-        MediaOptions mediaOptions;
-        if (TestData.ott) {
-            mediaOptions = new TVMediaOptions().setAssetId(entry.id).setFileIds(new String[]{entry.fileId});
-        } else {
-            mediaOptions = new OVPMediaOptions().setEntryId(entry.id);
-        }
+//        if (TestData.ott) {
+//            TVMediaOptions mediaOptions = new TVMediaOptions().setAssetId(entry.id).setFileIds(new String[]{entry.fileId});
+//            player.loadMedia(mediaOptions, this);
+//            
+//        } else {
+            OVPMediaOptions mediaOptions = new OVPMediaOptions().setEntryId(entry.id);
+            player.loadMedia(mediaOptions, this);
+//        }
         
-        player.loadMedia(mediaOptions, new KalturaPlayer.OnEntryLoadListener() {
-            @Override
-            public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
-                if (error != null) {
-                    Log.d("onMediaEntryLoaded", " error: " + error);
-                }
-            }
-        });
+    }
+
+    @Override
+    public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
+        if (error != null) {
+            Log.d("onMediaEntryLoaded", " error: " + error);
+        }
     }
 }

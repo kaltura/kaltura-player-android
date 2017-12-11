@@ -15,7 +15,7 @@ import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 
-public class KalturaOvpPlayer extends KalturaPlayer {
+public class KalturaOvpPlayer extends KalturaPlayer <OVPMediaOptions> {
 
     private static final PKLog log = PKLog.get("KalturaOvpPlayer");
     private static boolean pluginsRegistered;
@@ -66,7 +66,8 @@ public class KalturaOvpPlayer extends KalturaPlayer {
 //        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
     }
 
-    private void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    @Override
+    public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
 
         if (mediaOptions.ks != null) {
             setKS(mediaOptions.ks);
@@ -83,8 +84,7 @@ public class KalturaOvpPlayer extends KalturaPlayer {
         });
     }
 
-    @Override
-    public void loadMedia(MediaOptions mediaOptions, OnEntryLoadListener listener) {
-        loadMedia(((OVPMediaOptions) mediaOptions), listener);
+    public interface PlayerReadyCallback {
+        void onPlayerReady(KalturaOvpPlayer player);
     }
 }

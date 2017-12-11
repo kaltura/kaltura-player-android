@@ -36,7 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public abstract class KalturaPlayer {
+public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     public static final String DEFAULT_OVP_SERVER_URL = "https://cdnapisec.kaltura.com/";
     private int uiConfId;
@@ -231,7 +231,7 @@ public abstract class KalturaPlayer {
         setMedia(entry);
     }
     
-    public abstract void loadMedia(MediaOptions mediaOptions, OnEntryLoadListener listener);
+    public abstract void loadMedia(MOT mediaOptions, OnEntryLoadListener listener);
     
     protected abstract void registerPlugins(Context context);
     protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
@@ -416,9 +416,4 @@ public abstract class KalturaPlayer {
     public interface OnUiConfLoaded {
         void configLoaded(JsonObject uiConf, ErrorElement error);
     }
-
-    public interface PlayerReadyCallback {
-        void onPlayerReady(KalturaPlayer player);
-    }
-
 }

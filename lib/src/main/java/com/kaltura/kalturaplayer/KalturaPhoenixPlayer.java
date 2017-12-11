@@ -17,7 +17,7 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 
-public class KalturaPhoenixPlayer extends KalturaPlayer {
+public class KalturaPhoenixPlayer extends KalturaPlayer <TVMediaOptions> {
 
     private static final PKLog log = PKLog.get("KalturaPhoenixPlayer");
     private static boolean pluginsRegistered;
@@ -75,11 +75,7 @@ public class KalturaPhoenixPlayer extends KalturaPlayer {
 
 
     @Override
-    public void loadMedia(MediaOptions mediaOptions, OnEntryLoadListener listener) {
-        loadMedia(((TVMediaOptions) mediaOptions), listener);
-    }
-
-    private void loadMedia(TVMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    public void loadMedia(TVMediaOptions mediaOptions, final OnEntryLoadListener listener) {
         
         if (mediaOptions.ks != null) {
             setKS(mediaOptions.ks);
@@ -111,5 +107,9 @@ public class KalturaPhoenixPlayer extends KalturaPlayer {
                 mediaLoadCompleted(response, listener);
             }
         });
+    }
+
+    public interface PlayerReadyCallback {
+        void onPlayerReady(KalturaPhoenixPlayer player);
     }
 }
