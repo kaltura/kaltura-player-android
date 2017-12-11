@@ -17,19 +17,19 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 
-public class KalturaPhoenixPlayer extends KalturaPlayer<TVMediaOptions> {
+public class KalturaTvPlayer extends KalturaPlayer<TVMediaOptions> {
 
-    private static final PKLog log = PKLog.get("KalturaPhoenixPlayer");
+    private static final PKLog log = PKLog.get("KalturaTvPlayer");
     private static boolean pluginsRegistered;
 
-    public static KalturaPhoenixPlayer create(final Context context, PlayerInitOptions options) {
+    public static KalturaTvPlayer create(final Context context, PlayerInitOptions options) {
 
         final PlayerInitOptions initOptions = options != null ? options : new PlayerInitOptions();
 
-        return new KalturaPhoenixPlayer(context, initOptions);
+        return new KalturaTvPlayer(context, initOptions);
     }
 
-    private KalturaPhoenixPlayer(Context context, PlayerInitOptions initOptions) {
+    private KalturaTvPlayer(Context context, PlayerInitOptions initOptions) {
         super(context, initOptions);
         
         this.serverUrl = KalturaPlayer.safeServerUrl(initOptions.serverUrl, null);

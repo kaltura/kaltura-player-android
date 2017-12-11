@@ -22,7 +22,7 @@ import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.tvplayer.KalturaPhoenixPlayer;
+import com.kaltura.tvplayer.KalturaTvPlayer;
 import com.kaltura.tvplayer.TVMediaOptions;
 
 import java.util.Collections;
@@ -66,7 +66,7 @@ class TestData {
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, KalturaPlayer.OnEntryLoadListener {
 
-    private KalturaPhoenixPlayer player;
+    private KalturaTvPlayer player;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         // Player
-        player = KalturaPhoenixPlayer.create(this, new PlayerInitOptions()
+        player = KalturaTvPlayer.create(this, new PlayerInitOptions()
                 .setAutoPlay(true)
                 .setPartnerId(TestData.ottPartnerId)
                 .setServerUrl(TestData.ottServerUrl));
