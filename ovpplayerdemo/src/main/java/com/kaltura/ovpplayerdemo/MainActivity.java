@@ -2,7 +2,6 @@ package com.kaltura.ovpplayerdemo;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -15,6 +14,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.kaltura.kalturaplayer.KalturaPlayer;
@@ -31,41 +33,37 @@ class TestData {
     static final int partnerId = 2215841;
     static final int uiConfId = 41188731;
     static final String ks = null;
-    private static final Entry[] entries = Entry.values();
+    
+    static final Item[] items = {
+            new Item("sintelShort", "1_9bwuo813"),
+            new Item("sintelFull", "1_w9zx2eti")
+    };
+}
 
-    enum Entry {
-        sintelShort("1_9bwuo813"),
-        sintelFull("1_w9zx2eti"),
-        player("http://cdnapi.kaltura.com/p/243342/playManifest/entryId/1_sf5ovm7u/format/applehttp/protocol/http/a.m3u8");
-
-        final String id;
-
-        Entry(String id) {
-            this.id = id;
-        }
+class Item {
+    public final String name;
+    public final String id;
+    
+    Item(String name, String id) {
+        this.id = id;
+        this.name = name;
     }
 
-    static String[] names() {
-        String[] names = new String[entries.length];
-
-        for (int i=0; i<entries.length; i++) {
-            names[i] = entries[i].name();
-        }
-
-        return names;
-    }
-
-    static Entry forIndex(int i) {
-        return entries[i];
+    @Override
+    public String toString() {
+        return name + " (" + id + ")";
     }
 }
+
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, KalturaPlayer.OnEntryLoadListener {
 
+    private static final String TAG = "Main";
     private KalturaOvpPlayer player;
-    private ViewGroup playerContainer;
+    private ViewGroup contentContainer;
     private NavigationView navigationView;
+    private ListView itemListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,30 +71,15 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        
+
+        contentContainer = findViewById(R.id.content_container);
+
         // Player
         player = KalturaOvpPlayer.create(this, new PlayerInitOptions()
                 .setAutoPlay(true)
                 .setPartnerId(TestData.partnerId));
 
-        playerContainer = findViewById(R.id.player_container);
-        playerContainer.addView(player.getView());
-
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new AlertDialog.Builder(MainActivity.this)
-                        .setTitle("Select item")
-                        .setItems(TestData.names(), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                TestData.Entry entry = TestData.forIndex(which);
-                                loadTestEntry(entry);
-                            }
-                        }).show();
-            }
-        });
+        contentContainer.addView(getItemListView());
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -108,7 +91,7 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
-    private void loadTestEntry(TestData.Entry entry) {
+    private void loadItem(Item item) {
 
         if (player == null) {
             Toast.makeText(this, "Player not ready", Toast.LENGTH_SHORT).show();
@@ -117,12 +100,12 @@ public class MainActivity extends AppCompatActivity
         
         player.stop();
 
-        if (entry.id.startsWith("http")) {
-            player.setMedia(new PKMediaEntry().setSources(Collections.singletonList(new PKMediaSource().setUrl(entry.id))));
+        if (item.id.startsWith("http")) {
+            player.setMedia(new PKMediaEntry().setSources(Collections.singletonList(new PKMediaSource().setUrl(item.id))));
             return;
         }
 
-        OVPMediaOptions mediaOptions = new OVPMediaOptions().setEntryId(entry.id);
+        OVPMediaOptions mediaOptions = new OVPMediaOptions().setEntryId(item.id);
 
         player.loadMedia(mediaOptions, this);
     }
@@ -173,18 +156,47 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_player) {
-            playerContainer.removeAllViews();
-            playerContainer.addView(player.getView());
-            findViewById(R.id.fab).setVisibility(View.VISIBLE);
+            contentContainer.removeAllViews();
+            contentContainer.addView(player.getView());
 
-        } else if (id == R.id.nav_downloads) {
-            playerContainer.removeAllViews();
-            findViewById(R.id.fab).setVisibility(View.GONE);
-
+        } else if (id == R.id.nav_items) {
+            contentContainer.removeAllViews();
+            contentContainer.addView(getItemListView());
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+    
+    private ListView getItemListView() {
+        if (itemListView != null) {
+            return itemListView;
+        }
+
+        ArrayAdapter<Item> itemArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+        itemArrayAdapter.addAll(TestData.items);
+
+
+        itemListView = new ListView(this);
+
+        itemListView.setAdapter(itemArrayAdapter);
+        
+        itemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(final AdapterView<?> parent, View view, final int position, long id) {
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Select action")
+                        .setItems(new String[]{"Play"}, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                navigationView.getMenu().performIdentifierAction(R.id.nav_player, 0);
+                                loadItem(((Item) parent.getItemAtPosition(position)));
+                            }
+                        }).show();
+            }
+        });
+
+        return itemListView;
     }
 }
