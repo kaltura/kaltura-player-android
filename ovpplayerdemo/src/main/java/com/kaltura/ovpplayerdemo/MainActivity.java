@@ -36,8 +36,7 @@ class TestData {
     enum Entry {
         sintelShort("1_9bwuo813"),
         sintelFull("1_w9zx2eti"),
-        player("http://cdnapi.kaltura.com/p/243342/playManifest/entryId/1_sf5ovm7u/format/applehttp/protocol/http/a.m3u8"),
-        oren("http://85.21.100.234/dnetime/testsd7-dash.isml/manifest.mpd");
+        player("http://cdnapi.kaltura.com/p/243342/playManifest/entryId/1_sf5ovm7u/format/applehttp/protocol/http/a.m3u8");
 
         final String id;
 
@@ -65,20 +64,22 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, KalturaPlayer.OnEntryLoadListener {
 
     private KalturaOvpPlayer player;
+    private ViewGroup playerContainer;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        
         // Player
         player = KalturaOvpPlayer.create(this, new PlayerInitOptions()
                 .setAutoPlay(true)
                 .setPartnerId(TestData.partnerId));
 
-        final ViewGroup playerContainer = findViewById(R.id.player_container);
+        playerContainer = findViewById(R.id.player_container);
         playerContainer.addView(player.getView());
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -103,9 +104,8 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        
     }
 
     private void loadTestEntry(TestData.Entry entry) {
@@ -123,6 +123,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         OVPMediaOptions mediaOptions = new OVPMediaOptions().setEntryId(entry.id);
+
         player.loadMedia(mediaOptions, this);
     }
 
@@ -172,8 +173,13 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_player) {
+            playerContainer.removeAllViews();
+            playerContainer.addView(player.getView());
+            findViewById(R.id.fab).setVisibility(View.VISIBLE);
 
         } else if (id == R.id.nav_downloads) {
+            playerContainer.removeAllViews();
+            findViewById(R.id.fab).setVisibility(View.GONE);
 
         }
 
