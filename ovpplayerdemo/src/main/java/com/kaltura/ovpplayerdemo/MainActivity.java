@@ -19,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
@@ -36,8 +37,8 @@ class TestData {
     static final String ks = null;
     
     static final Item[] items = {
-            new Item("sintelShort", "1_9bwuo813"),
-            new Item("sintelFull", "1_w9zx2eti")
+            new Item("Sintel", "1_w9zx2eti"),
+            new Item("Sintel - snippet", "1_9bwuo813"),
     };
 }
 
@@ -75,10 +76,6 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        contentContainer = findViewById(R.id.content_container);
-        playerContainer = new FrameLayout(this);
-        playerContainer.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        
         PlayerConfigManager.initialize(this);
         PlayerConfigManager.retrieve(TestData.uiConfId, TestData.partnerId, TestData.ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
             @Override
@@ -90,8 +87,6 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        contentContainer.addView(getItemListView());
-
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -100,6 +95,21 @@ public class MainActivity extends AppCompatActivity
 
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        contentContainer = findViewById(R.id.content_container);
+        contentContainer.addView(getItemListView());
+        navigationView.setCheckedItem(R.id.nav_items);
+
+        createPlayerContainer();
+        
+    }
+
+    private void createPlayerContainer() {
+        playerContainer = new FrameLayout(this);
+        playerContainer.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        final TextView textView = new TextView(this);
+        textView.setText("Nothing to play");
+        playerContainer.addView(textView);
     }
 
     private void loadItem(Item item) {
@@ -109,6 +119,7 @@ public class MainActivity extends AppCompatActivity
                     .setPlayerConfig(playerConfig)
                     .setAutoPlay(true)
                     .setPartnerId(TestData.partnerId));
+            playerContainer.removeAllViews();
             playerContainer.addView(player.getView());
         }
         
@@ -148,12 +159,12 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
+        contentContainer.removeAllViews();
+
         if (id == R.id.nav_player) {
-            contentContainer.removeAllViews();
             contentContainer.addView(playerContainer);
 
         } else if (id == R.id.nav_items) {
-            contentContainer.removeAllViews();
             contentContainer.addView(getItemListView());
         }
 
@@ -183,6 +194,7 @@ public class MainActivity extends AppCompatActivity
                         .setItems(new String[]{"Play"}, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                navigationView.setCheckedItem(R.id.nav_player);
                                 navigationView.getMenu().performIdentifierAction(R.id.nav_player, 0);
                                 loadItem(((Item) parent.getItemAtPosition(position)));
                             }
