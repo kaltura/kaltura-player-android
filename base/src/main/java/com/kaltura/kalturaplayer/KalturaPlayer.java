@@ -346,7 +346,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                onEntryLoadListener.onMediaEntryLoaded(entry, response.getError());
+                onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
                 if (entry != null) {
                     setMedia(entry);
                 }
@@ -355,6 +355,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     public interface OnEntryLoadListener {
-        void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error);
+        void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
     }
 }

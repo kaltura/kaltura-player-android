@@ -14,6 +14,7 @@ public class PlayerInitOptions {
     public PKMediaFormat preferredFormat;
     public String serverUrl;
     public String referrer;
+    public JsonObject playerConfig;
 
     public PlayerInitOptions setPartnerId(int partnerId) {
         this.partnerId = partnerId;
@@ -52,6 +53,11 @@ public class PlayerInitOptions {
 
     public PlayerInitOptions setReferrer(String referrer) {
         this.referrer = referrer;
+        return this;
+    }
+
+    public PlayerInitOptions setPlayerConfig(JsonObject playerConfig) {
+        this.playerConfig = playerConfig;
         return this;
     }
 }

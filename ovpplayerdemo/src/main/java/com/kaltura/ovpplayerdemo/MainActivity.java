@@ -2,6 +2,7 @@ package com.kaltura.ovpplayerdemo;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -16,18 +17,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.gson.JsonObject;
 import com.kaltura.kalturaplayer.KalturaPlayer;
+import com.kaltura.kalturaplayer.PlayerConfigManager;
 import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.ovpplayer.KalturaOvpPlayer;
 import com.kaltura.ovpplayer.OVPMediaOptions;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaSource;
-
-import java.util.Collections;
 
 class TestData {
     static final int partnerId = 2215841;
@@ -62,8 +63,10 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "Main";
     private KalturaOvpPlayer player;
     private ViewGroup contentContainer;
+    private FrameLayout playerContainer;
     private NavigationView navigationView;
     private ListView itemListView;
+    private JsonObject playerConfig;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,11 +76,19 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         contentContainer = findViewById(R.id.content_container);
+        playerContainer = new FrameLayout(this);
+        playerContainer.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        
+        PlayerConfigManager.initialize(this);
+        PlayerConfigManager.retrieve(TestData.uiConfId, TestData.partnerId, TestData.ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
+            @Override
+            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
 
-        // Player
-        player = KalturaOvpPlayer.create(this, new PlayerInitOptions()
-                .setAutoPlay(true)
-                .setPartnerId(TestData.partnerId));
+                Toast.makeText(MainActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
+                playerConfig = config;
+
+            }
+        });
 
         contentContainer.addView(getItemListView());
 
@@ -94,16 +105,14 @@ public class MainActivity extends AppCompatActivity
     private void loadItem(Item item) {
 
         if (player == null) {
-            Toast.makeText(this, "Player not ready", Toast.LENGTH_SHORT).show();
-            return;
+            player = KalturaOvpPlayer.create(MainActivity.this, new PlayerInitOptions()
+                    .setPlayerConfig(playerConfig)
+                    .setAutoPlay(true)
+                    .setPartnerId(TestData.partnerId));
+            playerContainer.addView(player.getView());
         }
         
         player.stop();
-
-        if (item.id.startsWith("http")) {
-            player.setMedia(new PKMediaEntry().setSources(Collections.singletonList(new PKMediaSource().setUrl(item.id))));
-            return;
-        }
 
         OVPMediaOptions mediaOptions = new OVPMediaOptions().setEntryId(item.id);
 
@@ -111,9 +120,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
+    public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
         if (error != null) {
-            Log.d("onMediaEntryLoaded", " error: " + error);
+            Log.d("onEntryLoadComplete", " error: " + error);
         }
     }
     
@@ -133,31 +142,15 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-
+    
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.nav_player) {
             contentContainer.removeAllViews();
-            contentContainer.addView(player.getView());
+            contentContainer.addView(playerContainer);
 
         } else if (id == R.id.nav_items) {
             contentContainer.removeAllViews();

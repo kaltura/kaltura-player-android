@@ -130,9 +130,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onMediaEntryLoaded(PKMediaEntry entry, ErrorElement error) {
+    public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
         if (error != null) {
-            Log.d("onMediaEntryLoaded", " error: " + error);
+            Log.d("onEntryLoadComplete", " error: " + error);
         }
     }
     
