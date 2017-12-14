@@ -11,6 +11,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,13 +33,16 @@ import com.kaltura.ovpplayer.OVPMediaOptions;
 import com.kaltura.playkit.PKMediaEntry;
 
 class TestData {
-    static final int partnerId = 2215841;
-    static final int uiConfId = 41188731;
+    static final int partnerId = 2222401;
+    static final int uiConfId = 40125321;
     static final String ks = null;
     
     static final Item[] items = {
-            new Item("Sintel", "1_w9zx2eti"),
-            new Item("Sintel - snippet", "1_9bwuo813"),
+            new Item("Sintel", "1_f93tepsn"),
+            new Item("Sintel - snippet", "1_q81a5nbp"),
+            new Item("Big Buck Bunny", "1_m1vpaory"),
+            new Item("Kaltura Video Solutions for Media Companies", "1_ytsd86sc"),
+            new Item("Kaltura Video Platform Overview", "1_25q88snr"),
     };
 }
 
@@ -53,7 +57,7 @@ class Item {
 
     @Override
     public String toString() {
-        return name + " (" + id + ")";
+        return name + " ➜ " + id;
     }
 }
 
@@ -68,6 +72,7 @@ public class MainActivity extends AppCompatActivity
     private NavigationView navigationView;
     private ListView itemListView;
     private JsonObject playerConfig;
+    private boolean resumePlaying;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,18 +85,23 @@ public class MainActivity extends AppCompatActivity
         PlayerConfigManager.retrieve(TestData.uiConfId, TestData.partnerId, TestData.ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
             @Override
             public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-
                 Toast.makeText(MainActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
                 playerConfig = config;
-
             }
         });
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
+        drawer.openDrawer(Gravity.START);
+        drawer.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                drawer.closeDrawer(Gravity.START);
+            }
+        }, 1000);
 
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -159,20 +169,61 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        contentContainer.removeAllViews();
-
-        if (id == R.id.nav_player) {
-            contentContainer.addView(playerContainer);
-
-        } else if (id == R.id.nav_items) {
-            contentContainer.addView(getItemListView());
-        }
+        changeView(id);
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-    
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (player != null) {
+            player.onApplicationPaused();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (player != null) {
+            player.onApplicationResumed();
+        }
+    }
+
+    private void changeView(int id) {
+        final boolean playerShown = isPlayerVisible();
+        if (playerShown && id == R.id.nav_player) {
+            return;
+        }
+        
+        // Temporarily release the player.
+        if (playerShown && player != null) {
+            resumePlaying = player.isPlaying();
+            player.onApplicationPaused();
+        }
+
+        contentContainer.removeAllViews();
+
+        if (id == R.id.nav_player) {
+            if (player != null) {
+                player.onApplicationResumed();
+                if (resumePlaying) {
+                    player.play();
+                }
+            }
+            contentContainer.addView(playerContainer);
+
+        } else if (id == R.id.nav_items) {
+            contentContainer.addView(getItemListView());
+        }
+    }
+
+    private boolean isPlayerVisible() {
+        return playerContainer.getParent() != null;
+    }
+
     private ListView getItemListView() {
         if (itemListView != null) {
             return itemListView;
