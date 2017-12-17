@@ -36,101 +36,115 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.tvplayer.KalturaTvPlayer;
 import com.kaltura.tvplayer.TVMediaOptions;
 
-class Factory {
 
-    enum Mode {ovp, tv}
-    
-    static Mode mode = Mode.ovp;
-    
-    static class OVP {
-//        static final int partnerId = 2222401;
-//        static final int uiConfId = 40125321;
-        static final int partnerId = 2215841;
-        static final int uiConfId = 41188731;
-        static final String ks = null;
+abstract class DemoFactory {
+    abstract String serverUrl();
 
-        static final Item[] items = {
+    abstract int partnerId();
+    abstract int uiConfId();
+    abstract KalturaPlayer player(Context context, JsonObject playerConfig);
+    abstract String ks();
+    abstract MediaOptions mediaOptions(Item item);
+    abstract Item[] items();
+}
+
+class OVPDemoFactory extends DemoFactory {
+    @Override
+    String serverUrl() {
+        return null;
+    }
+
+    @Override
+    int partnerId() {
+        return 2215841;
+    }
+
+    @Override
+    int uiConfId() {
+        return 41188731;
+    }
+
+    @Override
+    String ks() {
+        return null;
+    }
+
+    @Override
+    Item[] items() {
+        return new Item[] {
                 new Item("Sintel", "1_w9zx2eti"),
                 new Item("Sintel - snippet", "1_9bwuo813"),
-//                new Item("Sintel", "1_f93tepsn"),
-//                new Item("Sintel - snippet", "1_q81a5nbp"),
-//                new Item("Big Buck Bunny", "1_m1vpaory"),
-//                new Item("Kaltura Video Solutions for Media Companies", "1_ytsd86sc"),
-//                new Item("Kaltura Video Platform Overview", "1_25q88snr"),
         };
+    }
 
-        static PlayerInitOptions options(JsonObject playerConfig) {
-            return new PlayerInitOptions()
-                    .setPlayerConfig(playerConfig)
-                    .setAutoPlay(true)
-                    .setPartnerId(partnerId);
-        }
-        
-        static KalturaPlayer player(Context context, JsonObject playerConfig) {
-            return KalturaOvpPlayer.create(context, options(playerConfig));
-        }
+    @Override
+    KalturaPlayer player(Context context, JsonObject playerConfig) {
+        return KalturaOvpPlayer.create(context,
+                new PlayerInitOptions()
+                        .setPlayerConfig(playerConfig)
+                        .setAutoPlay(true)
+                        .setPartnerId(partnerId()));
+    }
+
+    @Override
+    MediaOptions mediaOptions(Item item) {
+        return new OVPMediaOptions().setEntryId(item.id);
+    }
+}
+
+class TVItem extends Item {
+
+    final String[] fileIds;
+
+    TVItem(String name, String id, String[] fileIds) {
+        super(name, id);
+
+        this.fileIds = fileIds;
+    }
+}
+
+class TVDemoFactory extends DemoFactory {
+    private static final String serverUrl = "http://api-preprod.ott.kaltura.com/v4_5/api_v3/";
+
+    @Override
+    String serverUrl() {
+        return serverUrl;
     }
     
-    static class TV {
-        static final String serverUrl = "http://api-preprod.ott.kaltura.com/v4_5/api_v3/";
-        static final int partnerId = 198;
-        static final String ks = null;
-
-        static final int ovpPartnerId = 2215841;
-        static final int uiConfId = 41188731;
-
-        static final Item[] items = {
-                new Item("Sintel", "1_f93tepsn"),
-                new Item("Sintel - snippet", "1_q81a5nbp"),
-                new Item("Big Buck Bunny", "1_m1vpaory"),
-                new Item("Kaltura Video Solutions for Media Companies", "1_ytsd86sc"),
-                new Item("Kaltura Video Platform Overview", "1_25q88snr"),
-        };
-
-        static PlayerInitOptions options(JsonObject playerConfig) {
-            return new PlayerInitOptions()
-                    .setPlayerConfig(playerConfig)
-                    .setAutoPlay(true)
-                    .setServerUrl(serverUrl)
-                    .setPartnerId(partnerId);
-        }
-
-
-        static KalturaPlayer player(Context context, JsonObject playerConfig) {
-            return KalturaTvPlayer.create(context, options(playerConfig));
-        }
-
+    @Override
+    int partnerId() {
+        return 198;
     }
-    
-    static int partnerId() {
-        return mode == Mode.ovp ? OVP.partnerId : TV.partnerId;
-    }
-    
-    static Item[] items() {
-        return mode == Mode.ovp ? OVP.items : TV.items;
-    }
-    
-    static int configId() {
-        return mode == Mode.ovp ? OVP.uiConfId : TV.uiConfId;
-    }
-    
-    static String ks() {
-        return mode == Mode.ovp ? OVP.ks : TV.ks;
-    }
-    
-    static KalturaPlayer player(Context context, JsonObject playerConfig) {
-        return mode == Mode.ovp ? OVP.player(context, playerConfig) : TV.player(context, playerConfig);
-    }
-    
-    static MediaOptions mediaOptions(Item item) {
 
-        switch (mode) {
-            case ovp:
-                return new OVPMediaOptions().setEntryId(item.id);
-            case tv:
-                return new TVMediaOptions().setAssetId(item.id);
-        }
+    @Override
+    int uiConfId() {
+        return 41188731;
+    }
+
+    @Override
+    KalturaPlayer player(Context context, JsonObject playerConfig) {
+        return KalturaTvPlayer.create(context, new PlayerInitOptions()
+                .setPlayerConfig(playerConfig)
+                .setAutoPlay(true)
+                .setServerUrl(serverUrl)
+                .setPartnerId(partnerId()));
+    }
+
+    @Override
+    String ks() {
         return null;
+    }
+
+    @Override
+    MediaOptions mediaOptions(Item item) {
+        return new TVMediaOptions().setAssetId(item.id).setFileIds(((TVItem) item).fileIds);
+    }
+
+    @Override
+    Item[] items() {
+        return new TVItem[] {
+                new TVItem("Something", "259153", new String[]{"804398"})
+        };
     }
 }
 
@@ -161,7 +175,10 @@ public class MainActivity extends AppCompatActivity
     private ListView itemListView;
     private JsonObject playerConfig;
     private boolean resumePlaying;
-
+    
+//    private DemoFactory demoFactory = new OVPDemoFactory();
+    private DemoFactory demoFactory = new TVDemoFactory();
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -169,14 +186,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        PlayerConfigManager.initialize(this);
-        PlayerConfigManager.retrieve(Factory.configId(), Factory.partnerId(), Factory.ks(), null, new PlayerConfigManager.OnPlayerConfigLoaded() {
-            @Override
-            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-                Toast.makeText(MainActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-                playerConfig = config;
-            }
-        });
+        loadPlayerConfig();
 
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -199,7 +209,17 @@ public class MainActivity extends AppCompatActivity
         navigationView.setCheckedItem(R.id.nav_items);
 
         createPlayerContainer();
-        
+    }
+
+    private void loadPlayerConfig() {
+        PlayerConfigManager.initialize(this);
+        PlayerConfigManager.retrieve(demoFactory.uiConfId(), demoFactory.partnerId(), demoFactory.ks(), null, new PlayerConfigManager.OnPlayerConfigLoaded() {
+            @Override
+            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
+                Toast.makeText(MainActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
+                playerConfig = config;
+            }
+        });
     }
 
     private void createPlayerContainer() {
@@ -209,18 +229,18 @@ public class MainActivity extends AppCompatActivity
         textView.setText("Nothing to play");
         playerContainer.addView(textView);
     }
-
+    
     private void loadItem(Item item) {
 
         if (player == null) {
-            player = Factory.player(this, playerConfig);
+            player = demoFactory.player(this, playerConfig);
             playerContainer.removeAllViews();
             playerContainer.addView(player.getView());
         }
         
         player.stop();
 
-        MediaOptions mediaOptions = Factory.mediaOptions(item);
+        MediaOptions mediaOptions = demoFactory.mediaOptions(item);
 
         player.loadMedia(mediaOptions, this);
     }
@@ -315,7 +335,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         ArrayAdapter<Item> itemArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
-        itemArrayAdapter.addAll(Factory.items());
+        itemArrayAdapter.addAll(demoFactory.items());
 
 
         itemListView = new ListView(this);
