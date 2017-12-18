@@ -1,1 +1,9 @@
-include ':base', ':tvplayerdemo', ':ovpplayerdemo', ':ovpplayer', ':tvplayer'
+
+include ':base'
+include ':basedemo'
+
+include ':ovpplayer'
+include ':ovpplayerdemo'
+
+include ':tvplayer'
+include ':tvplayerdemo'
