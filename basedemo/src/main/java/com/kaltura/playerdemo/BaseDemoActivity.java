@@ -1,4 +1,4 @@
-package com.kaltura.baseplayerdemo;
+package com.kaltura.playerdemo;
 
 import android.content.Context;
 import android.content.DialogInterface;

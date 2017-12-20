@@ -1,4 +1,4 @@
-package com.kaltura.baseplayerdemo;
+package com.kaltura.playerdemo;
 
 public class DemoItem {
     public final String name;

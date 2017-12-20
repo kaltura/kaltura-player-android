@@ -1,11 +1,9 @@
-package com.kaltura.tvplayerdemo;
+package com.kaltura.playerdemo;
 
 import android.content.Context;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
-import com.kaltura.baseplayerdemo.BaseDemoActivity;
-import com.kaltura.baseplayerdemo.DemoItem;
 import com.kaltura.kalturaplayer.PlayerConfigManager;
 import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.utils.ErrorElement;
@@ -24,7 +22,7 @@ class TVItem extends DemoItem {
     }
 }
 
-public class MainActivity extends BaseDemoActivity<KalturaTvPlayer> {
+public class OTTActivity extends BaseDemoActivity<KalturaTvPlayer> {
 
     String serverUrl = "http://api-preprod.ott.kaltura.com/v4_5/api_v3/";
     int partnerId = 198;
@@ -60,7 +58,7 @@ public class MainActivity extends BaseDemoActivity<KalturaTvPlayer> {
         PlayerConfigManager.retrieve(uiConfId, ovpPartnerId, ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
             @Override
             public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-                Toast.makeText(MainActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
+                Toast.makeText(OTTActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
                 playerConfig = config;
             }
         });

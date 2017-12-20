@@ -1,18 +1,16 @@
-package com.kaltura.ovpplayerdemo;
+package com.kaltura.playerdemo;
 
 import android.content.Context;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
-import com.kaltura.baseplayerdemo.BaseDemoActivity;
-import com.kaltura.baseplayerdemo.DemoItem;
 import com.kaltura.kalturaplayer.PlayerConfigManager;
 import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.ovpplayer.KalturaOvpPlayer;
 import com.kaltura.ovpplayer.OVPMediaOptions;
 
-public class MainActivity extends BaseDemoActivity<KalturaOvpPlayer> {
+public class OVPActivity extends BaseDemoActivity<KalturaOvpPlayer> {
 
     int partnerId = 2215841;
     int uiConfId = 41188731;
@@ -42,7 +40,7 @@ public class MainActivity extends BaseDemoActivity<KalturaOvpPlayer> {
         PlayerConfigManager.retrieve(uiConfId, partnerId, ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
             @Override
             public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-                Toast.makeText(MainActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
+                Toast.makeText(OVPActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
                 playerConfig = config;
             }
         });
