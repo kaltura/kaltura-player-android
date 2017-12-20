@@ -5,7 +5,6 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 
 public class PlayerInitOptions {
-    public JsonObject uiConf;
     public int partnerId;
     public String ks;
     public PKPluginConfigs pluginConfigs;
