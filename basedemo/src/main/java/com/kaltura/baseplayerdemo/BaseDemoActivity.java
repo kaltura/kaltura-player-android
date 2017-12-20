@@ -26,12 +26,18 @@ import android.widget.TextView;
 import com.google.gson.JsonObject;
 import com.kaltura.kalturaplayer.KalturaPlayer;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.player.MediaSupport;
+
+import java.util.Set;
 
 public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, KalturaPlayer.OnEntryLoadListener {
 
-    private static final String TAG = "Main";
+    private static final PKLog log = PKLog.get("BaseDemoActivity");
+    
     protected final Context context = this;
     protected PlayerType player;
     private ViewGroup contentContainer;
@@ -49,6 +55,8 @@ public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extend
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        
+        initDrm();
 
         loadPlayerConfig();
 
@@ -75,6 +83,24 @@ public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extend
         createPlayerContainer();
     }
 
+    void initDrm() {
+        MediaSupport.initializeDrm(this, new MediaSupport.DrmInitCallback() {
+            @Override
+            public void onDrmInitComplete(Set<PKDrmParams.Scheme> supportedDrmSchemes, boolean provisionPerformed, Exception provisionError) {
+                if (provisionPerformed) {
+                    if (provisionError != null) {
+                        log.e("DRM Provisioning failed", provisionError);
+                    } else {
+                        log.d("DRM Provisioning succeeded");
+                    }
+                }
+                log.d("DRM initialized; supported: " + supportedDrmSchemes);
+
+                // Now it's safe to look at `supportedDrmSchemes`
+            }
+        });
+    }
+    
     protected abstract void loadPlayerConfig();
     protected abstract int partnerId();
 
