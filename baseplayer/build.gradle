@@ -3,8 +3,6 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion 26
 
-
-
     defaultConfig {
         minSdkVersion 17
         targetSdkVersion 26
@@ -23,13 +21,17 @@ android {
     }
 
 }
+print gradle.startParameter.taskNames
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+//    compile 'com.kaltura.playkit:playkit:3.3.0'
+//    compile 'com.kaltura.playkit:playkit:3.3.0'
+    compile 'com.kaltura:playkit-android:109091c2af460f2146be91a1915c565f27013e32'
+    compile 'com.kaltura.playkit:kavaplugin:0.1.0'
 
-    implementation 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    compile project(path: ':baseplayer')
 }

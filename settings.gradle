@@ -1,6 +1,6 @@
 
-include ':base'
-include ':basedemo'
+include ':baseplayer'
+include ':demo'
 
 include ':ovpplayer'
 include ':tvplayer'

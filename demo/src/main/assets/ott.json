@@ -1,0 +1,18 @@
+{
+  "mode": "ott",
+  "initOptions": {
+    "partnerId": 198,
+    "autoPlay": true,
+    "ks": null,
+    "serverUrl": "http://api-preprod.ott.kaltura.com/v4_5/api_v3/"
+  },
+  "uiConf": {
+    "id": 41188731,
+    "partnerId": 2215841
+  },
+  "items": [
+    {"name": "Something?", "assetId": "259153"},
+    {"name": "The Wind Rises", "assetId": "258865"},
+    {"name": "Ice Age", "assetId": "258671"}
+  ]
+}
