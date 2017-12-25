@@ -10,10 +10,6 @@
             android:icon="@drawable/ic_video_library_black_24dp"
             android:title="Items"/>
         <item
-            android:id="@+id/nav_player"
-            android:icon="@drawable/ic_tv_black_24dp"
-            android:title="Player"/>
-        <item
             android:id="@+id/nav_downloads"
             android:icon="@drawable/ic_file_download_black_24dp"
             android:title="Downloads"/>

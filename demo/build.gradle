@@ -35,4 +35,5 @@ dependencies {
     compile project(path: ':baseplayer')
     compile project(path: ':ovpplayer')
     compile project(path: ':tvplayer')
+    implementation 'org.greenrobot:eventbus:3.1.1'
 }

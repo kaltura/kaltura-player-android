@@ -16,14 +16,14 @@ public class LaunchActivity extends AppCompatActivity {
         findViewById(R.id.btn_ovp).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LaunchActivity.this, OVPActivity.class));
+                startActivity(new Intent(LaunchActivity.this, OVPDemoActivity.class));
             }
         });
 
         findViewById(R.id.btn_ott).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(LaunchActivity.this, OTTActivity.class));
+                startActivity(new Intent(LaunchActivity.this, OTTDemoActivity.class));
             }
         });
     }

@@ -12,14 +12,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -41,22 +39,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extends AppCompatActivity
+public abstract class BaseDemoActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, KalturaPlayer.OnEntryLoadListener {
 
     private static final PKLog log = PKLog.get("BaseDemoActivity");
     
     protected final Context context = this;
-    protected PlayerType player;
-    int uiConfId;
+    Integer uiConfId;
     String ks;
     DemoItem[] items;
+    Integer uiConfPartnerId;     // for player config
     private ViewGroup contentContainer;
-    protected FrameLayout playerContainer;
     private NavigationView navigationView;
     private ListView itemListView;
     protected JsonObject playerConfig;
-    private boolean resumePlaying;
     protected PlayerInitOptions initOptions;
     
     protected abstract DemoItem[] items();
@@ -79,7 +75,6 @@ public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extend
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-        drawer.openDrawer(Gravity.START);
 
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
@@ -87,8 +82,6 @@ public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extend
         contentContainer = findViewById(R.id.content_container);
         contentContainer.addView(getItemListView());
         navigationView.setCheckedItem(R.id.nav_items);
-
-        createPlayerContainer();
     }
 
     protected void parseInitOptions(JsonObject json) {
@@ -189,6 +182,12 @@ public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extend
         }
 
         items = itemList.toArray(new DemoItem[itemList.size()]);
+
+        final JsonObject uiConfJson = safeObject(json, "uiConf");
+        if (uiConfJson != null) {
+            uiConfPartnerId = safeInteger(uiConfJson, "partnerId");
+            uiConfId = safeInteger(uiConfJson, "uiConfId");
+        }
     }
 
     @NonNull
@@ -200,14 +199,6 @@ public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extend
         return initOptions.partnerId;
     }
 
-    private void createPlayerContainer() {
-        playerContainer = new FrameLayout(this);
-        playerContainer.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        final TextView textView = new TextView(this);
-        textView.setText("Nothing to play");
-        playerContainer.addView(textView);
-    }
-    
     protected abstract void loadItem(DemoItem item);
 
     @Override
@@ -249,63 +240,23 @@ public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extend
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
+        contentContainer.removeAllViews();
 
-        changeView(id);
+        switch (item.getItemId()) {
+            case R.id.nav_items:
+                contentContainer.addView(getItemListView());
+                break;
+            case R.id.nav_downloads:
+            case R.id.nav_plugins:
+                // TODO
+                break;
+        }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (player != null) {
-            player.onApplicationPaused();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (player != null) {
-            player.onApplicationResumed();
-        }
-    }
-
-    private void changeView(int id) {
-        final boolean playerShown = isPlayerVisible();
-        if (playerShown && id == R.id.nav_player) {
-            return;
-        }
-        
-        // Temporarily release the player.
-        if (playerShown && player != null) {
-            resumePlaying = player.isPlaying();
-            player.onApplicationPaused();
-        }
-
-        contentContainer.removeAllViews();
-
-        if (id == R.id.nav_player) {
-            if (player != null) {
-                player.onApplicationResumed();
-                if (resumePlaying) {
-                    player.play();
-                }
-            }
-            contentContainer.addView(playerContainer);
-
-        } else if (id == R.id.nav_items) {
-            contentContainer.addView(getItemListView());
-        }
-    }
-
-    private boolean isPlayerVisible() {
-        return playerContainer.getParent() != null;
-    }
-
+    
     private ListView getItemListView() {
         if (itemListView != null) {
             return itemListView;
@@ -327,8 +278,6 @@ public abstract class BaseDemoActivity <PlayerType extends KalturaPlayer> extend
                         .setItems(new String[]{"Play"}, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                navigationView.setCheckedItem(R.id.nav_player);
-                                navigationView.getMenu().performIdentifierAction(R.id.nav_player, 0);
                                 loadItem(((DemoItem) parent.getItemAtPosition(position)));
                             }
                         }).show();
