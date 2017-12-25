@@ -13,7 +13,6 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
-import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 
@@ -38,9 +37,9 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
     @Override
     protected void registerPlugins(Context context) {
         if (!pluginsRegistered) {
-            PlayKitManager.registerPlugins(context, 
-                    PhoenixAnalyticsPlugin.factory,
-                    KavaAnalyticsPlugin.factory);
+            registerCommonPlugins(context);
+
+            PlayKitManager.registerPlugins(context, PhoenixAnalyticsPlugin.factory);
             
             pluginsRegistered = true;
         }

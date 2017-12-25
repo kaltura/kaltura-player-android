@@ -16,22 +16,31 @@ import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKEvent;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.api.ovp.SimpleOvpSessionProvider;
+import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
+import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsPlugin;
+import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
+    private static final PKLog log = PKLog.get("KalturaPlayer");
+    
     public static final String DEFAULT_OVP_SERVER_URL = "http://cdnapi.kaltura.com/";
 
     private JsonObject uiConf;
@@ -183,6 +192,47 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     
     protected abstract void registerPlugins(Context context);
     protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
+
+    protected void registerPluginByName(Context context, String pluginClassName) {
+        try {
+            Class pluginClass = Class.forName(pluginClassName);
+            final Field factoryField = pluginClass.getField("factory");
+            if (!Modifier.isStatic(factoryField.getModifiers())) {
+                log.e("Plugin factory " + pluginClassName + ".factory is not static");
+                return;
+            }
+            final PKPlugin.Factory factory = (PKPlugin.Factory) factoryField.get(null);
+            if (factory == null) {
+                log.e("Plugin factory " + pluginClassName + ".factory is null");
+                return;
+            }
+            PlayKitManager.registerPlugins(context, factory);
+            
+        } catch (ClassNotFoundException e) {
+            // This is ok and very common
+            log.v("Plugin class " + pluginClassName + " not found");
+        } catch (NoSuchFieldException e) {
+            log.e("Plugin factory " + pluginClassName + ".factory not found");
+        } catch (IllegalAccessException e) {
+            log.e("Plugin factory " + pluginClassName + ".factory is not public");
+        } catch (ClassCastException e) {
+            log.e("Plugin factory " + pluginClassName + ".factory is not a PKPlugin.Factory");
+        } catch (RuntimeException e) {
+            log.e("Something bad", e);
+        }
+    }
+
+    protected void registerCommonPlugins(Context context) {
+        PlayKitManager.registerPlugins(context,
+                KavaAnalyticsPlugin.factory,
+                KalturaStatsPlugin.factory,
+                KalturaLiveStatsPlugin.factory
+        );
+
+        registerPluginByName(context, "com.kaltura.playkit.plugins.ima.IMAPlugin");
+        registerPluginByName(context, "com.kaltura.playkit.plugins.youbora.YouboraPlugin");
+    }
+
     protected abstract void updateKS(String ks);
 
 

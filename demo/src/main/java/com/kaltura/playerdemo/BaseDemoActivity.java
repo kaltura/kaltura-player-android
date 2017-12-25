@@ -45,6 +45,8 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     private static final PKLog log = PKLog.get("BaseDemoActivity");
     
     protected final Context context = this;
+    protected JsonObject playerConfig;
+    protected PlayerInitOptions initOptions;
     Integer uiConfId;
     String ks;
     DemoItem[] items;
@@ -52,8 +54,6 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     private ViewGroup contentContainer;
     private NavigationView navigationView;
     private ListView itemListView;
-    protected JsonObject playerConfig;
-    protected PlayerInitOptions initOptions;
     
     protected abstract DemoItem[] items();
     

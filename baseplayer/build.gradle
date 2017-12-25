@@ -26,7 +26,7 @@ print gradle.startParameter.taskNames
 dependencies {
 //    compile 'com.kaltura.playkit:playkit:3.3.0'
 //    compile 'com.kaltura.playkit:playkit:3.3.0'
-    compile 'com.kaltura:playkit-android:109091c2af460f2146be91a1915c565f27013e32'
+    compile 'com.kaltura:playkit-android:603f38feeaf93a7773bbf5a5d45476f1dacb9dc2'
     compile 'com.kaltura.playkit:kavaplugin:0.1.0'
 
     compile 'com.android.support:appcompat-v7:26.1.0'

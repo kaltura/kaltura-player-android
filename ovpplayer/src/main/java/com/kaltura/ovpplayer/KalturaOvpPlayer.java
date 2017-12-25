@@ -9,7 +9,6 @@ import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
-import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
@@ -37,8 +36,7 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
     protected void registerPlugins(Context context) {
         // Plugin registration is static and only done once, but requires a Context.
         if (!KalturaOvpPlayer.pluginsRegistered) {
-            PlayKitManager.registerPlugins(context, KavaAnalyticsPlugin.factory);
-            KalturaOvpPlayer.pluginsRegistered = true;
+            registerCommonPlugins(context);
         }
     }
 
