@@ -3,4 +3,4 @@ include ':baseplayer'
 include ':demo'
 
 include ':ovpplayer'
-include ':tvplayer'
+include ':ottplayer'

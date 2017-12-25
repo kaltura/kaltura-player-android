@@ -34,6 +34,6 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     compile project(path: ':baseplayer')
     compile project(path: ':ovpplayer')
-    compile project(path: ':tvplayer')
+    compile project(path: ':ottplayer')
     implementation 'org.greenrobot:eventbus:3.1.1'
 }
