@@ -12,8 +12,8 @@ import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.Utils;
-import com.kaltura.tvplayer.KalturaTvPlayer;
-import com.kaltura.tvplayer.TVMediaOptions;
+import com.kaltura.tvplayer.KalturaOTTPlayer;
+import com.kaltura.tvplayer.OTTMediaOptions;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -72,9 +72,9 @@ public class OTTDemoActivity extends BaseDemoActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
 
-        KalturaTvPlayer player = KalturaTvPlayer.create(playerActivity, initOptions);
+        KalturaOTTPlayer player = KalturaOTTPlayer.create(playerActivity, initOptions);
 
-        player.loadMedia(new TVMediaOptions().setAssetId(currentItem.id), new KalturaPlayer.OnEntryLoadListener() {
+        player.loadMedia(new OTTMediaOptions().setAssetId(currentItem.id), new KalturaPlayer.OnEntryLoadListener() {
             @Override
             public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
                 log.d("onEntryLoadComplete; " + entry + "; " + error);

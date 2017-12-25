@@ -17,19 +17,19 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 
-public class KalturaTvPlayer extends KalturaPlayer<TVMediaOptions> {
+public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
 
-    private static final PKLog log = PKLog.get("KalturaTvPlayer");
+    private static final PKLog log = PKLog.get("KalturaOTTPlayer");
     private static boolean pluginsRegistered;
 
-    public static KalturaTvPlayer create(final Context context, PlayerInitOptions options) {
+    public static KalturaOTTPlayer create(final Context context, PlayerInitOptions options) {
 
         final PlayerInitOptions initOptions = options != null ? options : new PlayerInitOptions();
 
-        return new KalturaTvPlayer(context, initOptions);
+        return new KalturaOTTPlayer(context, initOptions);
     }
 
-    private KalturaTvPlayer(Context context, PlayerInitOptions initOptions) {
+    private KalturaOTTPlayer(Context context, PlayerInitOptions initOptions) {
         super(context, initOptions);
         
         this.serverUrl = KalturaPlayer.safeServerUrl(initOptions.serverUrl, null);
@@ -70,7 +70,7 @@ public class KalturaTvPlayer extends KalturaPlayer<TVMediaOptions> {
 
 
     @Override
-    public void loadMedia(TVMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
         
         if (mediaOptions.ks != null) {
             setKS(mediaOptions.ks);
