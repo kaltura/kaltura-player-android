@@ -188,11 +188,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         setMedia(entry);
     }
     
-    public abstract void loadMedia(MOT mediaOptions, OnEntryLoadListener listener);
-    
-    protected abstract void registerPlugins(Context context);
-    protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
-
     protected void registerPluginByName(Context context, String pluginClassName) {
         try {
             Class pluginClass = Class.forName(pluginClassName);
@@ -233,7 +228,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         registerPluginByName(context, "com.kaltura.playkit.plugins.youbora.YouboraPlugin");
     }
 
-    protected abstract void updateKS(String ks);
 
 
     public void setKS(String ks) {
@@ -406,6 +400,11 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             }
         });
     }
+
+    public abstract void loadMedia(MOT mediaOptions, OnEntryLoadListener listener);
+    protected abstract void registerPlugins(Context context);
+    protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
+    protected abstract void updateKS(String ks);
 
     public interface OnEntryLoadListener {
         void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
