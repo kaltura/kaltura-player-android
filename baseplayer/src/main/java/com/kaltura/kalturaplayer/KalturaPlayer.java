@@ -44,6 +44,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     public static final String DEFAULT_OVP_SERVER_URL = "http://cdnapi.kaltura.com/";
 
     private JsonObject uiConf;
+    private int uiConfId;
     
     protected String serverUrl;
     private String ks;
@@ -251,6 +252,18 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         if (autoPlay) {
             pkPlayer.play();
         }
+    }
+
+    public PKMediaEntry getMediaEntry() {
+        return mediaEntry;
+    }
+
+    public JsonObject getUiConf() {
+        return uiConf;
+    }
+
+    public int getUiConfId() {
+        return uiConfId;
     }
 
     // Player controls
