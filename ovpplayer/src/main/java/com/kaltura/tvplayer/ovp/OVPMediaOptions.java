@@ -1,4 +1,4 @@
-package com.kaltura.ovpplayer;
+package com.kaltura.tvplayer.ovp;
 
 import com.kaltura.kalturaplayer.MediaOptions;
 

@@ -12,8 +12,8 @@ import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.Utils;
-import com.kaltura.tvplayer.KalturaOTTPlayer;
-import com.kaltura.tvplayer.OTTMediaOptions;
+import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
+import com.kaltura.tvplayer.ott.OTTMediaOptions;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;

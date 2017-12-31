@@ -1,4 +1,4 @@
-package com.kaltura.tvplayer;
+package com.kaltura.tvplayer.ott;
 
 import com.kaltura.kalturaplayer.MediaOptions;
 import com.kaltura.playkit.api.phoenix.APIDefines;

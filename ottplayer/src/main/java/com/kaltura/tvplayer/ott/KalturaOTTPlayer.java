@@ -1,4 +1,4 @@
-package com.kaltura.tvplayer;
+package com.kaltura.tvplayer.ott;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
