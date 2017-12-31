@@ -33,7 +33,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
 
     @Override
     protected void loadConfigFile() {
-        final String jsonString = Utils.readAssetToString(this, "ott.json");
+        final String jsonString = Utils.readAssetToString(this, "ott/main.json");
         final JsonObject json = GsonParser.toJson(jsonString).getAsJsonObject();
 
         parseCommonOptions(json);

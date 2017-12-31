@@ -81,7 +81,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
 
         contentContainer = findViewById(R.id.content_container);
         contentContainer.addView(getItemListView());
-        navigationView.setCheckedItem(R.id.nav_items);
+        navigationView.setCheckedItem(R.id.nav_gallery);
     }
 
     protected void parseInitOptions(JsonObject json) {
@@ -243,7 +243,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         contentContainer.removeAllViews();
 
         switch (item.getItemId()) {
-            case R.id.nav_items:
+            case R.id.nav_gallery:
                 contentContainer.addView(getItemListView());
                 break;
             case R.id.nav_downloads:

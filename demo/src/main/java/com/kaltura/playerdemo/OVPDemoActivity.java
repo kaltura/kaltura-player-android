@@ -1,6 +1,7 @@
 package com.kaltura.playerdemo;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
@@ -19,6 +20,9 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.IOException;
+import java.net.URL;
+
 public class OVPDemoActivity extends BaseDemoActivity {
 
     private static final PKLog log = PKLog.get("OVPDemoActivity");
@@ -32,10 +36,27 @@ public class OVPDemoActivity extends BaseDemoActivity {
 
     @Override
     protected void loadConfigFile() {
-        final String jsonString = Utils.readAssetToString(this, "ovp.json");
+
+        final Uri url = getIntent().getData();
+        String jsonString = null;
+        
+        if (url != null) {
+            jsonString = readUrlToString(url);
+        } else {
+            jsonString = Utils.readAssetToString(this, "ovp/main.json");
+        }
+
         final JsonObject json = GsonParser.toJson(jsonString).getAsJsonObject();
 
         parseCommonOptions(json);
+    }
+
+    private String readUrlToString(Uri url) {
+        try {
+            return Utils.fullyReadInputStream(new URL(url.toString()).openStream(), 1024*1024).toString();
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     @Override
