@@ -1,4 +1,4 @@
-package com.kaltura.kalturaplayer;
+package com.kaltura.tvplayer;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;

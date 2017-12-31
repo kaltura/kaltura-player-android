@@ -1,7 +1,7 @@
 package com.kaltura.tvplayer.ott;
 
-import com.kaltura.kalturaplayer.MediaOptions;
 import com.kaltura.playkit.api.phoenix.APIDefines;
+import com.kaltura.tvplayer.MediaOptions;
 
 public class OTTMediaOptions extends MediaOptions {
     String assetId;

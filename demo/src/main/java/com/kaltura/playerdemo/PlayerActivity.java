@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 
-import com.kaltura.kalturaplayer.KalturaPlayer;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.tvplayer.KalturaPlayer;
 
 import org.greenrobot.eventbus.EventBus;
 

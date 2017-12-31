@@ -1,4 +1,4 @@
-package com.kaltura.kalturaplayer;
+package com.kaltura.tvplayer;
 
 
 public class MediaOptions {

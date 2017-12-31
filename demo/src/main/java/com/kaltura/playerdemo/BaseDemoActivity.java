@@ -25,14 +25,14 @@ import android.widget.TextView;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.kaltura.kalturaplayer.KalturaPlayer;
-import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.player.MediaSupport;
+import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.PlayerInitOptions;
 
 import java.util.ArrayList;
 import java.util.List;

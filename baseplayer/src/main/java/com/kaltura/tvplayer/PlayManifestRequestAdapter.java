@@ -10,7 +10,7 @@
  * ============================================================================
  */
 
-package com.kaltura.kalturaplayer;
+package com.kaltura.tvplayer;
 
 import android.net.Uri;
 

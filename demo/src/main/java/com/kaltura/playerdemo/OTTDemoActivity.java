@@ -5,13 +5,13 @@ import android.support.annotation.NonNull;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
-import com.kaltura.kalturaplayer.KalturaPlayer;
-import com.kaltura.kalturaplayer.PlayerConfigManager;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.Utils;
+import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
 import com.kaltura.tvplayer.ott.OTTMediaOptions;
 

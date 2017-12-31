@@ -1,4 +1,4 @@
-package com.kaltura.kalturaplayer;
+package com.kaltura.tvplayer;
 
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKMediaFormat;

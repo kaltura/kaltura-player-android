@@ -2,8 +2,6 @@ package com.kaltura.tvplayer.ovp;
 
 import android.content.Context;
 
-import com.kaltura.kalturaplayer.KalturaPlayer;
-import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKLog;
@@ -13,6 +11,8 @@ import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
+import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.PlayerInitOptions;
 
 public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
 

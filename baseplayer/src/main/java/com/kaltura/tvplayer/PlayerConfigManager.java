@@ -1,4 +1,4 @@
-package com.kaltura.kalturaplayer;
+package com.kaltura.tvplayer;
 
 import android.content.Context;
 import android.os.Handler;

@@ -3,8 +3,6 @@ package com.kaltura.tvplayer.ott;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.kaltura.kalturaplayer.KalturaPlayer;
-import com.kaltura.kalturaplayer.PlayerInitOptions;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -18,6 +16,8 @@ import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsConfig;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
+import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.PlayerInitOptions;
 
 public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
 
