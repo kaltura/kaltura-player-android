@@ -4,3 +4,6 @@ include ':demo'
 
 include ':ovpplayer'
 include ':ottplayer'
+
+include ':playkit'
+project(':playkit').projectDir = new File(settingsDir, '../playkit-android/playkit')

@@ -24,8 +24,18 @@ android {
 print gradle.startParameter.taskNames
 
 dependencies {
+    
+    try {
+        compile project(':playkit')
+        println("Using local PlayKit")
+    } catch (UnknownProjectException ignored) {
 //    compile 'com.kaltura.playkit:playkit:3.3.0'
 //    compile 'com.kaltura.playkit:playkit:3.3.0'
-    compile 'com.kaltura:playkit-android:603f38feeaf93a7773bbf5a5d45476f1dacb9dc2'
-    compile 'com.kaltura.playkit:kavaplugin:0.1.0'
+        compile 'com.kaltura:playkit-android:603f38feeaf93a7773bbf5a5d45476f1dacb9dc2'
+        println("Using remote PlayKit")
+    }
+
+    compile('com.kaltura.playkit:kavaplugin:0.1.0') {
+        exclude group: 'com.kaltura', module: 'playkit-android'
+    }
 }
