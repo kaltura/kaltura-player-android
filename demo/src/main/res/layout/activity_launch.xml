@@ -5,23 +5,87 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.kaltura.ovpplayerdemo.com.kaltura.playerdemo.LaunchActivity">
+    tools:context=".LaunchActivity"
+    android:orientation="horizontal"
+    tools:ignore="HardcodedText"
+    >
 
-    <Button
-        android:id="@+id/btn_ovp"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="OVP"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="148dp"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="4dp"
+        android:paddingVertical="4dp">
 
-    <Button
-        android:id="@+id/btn_ott"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="OTT"
-        app:layout_constraintTop_toBottomOf="@+id/btn_ovp"
-        tools:layout_editor_absoluteX="148dp"/>
+        <RadioGroup
+            android:id="@+id/radio_source"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checkedButton="@+id/src_history">
+
+            <RadioButton
+                android:id="@+id/src_history"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="History"/>
+
+            <RadioButton
+                android:id="@+id/src_firebase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Firebase"/>
+        </RadioGroup>
+
+        <View
+            android:id="@+id/separator"
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="@color/colorAccent"
+            />
+
+        <RadioGroup
+            android:id="@+id/radio_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checkedButton="@+id/modefilter_all">
+
+            <RadioButton
+                android:id="@+id/modefilter_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="All"/>
+
+            <RadioButton
+                android:id="@+id/modefilter_ovp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="OVP"/>
+
+            <RadioButton
+                android:id="@+id/modefilter_ott"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="OTT"/>
+        </RadioGroup>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="1dip"
+        android:layout_height="fill_parent"
+        android:background="@color/colorAccent"
+        />
+
+
+    <ListView
+        android:id="@+id/json_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="4dp"/>
+
 </LinearLayout>

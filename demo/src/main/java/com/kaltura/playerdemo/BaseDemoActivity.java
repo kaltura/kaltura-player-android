@@ -247,7 +247,6 @@ public abstract class BaseDemoActivity extends AppCompatActivity
                 contentContainer.addView(getItemListView());
                 break;
             case R.id.nav_downloads:
-            case R.id.nav_plugins:
                 // TODO
                 break;
         }

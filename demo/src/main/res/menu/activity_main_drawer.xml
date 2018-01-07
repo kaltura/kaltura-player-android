@@ -14,15 +14,4 @@
             android:icon="@drawable/ic_file_download_black_24dp"
             android:title="Downloads"/>
     </group>
-    
-    <group android:id="@+id/nav_group_settings" android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_presets"
-            android:icon="@drawable/ic_cloud_circle_black_24dp"
-            android:title="Presets"/>
-        <item
-            android:id="@+id/nav_plugins"
-            android:icon="@drawable/ic_widgets_black_24dp"
-            android:title="Plugins"/>
-    </group>
 </menu>
