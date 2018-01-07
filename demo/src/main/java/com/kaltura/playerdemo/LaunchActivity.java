@@ -3,6 +3,8 @@ package com.kaltura.playerdemo;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.RadioGroup;
 
 public class LaunchActivity extends AppCompatActivity {
@@ -14,6 +16,10 @@ public class LaunchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
         
+        ListView jsonList = findViewById(R.id.json_list);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
+        adapter.addAll("1.json", "2.json", "3.json");
+        jsonList.setAdapter(adapter);
         
         RadioGroup source = findViewById(R.id.radio_source);
         source.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
