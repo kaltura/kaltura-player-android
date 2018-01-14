@@ -72,7 +72,7 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
     
     private KalturaStatsConfig getStatsConfig() {
         final PKMediaEntry mediaEntry = getMediaEntry();
-        return new KalturaStatsConfig(getUiConfId(), getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null, null, 0);
+        return new KalturaStatsConfig(getUiConfId(), getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null, null, 0, true);
     }
 
     @NonNull
