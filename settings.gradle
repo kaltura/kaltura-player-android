@@ -4,3 +4,5 @@ include ':demo'
 
 include ':ovpplayer'
 include ':ottplayer'
+include ':kalturaplayertestapp'
+project(':kalturaplayertestapp').projectDir = new File('kalturaplayertestapp/app')
