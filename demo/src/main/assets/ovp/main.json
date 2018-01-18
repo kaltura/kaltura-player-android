@@ -1,15 +1,19 @@
 {
   "mode": "ovp",
-  "initOptions": {
-    "partnerId": 2215841,
-    "autoPlay": true,
-    "ks": null
+  "playback": {
+    "autoplay": true,
+    "preload": true
+  },
+  "backend": {
+    "partnerId": 2222401,
+    "ks": null,
+    "serverUrl": null
   },
   "uiConf": {
-    "id": 41188731
+    "id": 40125321
   },
-  "items": [
-    {"name": "Sintel", "entryId": "1_w9zx2eti"},
-    {"name": "Sintel - snippet", "entryId": "1_9bwuo813"}
+  "items": [  
+    {"name": "Sintel", "entryId": "1_f93tepsn"},
+    {"name": "Sintel - snippet", "entryId": "1_q81a5nbp"}
   ]
 }

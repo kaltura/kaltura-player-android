@@ -18,7 +18,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -31,8 +30,8 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.player.MediaSupport;
+import com.kaltura.playkit.utils.GsonReader;
 import com.kaltura.tvplayer.KalturaPlayer;
-import com.kaltura.tvplayer.PlayerInitOptions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,17 +44,25 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     private static final PKLog log = PKLog.get("BaseDemoActivity");
     
     protected final Context context = this;
-    protected JsonObject playerConfig;
-    protected PlayerInitOptions initOptions;
+    protected JsonObject uiConf;
+//    protected PlayerInitOptions initOptions;
     Integer uiConfId;
     String ks;
     DemoItem[] items;
     Integer uiConfPartnerId;     // for player config
-    private ViewGroup contentContainer;
-    private NavigationView navigationView;
-    private ListView itemListView;
-    
+    ViewGroup contentContainer;
+    ListView itemListView;
+    Integer partnerId;
+    PKPluginConfigs pluginConfigs;
+    String serverUrl;
+    Boolean autoplay;
+    Boolean preload;
+
     protected abstract DemoItem[] items();
+    protected abstract DemoItem parseItem(JsonObject object);
+    protected abstract void loadPlayerConfig();
+    protected abstract String demoName();
+    protected abstract void loadConfigFile();
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +72,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
         
         initDrm();
-
+        
         loadConfigFile();
 
         loadPlayerConfig();
@@ -76,7 +83,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         contentContainer = findViewById(R.id.content_container);
@@ -84,32 +91,11 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         navigationView.setCheckedItem(R.id.nav_gallery);
     }
 
-    protected void parseInitOptions(JsonObject json) {
-        final PlayerInitOptions options = new PlayerInitOptions();
-        final Integer partnerId = safeInteger(json, "partnerId");
-        if (partnerId == null) {
-            throw new IllegalArgumentException("partnerId must not be null");
-        }
-        
-
-        options
-                .setPartnerId(partnerId)
-                .setServerUrl(safeString(json, "serverUrl"))
-                .setAutoPlay(safeBoolean(json, "autoPlay"))
-                .setPreload(safeBoolean(json, "preload"))
-                .setKs(safeString(json, "ks"))
-                .setPlayerConfig(safeObject(json, "playerConfig"))
-                .setPluginConfigs(parsePluginConfigs(json.get("plugins")))
-                .setReferrer(safeString(json, "referrer"));
-
-        initOptions = options;
-    }
-
-    private PKPluginConfigs parsePluginConfigs(JsonElement json) {
+    private PKPluginConfigs parsePluginConfigs(JsonObject json) {
         PKPluginConfigs configs = new PKPluginConfigs();
-        if (json != null && json.isJsonObject()) {
-            final JsonObject obj = json.getAsJsonObject();
-            for (Map.Entry<String, JsonElement> entry : obj.entrySet()) {
+        // TODO: plugin-specific handling
+        if (json != null) {
+            for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
                 final String pluginName = entry.getKey();
                 final JsonElement value = entry.getValue();
                 configs.setPluginConfig(pluginName, value);
@@ -117,41 +103,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         }
         return configs;
     }
-
-    protected JsonObject safeObject(JsonObject json, String key) {
-        final JsonElement jsonElement = json.get(key);
-        if (jsonElement != null && jsonElement.isJsonObject()) {
-            return jsonElement.getAsJsonObject();
-        }
-        return null;
-    }
-
-    protected String safeString(JsonObject json, String key) {
-        final JsonElement jsonElement = json.get(key);
-        if (jsonElement != null && jsonElement.isJsonPrimitive()) {
-            return jsonElement.getAsString();
-        }
-        return null;
-    }
-
-    protected Boolean safeBoolean(JsonObject json, String key) {
-        final JsonElement jsonElement = json.get(key);
-        if (jsonElement != null && jsonElement.isJsonPrimitive()) {
-            return jsonElement.getAsBoolean();
-        }
-        return null;
-    }
-
-    protected Integer safeInteger(JsonObject json, String key) {
-        final JsonElement jsonElement = json.get(key);
-        if (jsonElement != null && jsonElement.isJsonPrimitive()) {
-            return jsonElement.getAsInt();
-        }
-        return null;
-    }
-
-    protected abstract void loadConfigFile();
-
+    
     void initDrm() {
         MediaSupport.initializeDrm(this, new MediaSupport.DrmInitCallback() {
             @Override
@@ -170,11 +122,30 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         });
     }
 
-    protected void parseCommonOptions(JsonObject json) {
-        parseInitOptions(safeObject(json, "initOptions"));
+    protected void parseCommonOptions(GsonReader reader) {
 
-        ks = initOptions.ks;
-        final JsonArray jsonItems = json.get("items").getAsJsonArray();
+        GsonReader backendReader = reader.getReader("backend");
+        partnerId = backendReader.getInteger("partnerId");
+        ks = backendReader.getString("ks");
+        serverUrl = backendReader.getString("serverUrl");
+
+        GsonReader uiConf = reader.getReader("uiConf");
+        if (uiConf != null) {
+            Integer partnerId = uiConf.getInteger("partnerId");
+            if (partnerId != null) {
+                uiConfPartnerId = partnerId;
+            } else {
+                uiConfPartnerId = this.partnerId;
+            }
+            uiConfId = uiConf.getInteger("id");
+        }
+
+        GsonReader playback = reader.getReader("playback");
+        autoplay = playback.getBoolean("autoplay");
+        preload = playback.getBoolean("preload");
+
+
+        final JsonArray jsonItems = reader.getArray("items");
         List<DemoItem> itemList = new ArrayList<>(jsonItems.size());
         for (JsonElement item : jsonItems) {
             final JsonObject object = item.getAsJsonObject();
@@ -183,20 +154,11 @@ public abstract class BaseDemoActivity extends AppCompatActivity
 
         items = itemList.toArray(new DemoItem[itemList.size()]);
 
-        final JsonObject uiConfJson = safeObject(json, "uiConf");
-        if (uiConfJson != null) {
-            uiConfPartnerId = safeInteger(uiConfJson, "partnerId");
-            uiConfId = safeInteger(uiConfJson, "uiConfId");
-        }
+        this.pluginConfigs = parsePluginConfigs(reader.getObject("plugins"));
     }
 
-    @NonNull
-    protected abstract DemoItem parseItem(JsonObject object);
-
-    protected abstract void loadPlayerConfig();
-    
     protected int partnerId() {
-        return initOptions.partnerId;
+        return partnerId;
     }
 
     protected abstract void loadItem(DemoItem item);
@@ -229,14 +191,9 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         TextView demoNameTextView = findViewById(R.id.demoNameTextView);
         demoNameTextView.setText(demoName());
 
-        ImageView icon = findViewById(R.id.imageView);
-        icon.setColorFilter(android.R.color.holo_green_dark);
-
         return true;
     }
-
-    protected abstract String demoName();
-
+    
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.

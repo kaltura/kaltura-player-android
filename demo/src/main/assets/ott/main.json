@@ -1,8 +1,10 @@
 {
   "mode": "ott",
-  "initOptions": {
+  "playback": {
+    "autoplay": true
+  },
+  "backend": {
     "partnerId": 198,
-    "autoPlay": true,
     "ks": null,
     "serverUrl": "http://api-preprod.ott.kaltura.com/v4_5/api_v3/"
   },

@@ -7,12 +7,14 @@ import android.widget.Toast;
 
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.utils.GsonReader;
 import com.kaltura.tvplayer.KalturaPlayer;
-import com.kaltura.tvplayer.PlayerConfigManager;
+import com.kaltura.tvplayer.UIConfManager;
+import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.ovp.KalturaOvpPlayer;
 import com.kaltura.tvplayer.ovp.OVPMediaOptions;
 
@@ -46,9 +48,9 @@ public class OVPDemoActivity extends BaseDemoActivity {
             jsonString = Utils.readAssetToString(this, "ovp/main.json");
         }
 
-        final JsonObject json = GsonParser.toJson(jsonString).getAsJsonObject();
+        GsonReader reader = GsonReader.withString(jsonString);
 
-        parseCommonOptions(json);
+        parseCommonOptions(reader);
     }
 
     private String readUrlToString(Uri url) {
@@ -67,19 +69,16 @@ public class OVPDemoActivity extends BaseDemoActivity {
 
     @Override
     protected void loadPlayerConfig() {
-        PlayerConfigManager.initialize(this);
+        UIConfManager.initialize(this);
         if (uiConfId == null) {
             return;
         }
         
-        if (uiConfPartnerId == null) {
-            uiConfPartnerId = partnerId();
-        }
-        PlayerConfigManager.retrieve(uiConfId, initOptions.partnerId, ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
+        UIConfManager.retrieve(uiConfId, uiConfPartnerId, ks, null, new UIConfManager.OnPlayerConfigLoaded() {
             @Override
             public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
                 Toast.makeText(OVPDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-                playerConfig = config;
+                uiConf = config;
             }
         });
     }
@@ -90,8 +89,15 @@ public class OVPDemoActivity extends BaseDemoActivity {
         startActivity(new Intent(this, PlayerActivity.class));
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN_ORDERED)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
+
+        PlayKitManager.registerPlugins(this, DemoPlugin.factory);
+
+        PlayerInitOptions initOptions = new PlayerInitOptions(partnerId, uiConf)
+                .setAutoplay(autoplay)
+                .setPreload(preload)
+                .setServerUrl(serverUrl);
 
         KalturaOvpPlayer player = KalturaOvpPlayer.create(playerActivity, initOptions);
 

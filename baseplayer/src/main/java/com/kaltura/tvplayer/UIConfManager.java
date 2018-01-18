@@ -21,9 +21,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class PlayerConfigManager {
+public class UIConfManager {
 
-    private static final String TAG = "PlayerConfigManager";
+    private static final String TAG = "UIConfManager";
     private static final long SOFT_EXPIRATION_SEC = 24 * 60 * 60;
     private static final long HARD_EXPIRATION_SEC = 72 * 60 * 60;
     private static Handler mainHandler = new Handler(Looper.getMainLooper());

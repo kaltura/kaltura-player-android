@@ -1,26 +1,65 @@
 package com.kaltura.tvplayer;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.utils.GsonReader;
 
 public class PlayerInitOptions {
-    public int partnerId;
+    public final int partnerId;
     public String ks;
+
+    public final Integer uiConfId;
+    public final JsonObject uiConf;
+    public final GsonReader uiConfPlugins;
+
     public PKPluginConfigs pluginConfigs;
-    public Boolean autoPlay;
-    public Boolean preload;
-    public PKMediaFormat preferredFormat;
+    
+    public Boolean autoplay = true;
+    public Boolean preload = true;
     public String serverUrl;
     public String referrer;
-    public JsonObject playerConfig;
+    public String audioLanguage;
+    public String textLanguage;
 
-    public PlayerInitOptions() {
-    }
-
-    public PlayerInitOptions setPartnerId(int partnerId) {
+    public PlayerInitOptions(int partnerId, JsonObject uiConf) {
         this.partnerId = partnerId;
-        return this;
+
+        // Fields not found in the UIConf: partnerId*, ks*, serverUrl, referrer
+        
+        if (uiConf == null) {
+            this.uiConfId = null;
+            this.uiConf = null;
+            this.uiConfPlugins = null;
+            return;
+        }
+        
+        this.uiConf = uiConf;
+        this.uiConfId = GsonReader.getInteger(uiConf, "id");
+        
+        this.uiConfPlugins = GsonReader.getReader(uiConf, "plugins");
+
+        // Apply player options
+        // Assuming this format: 
+        /*
+            { 
+                "playback": {
+                    "audioLanguage": "",
+                    "textLanguage": "",
+                    "preload": "none"/"auto",
+                    "autoplay": false,
+                }
+            }
+         */
+
+        GsonReader reader = GsonReader.getReader(uiConf, "playback");
+        if (reader != null) {
+            audioLanguage = reader.getString("audioLanguage");
+            textLanguage = reader.getString("textLanguage");
+            autoplay = reader.getBoolean("autoplay");
+
+            String preload = reader.getString("preload");
+            this.preload = "auto".equals(preload);
+        }
     }
 
     public PlayerInitOptions setKs(String ks) {
@@ -29,37 +68,51 @@ public class PlayerInitOptions {
     }
 
     public PlayerInitOptions setPluginConfigs(PKPluginConfigs pluginConfigs) {
-        this.pluginConfigs = pluginConfigs;
+        if (pluginConfigs != null) {
+            this.pluginConfigs = pluginConfigs;
+        }
         return this;
     }
 
-    public PlayerInitOptions setAutoPlay(Boolean autoPlay) {
-        this.autoPlay = autoPlay;
+    public PlayerInitOptions setAutoplay(Boolean autoplay) {
+        if (autoplay != null) {
+            this.autoplay = autoplay;
+        }
         return this;
     }
 
     public PlayerInitOptions setPreload(Boolean preload) {
-        this.preload = preload;
-        return this;
-    }
-
-    public PlayerInitOptions setPreferredFormat(PKMediaFormat preferredFormat) {
-        this.preferredFormat = preferredFormat;
+        if (preload != null) {
+            this.preload = preload;
+        }
         return this;
     }
 
     public PlayerInitOptions setServerUrl(String serverUrl) {
-        this.serverUrl = serverUrl;
+        if (serverUrl != null) {
+            this.serverUrl = serverUrl;
+        }
         return this;
     }
 
     public PlayerInitOptions setReferrer(String referrer) {
-        this.referrer = referrer;
+        if (referrer != null) {
+            this.referrer = referrer;
+        }
         return this;
     }
 
-    public PlayerInitOptions setPlayerConfig(JsonObject playerConfig) {
-        this.playerConfig = playerConfig;
+    public PlayerInitOptions setAudioLanguage(String audioLanguage) {
+        if (audioLanguage != null) {
+            this.audioLanguage = audioLanguage;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setTextLanguage(String textLanguage) {
+        if (textLanguage != null) {
+            this.textLanguage = textLanguage;
+        }
         return this;
     }
 }
