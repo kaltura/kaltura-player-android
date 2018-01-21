@@ -6,14 +6,12 @@ import android.widget.Toast;
 
 import com.google.gson.JsonObject;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Utils;
-import com.kaltura.playkit.utils.GsonReader;
 import com.kaltura.tvplayer.KalturaPlayer;
-import com.kaltura.tvplayer.UIConfManager;
-import com.kaltura.tvplayer.PlayerInitOptions;
+import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
 import com.kaltura.tvplayer.ott.OTTMediaOptions;
 
@@ -36,7 +34,10 @@ public class OTTDemoActivity extends BaseDemoActivity {
     @Override
     protected void loadConfigFile() {
         final String jsonString = Utils.readAssetToString(this, "ott/main.json");
-        parseCommonOptions(GsonReader.withString(jsonString));
+        final JsonObject json = GsonParser.toJson(jsonString).getAsJsonObject();
+
+        parseCommonOptions(json);
+
     }
 
     @NonNull
@@ -47,17 +48,17 @@ public class OTTDemoActivity extends BaseDemoActivity {
 
     @Override
     protected void loadPlayerConfig() {
-        UIConfManager.initialize(this);
+        PlayerConfigManager.initialize(this);
 
         if (uiConfId == null || uiConfPartnerId == null) {
             return;
         }
         
-        UIConfManager.retrieve(uiConfId, uiConfPartnerId, ks, null, new UIConfManager.OnPlayerConfigLoaded() {
+        PlayerConfigManager.retrieve(uiConfId, uiConfPartnerId, ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
             @Override
             public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
                 Toast.makeText(OTTDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-                uiConf = config;
+                playerConfig = config;
             }
         });
     }
@@ -70,13 +71,6 @@ public class OTTDemoActivity extends BaseDemoActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
-
-        PlayKitManager.registerPlugins(this, DemoPlugin.factory);
-
-        PlayerInitOptions initOptions = new PlayerInitOptions(partnerId, uiConf)
-                .setAutoplay(autoplay)
-                .setPreload(preload)
-                .setServerUrl(serverUrl);
 
         KalturaOTTPlayer player = KalturaOTTPlayer.create(playerActivity, initOptions);
 

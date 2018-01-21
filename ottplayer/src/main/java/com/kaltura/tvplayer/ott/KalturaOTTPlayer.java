@@ -25,7 +25,10 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
     private static boolean pluginsRegistered;
 
     public static KalturaOTTPlayer create(final Context context, PlayerInitOptions options) {
-        return new KalturaOTTPlayer(context, options);
+
+        final PlayerInitOptions initOptions = options != null ? options : new PlayerInitOptions();
+
+        return new KalturaOTTPlayer(context, initOptions);
     }
 
     private KalturaOTTPlayer(Context context, PlayerInitOptions initOptions) {
@@ -59,25 +62,21 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
     }
 
     private KavaAnalyticsConfig getKavaAnalyticsConfig() {
-        // TODO: merge UIConf
         return new KavaAnalyticsConfig().setPartnerId(getPartnerId()).setReferrer(referrer);
     }
     
     private KalturaLiveStatsConfig getLiveStatsConfig() {
-        // TODO: merge UIConf
         final PKMediaEntry mediaEntry = getMediaEntry();
         return new KalturaLiveStatsConfig(getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null);
     }
     
     private KalturaStatsConfig getStatsConfig() {
-        // TODO: merge UIConf
         final PKMediaEntry mediaEntry = getMediaEntry();
         return new KalturaStatsConfig(getUiConfId(), getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null, null, 0, true);
     }
 
     @NonNull
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
-        // TODO: merge UIConf
         return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), 30);
     }
 
@@ -89,8 +88,9 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
             setKS(mediaOptions.ks);
         }
         
-        final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                .setAssetId(mediaOptions.assetId);
+        final PhoenixMediaProvider provider = new PhoenixMediaProvider()
+                .setAssetId(mediaOptions.assetId)
+                .setSessionProvider(newSimpleSessionProvider());
 
         if (mediaOptions.fileIds != null) {
             provider.setFileIds(mediaOptions.fileIds);

@@ -11,8 +11,6 @@ import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
-import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsConfig;
-import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlayerInitOptions;
 
@@ -22,7 +20,10 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
     private static boolean pluginsRegistered;
 
     public static KalturaOvpPlayer create(final Context context, PlayerInitOptions options) {
-        return new KalturaOvpPlayer(context, options);
+        
+        final PlayerInitOptions initOptions = options != null ? options : new PlayerInitOptions();
+        
+        return new KalturaOvpPlayer(context, initOptions);
     }
     
     private KalturaOvpPlayer(Context context, PlayerInitOptions initOptions) {
@@ -34,7 +35,7 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
     @Override
     protected void registerPlugins(Context context) {
         // Plugin registration is static and only done once, but requires a Context.
-        if (!pluginsRegistered) {
+        if (!KalturaOvpPlayer.pluginsRegistered) {
             registerCommonPlugins(context);
         }
     }
@@ -42,31 +43,20 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
     @Override
     protected void updateKS(String ks) {
         // Update Kava
-        pkPlayer.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getDefaultKavaConfig(ks));
+        pkPlayer.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig(ks));
     }
 
-    private KavaAnalyticsConfig getDefaultKavaConfig(String ks) {
-        // TODO: merge UIConf
+    private KavaAnalyticsConfig getKavaAnalyticsConfig(String ks) {
         return new KavaAnalyticsConfig()
                 .setKs(ks).setPartnerId(getPartnerId()).setReferrer(referrer);
     }
 
-    private KalturaLiveStatsConfig getDefaultLiveStatsConfig() {
-        // TODO: merge UIConf
-        final PKMediaEntry mediaEntry = getMediaEntry();
-        return new KalturaLiveStatsConfig(getPartnerId(), "{{entryId}}");
-    }
-
-    private KalturaStatsConfig getDefaultStatsConfig() {
-        // TODO: merge UIConf
-        final PKMediaEntry mediaEntry = getMediaEntry();
-        return new KalturaStatsConfig(getUiConfId(), getPartnerId(), "{{entryId}}", null, 0, true);
-    }
-
     @Override
     protected void addKalturaPluginConfigs(PKPluginConfigs combined) {
-        KavaAnalyticsConfig kavaConfig = getDefaultKavaConfig(null);
-        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
+        KavaAnalyticsConfig kavaConfig = getKavaAnalyticsConfig(null);
+
+        // FIXME temporarily disabled Kava
+//        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
     }
 
     @Override
@@ -76,8 +66,8 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
             setKS(mediaOptions.ks);
         }
 
-        MediaEntryProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                .setEntryId(mediaOptions.entryId);
+        MediaEntryProvider provider = new KalturaOvpMediaProvider()
+                .setSessionProvider(newSimpleSessionProvider()).setEntryId(mediaOptions.entryId);
 
         provider.load(new OnMediaLoadCompletion() {
             @Override
@@ -85,5 +75,9 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
                 mediaLoadCompleted(response, listener);
             }
         });
+    }
+
+    public interface PlayerReadyCallback {
+        void onPlayerReady(KalturaOvpPlayer player);
     }
 }
