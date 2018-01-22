@@ -8,4 +8,17 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppTheme.Body1">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="AppTheme.Body2">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="FilterDialogTheme" parent="@android:style/Theme.Holo.Light.Dialog">
+        <item name="android:windowNoTitle">false</item>
+    </style>
 </resources>

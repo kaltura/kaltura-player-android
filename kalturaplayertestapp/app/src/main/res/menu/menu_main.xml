@@ -1,0 +1,35 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+    <item
+        android:id="@+id/action_add_items"
+        android:title="@string/add_random_items" />
+
+    <item
+        android:id="@+id/action_add_folder"
+        android:title="@string/add_folder" />
+
+    <item
+        android:id="@+id/action_add_json"
+        android:title="@string/add_json" />
+
+    <item
+        android:id="@+id/action_remove_folder"
+        android:title="@string/remove_folder" />
+
+    <item
+        android:id="@+id/action_remove_json"
+        android:title="@string/remove_json" />
+
+    <item
+        android:id="@+id/action_delete"
+        android:title="@string/delete_all" />
+
+    <item
+        android:id="@+id/action_logout"
+        android:title="@string/menu_logout"
+        android:visible="true"
+        app:showAsAction="never" />
+</menu>

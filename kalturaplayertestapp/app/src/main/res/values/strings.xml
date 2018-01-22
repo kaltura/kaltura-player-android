@@ -1,3 +1,23 @@
 <resources>
     <string name="app_name">Kaltura Player Test App</string>
+    <string name="action_settings">Settings</string>
+    <string name="menu_login">Log in</string>
+    <string name="menu_logout">Log out</string>
+    <string name="login_label">Log In</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="title_sign_in">Welcome</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="hint_password">password</string>
+    <string name="hint_email">email</string>
+    <string name="sign_in">Sign In</string>
+    <string name="jsons">Content</string>
+    <string name="message_no_results">No Results</string>
+    <string name="add_folder">Add Folder</string>
+    <string name="add_json">Add Configuration</string>
+    <string name="remove_folder">Add Folder</string>
+    <string name="remove_json">Add Configuration</string>
+    <string name="add_random_items">Add Random Items</string>
+    <string name="delete_all">Delete All</string>
+    <string name="dialog_button_close">Close</string>
 </resources>

@@ -1,0 +1,62 @@
+{
+  "project_info": {
+    "project_number": "475090021193",
+    "firebase_url": "https://kaltura-player-test-app-b465f.firebaseio.com",
+    "project_id": "kaltura-player-test-app-b465f",
+    "storage_bucket": "kaltura-player-test-app-b465f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:475090021193:android:fb937e4847be5673",
+        "android_client_info": {
+          "package_name": "com.kaltura.kalturaplayertestapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "475090021193-gujvc68eunri5ktbp9a13laudk1r2fef.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kaltura.kalturaplayertestapp",
+            "certificate_hash": "aa3644bdafeea40c6a911631df785c667e95fa5f"
+          }
+        },
+        {
+          "client_id": "475090021193-v1nhd6feo83g2e2blr0gu7kt7ltfk3n4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCE7uXfHlkBstYAiUMRv52eOB5KaAPGLiY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "475090021193-1ibqa4vpmi3ia12o1fbdam40hicqslka.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.kaltura.Kaltura-Player-Test-App"
+              }
+            },
+            {
+              "client_id": "475090021193-v1nhd6feo83g2e2blr0gu7kt7ltfk3n4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
