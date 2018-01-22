@@ -23,6 +23,11 @@ android {
 
 }
 
+def excludePlayKit = {
+    exclude group: 'com.kaltura', module: 'playkit-android'
+    exclude group: 'com.kaltura.playkit', module: 'playkit'
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
@@ -36,8 +41,8 @@ dependencies {
     compile project(path: ':ovpplayer')
     compile project(path: ':ottplayer')
     
-    compile 'com.kaltura.playkit:imaplugin:0.1.2'
-    compile 'com.kaltura.playkit:youboraplugin:0.1.2'
+    compile 'com.kaltura.playkit:imaplugin:0.1.2', excludePlayKit
+    compile 'com.kaltura.playkit:youboraplugin:0.1.2', excludePlayKit
     
     implementation 'org.greenrobot:eventbus:3.1.1'
 }
