@@ -274,11 +274,13 @@ public abstract class BaseDemoActivity extends AppCompatActivity
             @Override
             public void onItemClick(final AdapterView<?> parent, View view, final int position, long id) {
                 new AlertDialog.Builder(context)
-                        .setTitle("Select action")
-                        .setItems(new String[]{"Play"}, new DialogInterface.OnClickListener() {
+                        .setTitle(getString(R.string.select_action))
+                        .setItems(new String[]{getString(R.string.play_stream)}, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                loadItem(((DemoItem) parent.getItemAtPosition(position)));
+                                if (which == 0) {
+                                    loadItem(((DemoItem) parent.getItemAtPosition(position)));
+                                }
                             }
                         }).show();
             }
