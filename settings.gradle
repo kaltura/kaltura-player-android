@@ -6,3 +6,13 @@ include ':ovpplayer'
 include ':ottplayer'
 include ':kalturaplayertestapp'
 project(':kalturaplayertestapp').projectDir = new File('kalturaplayertestapp/app')
+include ':playkit'
+project(':playkit').projectDir = new File(settingsDir,'../playkit-android/playkit')
+include ':ima'
+project(':ima').projectDir = new File(settingsDir,'../playkit-android-ima/imaplugin')
+include ':youbora'
+project(':youbora').projectDir = new File(settingsDir,'../playkit-android-youbora/youboraplugin')
+include ':kava'
+project(':kava').projectDir = new File(settingsDir,'../playkit-android-kava/kavaplugin')
+include ':googlecast'
+project(':googlecast').projectDir = new File(settingsDir,'../playkit-android-googlecast/googlecast')
