@@ -32,13 +32,13 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    compile project(path: ':baseplayer')
-    compile project(path: ':ovpplayer')
-    compile project(path: ':ottplayer')
+    api project(path: ':baseplayer')
+    api project(path: ':ovpplayer')
+    api project(path: ':ottplayer')
     
     //compile 'com.kaltura.playkit:imaplugin:0.1.2'
     //compile 'com.kaltura.playkit:youboraplugin:0.1.2'
-    compile project(":ima");
-    compile project(":youbora"); ;
+    implementation project(":ima");
+    implementation project(":youbora"); ;
     implementation 'org.greenrobot:eventbus:3.1.1'
 }

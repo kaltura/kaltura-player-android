@@ -23,11 +23,13 @@ configurations.all {
 }
 
 dependencies {
-    compile project(":baseplayer")
-    compile project(":ima");
-    compile project(":youbora");
-    compile project(":kava");
-    compile project(":googlecast");
+    api project(path: ':baseplayer')
+    api project(path: ':ovpplayer')
+    api project(path: ':ottplayer')
+
+    implementation project(path: ":googlecast");
+    implementation project(path: ":youbora");
+    implementation project(path: ":ima");
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
@@ -45,7 +47,6 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-    compile project(path: ':playkit')
 }
 
 
