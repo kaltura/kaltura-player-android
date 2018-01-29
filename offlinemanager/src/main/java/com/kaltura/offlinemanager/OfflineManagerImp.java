@@ -67,25 +67,25 @@ class OfflineManagerImp extends OfflineManager {
     }
 
     @Override
-    boolean pauseDownload(String entryId) {
+    public boolean pauseDownload(String entryId) {
         // TODO: 29/01/2018 DTG pause item.
         return false;
     }
 
     @Override
-    boolean removeEntry(String entryId) {
+    public boolean removeEntry(String entryId) {
         // TODO: 29/01/2018 DTG remove item. LAM unregister.
         return false;
     }
 
     @Override
-    boolean checkDrmLicense(String entryId) {
+    public boolean checkDrmLicense(String entryId) {
         // TODO: 29/01/2018 LAM check status.
         return false;
     }
 
     @Override
-    boolean renewDrmLicense(String entryId) {
+    public boolean renewDrmLicense(String entryId) {
         // TODO: 29/01/2018 LAM renew.
         return false;
     }
