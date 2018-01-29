@@ -1,5 +1,5 @@
 
-include ':baseplayer'
+include ':baseplayer', ':offlinemanager'
 include ':demo'
 
 include ':ovpplayer'
@@ -9,6 +9,9 @@ project(':kalturaplayertestapp').projectDir = new File('kalturaplayertestapp/app
 
 include ':playkit'
 project(':playkit').projectDir = new File(settingsDir, '../playkit-android/playkit')
+
+include ':dtglib'
+project(':dtglib').projectDir = new File(settingsDir, '../playkit-dtg-android/dtglib')
 
 include ':kavaplugin'
 project(':kavaplugin').projectDir = new File(settingsDir, '../playkit-android-kava/kavaplugin')
