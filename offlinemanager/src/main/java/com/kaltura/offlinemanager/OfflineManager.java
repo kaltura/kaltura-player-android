@@ -27,6 +27,13 @@ public abstract class OfflineManager {
      */
     public abstract void setDownloadProgressListener(DownloadProgressListener listener);
 
+    public abstract void pauseDownloads();
+
+    public abstract void resumeDownloads();
+
+
+
+
     /**
      * Find entry by id. Returns null if the entry is not found.
      * @param entryId

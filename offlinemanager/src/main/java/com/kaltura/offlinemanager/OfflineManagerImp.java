@@ -25,6 +25,16 @@ class OfflineManagerImp extends OfflineManager {
     }
 
     @Override
+    public void pauseDownloads() {
+        // TODO: 29/01/2018 DTG stop
+    }
+
+    @Override
+    public void resumeDownloads() {
+        // TODO: 29/01/2018 DTG resume
+    }
+
+    @Override
     public EntryMetadata getEntryMetadata(String entryId) {
         // TODO: 28/01/2018 DTG lookup
         return null;
