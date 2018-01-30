@@ -67,6 +67,10 @@ class OfflineManagerImp extends OfflineManager {
     @Override
     public boolean loadMetadata(String entryId, MediaSelection selection, MetadataListener listener) {
         // TODO: 29/01/2018 Use DTG's loadMetadata. Apply MediaSelection in onTracksAvailable. Call listener.
+        // The default behavior for video selection is to choose the best track for the device:
+        // 1. Dimensions: should match screen size
+        // 2. DRM requirements
+        // 3. MediaSelection parameters
         return false;
     }
 

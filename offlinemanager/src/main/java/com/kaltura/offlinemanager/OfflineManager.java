@@ -173,32 +173,26 @@ public abstract class OfflineManager {
         avc, hevc, vp9
     }
 
-    public class MediaSelection {
-        public Long minVideoBitrate;    // Download the minimal bitrate that is at least that large
-        public Long minVideoHeight;     // Download the minimal height that is at least that large
-        public Long minVideoWidth;      // Download the minimal width that is at least that large
-        public CodecType preferredVideoCodec;  // Override codec selection (not recommended)
+    public static class MediaSelection {
+        public Long preferredVideoBitrate;
+        public Long preferredVideoHeight;
+        public Long preferredVideoWidth;
 
         public List<String> preferredAudioLanguages;
         public List<String> preferredTextLanguages;
 
-        public MediaSelection setMinVideoBitrate(Long minVideoBitrate) {
-            this.minVideoBitrate = minVideoBitrate;
+        public MediaSelection setPreferredVideoBitrate(Long preferredVideoBitrate) {
+            this.preferredVideoBitrate = preferredVideoBitrate;
             return this;
         }
 
-        public MediaSelection setMinVideoHeight(Long minVideoHeight) {
-            this.minVideoHeight = minVideoHeight;
+        public MediaSelection setPreferredVideoHeight(Long preferredVideoHeight) {
+            this.preferredVideoHeight = preferredVideoHeight;
             return this;
         }
 
-        public MediaSelection setMinVideoWidth(Long minVideoWidth) {
-            this.minVideoWidth = minVideoWidth;
-            return this;
-        }
-
-        public MediaSelection setPreferredVideoCodec(CodecType preferredVideoCodec) {
-            this.preferredVideoCodec = preferredVideoCodec;
+        public MediaSelection setPreferredVideoWidth(Long preferredVideoWidth) {
+            this.preferredVideoWidth = preferredVideoWidth;
             return this;
         }
 
