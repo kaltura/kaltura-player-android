@@ -23,7 +23,7 @@ import org.json.JSONObject;
 /**
  * RecyclerView adapter for a list of Restaurants.
  */
-public class JsonAdapter extends FirestoreAdapter<JsonAdapter.ViewHolder> {
+public class TestConfigurationAdapter extends FirestoreAdapter<TestConfigurationAdapter.ViewHolder> {
     private Context context;
     public interface OnJsonSelectedListener {
 
@@ -33,7 +33,7 @@ public class JsonAdapter extends FirestoreAdapter<JsonAdapter.ViewHolder> {
 
     private OnJsonSelectedListener mListener;
 
-    public JsonAdapter(Query query, OnJsonSelectedListener listener) {
+    public TestConfigurationAdapter(Query query, OnJsonSelectedListener listener) {
         super(query);
         mListener = listener;
     }
@@ -126,7 +126,6 @@ public class JsonAdapter extends FirestoreAdapter<JsonAdapter.ViewHolder> {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-
         }
     }
 }

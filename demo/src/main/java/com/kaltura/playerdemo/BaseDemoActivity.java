@@ -85,20 +85,16 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     }
 
     protected void parseInitOptions(JsonObject json) {
-        final PlayerInitOptions options = new PlayerInitOptions();
         final Integer partnerId = safeInteger(json, "partnerId");
         if (partnerId == null) {
             throw new IllegalArgumentException("partnerId must not be null");
         }
-        
-
+        final PlayerInitOptions options = new PlayerInitOptions(partnerId, safeObject(json, "playerConfig"));
         options
-                .setPartnerId(partnerId)
                 .setServerUrl(safeString(json, "serverUrl"))
                 .setAutoPlay(safeBoolean(json, "autoPlay"))
                 .setPreload(safeBoolean(json, "preload"))
                 .setKs(safeString(json, "ks"))
-                .setPlayerConfig(safeObject(json, "playerConfig"))
                 .setPluginConfigs(parsePluginConfigs(json.get("plugins")))
                 .setReferrer(safeString(json, "referrer"));
 

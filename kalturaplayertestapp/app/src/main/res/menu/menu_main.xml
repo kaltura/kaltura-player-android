@@ -8,6 +8,11 @@
         android:title="@string/add_random_items" />
 
     <item
+        android:id="@+id/add_items_scan"
+        android:title="@string/add_scanned_items" />
+
+
+    <item
         android:id="@+id/action_add_folder"
         android:title="@string/add_folder" />
 

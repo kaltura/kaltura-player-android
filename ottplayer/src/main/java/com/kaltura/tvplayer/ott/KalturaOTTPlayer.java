@@ -25,15 +25,12 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
     private static boolean pluginsRegistered;
 
     public static KalturaOTTPlayer create(final Context context, PlayerInitOptions options) {
-
-        final PlayerInitOptions initOptions = options != null ? options : new PlayerInitOptions();
-
-        return new KalturaOTTPlayer(context, initOptions);
+        return new KalturaOTTPlayer(context, options);
     }
 
     private KalturaOTTPlayer(Context context, PlayerInitOptions initOptions) {
         super(context, initOptions);
-        
+
         this.serverUrl = KalturaPlayer.safeServerUrl(initOptions.serverUrl, null);
     }
 
@@ -43,7 +40,7 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
             registerCommonPlugins(context);
 
             PlayKitManager.registerPlugins(context, PhoenixAnalyticsPlugin.factory);
-            
+
             pluginsRegistered = true;
         }
     }
@@ -64,12 +61,12 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
     private KavaAnalyticsConfig getKavaAnalyticsConfig() {
         return new KavaAnalyticsConfig().setPartnerId(getPartnerId()).setReferrer(referrer);
     }
-    
+
     private KalturaLiveStatsConfig getLiveStatsConfig() {
         final PKMediaEntry mediaEntry = getMediaEntry();
         return new KalturaLiveStatsConfig(getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null);
     }
-    
+
     private KalturaStatsConfig getStatsConfig() {
         final PKMediaEntry mediaEntry = getMediaEntry();
         return new KalturaStatsConfig(getUiConfId(), getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null, null, 0, true);
@@ -83,31 +80,33 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
 
     @Override
     public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
-        
-        if (mediaOptions.ks != null) {
-            setKS(mediaOptions.ks);
+
+        if (mediaOptions.getKs() != null) {
+            setKS(mediaOptions.getKs());
         }
-        
-        final PhoenixMediaProvider provider = new PhoenixMediaProvider()
-                .setAssetId(mediaOptions.assetId)
-                .setSessionProvider(newSimpleSessionProvider());
+        setPreferrdMediaFormat(mediaOptions.getPreferredMediaFormat());
+        setStartPosition(mediaOptions.getStartPosition());
+
+        final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
+                .setAssetId(mediaOptions.assetId);
+
 
         if (mediaOptions.fileIds != null) {
             provider.setFileIds(mediaOptions.fileIds);
         }
-        
+
         if (mediaOptions.contextType != null) {
             provider.setContextType(mediaOptions.contextType);
         }
-        
+
         if (mediaOptions.assetType != null) {
             provider.setAssetType(mediaOptions.assetType);
         }
-        
+
         if (mediaOptions.formats != null) {
             provider.setFormats(mediaOptions.formats);
         }
-        
+
         provider.load(new OnMediaLoadCompletion() {
             @Override
             public void onComplete(ResultElement<PKMediaEntry> response) {

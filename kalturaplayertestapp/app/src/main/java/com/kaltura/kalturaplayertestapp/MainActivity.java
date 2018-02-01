@@ -14,8 +14,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
+import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.vision.barcode.Barcode;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -26,12 +28,20 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.WriteBatch;
-import com.kaltura.kalturaplayertestapp.adapter.JsonAdapter;
+import com.google.gson.Gson;
+import com.kaltura.kalturaplayertestapp.adapter.TestConfigurationAdapter;
+import com.kaltura.kalturaplayertestapp.converters.TestDescriptor;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
+import com.kaltura.kalturaplayertestapp.qrcode.BarcodeCaptureActivity;
 
-public class MainActivity extends AppCompatActivity implements JsonAdapter.OnJsonSelectedListener {
+import java.util.HashMap;
+import java.util.Map;
+
+
+public class MainActivity extends AppCompatActivity implements TestConfigurationAdapter.OnJsonSelectedListener {
 
     private static final String TAG = "MainActivity";
+    private static final int RC_BARCODE_CAPTURE = 9001;
     public static final String KEY_NEW_CONFIGURATION_PATH = "key_new_configuration_path";
     public static final String KEY_JSON_STRING = "key_json_string";
     public static final int LIMIT = 50;
@@ -44,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements JsonAdapter.OnJso
     private Query mQuery;
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
-    private JsonAdapter mAdapter;
+    private TestConfigurationAdapter mAdapter;
 
     @Override
     protected void onStart() {
@@ -85,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements JsonAdapter.OnJso
                 .limit(LIMIT);
 
         // RecyclerView
-        mAdapter = new JsonAdapter(mQuery, this) {
+        mAdapter = new TestConfigurationAdapter(mQuery, this) {
             @Override
             protected void onDataChanged() {
                 // Show/hide content if the query returns empty.
@@ -125,6 +135,9 @@ public class MainActivity extends AppCompatActivity implements JsonAdapter.OnJso
             case R.id.action_add_items:
                 onAddItemsClicked();
                 break;
+            case R.id.add_items_scan:
+                onScanItemsClicked();
+                break;
             case R.id.action_delete:
                 mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
                 break;
@@ -147,6 +160,14 @@ public class MainActivity extends AppCompatActivity implements JsonAdapter.OnJso
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void onScanItemsClicked() {
+        Intent intent = new Intent(this, BarcodeCaptureActivity.class);
+        //intent.putExtra(BarcodeCaptureActivity.AutoFocus, autoFocus.isChecked());
+        //intent.putExtra(BarcodeCaptureActivity.UseFlash, useFlash.isChecked());
+
+        startActivityForResult(intent, RC_BARCODE_CAPTURE);
     }
 
     private void onAddItemsClicked() {
@@ -185,15 +206,62 @@ public class MainActivity extends AppCompatActivity implements JsonAdapter.OnJso
             startActivity(intent);
             return;
         } else if (configuration.getType() == Configuration.JSON) {
-            Class destinationClass = JsonDetailActivity.class;
+            Class destinationClass = PlayerActivity.class;
             Intent intent = new Intent(context, destinationClass);
-            intent.putExtra(KEY_JSON_STRING, configuration.getJson());
-
-            // DocumentReference alovelaceDocumentRef = db.document("users/alovelace");
+            intent.putExtra(PlayerActivity.PLAYER_CONFIG_TITLE_KEY, configuration.getTitle());
+            intent.putExtra(PlayerActivity.PLAYER_CONFIG_JSON_KEY, configuration.getJson());
             startActivity(intent);
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == RC_BARCODE_CAPTURE) {
+            if (resultCode == CommonStatusCodes.SUCCESS) {
+                if (data != null) {
+                    Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
+                    //barcodeValue.setText(barcode.displayValue);
+                    Log.d(TAG, "Barcode read: " + barcode.displayValue);
+
+
+
+                    //getJsonFromCloud();
+                    String testsResult = "[\n" +
+                            "  {\n" +
+                            "    \"title\": \"Single inline linear\",\n" +
+                            "    \"url\": \"http://externaltests.dev.kaltura.com/standalonePlayer/Ads/standalonePlayer_2426_single_inline_linear.json\"\n" +
+                            "  },\n" +
+                            "  {\n" +
+                            "    \"title\": \"Bitrate switch\",\n" +
+                            "    \"url\": \"http://externaltests.dev.kaltura.com/standalonePlayer/VOD/HLS/standalonePlayer_hls_2539_bitrate_switch.json\"\n" +
+                            "  }\n" +
+                            "]";
+
+
+                    Gson gson = new Gson();
+                    TestDescriptor[] testDescriptors = gson.fromJson(testsResult, TestDescriptor[].class);
+
+                    Map<String,String> tests = new HashMap<>();
+                    for (TestDescriptor test : testDescriptors) {
+                        Log.d(TAG, "got Test " + test.getTitle());
+                        String [] path = test.getUrl().split("standalonePlayer/");
+                        tests.put(test.getTitle(),path[1]);
+                    }
+                    Log.d(TAG, tests.keySet().toString());
+
+
+                } else {
+                   // statusMessage.setText(R.string.barcode_failure);
+                    Log.d(TAG, "No barcode captured, intent data is null");
+                }
+            } else {
+                Log.e(TAG, "Error, " +  CommonStatusCodes.getStatusCodeString(resultCode));
+            }
+        }
+        else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
 
 //    private void onAddItemsClicked() {
 //        // Add a bunch of random restaurants

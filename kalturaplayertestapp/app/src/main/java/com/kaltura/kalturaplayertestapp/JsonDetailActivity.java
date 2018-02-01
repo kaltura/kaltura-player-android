@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.TextView;
 
@@ -13,10 +14,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.kaltura.kalturaplayertestapp.adapter.JsonAdapter;
+import com.kaltura.kalturaplayertestapp.adapter.TestConfigurationAdapter;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
 
-public class JsonDetailActivity extends BaseActivity implements JsonAdapter.OnJsonSelectedListener {
+public class JsonDetailActivity extends BaseActivity implements TestConfigurationAdapter.OnJsonSelectedListener {
 
     private static final String TAG = "JsonDetailActivity";
 
@@ -27,7 +28,7 @@ public class JsonDetailActivity extends BaseActivity implements JsonAdapter.OnJs
     private CollectionReference currenConfigurationRef;
     private Query mQuery;
     private TextView mEmptyView;
-    private JsonAdapter mAdapter;
+    private TestConfigurationAdapter mAdapter;
 
 
     @Override
@@ -35,7 +36,11 @@ public class JsonDetailActivity extends BaseActivity implements JsonAdapter.OnJs
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_json_detail);
 
-        String configuatioPath= getIntent().getExtras().getString(MainActivity.KEY_NEW_CONFIGURATION_PATH);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
+
+        String configuatioPath = getIntent().getExtras().getString(MainActivity.KEY_NEW_CONFIGURATION_PATH);
         if (configuatioPath == null) {
             throw new IllegalArgumentException("Must pass extra " + MainActivity.KEY_NEW_CONFIGURATION_PATH);
         }
@@ -48,7 +53,7 @@ public class JsonDetailActivity extends BaseActivity implements JsonAdapter.OnJs
         FirebaseFirestore.setLoggingEnabled(true);
 
         // RecyclerView
-        mAdapter = new JsonAdapter(mQuery, this) {
+        mAdapter = new TestConfigurationAdapter(mQuery, this) {
             @Override
             protected void onDataChanged() {
                 // Show/hide content if the query returns empty.
@@ -73,6 +78,13 @@ public class JsonDetailActivity extends BaseActivity implements JsonAdapter.OnJs
         mConfigurationsRecycler.setAdapter(mAdapter);
         mAdapter.startListening();
     }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        onBackPressed();
+        return true;
+    }
+
 
     @Override
     public void onStart() {
@@ -106,11 +118,10 @@ public class JsonDetailActivity extends BaseActivity implements JsonAdapter.OnJs
             startActivity(intent);
             return;
         } else if (configuration.getType() == Configuration.JSON) {
-            Class destinationClass = JsonDetailActivity.class;
+            Class destinationClass = PlayerActivity.class;
             Intent intent = new Intent(context, destinationClass);
-            intent.putExtra(MainActivity.KEY_JSON_STRING, configuration.getJson());
-
-            // DocumentReference alovelaceDocumentRef = db.document("users/alovelace");
+            intent.putExtra(PlayerActivity.PLAYER_CONFIG_TITLE_KEY, configuration.getTitle());
+            intent.putExtra(PlayerActivity.PLAYER_CONFIG_JSON_KEY, configuration.getJson());
             startActivity(intent);
         }
 

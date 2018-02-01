@@ -20,12 +20,9 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
     private static boolean pluginsRegistered;
 
     public static KalturaOvpPlayer create(final Context context, PlayerInitOptions options) {
-        
-        final PlayerInitOptions initOptions = options != null ? options : new PlayerInitOptions();
-        
-        return new KalturaOvpPlayer(context, initOptions);
+        return new KalturaOvpPlayer(context, options);
     }
-    
+
     private KalturaOvpPlayer(Context context, PlayerInitOptions initOptions) {
         super(context, initOptions);
 
@@ -62,12 +59,14 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
     @Override
     public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
 
-        if (mediaOptions.ks != null) {
-            setKS(mediaOptions.ks);
+        if (mediaOptions.getKs() != null) {
+            setKS(mediaOptions.getKs());
         }
+        setPreferrdMediaFormat(mediaOptions.getPreferredMediaFormat());
+        setStartPosition(mediaOptions.getStartPosition());
 
-        MediaEntryProvider provider = new KalturaOvpMediaProvider()
-                .setSessionProvider(newSimpleSessionProvider()).setEntryId(mediaOptions.entryId);
+        MediaEntryProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
+                .setEntryId(mediaOptions.entryId);
 
         provider.load(new OnMediaLoadCompletion() {
             @Override

@@ -7,7 +7,9 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
+import com.kaltura.netkit.connect.request.ExecutedRequest;
 import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.GsonParser;
@@ -43,6 +45,8 @@ public class PlayerConfigManager {
         
         if (serverUrl == null) {
             serverUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
+        } else if (!serverUrl.endsWith("/")) {
+            serverUrl += "/";
         }
         
         if (cachedConfig == null) {
@@ -57,7 +61,7 @@ public class PlayerConfigManager {
             configLoaded(onPlayerConfigLoaded, id, cachedConfig);
             return;
         }
-        
+
         if (freshness < HARD_EXPIRATION_SEC) {
             // Refresh the cache, but return the cache immediately
             refreshCache(id, partnerId, ks, serverUrl, cachedConfig, null);
@@ -95,19 +99,41 @@ public class PlayerConfigManager {
         });
     }
 
+    private static boolean isValidResponse(String responseString, StringBuffer errorMessage) {
+        JsonParser jsonParser = new JsonParser();
+        Object jsonResponseObject = jsonParser.parse(responseString);
+        if (jsonResponseObject instanceof JsonObject) {
+            JsonObject responseJson = (JsonObject) jsonResponseObject;
+            if (responseJson != null && responseJson.has("objectType")) {
+                String objectType = responseJson.getAsJsonPrimitive("objectType").getAsString();
+                if (objectType.equals("KalturaAPIException")) {
+                    errorMessage.append(responseJson.getAsJsonPrimitive("message").getAsString());
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
     private static void load(int partnerId, final int configId, String ks, String serverUrl, final InternalCallback callback) {
         final APIOkRequestsExecutor requestsExecutor = APIOkRequestsExecutor.getSingleton();
 
-        String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
+        final String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
 
         OvpRequestBuilder request = UIConfService.uiConfById(apiServerUrl, partnerId, configId, ks).completion(new OnRequestCompletion() {
             @Override
             public void onComplete(final ResponseElement response) {
+
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        callback.finished(response.getResponse(), response.getError());
+                        StringBuffer errorMessage = new StringBuffer();
+                        int errorCode = -1;
+                        ErrorElement errorElement = response.getError();
+                        if (!isValidResponse(response.getResponse(), errorMessage)){
+                            errorElement = ErrorElement.fromCode(errorCode, errorMessage.toString());
+                        }
+                        callback.finished(response.getResponse(), errorElement);
                     }
                 });
             }
