@@ -5,7 +5,12 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.tvplayer.PlayerInitOptions;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Map;
+import java.util.Scanner;
 
 /**
  * Created by gilad.nadav on 1/24/18.
@@ -117,5 +122,25 @@ public class Utils {
             return jsonElement.getAsInt();
         }
         return null;
+    }
+
+
+    public static String getResponseFromHttpUrl(URL url) throws IOException {
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        try {
+            InputStream in = urlConnection.getInputStream();
+
+            Scanner scanner = new Scanner(in);
+            scanner.useDelimiter("\\A");
+
+            boolean hasInput = scanner.hasNext();
+            if (hasInput) {
+                return scanner.next();
+            } else {
+                return null;
+            }
+        } finally {
+            urlConnection.disconnect();
+        }
     }
 }
