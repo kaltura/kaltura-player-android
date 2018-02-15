@@ -1,15 +1,12 @@
 package com.kaltura.tvplayer;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.tvplayer.utils.GsonReader;
 
-import org.json.JSONArray;
 
 public class PlayerInitOptions {
     public static final String PLAYER = "player";
@@ -23,6 +20,7 @@ public class PlayerInitOptions {
     public static final String CONFIG = "config";
     public static final String PLUGINS = "plugins";
     public static final String AUTO = "auto";
+    public static final String OPTIONS = "options";
     public static final String STREAM_PRIORITY = "streamPriority";
 
     public final int partnerId;

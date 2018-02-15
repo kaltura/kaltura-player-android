@@ -11,15 +11,16 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.kaltura.kalturaplayertestapp.converters.IMAPluginConfig;
+
 import com.kaltura.kalturaplayertestapp.converters.Media;
 import com.kaltura.kalturaplayertestapp.converters.PlayerConfig;
 import com.kaltura.kalturaplayertestapp.converters.PluginDescriptor;
-import com.kaltura.kalturaplayertestapp.converters.YouboraPluginConfig;
+
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
@@ -27,7 +28,18 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.player.MediaSupport;
+import com.kaltura.playkit.plugins.ima.IMAConfig;
+import com.kaltura.playkit.plugins.ima.IMAPlugin;
+import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
+import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
+import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
+import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
+import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsConfig;
+import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsPlugin;
+import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
+import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
+import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
@@ -35,6 +47,7 @@ import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
 import com.kaltura.tvplayer.ott.OTTMediaOptions;
 import com.kaltura.tvplayer.ovp.KalturaOvpPlayer;
 import com.kaltura.tvplayer.ovp.OVPMediaOptions;
+import com.kaltura.tvplayer.utils.TvPlayerUtils;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -50,7 +63,7 @@ public class PlayerActivity extends AppCompatActivity {
     private static final PKLog log = PKLog.get("PlayerActivity");
     public static final String PLAYER_CONFIG_JSON_KEY = "player_config_json_key";
     public static final String PLAYER_CONFIG_TITLE_KEY = "player_config_title_key";
-
+    private Gson gson = new Gson();
     private KalturaPlayer player;
     private JsonObject playerConfig;
     private PlayerInitOptions initOptions;
@@ -86,48 +99,33 @@ public class PlayerActivity extends AppCompatActivity {
 
         final String playerType = safeString(config, "playerType");
 
-        Gson gson = new Gson();
+
         final PlayerConfig appPlayerInitConfig = gson.fromJson(config.toString(), PlayerConfig.class);
-
-        PluginDescriptor[] pluginDescriptors = gson.fromJson(appPlayerInitConfig.getPluginConfigs(), PluginDescriptor[].class);
-
-        if (pluginDescriptors != null) {
-            for (PluginDescriptor pluginDescriptor : pluginDescriptors) {
-                switch (pluginDescriptor.getPluginName()) {
-                    case "IMAPlugin":
-                        IMAPluginConfig imaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), IMAPluginConfig.class);
-                        log.d("IMAPlugin");
-                        break;
-                    case "YouboraPlugin":
-                        YouboraPluginConfig youboraPlugin = gson.fromJson(pluginDescriptor.getParams(), YouboraPluginConfig.class);
-                        break;
-                    default:
-                }
-            }
-        }
-
-        //Build PKPluginConfigs.....
-
 
         PlayerConfigManager.retrieve(Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getPartnerId()), appPlayerInitConfig.getKs(), appPlayerInitConfig.getUiConf().getBaseUrl(), new PlayerConfigManager.OnPlayerConfigLoaded() {
             @Override
             public void onConfigLoadComplete(int id, JsonObject studioUiConfJson, ErrorElement error, int freshness) {
+
+
+
+
+
                 KalturaPlayer player = null;
                 appPlayerInitConfig.setPlayerConfig(studioUiConfJson);
+                JsonArray appPluginConfigJsonObject = appPlayerInitConfig.getPluginConfigs();
                 initOptions = new PlayerInitOptions(Integer.valueOf(appPlayerInitConfig.getPartnerId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), appPlayerInitConfig.getPlayerConfig())
                         .setAutoPlay(appPlayerInitConfig.getAutoPlay())
                         .setKs(appPlayerInitConfig.getKs())
                         .setPreload(appPlayerInitConfig.getPreload())
                         .setReferrer(appPlayerInitConfig.getReferrer())
-                        .setServerUrl(appPlayerInitConfig.getBaseUrl());
-                        //.setPluginConfigs(appPlayerInitConfig.getPluginConfigs());
+                        .setServerUrl(appPlayerInitConfig.getBaseUrl())
+                        .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
                 mediaList = appPlayerInitConfig.getMediaList();
-                //Utils.parseInitOptions(config.getAsJsonObject("initOptions"));
+                //TvPlayerUtils.parseInitOptions(config.getAsJsonObject("initOptions"));
 
                 if ("ovp".equals(playerType.toLowerCase())) {
                     player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
-
                     OVPMediaOptions ovpMediaOptions = new OVPMediaOptions().setEntryId(mediaList.get(0).getEntryId());
                     ovpMediaOptions.setKS(mediaList.get(0).getKs());
                     ovpMediaOptions.setStartPosition(appPlayerInitConfig.getStartPosition());
@@ -164,6 +162,42 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private PKPluginConfigs convertPluginsJsonArrayToPKPlugins(JsonArray pluginConfigs) {
+        //JsonObject uiConfPluginsConfig = TvPlayerUtils.getPluginsConfig(uiConfPlayerConfig);
+        //UiConfYouboraConfig uiConfYouboraConfig = TvPlayerUtils.getUiConfYouboraConfig(uiConfPluginsConfig);
+        //UiConfIMAConfig uiConfIMAConfig= TvPlayerUtils.getUiConfIMAConfig(uiConfPluginsConfig);
+        //KavaAnalyticsConfig kavaAnalyticsConfig = TvPlayerUtils.getUiConfKavaConfig(partnerId, uiConfPluginsConfig);
+
+        PKPluginConfigs pkPluginConfigs = new PKPluginConfigs();
+        PluginDescriptor[] pluginDescriptors = gson.fromJson(pluginConfigs, PluginDescriptor[].class);
+
+        if (pluginDescriptors != null) {
+            for (PluginDescriptor pluginDescriptor : pluginDescriptors) {
+                String pluginName = pluginDescriptor.getPluginName();
+                if (YouboraPlugin.factory.getName().equals(pluginName)) {
+                    YouboraConfig youboraPlugin = gson.fromJson(pluginDescriptor.getParams(), YouboraConfig.class);
+                    pkPluginConfigs.setPluginConfig(YouboraPlugin.factory.getName(), youboraPlugin.toJson());
+                } else if (KavaAnalyticsPlugin.factory.getName().equals(pluginName)) {
+                    KavaAnalyticsConfig kavaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KavaAnalyticsConfig.class);
+                    pkPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaPluginConfig.toJson());
+                } else if (IMAPlugin.factory.getName().equals(pluginName)) {
+                    IMAConfig imaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), IMAConfig.class);
+                    pkPluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig.toJson());
+                } else if (PhoenixAnalyticsPlugin.factory.getName().equals(pluginName)) {
+                    PhoenixAnalyticsConfig phoenixAnalyticsConfig = gson.fromJson(pluginDescriptor.getParams(), PhoenixAnalyticsConfig.class);
+                    pkPluginConfigs.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalyticsConfig.toJson());
+                } else if (KalturaStatsPlugin.factory.getName().equals(pluginName)) {
+                    KalturaStatsConfig kalturaStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaStatsConfig.class);
+                    pkPluginConfigs.setPluginConfig(KalturaStatsPlugin.factory.getName(), kalturaStatsPluginConfig.toJson());
+                } else if (KalturaLiveStatsPlugin.factory.getName().equals(pluginName)) {
+                    KalturaLiveStatsConfig kalturaLiveStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaLiveStatsConfig.class);
+                    pkPluginConfigs.setPluginConfig(KalturaLiveStatsPlugin.factory.getName(), kalturaLiveStatsPluginConfig.toJson());
+                }
+            }
+        }
+        return pkPluginConfigs;
     }
 
     @Override
@@ -265,6 +299,32 @@ public class PlayerActivity extends AppCompatActivity {
                 //getWindow().setFlags(params.width, params.height=600);
                 player.getView().setLayoutParams(params);
             }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        log.d("Ad Event onResume");
+        super.onResume();
+        if (player != null) {
+            player.onApplicationResumed();
+            //if (nowPlaying && AUTO_PLAY_ON_RESUME) {
+            //    player.play();
+            //}
+        }
+        //if (controlsView != null) {
+        //    controlsView.resume();
+        //}
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //if (controlsView != null) {
+        //    controlsView.release();
+        //}
+        if (player != null) {
+            player.onApplicationPaused();
         }
     }
 }

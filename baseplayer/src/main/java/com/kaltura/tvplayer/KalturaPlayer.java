@@ -8,12 +8,18 @@ import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKEvent;
@@ -34,12 +40,10 @@ import com.kaltura.tvplayer.utils.TokenResolver;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static com.kaltura.tvplayer.PlayerInitOptions.CONFIG;
 import static com.kaltura.tvplayer.PlayerInitOptions.PLAYER;
 import static com.kaltura.tvplayer.PlayerInitOptions.PLUGINS;
-
 
 public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
@@ -161,12 +165,9 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     private void loadPlayer(PlayerInitOptions initOptions) {
         this.initOptions = initOptions;
-        // Assuming that at this point, all plugins are already registered.
-
+        PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
         PKPluginConfigs combinedPluginConfigs = new PKPluginConfigs();
 
-
-        PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
         GsonReader uiConf = GsonReader.withObject(initOptions.uiConf);
 
         //JsonObject providerUIConf = (uiConf != null && uiConf.getObject("config") != null && uiConf.getObject("config").getAsJsonObject("player") != null) ? uiConf.getObject("config").getAsJsonObject("player").getAsJsonObject("proivder") : null;
@@ -177,111 +178,133 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
 
         // Special case: Kaltura Analytics plugins
-
         // KAVA
-        String name = KavaAnalyticsPlugin.factory.getName();
-        if (initOptions.uiConfId == null) {
-            JsonObject uic = mergeJsonConfig(GsonReader.getObject(pluginsUIConf, name), kavaDefaults(partnerId, initOptions.uiConfId, referrer));
+        if (initOptions.uiConfId != null && pluginsUIConf != null) {
+            String name = KavaAnalyticsPlugin.factory.getName();
+            JsonObject appKavaJsonObject = null;
+            if (initOptions.pluginConfigs.hasConfig(name)) {
+                appKavaJsonObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
+            } else {
+                appKavaJsonObject = kavaDefaults(partnerId, initOptions.uiConfId, referrer);
+            }
+            JsonObject uic = mergeJsonConfig(appKavaJsonObject, pluginsUIConf.getAsJsonObject(name));
             if (uic != null) {
                 pluginsUIConf.add(name, uic);
             }
         }
 
         if (pluginConfigs != null) {
-            if (pluginsUIConf != null) {
-                for (Map.Entry<String, Object> entry : pluginConfigs) {
-                    final String pluginName = entry.getKey();
-                    final JsonObject config = (JsonObject) entry.getValue();
-                    JsonObject uiConfObject = GsonReader.getObject(pluginsUIConf, pluginName);
-
-                    JsonObject mergedConfig = mergeJsonConfig(config, uiConfObject);
-                    if (mergedConfig == null) {
-                        if (config instanceof JsonObject) {
-                            mergedConfig = mergeJsonConfig(config, uiConfObject);
-                        } else {
-                            // no merge support
-                            continue;
-                        }
-                    }
-                    combinedPluginConfigs.setPluginConfig(pluginName, mergedConfig);
-                }
-            } else {
-                for (Map.Entry<String, Object> entry : pluginConfigs) {
-                    combinedPluginConfigs.setPluginConfig(entry.getKey(), entry.getValue());
-                }
-            }
-        }
-
-        // Add the plugins that are ONLY mentioned in UIConf
-        if (pluginsUIConf != null) {
-            for (Map.Entry<String, JsonElement> entry : pluginsUIConf.entrySet()) {
+            Gson gson = new Gson();
+            for (Map.Entry<String, Object> entry : pluginConfigs) {
                 String pluginName = entry.getKey();
-                if (combinedPluginConfigs.hasConfig(pluginName)) {
-                    // Already handled.
-                    continue;
+                JsonObject config = (JsonObject) entry.getValue();
+                if (pluginsUIConf != null && pluginsUIConf.has(pluginName)) {
+                    JsonObject mergedConfig = mergeJsonConfig(pluginsUIConf.getAsJsonObject(pluginName), config);
+                    if (mergedConfig != null) {
+                        combinedPluginConfigs.setPluginConfig(pluginName, mergedConfig);
+                    }
+                } else if (config != null){
+                    combinedPluginConfigs.setPluginConfig(pluginName, config);
                 }
-
-                JsonElement entryValue = entry.getValue();
-                if (!(entryValue instanceof JsonObject)) {
-                    log.w("Ignoring invalid config format for plugin " + pluginName);
-                    continue;
-                }
-
-                JsonObject jsonObject = (JsonObject) entryValue;
-                JsonObject config = mergeJsonConfig(null, jsonObject);
-
-                combinedPluginConfigs.setPluginConfig(pluginName, config);
             }
         }
 
-        //addKalturaPluginConfigs(combined)
-        replaceKeysInConfig(combinedPluginConfigs);
 
-        pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs);
-        if (initOptions.audioLanguageMode != null && initOptions.audioLanguage != null) {
-            pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(initOptions.audioLanguageMode).setTrackLanguage(initOptions.audioLanguage));
+
+        // Add the plugins that are ONLY mentioned in UIConf and not merged yet
+        if (pluginsUIConf != null && pluginsUIConf.keySet() != null) {
+            for (String pluginName : pluginsUIConf.keySet()) {
+                if (combinedPluginConfigs.hasConfig(pluginName)) {
+                    continue;
+                }
+                JsonObject config = pluginsUIConf.getAsJsonObject(pluginName);
+                if (config != null) {
+                    combinedPluginConfigs.setPluginConfig(pluginName, config);
+                }
+            }
+
+            //addKalturaPluginConfigs(combinedPluginConfigs);
+
+            pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
+            if (initOptions.audioLanguageMode != null && initOptions.audioLanguage != null) {
+                pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(initOptions.audioLanguageMode).setTrackLanguage(initOptions.audioLanguage));
+            }
+            if (initOptions.textLanguageMode != null && initOptions.textLanguage != null) {
+                pkPlayer.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(initOptions.textLanguageMode).setTrackLanguage(initOptions.textLanguage));
+            }
+            PlayManifestRequestAdapter.install(pkPlayer, referrer);
         }
-        if (initOptions.textLanguageMode != null && initOptions.textLanguage != null) {
-            pkPlayer.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(initOptions.textLanguageMode).setTrackLanguage(initOptions.textLanguage));
-        }
-        PlayManifestRequestAdapter.install(pkPlayer, referrer);
     }
 
-    private void replaceKeysInConfig(PKPluginConfigs combinedPluginConfigs) {
-        Map<String,String> replacMap = new HashMap<>();
-        //replacMap.put("{{entryId}}}", getMediaEntry().getId());
-
-        //replacMap.put("{{entryName}}", getMediaEntry().getName());
-
-        //replacMap.put("{{entryType}}", getMediaEntry().getMediaType().name());
-
-        replacMap.put("{{ks}}", ks);
-
-        replacMap.put("{{uiConfId}}", String.valueOf(uiConfId));
-
-        replacMap.put("{{partnerId}}", String.valueOf(partnerId));
-
-    }
-
-    private JsonObject mergeJsonConfig(JsonObject original, JsonObject uiConf) {
-        if (original == null && uiConf != null) {
-            return uiConf;
-        } else if (original != null && uiConf == null) {
-            return original;
-        } else if (original == null || uiConf == null) {
+    public JsonObject mergeJsonConfig(JsonObject source, JsonObject target) {
+         if (source == null && target != null) {
+            return target;
+        } else if (source != null && target == null) {
+            return source;
+        } else if (source == null || target == null) {
             return null;
         }
 
-        JsonObject merged = original.deepCopy();
+        for (String key: source.keySet()) {
+            Log.d("XXX", "key = " + key);
 
-        for (Map.Entry<String, JsonElement> entry : uiConf.entrySet()) {
-            if (!merged.has(entry.getKey())) {
-                merged.add(entry.getKey(), entry.getValue().deepCopy());
+            Object sourceValue = source.get(key);
+            boolean isSourceValueIsNull = (sourceValue == null || (sourceValue != null && source.get(key).isJsonNull()));
+            if (!target.has(key)) {
+                // new value for "key":
+                if (!isSourceValueIsNull) {
+                    if (sourceValue instanceof JsonArray) {
+                        target.add(key, (JsonArray) sourceValue);
+                    }
+                    if (sourceValue instanceof JsonPrimitive) {
+                        target.add(key, (JsonPrimitive) sourceValue);
+                    }
+                } else {
+                    target.add(key,null);
+                }
+            } else {
+                // existing value for "key" - recursively deep merge:
+                if (sourceValue instanceof JsonObject) {
+                    JsonObject valueJson = (JsonObject) sourceValue;
+                    mergeJsonConfig(valueJson, target.get(key).getAsJsonObject());
+                } else {
+                    Object targetValue = target.get(key);
+                    boolean isTargetValueIsNull = (targetValue == null || (targetValue != null && target.get(key).isJsonNull()));
+                    if (sourceValue instanceof JsonArray) {
+                        if (!isTargetValueIsNull) {
+                            target.add(key, (JsonArray) targetValue);
+                        }
+                    } else if (sourceValue instanceof JsonPrimitive) {
+                        if (target.has(key)) {
+                            if (!isTargetValueIsNull) {
+                                JsonPrimitive targetPrimitiveVal = (JsonPrimitive) targetValue;
+                                if (targetPrimitiveVal.isString()) {
+                                    if ("".equals(targetPrimitiveVal.getAsString()) && !isSourceValueIsNull) {
+                                        target.add(key, (JsonPrimitive) sourceValue);
+                                    } else {
+                                        target.add(key, targetPrimitiveVal);
+                                    }
+                                } else if (!targetPrimitiveVal.isString()) {
+                                    target.add(key, targetPrimitiveVal);
+                                }
+                            } else if (!isSourceValueIsNull) {
+                                target.add(key, (JsonPrimitive) sourceValue);
+                            }
+                        } else {
+                            if (!isSourceValueIsNull) {
+                                target.add(key, (JsonPrimitive) sourceValue);
+                                Log.d("XXX", "no key " + key + " in target value = " + (JsonPrimitive) sourceValue);
+                            } else {
+                                target.add(key, null);
+                                Log.d("XXX", "no key " + key + " in target value = null");
+                            }
+                        }
+                    }
+                }
             }
         }
-        return null;
+        return target;
     }
-
 
     public View getView() {
 
@@ -291,15 +314,11 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         } else {
             FrameLayout view = new FrameLayout(context);
             view.setBackgroundColor(Color.BLACK);
-            view.addView(pkPlayer.getView(), FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-
             PlaybackControlsView controlsView = new PlaybackControlsView(context);
-
             final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.BOTTOM | Gravity.START);
             view.addView(controlsView, layoutParams);
-
+            view.addView(pkPlayer.getView(), FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
             controlsView.setPlayer(this);
-
             this.view = view;
         }
         return view;
@@ -354,7 +373,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         return mediaEntry;
     }
 
-   public int getUiConfId() {
+    public int getUiConfId() {
         return uiConfId;
     }
 

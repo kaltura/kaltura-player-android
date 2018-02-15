@@ -2,7 +2,7 @@ package com.kaltura.kalturaplayertestapp.converters;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.PKPluginConfigs;
+
 
 import java.util.List;
 
@@ -120,7 +120,7 @@ public class PlayerConfig {
         return plugins;
     }
 
-    public void setPluginConfigs(PKPluginConfigs pluginConfigs) {
+    public void setPluginConfigs(JsonArray plugins) {
         this.plugins = plugins;
     }
 
@@ -136,7 +136,7 @@ public class PlayerConfig {
         return playerConfig;
     }
 
-    public void setPlayerConfig(JsonObject playerConfig) {
-        this.playerConfig = playerConfig;
+    public void setPlayerConfig(JsonObject uiConfPlayerConfig) {
+             playerConfig = uiConfPlayerConfig;
     }
 }
