@@ -36,6 +36,7 @@ import com.kaltura.kalturaplayertestapp.qrcode.BarcodeCaptureActivity;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 
 public class MainActivity extends AppCompatActivity implements TestConfigurationAdapter.OnJsonSelectedListener {
@@ -222,24 +223,31 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
                     //barcodeValue.setText(barcode.displayValue);
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
+                    String jsonTests = "";
+                    try {
+                        jsonTests =  new DownloadFileFromURL().execute(barcode.displayValue).get();
+                        Log.d("XXXZZZ", jsonTests);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
 
-
-
-                    //getJsonFromCloud();
-                    String testsResult = "[\n" +
-                            "  {\n" +
-                            "    \"title\": \"Single inline linear\",\n" +
-                            "    \"url\": \"http://externaltests.dev.kaltura.com/standalonePlayer/Ads/standalonePlayer_2426_single_inline_linear.json\"\n" +
-                            "  },\n" +
-                            "  {\n" +
-                            "    \"title\": \"Bitrate switch\",\n" +
-                            "    \"url\": \"http://externaltests.dev.kaltura.com/standalonePlayer/VOD/HLS/standalonePlayer_hls_2539_bitrate_switch.json\"\n" +
-                            "  }\n" +
-                            "]";
+//                    //getJsonFromCloud();
+//                    String testsResult = "[\n" +
+//                            "  {\n" +
+//                            "    \"title\": \"Single inline linear\",\n" +
+//                            "    \"url\": \"http://externaltests.dev.kaltura.com/standalonePlayer/Ads/standalonePlayer_2426_single_inline_linear.json\"\n" +
+//                            "  },\n" +
+//                            "  {\n" +
+//                            "    \"title\": \"Bitrate switch\",\n" +
+//                            "    \"url\": \"http://externaltests.dev.kaltura.com/standalonePlayer/VOD/HLS/standalonePlayer_hls_2539_bitrate_switch.json\"\n" +
+//                            "  }\n" +
+//                            "]";
 
 
                     Gson gson = new Gson();
-                    TestDescriptor[] testDescriptors = gson.fromJson(testsResult, TestDescriptor[].class);
+                    TestDescriptor[] testDescriptors = gson.fromJson(jsonTests, TestDescriptor[].class);
 
                     Map<String,String> tests = new HashMap<>();
                     for (TestDescriptor test : testDescriptors) {
