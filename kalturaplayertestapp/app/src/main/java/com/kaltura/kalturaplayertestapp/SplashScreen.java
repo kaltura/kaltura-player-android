@@ -26,7 +26,9 @@ public class SplashScreen extends Activity {
         //PlayerConfigManager.retrieve(41188731, 2215841, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() );
 
         PlayerConfigManager.initialize(this);
-        PlayerConfigManager.retrieve(41604521, 1734762, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
+        //PlayerConfigManager.retrieve(41604521, 1734762, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
+        PlayerConfigManager.retrieve(41742801, 2222401, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
+
             @Override
             public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
                 if (error == null) {
@@ -44,9 +46,17 @@ public class SplashScreen extends Activity {
         String configJsonStr = configJson.getAsString();
         JsonParser parser = new JsonParser();
         JsonObject pluginsJsonObject = parser.parse(configJsonStr).getAsJsonObject();
-        JsonElement doubleclickPluginElement = pluginsJsonObject.get("plugins").getAsJsonObject().get("doubleClick");
+        String adTagUrl = "";
+        if (pluginsJsonObject.has("plugins") && pluginsJsonObject.get("plugins").getAsJsonObject().has("doubleClick")) {
+            JsonElement doubleclickPluginElement = pluginsJsonObject.get("plugins").getAsJsonObject().get("doubleClick");
+            adTagUrl = doubleclickPluginElement.getAsJsonObject().get("adTagUrl").getAsString();
+        }
+        if (pluginsJsonObject.get("player").getAsJsonObject().has("doubleClick")) {
+            JsonElement doubleclickPluginElement = pluginsJsonObject.get("player").getAsJsonObject().get("plugins").getAsJsonObject().get("ima");
+            adTagUrl = doubleclickPluginElement.getAsJsonObject().get("adTagUrl").getAsString();
+        }
 
-        String adTagUrl = doubleclickPluginElement.getAsJsonObject().get("adTagUrl").getAsString();
+
         //String companions = doubleclickPluginElement.getAsJsonObject().get("htmlCompanions").getAsString();
         return adTagUrl;
     }
