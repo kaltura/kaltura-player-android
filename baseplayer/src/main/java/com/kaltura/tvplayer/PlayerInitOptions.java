@@ -5,7 +5,11 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKTrackConfig;
+import com.kaltura.tvplayer.config.player.StreamType;
+import com.kaltura.tvplayer.config.player.UiConfPlayer;
 import com.kaltura.tvplayer.utils.GsonReader;
+
+import java.util.List;
 
 
 public class PlayerInitOptions {
@@ -55,58 +59,53 @@ public class PlayerInitOptions {
     }
 
     private void fillUiConfPlaybackData(JsonObject uiConf) {
+
         GsonReader reader = GsonReader.withObject(uiConf);
         JsonObject playbackJson = (reader != null && reader.getObject(CONFIG) != null && reader.getObject(CONFIG).getAsJsonObject(PLAYER) != null) ? reader.getObject(CONFIG).getAsJsonObject(PLAYER).getAsJsonObject(PLAYBACK) : null;
-
         if (playbackJson != null) {
-            if (playbackJson.has(AUDIO_LANG)) {
-                if (OFF.equals(playbackJson.get(AUDIO_LANG).getAsString())) {
-                    audioLanguageMode = PKTrackConfig.Mode.OFF;
-                    audioLanguage = "";
-                } else if (AUTO.equals(playbackJson.get(AUDIO_LANG).getAsString())) {
+            Gson gson = new Gson();
+            UiConfPlayer uiconfPlayer = gson.fromJson(playbackJson, UiConfPlayer.class);
+            String audioLang = uiconfPlayer.getAudioLanguage();
+            if (audioLang != null) {
+                if (AUTO.equals(audioLang)) { // maybe "" is also considered as AUTO????
                     audioLanguageMode = PKTrackConfig.Mode.AUTO;
                     audioLanguage = "";
-                } else {
+                } else if (!"".equals(audioLang)){
                     audioLanguageMode = PKTrackConfig.Mode.SELECTION;
-                    audioLanguage = playbackJson.get(AUDIO_LANG).getAsString();
+                    audioLanguage = audioLang;
                 }
             }
 
-            if (playbackJson.has(TEXT_LANG)) {
-                if (OFF.equals(playbackJson.get(TEXT_LANG).getAsString())) {
+            String textLang = uiconfPlayer.getTextLanguage();
+            if (textLang != null) {
+                if (OFF.equals(textLang)) {
                     textLanguageMode = PKTrackConfig.Mode.OFF;
                     textLanguage = "";
-                } else if (AUTO.equals(playbackJson.get(TEXT_LANG).getAsString())) {
+                } else if (AUTO.equals(textLang)) {
                     textLanguageMode = PKTrackConfig.Mode.AUTO;
                     textLanguage = "";
                 } else {
                     textLanguageMode = PKTrackConfig.Mode.SELECTION;
-                    textLanguage = playbackJson.get(TEXT_LANG).getAsString();
+                    textLanguage = textLang;
                 }
             }
-            if (playbackJson.has(AUTOPLAY)) {
-                autoplay = playbackJson.get(AUTOPLAY).getAsBoolean();
+            if (uiconfPlayer.getAutoplay() != null) {
+                autoplay = uiconfPlayer.getAutoplay();
             }
 
-            if (playbackJson.has(PRELOAD)) {
-                String playerConfigPreload = playbackJson.get(PRELOAD).getAsString();
+            if (uiconfPlayer.getPreload() != null) {
+                String playerConfigPreload = uiconfPlayer.getPreload();
                 preload = AUTO.equals(playerConfigPreload);
             }
 
-            if (playbackJson.has(START_TIME)) {
-                startTime = playbackJson.get(START_TIME).getAsInt();
+            if (uiconfPlayer.getStartTime() != null) {
+                startTime = uiconfPlayer.getStartTime();
             }
-        }
 
-        JsonArray streamPriorityJsonArray = null;
-        if (playbackJson != null) {
-            streamPriorityJsonArray = (reader.getObject(CONFIG).getAsJsonObject(PLAYER).getAsJsonObject(PLAYBACK).getAsJsonArray(STREAM_PRIORITY) != null) ?
-                    reader.getObject(CONFIG).getAsJsonObject(PLAYER).getAsJsonObject(PLAYBACK).getAsJsonArray(STREAM_PRIORITY) : null;
-            if (streamPriorityJsonArray != null) {
-                Gson gson = new Gson();
-                StreamPriority[] streamPriority = gson.fromJson(streamPriorityJsonArray, StreamPriority[].class);
-                if (streamPriority != null && streamPriority.length > 0) {
-                    setPreferredMediaFormat(streamPriority[0].getFormat());
+            if (uiconfPlayer.getStreamPriority() != null) {
+                List<StreamType> streamTypeList = uiconfPlayer.getStreamPriority();
+                if (streamTypeList != null && streamTypeList.size() > 0) {
+                    setPreferredMediaFormat(streamTypeList.get(0).getFormat());
                 }
             }
         }
@@ -180,16 +179,5 @@ public class PlayerInitOptions {
         return this;
     }
 
-    private class StreamPriority {
-        String engine;
-        String format;
 
-        public String getEngine() {
-            return engine;
-        }
-
-        public String getFormat() {
-            return format;
-        }
-    }
 }
