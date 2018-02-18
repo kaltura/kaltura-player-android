@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/list_item_height"
-    android:background="@color/greySecondary"
     android:minHeight="@dimen/list_item_height">
 
     <RelativeLayout
@@ -23,7 +22,7 @@
             android:layout_weight="1"
             android:gravity="bottom"
             android:textAppearance="?android:textAppearanceMedium"
-            android:textColor="@android:color/white"
+            android:textColor="@android:color/black"
             android:textStyle="bold"
             tools:text="Test" />
 
@@ -55,7 +54,7 @@
             android:layout_height="1dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
-            android:background="#dadada"
+            android:background="@color/lightBlue"
             android:layout_gravity="bottom"
             android:paddingTop="8dp" />
     </LinearLayout>
