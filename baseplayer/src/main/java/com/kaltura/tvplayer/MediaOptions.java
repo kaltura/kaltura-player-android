@@ -18,9 +18,9 @@ public class MediaOptions {
         return this;
     }
 
-    public MediaOptions setPreferredMediaFormat(String preferredMeidaFormat, PKMediaFormat initOptionsPreferredMediaFormat) {
-        if (preferredMeidaFormat != null) {
-            this.preferredMediaFormat = PKMediaFormat.valueOf(preferredMeidaFormat);
+    public MediaOptions setPreferredMediaFormat(String preferredMediaFormat, PKMediaFormat initOptionsPreferredMediaFormat) {
+        if (preferredMediaFormat != null) {
+            this.preferredMediaFormat = PKMediaFormat.valueOf(preferredMediaFormat);
         } else {
             if (initOptionsPreferredMediaFormat == null) {
                 this.preferredMediaFormat = PKMediaFormat.dash;

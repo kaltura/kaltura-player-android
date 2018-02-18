@@ -21,7 +21,7 @@ public class Utils {
     public static PlayerInitOptions parseInitOptions(int partnerId, int uiConfId, JsonObject json) {
 
         JsonObject uiconfJson = null;
-        String meidaProvider = safeString(json, "mediaProvider");
+        String mediaProvider = safeString(json, "mediaProvider");
         final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId, uiconfJson);
 //
 //        {
@@ -60,7 +60,7 @@ public class Utils {
 //        }
 
 
-        if ("ovp".equals(meidaProvider)) {
+        if ("ovp".equals(mediaProvider)) {
 //            final Integer partnerId = safeInteger(json, "partnerId");
 //            if (partnerId == null) {
 //                throw new IllegalArgumentException("partnerId must not be null");
@@ -73,7 +73,7 @@ public class Utils {
                     .setPluginConfigs(parsePluginConfigs(json.get("plugins")))
                     .setReferrer(safeString(json, "referrer"));
 
-        } else if ("ott".equals(meidaProvider)) {
+        } else if ("ott".equals(mediaProvider)) {
             //TODO
         }
         return options;
