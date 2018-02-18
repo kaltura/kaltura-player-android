@@ -102,67 +102,69 @@ public class PlayerActivity extends AppCompatActivity {
 
         final PlayerConfig appPlayerInitConfig = gson.fromJson(config.toString(), PlayerConfig.class);
 
-        PlayerConfigManager.retrieve(Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getPartnerId()), appPlayerInitConfig.getKs(), appPlayerInitConfig.getUiConf().getBaseUrl(), new PlayerConfigManager.OnPlayerConfigLoaded() {
-            @Override
-            public void onConfigLoadComplete(int id, JsonObject studioUiConfJson, ErrorElement error, int freshness) {
-
-
-
-
-
-                KalturaPlayer player = null;
-                appPlayerInitConfig.setPlayerConfig(studioUiConfJson);
-                JsonArray appPluginConfigJsonObject = appPlayerInitConfig.getPluginConfigs();
-                initOptions = new PlayerInitOptions(Integer.valueOf(appPlayerInitConfig.getPartnerId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), appPlayerInitConfig.getPlayerConfig())
-                        .setAutoPlay(appPlayerInitConfig.getAutoPlay())
-                        .setKs(appPlayerInitConfig.getKs())
-                        .setPreload(appPlayerInitConfig.getPreload())
-                        .setReferrer(appPlayerInitConfig.getReferrer())
-                        .setServerUrl(appPlayerInitConfig.getBaseUrl())
-                        .setAllowCrossProtocolEnabled(false)
-                        .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
-
-                mediaList = appPlayerInitConfig.getMediaList();
-                //TvPlayerUtils.parseInitOptions(config.getAsJsonObject("initOptions"));
-
-                if ("ovp".equals(playerType.toLowerCase())) {
-                    player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
-                    OVPMediaOptions ovpMediaOptions = new OVPMediaOptions().setEntryId(mediaList.get(0).getEntryId());
-                    ovpMediaOptions.setKS(mediaList.get(0).getKs());
-                    ovpMediaOptions.setStartPosition(appPlayerInitConfig.getStartPosition());
-                    ovpMediaOptions.setPreferredMediaFormat(appPlayerInitConfig.getPreferredFormat(), initOptions.preferredMediaFormat);
-
-                    player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
-                        @Override
-                        public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
-                            log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
-                        }
-                    });
-                } else  if ("ott".equals(playerType.toLowerCase())) {
-                    player = KalturaOTTPlayer.create(PlayerActivity.this, initOptions);
-                    Media ottMedia = mediaList.get(0);
-                    OTTMediaOptions ottMediaOptions = new OTTMediaOptions()
-                            .setAssetId(ottMedia.getAssetId())
-                            .setAssetType(ottMedia.getAssetType())
-                            .setContextType(ottMedia.getPlaybackContextType());
-                    ottMediaOptions.setKS(ottMedia.getKs());
-                    ottMediaOptions.setStartPosition(appPlayerInitConfig.getStartPosition());
-                    ottMediaOptions.setPreferredMediaFormat(appPlayerInitConfig.getPreferredFormat(), initOptions.preferredMediaFormat);
-                    player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
-                        @Override
-                        public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
-                            log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
-                        }
-                    });
+        if (appPlayerInitConfig.getUiConf() == null) {
+            log.e("App config json is invalid");
+        } else {
+            PlayerConfigManager.retrieve(Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getPartnerId()), appPlayerInitConfig.getKs(), appPlayerInitConfig.getUiConf().getBaseUrl(), new PlayerConfigManager.OnPlayerConfigLoaded() {
+                @Override
+                public void onConfigLoadComplete(int id, JsonObject studioUiConfJson, ErrorElement error, int freshness) {
+                    buildPlayer(studioUiConfJson, appPlayerInitConfig, playerType);
                 }
-                if (player != null) {
-                    setPlayer(player);
-                } else {
-                    log.e("Failed to initialze player...");
-                }
-            }
-        });
+            });
+        }
+    }
 
+    private void buildPlayer(JsonObject studioUiConfJson, PlayerConfig appPlayerInitConfig, String playerType) {
+        KalturaPlayer player = null;
+        appPlayerInitConfig.setPlayerConfig(studioUiConfJson);
+        JsonArray appPluginConfigJsonObject = appPlayerInitConfig.getPluginConfigs();
+        initOptions = new PlayerInitOptions(Integer.valueOf(appPlayerInitConfig.getPartnerId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), appPlayerInitConfig.getPlayerConfig())
+                .setAutoPlay(appPlayerInitConfig.getAutoPlay())
+                .setKs(appPlayerInitConfig.getKs())
+                .setPreload(appPlayerInitConfig.getPreload())
+                .setReferrer(appPlayerInitConfig.getReferrer())
+                .setServerUrl(appPlayerInitConfig.getBaseUrl())
+                .setAllowCrossProtocolEnabled(false)
+                .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
+
+        mediaList = appPlayerInitConfig.getMediaList();
+        //TvPlayerUtils.parseInitOptions(config.getAsJsonObject("initOptions"));
+
+        if ("ovp".equals(playerType.toLowerCase())) {
+            player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
+            OVPMediaOptions ovpMediaOptions = new OVPMediaOptions().setEntryId(mediaList.get(0).getEntryId());
+            ovpMediaOptions.setKS(mediaList.get(0).getKs());
+            ovpMediaOptions.setStartPosition(appPlayerInitConfig.getStartPosition());
+            ovpMediaOptions.setPreferredMediaFormat(appPlayerInitConfig.getPreferredFormat(), initOptions.preferredMediaFormat);
+
+            player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
+                @Override
+                public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
+                    log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
+                }
+            });
+        } else  if ("ott".equals(playerType.toLowerCase())) {
+            player = KalturaOTTPlayer.create(PlayerActivity.this, initOptions);
+            Media ottMedia = mediaList.get(0);
+            OTTMediaOptions ottMediaOptions = new OTTMediaOptions()
+                    .setAssetId(ottMedia.getAssetId())
+                    .setAssetType(ottMedia.getAssetType())
+                    .setContextType(ottMedia.getPlaybackContextType());
+            ottMediaOptions.setKS(ottMedia.getKs());
+            ottMediaOptions.setStartPosition(appPlayerInitConfig.getStartPosition());
+            ottMediaOptions.setPreferredMediaFormat(appPlayerInitConfig.getPreferredFormat(), initOptions.preferredMediaFormat);
+            player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
+                @Override
+                public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
+                    log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
+                }
+            });
+        }
+        if (player != null) {
+            setPlayer(player);
+        } else {
+            log.e("Failed to initialze player...");
+        }
     }
 
     private PKPluginConfigs convertPluginsJsonArrayToPKPlugins(JsonArray pluginConfigs) {

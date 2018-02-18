@@ -34,7 +34,9 @@ import com.kaltura.kalturaplayertestapp.converters.TestDescriptor;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
 import com.kaltura.kalturaplayertestapp.qrcode.BarcodeCaptureActivity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private TestConfigurationAdapter mAdapter;
+    private String newPath;
 
     @Override
     protected void onStart() {
@@ -63,6 +66,10 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
         mFirestore.collection("users").document(currentUser.getUid()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
+                if (documentSnapshot == null ) {
+                    Log.e(TAG, "ZZZ documentSnapshot = null");
+                    return;
+                }
                 String name = documentSnapshot.getString("name");
                 Log.d(TAG, "ZZZ " + name);
 
@@ -173,23 +180,23 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
 
     private void onAddItemsClicked() {
         // Add a bunch of random restaurants
-        CollectionReference colRffff = mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
-
+        CollectionReference collectionReference = mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
         Configuration folder = new Configuration();
         folder.setType(1);
         folder.setTitle("folder1");
-        colRffff.add(folder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                                       @Override
-                                                       public void onComplete(@NonNull Task<DocumentReference> task) {
-                                                           WriteBatch batch = mFirestore.batch();
-                                                           for (int i = 0; i < 10; i++) {
-                                                               DocumentReference restRef = mFirestore.collection("users").document(currentUser.getUid()).collection("configurations").document();
-                                                               Configuration randomConfig = ConfigurationUtil.getRandom(getApplicationContext());
-                                                               task.getResult().collection("configurations").add(randomConfig);
-                                                           }
-                                                       }
-                                                   }
+        collectionReference.add(folder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                                                  @Override
+                                                                  public void onComplete(@NonNull Task<DocumentReference> task) {
+                                                                      WriteBatch batch = mFirestore.batch();
+                                                                      for (int i = 0; i < 10; i++) {
+                                                                          DocumentReference restRef = mFirestore.collection("users").document(currentUser.getUid()).collection("configurations").document();
+                                                                          Configuration randomConfig = ConfigurationUtil.getRandom(getApplicationContext());
+                                                                          task.getResult().collection("configurations").add(randomConfig);
+                                                                      }
+                                                                  }
+                                                              }
         );
+
     }
 
     @Override
@@ -226,40 +233,46 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
                     String jsonTests = "";
                     try {
                         jsonTests =  new DownloadFileFromURL().execute(barcode.displayValue).get();
-                        Log.d("XXXZZZ", jsonTests);
+                        Log.d("XXX", jsonTests);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } catch (ExecutionException e) {
                         e.printStackTrace();
                     }
 
-//                    //getJsonFromCloud();
-//                    String testsResult = "[\n" +
-//                            "  {\n" +
-//                            "    \"title\": \"Single inline linear\",\n" +
-//                            "    \"url\": \"http://externaltests.dev.kaltura.com/standalonePlayer/Ads/standalonePlayer_2426_single_inline_linear.json\"\n" +
-//                            "  },\n" +
-//                            "  {\n" +
-//                            "    \"title\": \"Bitrate switch\",\n" +
-//                            "    \"url\": \"http://externaltests.dev.kaltura.com/standalonePlayer/VOD/HLS/standalonePlayer_hls_2539_bitrate_switch.json\"\n" +
-//                            "  }\n" +
-//                            "]";
-
-
                     Gson gson = new Gson();
                     TestDescriptor[] testDescriptors = gson.fromJson(jsonTests, TestDescriptor[].class);
 
-                    Map<String,String> tests = new HashMap<>();
                     for (TestDescriptor test : testDescriptors) {
                         Log.d(TAG, "got Test " + test.getTitle());
-                        String [] path = test.getUrl().split("standalonePlayer/");
-                        tests.put(test.getTitle(),path[1]);
+                        String [] splittedPath = test.getUrl().split("standalonePlayer/");
+                        List<String> testPath = new ArrayList<>();
+                        if (splittedPath.length > 1) {
+                            String[] testPathParts = splittedPath[1].split("/");
+                            if (testPathParts.length > 0)
+                                for (int i = 0; i < testPathParts.length - 1; i++) {
+                                    testPath.add(testPathParts[i]);
+                                }
+                        }
+                        try {
+                            String jsonTest =  new DownloadFileFromURL().execute(test.getUrl()).get();
+                            Configuration testConfig = new Configuration();
+                            testConfig.setType(0);
+                            testConfig.setTitle(test.getTitle());
+                            testConfig.setJson(jsonTest);
+                            CollectionReference collectionReference = mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
+                            buildFoldersHirarchy(collectionReference, testPath, testConfig);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        }
                     }
-                    Log.d(TAG, tests.keySet().toString());
+                    //Log.d(TAG, tests.keySet().toString());
 
 
                 } else {
-                   // statusMessage.setText(R.string.barcode_failure);
+                    // statusMessage.setText(R.string.barcode_failure);
                     Log.d(TAG, "No barcode captured, intent data is null");
                 }
             } else {
@@ -271,7 +284,33 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
         }
     }
 
-//    private void onAddItemsClicked() {
+    private void buildFoldersHirarchy(CollectionReference collectionReference, final List<String> subFolder, final Configuration testConfig) {
+        Configuration folder = new Configuration();
+        if (subFolder.size() == 0) {
+            folder = testConfig;
+            collectionReference.add(folder);
+            return;
+        } else {
+            folder.setType(1);
+            String fold = subFolder.get(0);
+            subFolder.remove(0);
+            folder.setTitle(fold);
+        }
+        collectionReference.add(folder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                                                  @Override
+                                                                  public void onComplete(@NonNull Task<DocumentReference> task) {
+                                                                      newPath = task.getResult().collection("configurations").getPath();
+                                                                      if (subFolder.size() == 0) {
+                                                                          task.getResult().collection("configurations").add(testConfig);
+                                                                      } else {
+                                                                          buildFoldersHirarchy(mFirestore.collection(newPath), subFolder, testConfig);
+                                                                      }
+                                                                  }
+                                                              }
+        );
+    }
+
+//    private void onAddItemsClicked1() {
 //        // Add a bunch of random restaurants
 //        List<Configuration> list = new ArrayList<>();
 //        for (int i = 0; i < 10; i++) {
@@ -289,11 +328,11 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
 //            batch.set(restRef, randomConfig);
 //
 //            // Add ratings to subcollection
-//            for (Configuration rating : list) {
-//                rating.setConfigurationType(0);
-//                DocumentReference ratingRef = restRef.collection("configurations").document();
-//                rating.setId(ratingRef.getId());
-//                batch.set(ratingRef, rating);
+//            for (Configuration config : list) {
+//                config.setType(0);
+//                DocumentReference ConfigurationRef = restRef.collection("configurations").document();
+//                config.setId(ConfigurationRef.getId());
+//                batch.set(ConfigurationRef, config);
 //            }
 //        }
 //        batch.commit().addOnCompleteListener(new OnCompleteListener<Void>() {
