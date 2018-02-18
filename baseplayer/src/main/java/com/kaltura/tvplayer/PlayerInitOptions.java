@@ -44,6 +44,7 @@ public class PlayerInitOptions {
     public PKTrackConfig.Mode textLanguageMode;
     public String textLanguage;
     public PKMediaFormat preferredMediaFormat;
+    public boolean allowCrossProtocolEnabled;
 
     public PlayerInitOptions(int partnerId, int uiConfId, JsonObject uiConf) {
         this.partnerId = partnerId;
@@ -167,6 +168,11 @@ public class PlayerInitOptions {
         if (textLanguage != null) {
             this.textLanguage = textLanguage;
         }
+        return this;
+    }
+
+    public PlayerInitOptions setAllowCrossProtocolEnabled(boolean allowCrossProtocolEnabled) {
+        this.allowCrossProtocolEnabled = allowCrossProtocolEnabled;
         return this;
     }
 

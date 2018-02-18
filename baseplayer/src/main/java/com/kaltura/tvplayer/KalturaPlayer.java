@@ -232,6 +232,10 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             if (initOptions.textLanguageMode != null && initOptions.textLanguage != null) {
                 pkPlayer.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(initOptions.textLanguageMode).setTrackLanguage(initOptions.textLanguage));
             }
+
+            if (initOptions.allowCrossProtocolEnabled) {
+                pkPlayer.getSettings().setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
+            }
             PlayManifestRequestAdapter.install(pkPlayer, referrer);
         }
     }

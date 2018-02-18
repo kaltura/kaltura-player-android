@@ -119,6 +119,7 @@ public class PlayerActivity extends AppCompatActivity {
                         .setPreload(appPlayerInitConfig.getPreload())
                         .setReferrer(appPlayerInitConfig.getReferrer())
                         .setServerUrl(appPlayerInitConfig.getBaseUrl())
+                        .setAllowCrossProtocolEnabled(false)
                         .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
                 mediaList = appPlayerInitConfig.getMediaList();
