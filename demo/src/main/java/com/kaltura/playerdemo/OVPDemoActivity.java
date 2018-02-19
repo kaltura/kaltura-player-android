@@ -11,7 +11,7 @@ import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.Utils;
-import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.ovp.KalturaOvpPlayer;
 import com.kaltura.tvplayer.ovp.OVPMediaOptions;
@@ -95,7 +95,7 @@ public class OVPDemoActivity extends BaseDemoActivity {
 
         KalturaOvpPlayer player = KalturaOvpPlayer.create(playerActivity, initOptions);
 
-        player.loadMedia(new OVPMediaOptions().setEntryId(currentItem.id), new KalturaPlayer.OnEntryLoadListener() {
+        player.loadMedia(new OVPMediaOptions().setEntryId(currentItem.id), new MediaOptions.OnEntryLoadListener() {
             @Override
             public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
                 log.d("onEntryLoadComplete; " + entry + "; " + error);

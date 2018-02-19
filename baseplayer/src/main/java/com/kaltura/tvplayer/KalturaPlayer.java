@@ -13,7 +13,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.google.gson.JsonObject;
-import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
@@ -435,18 +434,12 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         return serverUrl;
     }
 
-    // Called by implementation of loadMedia().
-    protected void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
-        final PKMediaEntry entry = response.getResponse();
-
-        maybeRemoveUnpreferredFormats(entry);
-
-        mediaEntry = entry;
-
+    // Called by implementations of loadMedia().
+    protected void mediaLoadCompleted(final PKMediaEntry entry, final ErrorElement error, final MediaOptions.OnEntryLoadListener onEntryLoadListener) {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
+                onEntryLoadListener.onEntryLoadComplete(entry, error);
                 if (entry != null) {
                     setMedia(entry);
                 }
@@ -454,12 +447,22 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         });
     }
 
-    public abstract void loadMedia(MOT mediaOptions, OnEntryLoadListener listener);
     protected abstract void registerPlugins(Context context);
     protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
     protected abstract void updateKS(String ks);
 
-    public interface OnEntryLoadListener {
-        void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
+    public void loadMedia(MediaOptions mediaOptions, final MediaOptions.OnEntryLoadListener listener) {
+
+        if (mediaOptions.ks != null) {
+            setKS(mediaOptions.ks);
+        }
+
+        mediaOptions.loadMedia(serverUrl, getPartnerId(), new MediaOptions.OnEntryLoadListener() {
+            @Override
+            public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
+                mediaLoadCompleted(entry, error, listener);
+            }
+        });
     }
+
 }

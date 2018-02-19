@@ -1,7 +1,10 @@
 package com.kaltura.tvplayer;
 
 
-public class MediaOptions {
+import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.playkit.PKMediaEntry;
+
+public abstract class MediaOptions {
     public String ks;
     double startPosition;
 
@@ -13,6 +16,12 @@ public class MediaOptions {
     public MediaOptions setStartPosition(double startPosition) {
         this.startPosition = startPosition;
         return this;
+    }
+
+    public abstract void loadMedia(String serverUrl, int partnerId, OnEntryLoadListener listener);
+
+    public interface OnEntryLoadListener {
+        void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
     }
 }
 

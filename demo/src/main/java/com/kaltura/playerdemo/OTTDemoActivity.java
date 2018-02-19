@@ -10,7 +10,7 @@ import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.Utils;
-import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
 import com.kaltura.tvplayer.ott.OTTMediaOptions;
@@ -74,7 +74,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
 
         KalturaOTTPlayer player = KalturaOTTPlayer.create(playerActivity, initOptions);
 
-        player.loadMedia(new OTTMediaOptions().setAssetId(currentItem.id), new KalturaPlayer.OnEntryLoadListener() {
+        player.loadMedia(new OTTMediaOptions().setAssetId(currentItem.id), new MediaOptions.OnEntryLoadListener() {
             @Override
             public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
                 log.d("onEntryLoadComplete; " + entry + "; " + error);

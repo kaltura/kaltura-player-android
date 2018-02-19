@@ -3,6 +3,7 @@ package com.kaltura.tvplayer.ovp;
 import android.content.Context;
 
 import com.kaltura.netkit.connect.response.ResultElement;
+import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -57,24 +58,6 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
 
         // FIXME temporarily disabled Kava
 //        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
-    }
-
-    @Override
-    public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
-
-        if (mediaOptions.ks != null) {
-            setKS(mediaOptions.ks);
-        }
-
-        MediaEntryProvider provider = new KalturaOvpMediaProvider()
-                .setSessionProvider(newSimpleSessionProvider()).setEntryId(mediaOptions.entryId);
-
-        provider.load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                mediaLoadCompleted(response, listener);
-            }
-        });
     }
 
     public interface PlayerReadyCallback {

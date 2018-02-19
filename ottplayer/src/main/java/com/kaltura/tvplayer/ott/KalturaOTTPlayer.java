@@ -79,40 +79,4 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
         return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), 30);
     }
-
-
-    @Override
-    public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
-        
-        if (mediaOptions.ks != null) {
-            setKS(mediaOptions.ks);
-        }
-        
-        final PhoenixMediaProvider provider = new PhoenixMediaProvider()
-                .setAssetId(mediaOptions.assetId)
-                .setSessionProvider(newSimpleSessionProvider());
-
-        if (mediaOptions.fileIds != null) {
-            provider.setFileIds(mediaOptions.fileIds);
-        }
-        
-        if (mediaOptions.contextType != null) {
-            provider.setContextType(mediaOptions.contextType);
-        }
-        
-        if (mediaOptions.assetType != null) {
-            provider.setAssetType(mediaOptions.assetType);
-        }
-        
-        if (mediaOptions.formats != null) {
-            provider.setFormats(mediaOptions.formats);
-        }
-        
-        provider.load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                mediaLoadCompleted(response, listener);
-            }
-        });
-    }
 }

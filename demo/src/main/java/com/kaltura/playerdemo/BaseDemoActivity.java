@@ -31,7 +31,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.player.MediaSupport;
-import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.PlayerInitOptions;
 
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class BaseDemoActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, KalturaPlayer.OnEntryLoadListener {
+        implements NavigationView.OnNavigationItemSelectedListener, MediaOptions.OnEntryLoadListener {
 
     private static final PKLog log = PKLog.get("BaseDemoActivity");
     
