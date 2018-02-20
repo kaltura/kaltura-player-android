@@ -1,4 +1,10 @@
 
+# Offline Manager
+
+## API
+
+[OfflineManager.java](../offlinemanager/src/main/java/com/kaltura/offlinemanager/OfflineManager.java)
+
 ## Starting and stopping the service
 
 ![](./offline/Start-Stop.svg)
