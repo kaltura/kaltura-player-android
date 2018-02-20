@@ -1,5 +1,5 @@
 @startuml Start-Stop
-title Start/stop
+
 skinparam backgroundColor transparent
 skinparam roundCorner 14
 skinparam NoteBackgroundColor #ffff00
@@ -31,7 +31,7 @@ App->Offline: stop()
 @enduml
 
 @startuml Download
-title Download Flow
+
 skinparam backgroundColor transparent
 skinparam roundCorner 14
 skinparam NoteBackgroundColor #ffff00
@@ -82,7 +82,7 @@ Offline->App: onAssetInfoUpdated(entryId, assetInfo[**completed**])
 @enduml
 
 @startuml Playback
-title Playback Flow
+
 skinparam backgroundColor transparent
 skinparam roundCorner 14
 skinparam NoteBackgroundColor #ffff00
@@ -106,7 +106,7 @@ App->Player: play()
 @enduml
 
 @startuml DRM
-title DRM handling
+
 skinparam backgroundColor transparent
 skinparam roundCorner 14
 skinparam NoteBackgroundColor #ffff00
