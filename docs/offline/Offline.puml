@@ -1,0 +1,134 @@
+@startuml Start-Stop
+title Start/stop
+skinparam backgroundColor transparent
+skinparam roundCorner 14
+skinparam NoteBackgroundColor #ffff00
+
+participant App #lightcyan
+participant OfflineManager as Offline
+
+
+== Set global listeners ==
+App->Offline: setAssetInfoUpdateListener(...)
+App->Offline: setDownloadProgressListener(...)
+App->Offline: setDrmLicenseUpdateListener(...)
+
+== Start ==
+App->Offline: start()
+return started
+
+App->Offline: resumeDownloads()
+
+...
+
+== Stop ==
+
+note over App: app logic such as logout
+
+App->Offline: stop()
+
+
+@enduml
+
+@startuml Download
+title Download Flow
+skinparam backgroundColor transparent
+skinparam roundCorner 14
+skinparam NoteBackgroundColor #ffff00
+
+
+participant App #lightcyan
+participant OfflineManager as Offline
+participant OVPMediaOptions as MOP
+participant MediaPrefs
+
+== Add new entry ==
+App->MOP: new(entryId, ks)
+App->MOP: loadMedia(url, pid)
+note over MOP: Contacts **Kaltura API**
+return mediaEntry
+App->Offline: addAsset(mediaEntry)
+note over Offline: Selects a MediaSource that matches the device
+
+== Set media prefs and load asset info ==
+note over App: Set media download prefs
+
+App->App: prefs = new MediaPrefs(videoBitrate, videoHeight, videoWidth,\n audioLangs, textLangs)
+
+
+App->Offline: loadAssetDownloadInfo(entryId, prefs)
+note over Offline: Contacts **Content Host**
+note over Offline: Extracts available tracks, applies MediaPrefs
+
+Offline->App: onTracksAvailable(entryId, available, selected, selector)
+note over App: Inspect //available// and //selected//, optionally\n return a selection map
+App->Offline: selectedTracksMap
+
+Offline->App: onAssetInfoUpdated(entryId, assetInfo[**metadataLoaded**])
+note over App: Now AssetInfo is updated with estimated\n size based on track selection
+
+== Start the download ==
+App->Offline: startAsset(entryId)
+Offline->App: onAssetInfoUpdated(entryId, assetInfo[**started**])
+
+loop downloading
+Offline->App: onDownloadProgress(entryId, downloadedBytes, estimatedBytes)
+note over App #tomato: **Note:** downloadedBytes may be bigger\n than estimatedBytes
+end
+
+== Download complete ==
+Offline->App: onAssetInfoUpdated(entryId, assetInfo[**completed**])
+
+@enduml
+
+@startuml Playback
+title Playback Flow
+skinparam backgroundColor transparent
+skinparam roundCorner 14
+skinparam NoteBackgroundColor #ffff00
+
+participant App #lightcyan
+participant OfflineManager as Offline
+participant KalturaPlayer as Player
+
+== Retrieve downloaded entry ==
+App->Offline: getAssetInfo(entryId)
+return assetInfo
+
+note over App: **assuming** assetInfo is not null
+
+App->Offline: getLocalPlaybackEntry(entryId)
+return mediaEntry
+
+App->Player: setMedia(mediaEntry)
+App->Player: play()
+
+@enduml
+
+@startuml DRM
+title DRM handling
+skinparam backgroundColor transparent
+skinparam roundCorner 14
+skinparam NoteBackgroundColor #ffff00
+
+participant App #lightcyan
+participant OfflineManager as Offline
+
+== Install (part of Download Flow) ==
+Offline->App: onLicenseInstall(entryId, totalTime, timeToRenew)
+
+== Check status ==
+App->Offline: getDrmStatus(entryId)
+return assetDrmStatus
+
+== Renew ==
+App->Offline: renewAssetDrmLicense(entryId)
+note over Offline: Contact Kaltura API and uDRM
+Offline->App: onLicenseRenew(entryId, totalTime, timeToRenew)
+
+== Remove ==
+App->Offline: removeAsset(entryId)
+note over Offline: this also removes the asset itself
+Offline->App: onLicenseRemove
+
+@enduml
