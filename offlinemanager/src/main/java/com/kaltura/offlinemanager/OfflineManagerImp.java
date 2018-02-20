@@ -1,5 +1,7 @@
 package com.kaltura.offlinemanager;
 
+import android.content.Context;
+
 import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadState;
 import com.kaltura.playkit.LocalAssetsManager;
@@ -17,6 +19,16 @@ class OfflineManagerImp extends OfflineManager {
     private LocalAssetsManager localAssetsManager;
     private ContentManager contentManager;
     private DrmLicenseUpdateListener drmLicenseUpdateListener;
+
+    @Override
+    public void startService(Context appContext, OnServiceStart listener) {
+        // TODO
+    }
+
+    @Override
+    public void stopService() {
+        // TODO
+    }
 
     @Override
     public void setAssetInfoUpdateListener(AssetInfoUpdateListener listener) {
@@ -89,19 +101,19 @@ class OfflineManagerImp extends OfflineManager {
     }
 
     @Override
-    public boolean startDownload(String assetId) {
+    public boolean startAsset(String assetId) {
         // TODO: 29/01/2018 DTG start item. IF ANOTHER ITEM IS IN PROGRESS, DON'T START yet.
         return false;
     }
 
     @Override
-    public boolean pauseDownload(String assetId) {
+    public boolean pauseAsset(String assetId) {
         // TODO: 29/01/2018 DTG pause item.
         return false;
     }
 
     @Override
-    public boolean removeEntry(String assetId) {
+    public boolean removeAsset(String assetId) {
         // TODO: 29/01/2018 DTG remove item. LAM unregister.
         return false;
     }

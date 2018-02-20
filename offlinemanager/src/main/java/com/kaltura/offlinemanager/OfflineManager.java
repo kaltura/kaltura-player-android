@@ -1,10 +1,13 @@
 package com.kaltura.offlinemanager;
 
+import android.content.Context;
+
 import com.kaltura.dtg.DownloadState;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.tvplayer.MediaOptions;
 
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings({"WeakerAccess", "unused", "JavaDoc"})
 public abstract class OfflineManager {
@@ -12,6 +15,15 @@ public abstract class OfflineManager {
     public static OfflineManager getInstance() {
         return new OfflineManagerImp();
     }
+
+    /**
+     * Start the download service. Essential for using all other methods.
+     * @param appContext
+     * @param listener
+     */
+    public abstract void startService(Context appContext, OnServiceStart listener);
+
+    public abstract void stopService();
 
     /**
      * Set the global download state listener, to be notified about state changes.
@@ -38,7 +50,10 @@ public abstract class OfflineManager {
     public abstract void pauseDownloads();
 
     /**
-     * Opposite of {@link #pauseDownloads()}.
+     * Resume downloading assets. Should be called in two places:
+     * - After calling {@link #startService(Context, OnServiceStart)}, to resume the downloads that
+     * were in progress in the previous session
+     * - After calling {@link #pauseDownloads()}, to resume the paused downloads.
      */
     public abstract void resumeDownloads();
 
@@ -106,21 +121,21 @@ public abstract class OfflineManager {
      * @param assetId
      * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean startDownload(String assetId);
+    public abstract boolean startAsset(String assetId);
 
     /**
      * Pause downloading an asset.
      * @param assetId
      * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean pauseDownload(String assetId);
+    public abstract boolean pauseAsset(String assetId);
 
     /**
      * Remove asset with all its data.
      * @param assetId
      * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean removeEntry(String assetId);
+    public abstract boolean removeAsset(String assetId);
 
     /**
      * Check the license status of an asset.
@@ -136,13 +151,25 @@ public abstract class OfflineManager {
      */
     public abstract boolean renewAssetDrmLicense(String assetId);
 
+    public interface OnServiceStart {
+        void onServiceStart();
+    }
+
     /**
      * Invoked during asset info loading ({@link #loadAssetDownloadInfo(String, MediaPrefs, TrackSelectionListener, AssetInfoUpdateListener)}).
      * Allows the app to inspect and change the track selection.
      * @see {@link MediaPrefs} for higher-level track selection customization.
      */
     public interface TrackSelectionListener {
-        void onTracksAvailable(String assetId, TrackSelector trackSelector);
+        void onTracksAvailable(String assetId, Map<TrackType, List<Track>> available,
+                               Map<TrackType, List<Track>> selected, TrackSelector trackSelector);
+    }
+
+    /**
+     * Invoked during asset info loading ({@link #loadAssetDownloadInfo(String, MediaPrefs, TrackSelectionListener, AssetInfoUpdateListener)}).
+     */
+    public interface AssetInfoUpdateListener {
+        void onAssetInfoUpdated(String assetId, AssetInfo assetInfo);
     }
 
     /**
@@ -150,13 +177,6 @@ public abstract class OfflineManager {
      */
     public interface DownloadProgressListener {
         void onDownloadProgress(String assetId, long downloadedBytes, long totalEstimatedBytes);
-    }
-
-    /**
-     * Invoked during asset info loading ({@link #loadAssetDownloadInfo(String, MediaPrefs, TrackSelectionListener, AssetInfoUpdateListener)}).
-     */
-    public interface AssetInfoUpdateListener {
-        void onAssetInfoUpdated(AssetInfo assetInfo);
     }
 
     /**
