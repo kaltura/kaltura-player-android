@@ -157,12 +157,12 @@ public abstract class OfflineManager {
 
     /**
      * Invoked during asset info loading ({@link #loadAssetDownloadInfo(String, MediaPrefs, TrackSelectionListener, AssetInfoUpdateListener)}).
-     * Allows the app to inspect and change the track selection.
+     * Allows the app to inspect and change the track selection. If app returns non-null, it overrides the automatic selection.
      * @see {@link MediaPrefs} for higher-level track selection customization.
      */
     public interface TrackSelectionListener {
-        void onTracksAvailable(String assetId, Map<TrackType, List<Track>> available,
-                               Map<TrackType, List<Track>> selected, TrackSelector trackSelector);
+        Map<TrackType, List<Track>> onTracksAvailable(String assetId, Map<TrackType, List<Track>> available,
+                               Map<TrackType, List<Track>> selected);
     }
 
     /**
@@ -183,9 +183,9 @@ public abstract class OfflineManager {
      * Global listener for DRM actions. Use with {@link #setDrmLicenseUpdateListener(DrmLicenseUpdateListener)}.
      */
     public interface DrmLicenseUpdateListener {
-        void onLicenceInstalled(String assetId, int totalTime, int timeToRenew);
-        void onLicenseRenewed(String assetId, int totalTime, int timeToRenew);
-        void onLicenseRemoved(String assetId);
+        void onLicenceInstall(String assetId, int totalTime, int timeToRenew);
+        void onLicenseRenew(String assetId, int totalTime, int timeToRenew);
+        void onLicenseRemove(String assetId);
     }
 
     public static class AssetDrmInfo {
@@ -196,12 +196,6 @@ public abstract class OfflineManager {
         public enum Status {
             valid, unknown, expired, clear
         }
-    }
-
-    public interface TrackSelector {
-        List<Track> getAvailableTracks(TrackType type);
-        List<Track> getSelectedTracks(TrackType type);
-        void setSelectedTracks(TrackType type, List<Track> tracks);
     }
 
     public static class Track {
