@@ -1,8 +1,5 @@
-package com.kaltura.tvplayer.config.ima;
+package com.kaltura.kalturaplayertestapp.models.ima;
 
-/**
- * Created by gilad.nadav on 2/8/18.
- */
 
 public class SdkSettings {
 

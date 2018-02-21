@@ -1,8 +1,4 @@
-package com.kaltura.tvplayer.config.ima;
-
-/**
- * Created by gilad.nadav on 2/8/18.
- */
+package com.kaltura.kalturaplayertestapp.models.ima;
 
 public class UiElements {
     private boolean adAttribution;

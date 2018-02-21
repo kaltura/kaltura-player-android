@@ -1,7 +1,6 @@
 package com.kaltura.kalturaplayertestapp;
 
 import android.content.res.Configuration;
-import android.media.MediaCas;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
@@ -12,7 +11,6 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.reflect.TypeToken;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -21,14 +19,13 @@ import com.kaltura.kalturaplayertestapp.converters.Media;
 import com.kaltura.kalturaplayertestapp.converters.PlayerConfig;
 import com.kaltura.kalturaplayertestapp.converters.PluginDescriptor;
 
+import com.kaltura.kalturaplayertestapp.models.ima.UiConfFormatIMAConfig;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.player.MediaSupport;
-import com.kaltura.playkit.plugins.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ima.IMAPlugin;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
@@ -47,10 +44,7 @@ import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
 import com.kaltura.tvplayer.ott.OTTMediaOptions;
 import com.kaltura.tvplayer.ovp.KalturaOvpPlayer;
 import com.kaltura.tvplayer.ovp.OVPMediaOptions;
-import com.kaltura.tvplayer.utils.TvPlayerUtils;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -170,7 +164,7 @@ public class PlayerActivity extends AppCompatActivity {
     private PKPluginConfigs convertPluginsJsonArrayToPKPlugins(JsonArray pluginConfigs) {
         //JsonObject uiConfPluginsConfig = TvPlayerUtils.getPluginsConfig(uiConfPlayerConfig);
         //UiConfYouboraConfig uiConfYouboraConfig = TvPlayerUtils.getUiConfYouboraConfig(uiConfPluginsConfig);
-        //UiConfIMAConfig uiConfIMAConfig= TvPlayerUtils.getUiConfIMAConfig(uiConfPluginsConfig);
+        //UiConfFormatIMAConfig uiConfIMAConfig= TvPlayerUtils.getUiConfIMAConfig(uiConfPluginsConfig);
         //KavaAnalyticsConfig kavaAnalyticsConfig = TvPlayerUtils.getUiConfKavaConfig(partnerId, uiConfPluginsConfig);
 
         PKPluginConfigs pkPluginConfigs = new PKPluginConfigs();
@@ -180,13 +174,14 @@ public class PlayerActivity extends AppCompatActivity {
             for (PluginDescriptor pluginDescriptor : pluginDescriptors) {
                 String pluginName = pluginDescriptor.getPluginName();
                 if (YouboraPlugin.factory.getName().equals(pluginName)) {
-                    YouboraConfig youboraPlugin = gson.fromJson(pluginDescriptor.getParams(), YouboraConfig.class);
+                    YouboraConfig youboraPlugin = gson.fromJson(pluginDescriptor.getParams().get("options"), YouboraConfig.class);
                     pkPluginConfigs.setPluginConfig(YouboraPlugin.factory.getName(), youboraPlugin.toJson());
                 } else if (KavaAnalyticsPlugin.factory.getName().equals(pluginName)) {
                     KavaAnalyticsConfig kavaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KavaAnalyticsConfig.class);
                     pkPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaPluginConfig.toJson());
                 } else if (IMAPlugin.factory.getName().equals(pluginName)) {
-                    IMAConfig imaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), IMAConfig.class);
+
+                    UiConfFormatIMAConfig imaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), UiConfFormatIMAConfig.class);
                     pkPluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig.toJson());
                 } else if (PhoenixAnalyticsPlugin.factory.getName().equals(pluginName)) {
                     PhoenixAnalyticsConfig phoenixAnalyticsConfig = gson.fromJson(pluginDescriptor.getParams(), PhoenixAnalyticsConfig.class);

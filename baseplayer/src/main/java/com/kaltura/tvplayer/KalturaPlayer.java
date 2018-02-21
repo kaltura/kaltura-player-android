@@ -42,6 +42,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static com.kaltura.tvplayer.PlayerInitOptions.CONFIG;
+import static com.kaltura.tvplayer.PlayerInitOptions.OPTIONS;
 import static com.kaltura.tvplayer.PlayerInitOptions.PLAYER;
 import static com.kaltura.tvplayer.PlayerInitOptions.PLUGINS;
 
@@ -187,7 +188,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             } else {
                 appKavaJsonObject = kavaDefaults(partnerId, initOptions.uiConfId, referrer);
             }
-            JsonObject uic = mergeJsonConfig(appKavaJsonObject, pluginsUIConf.getAsJsonObject(name));
+            JsonObject uic = mergeJsonConfig(pluginsUIConf.getAsJsonObject(name), appKavaJsonObject);
             if (uic != null) {
                 pluginsUIConf.add(name, uic);
             }
@@ -197,19 +198,23 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             Gson gson = new Gson();
             for (Map.Entry<String, Object> entry : pluginConfigs) {
                 String pluginName = entry.getKey();
-                JsonObject config = (JsonObject) entry.getValue();
+                JsonObject appPluginConfig = (JsonObject) entry.getValue();
                 if (pluginsUIConf != null && pluginsUIConf.has(pluginName)) {
-                    JsonObject mergedConfig = mergeJsonConfig(pluginsUIConf.getAsJsonObject(pluginName), config);
+                    JsonObject uiconfPluginJsonObject = pluginsUIConf.getAsJsonObject(pluginName);
+                    if (pluginName == "youbora") {
+                        if (uiconfPluginJsonObject.has(OPTIONS)) {
+                            uiconfPluginJsonObject = uiconfPluginJsonObject.get(OPTIONS).getAsJsonObject();
+                        }
+                    }
+                    JsonObject mergedConfig = mergeJsonConfig(uiconfPluginJsonObject, appPluginConfig);
                     if (mergedConfig != null) {
                         combinedPluginConfigs.setPluginConfig(pluginName, mergedConfig);
                     }
-                } else if (config != null){
-                    combinedPluginConfigs.setPluginConfig(pluginName, config);
+                } else if (appPluginConfig != null){
+                    combinedPluginConfigs.setPluginConfig(pluginName, appPluginConfig);
                 }
             }
         }
-
-
 
         // Add the plugins that are ONLY mentioned in UIConf and not merged yet
         if (pluginsUIConf != null && pluginsUIConf.keySet() != null) {

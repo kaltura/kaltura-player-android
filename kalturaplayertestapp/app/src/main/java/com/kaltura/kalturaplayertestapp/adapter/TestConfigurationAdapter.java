@@ -76,7 +76,7 @@ public class TestConfigurationAdapter extends FirestoreAdapter<TestConfiguration
             final Configuration configuration = snapshot.toObject(Configuration.class);
             configuration.setId(snapshot.getId());
             //Resources resources = itemView.getResources();
-            Log.e("XXX",configuration.getTitle());
+            Log.e("XXX","" + configuration.getTitle());
             jsonTitle.setText(configuration.getTitle());
             if (configuration.getType() == Configuration.FOLDER) {
                 folderIcon.setVisibility(View.VISIBLE);

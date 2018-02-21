@@ -63,7 +63,7 @@ public class PlayerInitOptions {
 
         GsonReader reader = GsonReader.withObject(uiConf);
         JsonObject playbackJson = (reader != null && reader.getObject(CONFIG) != null && reader.getObject(CONFIG).getAsJsonObject(PLAYER) != null) ? reader.getObject(CONFIG).getAsJsonObject(PLAYER).getAsJsonObject(PLAYBACK) : null;
-        if (playbackJson != null) {
+        if (playbackJson != null && playbackJson.keySet().size() > 0) {
             Gson gson = new Gson();
             UiConfPlayer uiconfPlayer = gson.fromJson(playbackJson, UiConfPlayer.class);
             String audioLang = uiconfPlayer.getAudioLanguage();

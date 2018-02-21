@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,6 +28,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.google.gson.Gson;
 import com.kaltura.kalturaplayertestapp.adapter.TestConfigurationAdapter;
@@ -34,8 +36,12 @@ import com.kaltura.kalturaplayertestapp.converters.TestDescriptor;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
 import com.kaltura.kalturaplayertestapp.qrcode.BarcodeCaptureActivity;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -233,58 +239,72 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
                     String jsonTests = "";
                     try {
                         jsonTests =  new DownloadFileFromURL().execute(barcode.displayValue).get();
-                        Log.d("XXX", jsonTests);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     } catch (ExecutionException e) {
                         e.printStackTrace();
                     }
 
-                    Gson gson = new Gson();
-                    TestDescriptor[] testDescriptors = gson.fromJson(jsonTests, TestDescriptor[].class);
-
-                    for (TestDescriptor test : testDescriptors) {
-                        Log.d(TAG, "got Test " + test.getTitle());
-                        String [] splittedPath = test.getUrl().split("standalonePlayer/");
-                        List<String> testPath = new ArrayList<>();
-                        if (splittedPath.length > 1) {
-                            String[] testPathParts = splittedPath[1].split("/");
-                            if (testPathParts.length > 0)
-                                for (int i = 0; i < testPathParts.length - 1; i++) {
-                                    testPath.add(testPathParts[i]);
-                                }
-                        }
-                        try {
-                            String jsonTest =  new DownloadFileFromURL().execute(test.getUrl()).get();
-                            Configuration testConfig = new Configuration();
-                            testConfig.setType(0);
-                            testConfig.setTitle(test.getTitle());
-                            testConfig.setJson(jsonTest);
-                            CollectionReference collectionReference = mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
-                            buildFoldersHirarchy(collectionReference, testPath, testConfig);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        } catch (ExecutionException e) {
-                            e.printStackTrace();
-                        }
+                    if (barcode.displayValue.startsWith("http")) {
+                        List<TestDescriptor> testDescriptorArrayList = new ArrayList<>();
+                        TestDescriptor testDescriptor = new TestDescriptor();
+                            String url = barcode.displayValue;
+                            String fileName = barcode.displayValue.substring( url.lastIndexOf('/')+1, url.length() );
+                            String fileNameWithoutExtn = fileName.substring(0, fileName.lastIndexOf('.'));
+                            testDescriptor.setTitle(fileNameWithoutExtn);
+                            testDescriptor.setUrl(barcode.displayValue);
+                            testDescriptorArrayList.add(testDescriptor);
+                            loadTests(testDescriptorArrayList);
+                    } else {
+                        Gson gson = new Gson();
+                        TestDescriptor[] testDescriptors = gson.fromJson(jsonTests, TestDescriptor[].class);
+                        List<TestDescriptor> testDescriptorArrayList = new ArrayList<TestDescriptor>(Arrays.asList(testDescriptors));
+                        loadTests(testDescriptorArrayList);
                     }
-                    //Log.d(TAG, tests.keySet().toString());
-
-
                 } else {
-                    // statusMessage.setText(R.string.barcode_failure);
                     Log.d(TAG, "No barcode captured, intent data is null");
                 }
             } else {
                 Log.e(TAG, "Error, " +  CommonStatusCodes.getStatusCodeString(resultCode));
             }
-        }
-        else {
+        } else {
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
 
-    private void buildFoldersHirarchy(CollectionReference collectionReference, final List<String> subFolder, final Configuration testConfig) {
+    private void loadTests(List<TestDescriptor> testDescriptorArray) {
+        if (testDescriptorArray.size() == 0) {
+            return;
+        }
+        TestDescriptor testDescriptor = testDescriptorArray.get(0);
+        testDescriptorArray.remove(0);
+        String [] splittedPath = testDescriptor.getUrl().split("Tests/");
+        List<String> testPath = new ArrayList<>();
+        if (splittedPath.length > 1) {
+            String[] testPathParts = splittedPath[1].split("/");
+            if (testPathParts.length > 0)
+                for (int i = 0; i < testPathParts.length - 1; i++) {
+                    testPath.add(testPathParts[i]);
+                }
+        }
+        try {
+            String jsonTest =  new DownloadFileFromURL().execute(testDescriptor.getUrl()).get();
+            Configuration testConfig = new Configuration();
+            testConfig.setType(0);
+            testConfig.setTitle(testDescriptor.getTitle());
+            testConfig.setJson(jsonTest);
+            CollectionReference collectionReference = mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
+            buildFoldersHirarchy(collectionReference, testPath, testConfig, testDescriptorArray);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    private void buildFoldersHirarchy(final CollectionReference collectionReference, final List<String> subFolder, final Configuration testConfig, final List<TestDescriptor> testDescriptorArray) {
         Configuration folder = new Configuration();
         if (subFolder.size() == 0) {
             folder = testConfig;
@@ -292,59 +312,54 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
             return;
         } else {
             folder.setType(1);
-            String fold = subFolder.get(0);
+            String folderName = subFolder.get(0);
             subFolder.remove(0);
-            folder.setTitle(fold);
+            folder.setTitle(folderName);
         }
-        collectionReference.add(folder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
-                                                                  @Override
-                                                                  public void onComplete(@NonNull Task<DocumentReference> task) {
-                                                                      newPath = task.getResult().collection("configurations").getPath();
-                                                                      if (subFolder.size() == 0) {
-                                                                          task.getResult().collection("configurations").add(testConfig);
-                                                                      } else {
-                                                                          buildFoldersHirarchy(mFirestore.collection(newPath), subFolder, testConfig);
-                                                                      }
-                                                                  }
-                                                              }
-        );
+
+        final Configuration finalFolder = folder;
+        Query folders  = collectionReference.whereEqualTo("title", folder.getTitle());
+
+
+        folders.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful() && task.getResult().size() > 0) {
+                    for (final DocumentSnapshot document : task.getResult()) {
+                        if (subFolder.size() == 0) {
+                            document.getReference().collection("configurations").add(testConfig);
+                            loadTests(testDescriptorArray);
+                        } else {
+                            //newPath =
+                            document.getReference().set(finalFolder).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void tmp) {
+                                    Log.d(TAG, "DocumentSnapshot successfully written!");
+                                    newPath = document.getReference().collection("configurations").getPath();
+                                    buildFoldersHirarchy(mFirestore.collection(newPath), subFolder, testConfig, testDescriptorArray);
+                                }
+                            });
+                        }
+                        break;
+                    }
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.getException());
+                    collectionReference.add(finalFolder).addOnCompleteListener(new OnCompleteListener<DocumentReference>() {
+                                                                                   @Override
+                                                                                   public void onComplete(@NonNull Task<DocumentReference> task) {
+                                                                                       if (subFolder.size() == 0) {
+                                                                                           task.getResult().collection("configurations").add(testConfig);
+                                                                                           loadTests(testDescriptorArray);
+                                                                                       } else {
+                                                                                           newPath = task.getResult().collection("configurations").getPath();
+                                                                                           buildFoldersHirarchy(mFirestore.collection(newPath), subFolder, testConfig, testDescriptorArray);
+                                                                                       }
+                                                                                   }
+                                                                               }
+                    );
+                }
+            }
+        });
+
     }
-
-//    private void onAddItemsClicked1() {
-//        // Add a bunch of random restaurants
-//        List<Configuration> list = new ArrayList<>();
-//        for (int i = 0; i < 10; i++) {
-//            Configuration randomConfig = ConfigurationUtil.getRandom(this, i + "");
-//            list.add(randomConfig);
-//        }
-//        WriteBatch batch = mFirestore.batch();
-//        for (int i = 0; i < 10; i++) {
-//            DocumentReference restRef = mFirestore.collection("users").document(currentUser.getUid()).collection("configurations").document();
-//
-//            // Create random restaurant / ratings
-//            Configuration randomConfig = ConfigurationUtil.getRandom(this,restRef.getId());
-//            randomConfig.setJson("");
-//            // Add restaurant
-//            batch.set(restRef, randomConfig);
-//
-//            // Add ratings to subcollection
-//            for (Configuration config : list) {
-//                config.setType(0);
-//                DocumentReference ConfigurationRef = restRef.collection("configurations").document();
-//                config.setId(ConfigurationRef.getId());
-//                batch.set(ConfigurationRef, config);
-//            }
-//        }
-//        batch.commit().addOnCompleteListener(new OnCompleteListener<Void>() {
-//            @Override
-//            public void onComplete(@NonNull Task<Void> task) {
-//                if (task.isSuccessful()) {
-//                    Log.d(TAG, "Write batch succeeded.");
-//                } else {
-//                    Log.w(TAG, "write batch failed.", task.getException());
-//                }
-//            }
-//        });
-//    }
-
 }

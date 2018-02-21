@@ -1,10 +1,6 @@
-package com.kaltura.tvplayer.config.ima;
+package com.kaltura.kalturaplayertestapp.models.ima;
 
 import java.util.List;
-
-/**
- * Created by gilad.nadav on 2/8/18.
- */
 
 public class AdsRenderingSettings {
 
