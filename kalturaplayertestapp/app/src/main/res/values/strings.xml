@@ -16,9 +16,9 @@
     <string name="add_folder">Add Folder</string>
     <string name="add_scanned_items">Scan QR Code</string>
     <string name="add_json">Add Configuration</string>
-    <string name="remove_folder">Add Folder</string>
+    <string name="remove_folder">Remove Folder</string>
     <string name="remove_json">Add Configuration</string>
-    <string name="add_random_items">Add Random Items</string>
+    <string name="add_default_items">Add Default Items</string>
     <string name="delete_all">Delete All</string>
     <string name="dialog_button_close">Close</string>
 

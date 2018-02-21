@@ -2,6 +2,7 @@ package com.kaltura.kalturaplayertestapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -51,10 +52,14 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
 
     private static final String TAG = "MainActivity";
     private static final int RC_BARCODE_CAPTURE = 9001;
+    private static final String ADD_DEFAULT_ITEMS = "ADD_DEFAULT_ITEMS";
+
     public static final String KEY_NEW_CONFIGURATION_PATH = "key_new_configuration_path";
+
     public static final String KEY_JSON_STRING = "key_json_string";
     public static final int LIMIT = 50;
 
+    private boolean defaultItemsLoaded;
     private RecyclerView mConfigurationsRecycler;
     private TextView mEmptyView;
 
@@ -89,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        defaultItemsLoaded = getPreferences(Context.MODE_PRIVATE).getBoolean(ADD_DEFAULT_ITEMS, false);
+
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         mConfigurationsRecycler = findViewById(R.id.recycler_configuration);
@@ -147,13 +154,22 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_add_items:
-                onAddItemsClicked();
+                if (!defaultItemsLoaded) {
+                    //onAddItemsClicked();
+                    SharedPreferences.Editor sPEditor = getPreferences(Context.MODE_PRIVATE).edit();
+                    sPEditor.putBoolean(ADD_DEFAULT_ITEMS, true);
+                    sPEditor.apply();
+                    defaultItemsLoaded = true;
+                }
                 break;
             case R.id.add_items_scan:
                 onScanItemsClicked();
                 break;
             case R.id.action_delete:
-                mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
+                SharedPreferences.Editor sPEditor = getPreferences(Context.MODE_PRIVATE).edit();
+                sPEditor.remove(ADD_DEFAULT_ITEMS);
+                sPEditor.apply();
+                defaultItemsLoaded = false;
                 break;
             case R.id.action_add_folder:
                 mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
