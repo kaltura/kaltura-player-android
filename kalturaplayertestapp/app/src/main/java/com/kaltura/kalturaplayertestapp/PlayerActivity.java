@@ -162,11 +162,6 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private PKPluginConfigs convertPluginsJsonArrayToPKPlugins(JsonArray pluginConfigs) {
-        //JsonObject uiConfPluginsConfig = TvPlayerUtils.getPluginsConfig(uiConfPlayerConfig);
-        //UiConfYouboraConfig uiConfYouboraConfig = TvPlayerUtils.getUiConfYouboraConfig(uiConfPluginsConfig);
-        //UiConfFormatIMAConfig uiConfIMAConfig= TvPlayerUtils.getUiConfIMAConfig(uiConfPluginsConfig);
-        //KavaAnalyticsConfig kavaAnalyticsConfig = TvPlayerUtils.getUiConfKavaConfig(partnerId, uiConfPluginsConfig);
-
         PKPluginConfigs pkPluginConfigs = new PKPluginConfigs();
         PluginDescriptor[] pluginDescriptors = gson.fromJson(pluginConfigs, PluginDescriptor[].class);
 
@@ -293,7 +288,7 @@ public class PlayerActivity extends AppCompatActivity {
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) player.getView().getLayoutParams();
             if (params != null) {
                 params.width = params.MATCH_PARENT;
-                params.height = 600;
+                params.height = 800;
                 //getWindow().setFlags(params.width, params.height=600);
                 player.getView().setLayoutParams(params);
             }
@@ -302,7 +297,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        log.d("Ad Event onResume");
+        log.d("Player Activity onResume");
         super.onResume();
         if (player != null) {
             player.onApplicationResumed();
