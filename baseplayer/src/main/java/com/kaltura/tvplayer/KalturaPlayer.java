@@ -11,7 +11,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -246,7 +248,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     public JsonObject mergeJsonConfig(JsonObject source, JsonObject target) {
-         if (source == null && target != null) {
+        if (source == null && target != null) {
             return target;
         } else if (source != null && target == null) {
             return source;
@@ -316,20 +318,21 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     public View getView() {
-
         if (this.view != null) {
             return view;
-
-        } else {
-            FrameLayout view = new FrameLayout(context);
-            view.setBackgroundColor(Color.BLACK);
-            PlaybackControlsView controlsView = new PlaybackControlsView(context);
-            final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT, Gravity.BOTTOM | Gravity.START);
-            view.addView(controlsView, layoutParams);
-            view.addView(pkPlayer.getView(), FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-            controlsView.setPlayer(this);
-            this.view = view;
         }
+        return null;
+    }
+
+    public View setPlayerView(int playerWidth, int playerHeight) {
+
+        ViewGroup.LayoutParams params = pkPlayer.getView().getLayoutParams();
+        if (params != null) {
+            params.width  = playerWidth;
+            params.height = playerHeight;
+            pkPlayer.getView().setLayoutParams(params);
+        }
+        this.view = pkPlayer.getView();
         return view;
     }
 
@@ -528,7 +531,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
     protected abstract void updateKS(String ks);
 
-    public interface OnEntryLoadListener {
-        void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
-    }
+public interface OnEntryLoadListener {
+    void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
+}
 }

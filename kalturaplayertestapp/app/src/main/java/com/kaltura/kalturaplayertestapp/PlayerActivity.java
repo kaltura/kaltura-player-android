@@ -5,8 +5,12 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -38,6 +42,7 @@ import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.PlaybackControlsView;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
@@ -248,15 +253,24 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    public void setPlayer(KalturaPlayer player) {
+    public void setPlayer(final KalturaPlayer player) {
         this.player = player;
         if (player == null) {
             Log.e("XXX", "Player is null");
 
             return;
         }
-        ViewGroup container = findViewById(R.id.player_container);
-        container.addView(player.getView());
+        final ViewGroup container = findViewById(R.id.player_container_layout);
+        final PlaybackControlsView playbackControlsView = findViewById(R.id.player_controls);
+        container.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                container.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, 600);
+                container.addView(player.getView());
+                playbackControlsView.setPlayer(player);
+            }
+        });
     }
 
     @Override
@@ -273,7 +287,7 @@ public class PlayerActivity extends AppCompatActivity {
             int screenWidth = metrics.widthPixels;
             int screenHeight = metrics.heightPixels;
             getWindow().setFlags(metrics.widthPixels, metrics.heightPixels);
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) player.getView().getLayoutParams();
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) player.getView().getLayoutParams();
             if (params != null) {
                 params.width = screenWidth;
                 params.height = screenHeight;
@@ -285,10 +299,11 @@ public class PlayerActivity extends AppCompatActivity {
             if(getSupportActionBar()!=null) {
                 getSupportActionBar().show();
             }
-            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) player.getView().getLayoutParams();
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) player.getView().getLayoutParams();
             if (params != null) {
-                params.width = params.MATCH_PARENT;
-                params.height = 800;
+                params.width  = params.MATCH_PARENT;
+                params.height = params.WRAP_CONTENT;
+                params.gravity =  Gravity.START;
                 //getWindow().setFlags(params.width, params.height=600);
                 player.getView().setLayoutParams(params);
             }

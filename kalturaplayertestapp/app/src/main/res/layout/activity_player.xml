@@ -1,95 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/videoFragmentLayout"
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:keepScreenOn="true"
-    tools:context=".PlayerActivity">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <FrameLayout
+
+    <RelativeLayout
         android:id="@+id/player_container"
-        android:layout_centerInParent="true"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:background="@android:color/black"
+        android:keepScreenOn="true">
 
-        <!--<include-->
-            <!--android:id="@+id/ad_skin"-->
-            <!--layout="@layout/ad_skin_layout"-->
-            <!--android:visibility="invisible" />-->
 
-        <!--<ProgressBar-->
-            <!--android:id="@+id/progressBarSpinner"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_centerInParent="true"-->
-            <!--style="@android:style/Widget.ProgressBar.Large"-->
-            <!--/>-->
-        <!--<RelativeLayout-->
-            <!--android:id="@id/controls_container"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_alignParentBottom="true"-->
-            <!--&gt;-->
+        <LinearLayout
+            android:id="@+id/player_container_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:orientation="vertical"
+            />
 
-            <!--<com.kaltura.kalturaplayertestapp.playback.PlaybackControlsView-->
-                <!--android:id="@+id/playerControls"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content">-->
-            <!--</com.kaltura.kalturaplayertestapp.playback.PlaybackControlsView>-->
+        <com.kaltura.tvplayer.PlaybackControlsView
+            android:id="@+id/player_controls"
+            android:layout_marginBottom="8dp"
+            android:layout_alignBottom="@+id/player_container_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </com.kaltura.tvplayer.PlaybackControlsView>
 
-            <!--<android.support.v7.widget.AppCompatImageView-->
-                <!--android:id="@+id/full_screen_switcher"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_alignParentRight="true"-->
-                <!--android:layout_marginTop="10dp"-->
-                <!--android:layout_marginRight="5dp"-->
-                <!--android:src="@drawable/ic_fullscreen"-->
-                <!--android:padding="10dp"-->
-                <!--/>-->
-        <!--</RelativeLayout>-->
-    </FrameLayout>
+    </RelativeLayout>
 
-    <!--<TextView-->
-        <!--android:id="@+id/video_title"-->
-        <!--style="@style/Title"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentLeft="true"-->
-        <!--android:layout_alignParentStart="true"-->
-        <!--android:layout_below="@+id/player_container"-->
-        <!--android:text=""-->
-        <!--android:layout_alignParentRight="true"-->
-        <!--android:layout_alignParentEnd="true" />-->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/logScroll"
+        android:background="#DDDDDD"
+        android:padding="5dp"
+        android:tooltipText="Events"
+        android:layout_below="@+id/player_container">
 
-    <!--<ScrollView-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent"-->
-        <!--android:layout_alignParentLeft="true"-->
-        <!--android:layout_alignParentStart="true"-->
-        <!--android:layout_alignParentBottom="true"-->
-        <!--android:id="@+id/logScroll"-->
-        <!--android:background="#DDDDDD"-->
-        <!--android:padding="5dp"-->
-        <!--android:layout_below="@+id/video_title">-->
+        <TextView
+        android:id="@+id/logText"
+        android:text="Event Test"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        </TextView>
+    </ScrollView>
 
-        <!--<TextView-->
-            <!--android:id="@+id/logText"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content">-->
-
-        <!--</TextView>-->
-    <!--</ScrollView>-->
-
-    <!--<Button-->
-        <!--android:id="@+id/changeMedia"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_alignParentLeft="true"-->
-        <!--android:layout_alignParentStart="true"-->
-        <!--android:layout_below="@+id/companionAdSlot"-->
-        <!--android:layout_marginLeft="14dp"-->
-        <!--android:layout_marginStart="14dp"-->
-        <!--android:text="Change Media" />-->
 </RelativeLayout>

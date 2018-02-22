@@ -2,6 +2,8 @@ package com.kaltura.playerdemo;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.view.Gravity;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
@@ -80,6 +82,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
                 log.d("onEntryLoadComplete; " + entry + "; " + error);
             }
         });
+        player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 
         playerActivity.setPlayer(player);
     }

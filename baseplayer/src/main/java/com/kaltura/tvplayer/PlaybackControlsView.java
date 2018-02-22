@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -18,7 +19,7 @@ import java.util.Formatter;
 import java.util.Locale;
 
 
-public class PlaybackControlsView extends LinearLayout implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeekBarChangeListener {
 
     private static final PKLog log = PKLog.get("PlaybackControlsView");
     private static final int PROGRESS_BAR_MAX = 100;
@@ -29,6 +30,7 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
     private Formatter formatter;
     private StringBuilder formatBuilder;
 
+    private Button playPauseToggle;
     private SeekBar seekBar;
     private TextView tvCurTime, tvTime;
 
@@ -58,8 +60,19 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
     }
 
     private void initPlaybackControls() {
-        setOnClickListener(this);
-
+        playPauseToggle = this.findViewById(R.id.toggleButton);
+        playPauseToggle.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                togglePlayPauseClick();
+            }
+        });
+        this.findViewById(R.id.playback_controls_layout).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                togglePlayPauseClick();
+            }
+        });
         seekBar = this.findViewById(R.id.mediacontroller_progress);
         seekBar.setOnSeekBarChangeListener(this);
 
@@ -149,9 +162,8 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         updateProgress();
     }
 
-    @Override
-    public void onClick(View v) {
 
+    public void togglePlayPauseClick() {
         if (player == null) {
             return;
         }

@@ -3,6 +3,8 @@ package com.kaltura.playerdemo;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.view.Gravity;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
@@ -101,6 +103,7 @@ public class OVPDemoActivity extends BaseDemoActivity {
                 log.d("onEntryLoadComplete; " + entry + "; " + error);
             }
         });
+        player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 
         playerActivity.setPlayer(player);
     }
