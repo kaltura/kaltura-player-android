@@ -201,7 +201,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
                 JsonObject appPluginConfig = (JsonObject) entry.getValue();
                 if (pluginsUIConf != null && pluginsUIConf.has(pluginName)) {
                     JsonObject uiconfPluginJsonObject = pluginsUIConf.getAsJsonObject(pluginName);
-                    if (pluginName == "youbora") {
+                    if ("youbora".equals(pluginName)) {
                         if (uiconfPluginJsonObject.has(OPTIONS)) {
                             uiconfPluginJsonObject = uiconfPluginJsonObject.get(OPTIONS).getAsJsonObject();
                         }
@@ -255,7 +255,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         }
 
         for (String key: source.keySet()) {
-            Log.d("XXX", "key = " + key);
+            log.d("key = " + key);
 
             Object sourceValue = source.get(key);
             boolean isSourceValueIsNull = (sourceValue == null || (sourceValue != null && source.get(key).isJsonNull()));
@@ -302,10 +302,10 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
                         } else {
                             if (!isSourceValueIsNull) {
                                 target.add(key, (JsonPrimitive) sourceValue);
-                                Log.d("XXX", "no key " + key + " in target value = " + (JsonPrimitive) sourceValue);
+                                log.d( "no key " + key + " in target value = " + (JsonPrimitive) sourceValue);
                             } else {
                                 target.add(key, null);
-                                Log.d("XXX", "no key " + key + " in target value = null");
+                                log.d("no key " + key + " in target value = null");
                             }
                         }
                     }
