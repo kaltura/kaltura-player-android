@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
     private static final String TAG = "MainActivity";
     private static final int RC_BARCODE_CAPTURE = 9001;
     private static final String ADD_DEFAULT_ITEMS = "ADD_DEFAULT_ITEMS";
-
+    private static String DEFAULT_TESTS_DESCRIPTOR = "http://externaltests.dev.kaltura.com/player/library_SDK_Kaltura_Player/KalturaPlayerApp/default_bulk_import.json";
     public static final String KEY_NEW_CONFIGURATION_PATH = "key_new_configuration_path";
 
     public static final String KEY_JSON_STRING = "key_json_string";
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
         switch (item.getItemId()) {
             case R.id.action_add_items:
                 if (!defaultItemsLoaded) {
-                    //onAddItemsClicked();
+                    loadTestsFromUrl(DEFAULT_TESTS_DESCRIPTOR);
                     SharedPreferences.Editor sPEditor = getPreferences(Context.MODE_PRIVATE).edit();
                     sPEditor.putBoolean(ADD_DEFAULT_ITEMS, true);
                     sPEditor.apply();
@@ -172,16 +172,16 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
                 defaultItemsLoaded = false;
                 break;
             case R.id.action_add_folder:
-                mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
+
                 break;
             case R.id.action_add_json:
-                mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
+
                 break;
             case R.id.action_remove_folder:
-                mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
+
                 break;
             case R.id.action_remove_json:
-                mFirestore.collection("users").document(currentUser.getUid()).collection("configurations");
+
                 break;
             case R.id.action_logout:
                 FirebaseAuth.getInstance().signOut();
@@ -250,33 +250,8 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
             if (resultCode == CommonStatusCodes.SUCCESS) {
                 if (data != null) {
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
-                    //barcodeValue.setText(barcode.displayValue);
                     Log.d(TAG, "Barcode read: " + barcode.displayValue);
-                    String jsonTests = "";
-                    try {
-                        jsonTests =  new DownloadFileFromURL().execute(barcode.displayValue).get();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    } catch (ExecutionException e) {
-                        e.printStackTrace();
-                    }
-
-                    if (barcode.displayValue.startsWith("http")) {
-                        List<TestDescriptor> testDescriptorArrayList = new ArrayList<>();
-                        TestDescriptor testDescriptor = new TestDescriptor();
-                            String url = barcode.displayValue;
-                            String fileName = barcode.displayValue.substring( url.lastIndexOf('/')+1, url.length() );
-                            String fileNameWithoutExtn = fileName.substring(0, fileName.lastIndexOf('.'));
-                            testDescriptor.setTitle(fileNameWithoutExtn);
-                            testDescriptor.setUrl(barcode.displayValue);
-                            testDescriptorArrayList.add(testDescriptor);
-                            loadTests(testDescriptorArrayList);
-                    } else {
-                        Gson gson = new Gson();
-                        TestDescriptor[] testDescriptors = gson.fromJson(jsonTests, TestDescriptor[].class);
-                        List<TestDescriptor> testDescriptorArrayList = new ArrayList<TestDescriptor>(Arrays.asList(testDescriptors));
-                        loadTests(testDescriptorArrayList);
-                    }
+                    loadTestsFromUrl(barcode.displayValue);
                 } else {
                     Log.d(TAG, "No barcode captured, intent data is null");
                 }
@@ -285,6 +260,34 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private void loadTestsFromUrl(String testUrl) {
+        String jsonTests = "";
+        try {
+            jsonTests =  new DownloadFileFromURL().execute(testUrl).get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        if (testUrl.startsWith("http")) {
+            List<TestDescriptor> testDescriptorArrayList = new ArrayList<>();
+            TestDescriptor testDescriptor = new TestDescriptor();
+
+                String fileName = testUrl.substring(testUrl.lastIndexOf('/') + 1, testUrl.length());
+                String fileNameWithoutExtn = fileName.substring(0, fileName.lastIndexOf('.'));
+                testDescriptor.setTitle(fileNameWithoutExtn);
+                testDescriptor.setUrl(testUrl);
+                testDescriptorArrayList.add(testDescriptor);
+                loadTests(testDescriptorArrayList);
+        } else {
+            Gson gson = new Gson();
+            TestDescriptor[] testDescriptors = gson.fromJson(jsonTests, TestDescriptor[].class);
+            List<TestDescriptor> testDescriptorArrayList = new ArrayList<TestDescriptor>(Arrays.asList(testDescriptors));
+            loadTests(testDescriptorArrayList);
         }
     }
 
