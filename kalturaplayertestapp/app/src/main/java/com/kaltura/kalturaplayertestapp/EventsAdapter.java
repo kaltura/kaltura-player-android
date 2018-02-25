@@ -19,15 +19,12 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventItemV
 
     private static final String TAG = EventsAdapter.class.getSimpleName();
 
-    private static int viewHolderCount;
-    private int numberOfItems;
     private List<String> eventsList;
 
 
-    public EventsAdapter(int numberOfItems) {
-        this.numberOfItems = numberOfItems;
-        viewHolderCount = 0;
+    public EventsAdapter() {
     }
+
     @Override
     public EventItemViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         Context context = viewGroup.getContext();
@@ -38,19 +35,12 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventItemV
         View view = inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
         EventItemViewHolder viewHolder = new EventItemViewHolder(view);
 
-
-
         viewHolder.itemView.setBackgroundColor(Color.LTGRAY);
-
-        viewHolderCount++;
-        Log.d(TAG, "onCreateViewHolder: number of ViewHolders created: "
-                + viewHolderCount);
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(EventItemViewHolder holder, int position) {
-        Log.d(TAG, "#" + position);
         holder.bind(position);
     }
 
@@ -61,7 +51,7 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventItemV
     }
 
     public void notifyData(List<String> eventsList) {
-        Log.d("notifyData ", eventsList.size() + "");
+        //Log.d("notifyData ", eventsList.size() + "");
         this.eventsList = eventsList;
         notifyDataSetChanged();
     }
@@ -79,8 +69,8 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventItemV
         }
 
         void bind(int listIndex) {
-            eventDesc.setText(eventsList.get(listIndex));
             eventNumberView.setText(String.valueOf(listIndex) + ":");
+            eventDesc.setText(eventsList.get(listIndex));
         }
     }
 }

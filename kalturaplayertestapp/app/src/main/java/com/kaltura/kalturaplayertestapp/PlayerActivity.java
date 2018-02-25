@@ -64,7 +64,10 @@ import com.kaltura.tvplayer.ott.OTTMediaOptions;
 import com.kaltura.tvplayer.ovp.KalturaOvpPlayer;
 import com.kaltura.tvplayer.ovp.OVPMediaOptions;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -86,6 +89,8 @@ public class PlayerActivity extends AppCompatActivity {
     private PlayerInitOptions initOptions;
     private String playerConfigTitle;
     private String playerInitOptionsJson;
+    DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+
 
     private Integer uiConfId;
     private String ks;
@@ -109,17 +114,17 @@ public class PlayerActivity extends AppCompatActivity {
         eventsListView = findViewById(R.id.events_list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         eventsListView.setLayoutManager(layoutManager);
-        recyclerAdapter = new EventsAdapter(0);
+        recyclerAdapter = new EventsAdapter();
         eventsListView.setAdapter(recyclerAdapter);
         searchView = findViewById(R.id.search_events);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
-
+                String queryToLowerCase = query.toLowerCase();
                 List<String> searchedEvents = new ArrayList<>();
                 for (String eventItem : eventsList) {
-                    if (eventItem.contains(query)) {
+                    if (eventItem.toLowerCase().contains(queryToLowerCase)) {
                         searchedEvents.add(eventItem);
                     }
                 }
@@ -228,7 +233,8 @@ public class PlayerActivity extends AppCompatActivity {
 
                                         Enum receivedEventType = event.eventType();
                                         if (event instanceof AdEvent) {
-                                            eventsList.add("ad: " + event.eventType().name());
+                                            Date date = new Date();
+                                            eventsList.add(dateFormat.format(date) + " ad:\n" + event.eventType().name());
                                             recyclerAdapter.notifyData(eventsList);
                                             if (receivedEventType == AdEvent.Type.ERROR) {
                                                 AdEvent.Error adError = (AdEvent.Error) event;
@@ -260,7 +266,8 @@ public class PlayerActivity extends AppCompatActivity {
                                             }
                                         }
                                         if (event instanceof PlayerEvent) {
-                                            eventsList.add("player: " + event.eventType().name());
+                                            Date date = new Date();
+                                            eventsList.add(dateFormat.format(date) + " player:\n" + event.eventType().name());
                                             recyclerAdapter.notifyData(eventsList);
                                         } else if (receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED || receivedEventType == AdEvent.Type.PAUSED || receivedEventType == AdEvent.Type.RESUMED ||
                                                 receivedEventType == AdEvent.Type.STARTED || receivedEventType == AdEvent.Type.COMPLETED||
@@ -279,7 +286,8 @@ public class PlayerActivity extends AppCompatActivity {
 
                 PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
                 log.d("XXX stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
-                eventsList.add("player: " + event.eventType().name());
+                Date date = new Date();
+                eventsList.add(dateFormat.format(date) + " player:\n" + event.eventType().name() + ":" + stateChanged.newState);
                 recyclerAdapter.notifyData(eventsList);
                 switch (stateChanged.newState){
                     case IDLE:
@@ -304,7 +312,8 @@ public class PlayerActivity extends AppCompatActivity {
                 KalturaStatsEvent.KalturaStatsReport reportEvent = (KalturaStatsEvent.KalturaStatsReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    eventsList.add("stats: " + reportedEventName);
+                    Date date = new Date();
+                    eventsList.add(dateFormat.format(date) + " stats:\n" + reportedEventName);
                     recyclerAdapter.notifyData(eventsList);
                 }
             }
@@ -317,7 +326,8 @@ public class PlayerActivity extends AppCompatActivity {
                 KavaAnalyticsEvent.KavaAnalyticsReport reportEvent= (KavaAnalyticsEvent.KavaAnalyticsReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    eventsList.add("kava: " + reportedEventName);
+                    Date date = new Date();
+                    eventsList.add(dateFormat.format(date) + " kava:\n" + reportedEventName);
                     recyclerAdapter.notifyData(eventsList);
                 }
             }
@@ -329,7 +339,8 @@ public class PlayerActivity extends AppCompatActivity {
                 YouboraEvent.YouboraReport reportEvent = (YouboraEvent.YouboraReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    eventsList.add("youbora: " + reportedEventName);
+                    Date date = new Date();
+                    eventsList.add(dateFormat.format(date) + " youbora:\n" + reportedEventName);
                     recyclerAdapter.notifyData(eventsList);
                 }
 
