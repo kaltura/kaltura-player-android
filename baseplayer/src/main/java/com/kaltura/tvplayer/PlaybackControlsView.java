@@ -67,12 +67,12 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 togglePlayPauseClick();
             }
         });
-        this.findViewById(R.id.playback_controls_layout).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                togglePlayPauseClick();
-            }
-        });
+//        this.findViewById(R.id.playback_controls_layout).setOnClickListener(new OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                togglePlayPauseClick();
+//            }
+//        });
         seekBar = this.findViewById(R.id.mediacontroller_progress);
         seekBar.setOnSeekBarChangeListener(this);
 
