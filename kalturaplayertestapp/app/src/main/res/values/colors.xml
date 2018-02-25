@@ -7,6 +7,6 @@
     <color name="greyPrimary">#DE000000</color>
     <color name="greySecondary">#8B000000</color>
     <color name="greyDisabled">#61000000</color>
-    <color name="lightBlue">#03A9F4</color>
+    <color name="lightBlue">#cee6ee</color>
     <color name="lightGrey">#dadada</color>
 </resources>

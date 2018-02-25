@@ -3,6 +3,9 @@ package com.kaltura.kalturaplayertestapp;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -11,6 +14,7 @@ import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
@@ -26,19 +30,29 @@ import com.kaltura.kalturaplayertestapp.converters.PluginDescriptor;
 import com.kaltura.kalturaplayertestapp.models.ima.UiConfFormatIMAConfig;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.AdCuePoints;
+import com.kaltura.playkit.ads.AdEvent;
+import com.kaltura.playkit.ads.AdInfo;
+import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.plugins.ima.IMAPlugin;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
+import com.kaltura.playkit.plugins.kava.KavaAnalyticsEvent;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
+import com.kaltura.playkit.plugins.kava.KavaEvents;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsConfig;
 import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
+import com.kaltura.playkit.plugins.ovp.KalturaStatsEvent;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
+import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.tvplayer.KalturaPlayer;
@@ -50,10 +64,14 @@ import com.kaltura.tvplayer.ott.OTTMediaOptions;
 import com.kaltura.tvplayer.ovp.KalturaOvpPlayer;
 import com.kaltura.tvplayer.ovp.OVPMediaOptions;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import static com.kaltura.kalturaplayertestapp.Utils.safeString;
+import static com.kaltura.playkit.PlayerEvent.Type.CAN_PLAY;
+import static com.kaltura.playkit.PlayerEvent.Type.ENDED;
+import static com.kaltura.playkit.PlayerEvent.Type.PLAYING;
 
 //import org.greenrobot.eventbus.EventBus;
 
@@ -69,10 +87,14 @@ public class PlayerActivity extends AppCompatActivity {
     private String playerConfigTitle;
     private String playerInitOptionsJson;
 
-    Integer uiConfId;
-    String ks;
-    List<Media> mediaList;
-    Integer uiConfPartnerId;
+    private Integer uiConfId;
+    private String ks;
+    private List<Media> mediaList;
+    private Integer uiConfPartnerId;
+    private EventsAdapter recyclerAdapter;
+    private RecyclerView eventsListView;
+    private List<String> eventsList = new ArrayList<>();
+    private SearchView searchView;
 
 
     @Override
@@ -83,6 +105,37 @@ public class PlayerActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        eventsListView = findViewById(R.id.events_list);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        eventsListView.setLayoutManager(layoutManager);
+        recyclerAdapter = new EventsAdapter(0);
+        eventsListView.setAdapter(recyclerAdapter);
+        searchView = findViewById(R.id.search_events);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                List<String> searchedEvents = new ArrayList<>();
+                for (String eventItem : eventsList) {
+                    if (eventItem.contains(query)) {
+                        searchedEvents.add(eventItem);
+                    }
+                }
+                recyclerAdapter.notifyData(searchedEvents);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (TextUtils.isEmpty(newText)) {
+                    recyclerAdapter.notifyData(eventsList);
+                    return false;
+                }
+                return false;
+            }
+        });
 
 
         playerConfigTitle = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_TITLE_KEY);
@@ -164,6 +217,124 @@ public class PlayerActivity extends AppCompatActivity {
         } else {
             log.e("Failed to initialze player...");
         }
+        setPlayerListeners();
+    }
+
+    private void setPlayerListeners() {
+        player.addEventListener(new PKEvent.Listener() {
+                                    @Override
+                                    public void onEvent(PKEvent event) {
+                                        log.d("XXX onEvent " + event.eventType().name());
+
+                                        Enum receivedEventType = event.eventType();
+                                        if (event instanceof AdEvent) {
+                                            eventsList.add("ad: " + event.eventType().name());
+                                            recyclerAdapter.notifyData(eventsList);
+                                            if (receivedEventType == AdEvent.Type.ERROR) {
+                                                AdEvent.Error adError = (AdEvent.Error) event;
+                                            } else if (receivedEventType == CAN_PLAY) {
+
+                                            } else if (receivedEventType == PLAYING) {
+
+                                            } else if (receivedEventType == ENDED) {
+
+                                            } else if (receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED) {
+                                                AdCuePoints adCuePoints = ((AdEvent.AdCuePointsUpdateEvent) event).cuePoints;
+
+                                            } else if (receivedEventType == AdEvent.Type.ALL_ADS_COMPLETED) {
+
+                                            } else if (receivedEventType == AdEvent.Type.CONTENT_PAUSE_REQUESTED) {
+
+                                            } else if (receivedEventType == AdEvent.Type.CONTENT_RESUME_REQUESTED) {
+
+                                            } else if (receivedEventType == AdEvent.Type.LOADED) {
+
+                                            } else if (receivedEventType == AdEvent.Type.STARTED) {
+                                                AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
+                                            } else if (receivedEventType == AdEvent.Type.TAPPED) {
+
+                                            } else if (receivedEventType == AdEvent.Type.COMPLETED) {
+
+                                            } else if (receivedEventType == AdEvent.Type.SKIPPED) {
+
+                                            }
+                                        }
+                                        if (event instanceof PlayerEvent) {
+                                            eventsList.add("player: " + event.eventType().name());
+                                            recyclerAdapter.notifyData(eventsList);
+                                        } else if (receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED || receivedEventType == AdEvent.Type.PAUSED || receivedEventType == AdEvent.Type.RESUMED ||
+                                                receivedEventType == AdEvent.Type.STARTED || receivedEventType == AdEvent.Type.COMPLETED||
+                                                receivedEventType == AdEvent.Type.ALL_ADS_COMPLETED){
+
+                                        }
+                                    }
+                                }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.CAN_PLAY, PlayerEvent.Type.SEEKING, PlayerEvent.Type.SEEKED, PlayerEvent.Type.PLAYING,  PlayerEvent.Type.ENDED, PlayerEvent.Type.TRACKS_AVAILABLE,
+                AdEvent.Type.ERROR, AdEvent.Type.LOADED, AdEvent.Type.SKIPPED, AdEvent.Type.TAPPED, AdEvent.Type.CONTENT_PAUSE_REQUESTED, AdEvent.Type.CONTENT_RESUME_REQUESTED, AdEvent.Type.STARTED, AdEvent.Type.LOADED, AdEvent.Type.PAUSED, AdEvent.Type.RESUMED,
+                AdEvent.Type.COMPLETED, AdEvent.Type.ALL_ADS_COMPLETED,AdEvent.Type.CUEPOINTS_CHANGED);
+
+
+        player.addStateChangeListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+
+                PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
+                log.d("XXX stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
+                eventsList.add("player: " + event.eventType().name());
+                recyclerAdapter.notifyData(eventsList);
+                switch (stateChanged.newState){
+                    case IDLE:
+                        log.d("StateChange Idle");
+                        break;
+                    case LOADING:
+                        log.d("StateChange Loading");
+                        break;
+                    case READY:
+                        log.d("StateChange Ready");
+                        break;
+                    case BUFFERING:
+                        log.d("StateChange Buffering");
+                        break;
+                }
+            }
+        });
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                KalturaStatsEvent.KalturaStatsReport reportEvent = (KalturaStatsEvent.KalturaStatsReport) event;
+                String reportedEventName = reportEvent.reportedEventName;
+                if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
+                    eventsList.add("stats: " + reportedEventName);
+                    recyclerAdapter.notifyData(eventsList);
+                }
+            }
+        }, KalturaStatsEvent.Type.REPORT_SENT);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                //Cast received event to AnalyticsEvent.BaseAnalyticsReportEvent.
+                KavaAnalyticsEvent.KavaAnalyticsReport reportEvent= (KavaAnalyticsEvent.KavaAnalyticsReport) event;
+                String reportedEventName = reportEvent.reportedEventName;
+                if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
+                    eventsList.add("kava: " + reportedEventName);
+                    recyclerAdapter.notifyData(eventsList);
+                }
+            }
+        }, KavaAnalyticsEvent.Type.REPORT_SENT);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                YouboraEvent.YouboraReport reportEvent = (YouboraEvent.YouboraReport) event;
+                String reportedEventName = reportEvent.reportedEventName;
+                if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
+                    eventsList.add("youbora: " + reportedEventName);
+                    recyclerAdapter.notifyData(eventsList);
+                }
+
+            }
+        }, YouboraEvent.Type.REPORT_SENT);
     }
 
     private PKPluginConfigs convertPluginsJsonArrayToPKPlugins(JsonArray pluginConfigs) {
@@ -234,8 +405,6 @@ public class PlayerActivity extends AppCompatActivity {
                     }
                 }
                 log.d("DRM initialized; supported: " + supportedDrmSchemes);
-
-                // Now it's safe to look at `supportedDrmSchemes`
             }
         });
     }
@@ -244,12 +413,10 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (player != null) {
-//            ViewGroup container = findViewById(R.id.player_container);
-//            container.removeAllViews();
-
             player.stop();
             player.destroy();
             player = null;
+            eventsList.clear();
         }
     }
 
