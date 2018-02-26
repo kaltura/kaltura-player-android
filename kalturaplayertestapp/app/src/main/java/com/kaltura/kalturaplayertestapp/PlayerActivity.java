@@ -9,10 +9,10 @@ import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -28,6 +28,7 @@ import com.kaltura.kalturaplayertestapp.converters.PlayerConfig;
 import com.kaltura.kalturaplayertestapp.converters.PluginDescriptor;
 
 import com.kaltura.kalturaplayertestapp.models.ima.UiConfFormatIMAConfig;
+import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
@@ -38,13 +39,12 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdCuePoints;
 import com.kaltura.playkit.ads.AdEvent;
 import com.kaltura.playkit.ads.AdInfo;
-import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.player.MediaSupport;
+import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.plugins.ima.IMAPlugin;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsEvent;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
-import com.kaltura.playkit.plugins.kava.KavaEvents;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsConfig;
@@ -55,6 +55,7 @@ import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
+import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlaybackControlsView;
 import com.kaltura.tvplayer.PlayerConfigManager;
@@ -75,22 +76,20 @@ import static com.kaltura.kalturaplayertestapp.Utils.safeString;
 import static com.kaltura.playkit.PlayerEvent.Type.CAN_PLAY;
 import static com.kaltura.playkit.PlayerEvent.Type.ENDED;
 import static com.kaltura.playkit.PlayerEvent.Type.PLAYING;
-
-//import org.greenrobot.eventbus.EventBus;
+import static com.kaltura.playkit.PlayerEvent.Type.TRACKS_AVAILABLE;
 
 public class PlayerActivity extends AppCompatActivity {
 
     private static final PKLog log = PKLog.get("PlayerActivity");
     public static final String PLAYER_CONFIG_JSON_KEY = "player_config_json_key";
     public static final String PLAYER_CONFIG_TITLE_KEY = "player_config_title_key";
+    private DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
     private Gson gson = new Gson();
     private KalturaPlayer player;
     private JsonObject playerConfig;
     private PlayerInitOptions initOptions;
     private String playerConfigTitle;
     private String playerInitOptionsJson;
-    DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
-
 
     private Integer uiConfId;
     private String ks;
@@ -100,6 +99,11 @@ public class PlayerActivity extends AppCompatActivity {
     private RecyclerView eventsListView;
     private List<String> eventsList = new ArrayList<>();
     private SearchView searchView;
+    private TracksSelectionController tracksSelectionController;
+    private Button videoTracksBtn;
+    private Button audioTracksBtn;
+    private Button textTracksBtn;
+
 
 
     @Override
@@ -116,32 +120,14 @@ public class PlayerActivity extends AppCompatActivity {
         eventsListView.setLayoutManager(layoutManager);
         recyclerAdapter = new EventsAdapter();
         eventsListView.setAdapter(recyclerAdapter);
+
+        videoTracksBtn = findViewById(R.id.video_tracks);
+        textTracksBtn  = findViewById(R.id.text_tracks);
+        audioTracksBtn = findViewById(R.id.audio_tracks);
+        addTracksButtonsListener();
+
         searchView = findViewById(R.id.search_events);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                String queryToLowerCase = query.toLowerCase();
-                List<String> searchedEvents = new ArrayList<>();
-                for (String eventItem : eventsList) {
-                    if (eventItem.toLowerCase().contains(queryToLowerCase)) {
-                        searchedEvents.add(eventItem);
-                    }
-                }
-                recyclerAdapter.notifyData(searchedEvents);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (TextUtils.isEmpty(newText)) {
-                    recyclerAdapter.notifyData(eventsList);
-                    return false;
-                }
-                return false;
-            }
-        });
-
+        addSearchListener();
 
         playerConfigTitle = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_TITLE_KEY);
         playerInitOptionsJson = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_JSON_KEY);
@@ -169,6 +155,57 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private void addTracksButtonsListener() {
+        videoTracksBtn.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                if (tracksSelectionController != null) {
+                    tracksSelectionController.showTracksSelectionDialog(Consts.TRACK_TYPE_VIDEO);
+                }
+            }
+        });
+        textTracksBtn.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                if (tracksSelectionController != null) {
+                    tracksSelectionController.showTracksSelectionDialog(Consts.TRACK_TYPE_TEXT);
+                }
+            }
+        });
+        audioTracksBtn.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                if (tracksSelectionController != null) {
+                    tracksSelectionController.showTracksSelectionDialog(Consts.TRACK_TYPE_AUDIO);
+                }
+            }
+        });
+    }
+
+    private void addSearchListener() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                String queryToLowerCase = query.toLowerCase();
+                List<String> searchedEvents = new ArrayList<>();
+                for (String eventItem : eventsList) {
+                    if (eventItem.toLowerCase().contains(queryToLowerCase)) {
+                        searchedEvents.add(eventItem);
+                    }
+                }
+                recyclerAdapter.notifyData(searchedEvents);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (TextUtils.isEmpty(newText)) {
+                    recyclerAdapter.notifyData(eventsList);
+                    return false;
+                }
+                return false;
+            }
+        });
     }
 
     private void buildPlayer(JsonObject studioUiConfJson, PlayerConfig appPlayerInitConfig, String playerType) {
@@ -229,7 +266,7 @@ public class PlayerActivity extends AppCompatActivity {
         player.addEventListener(new PKEvent.Listener() {
                                     @Override
                                     public void onEvent(PKEvent event) {
-                                        log.d("XXX onEvent " + event.eventType().name());
+                                        log.d("onEvent " + event.eventType().name());
 
                                         Enum receivedEventType = event.eventType();
                                         if (event instanceof AdEvent) {
@@ -269,6 +306,25 @@ public class PlayerActivity extends AppCompatActivity {
                                             Date date = new Date();
                                             eventsList.add(dateFormat.format(date) + " player:\n" + event.eventType().name());
                                             recyclerAdapter.notifyData(eventsList);
+                                            if (receivedEventType == TRACKS_AVAILABLE) {
+
+                                                PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
+
+                                                //Obtain the actual tracks info from it.
+                                                PKTracks tracks = tracksAvailable.tracksInfo;
+                                                tracksSelectionController = new TracksSelectionController(PlayerActivity.this, player, tracks);
+                                                int defaultAudioTrackIndex = tracks.getDefaultAudioTrackIndex();
+                                                int defaultTextTrackIndex = tracks.getDefaultTextTrackIndex();
+                                                if (tracks.getAudioTracks().size() > 0) {
+                                                    log.d("Default Audio lang = " + tracks.getAudioTracks().get(defaultAudioTrackIndex).getLabel());
+                                                }
+                                                if (tracks.getTextTracks().size() > 0) {
+                                                    log.d("Default Text lang = " + tracks.getTextTracks().get(defaultTextTrackIndex).getLabel());
+                                                }
+                                                if (tracks.getVideoTracks().size() > 0) {
+                                                    log.d("Default video isAdaptive = " + tracks.getVideoTracks().get(tracks.getDefaultAudioTrackIndex()).isAdaptive() + " bitrate = " + tracks.getVideoTracks().get(tracks.getDefaultAudioTrackIndex()).getBitrate());
+                                                }
+                                            }
                                         } else if (receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED || receivedEventType == AdEvent.Type.PAUSED || receivedEventType == AdEvent.Type.RESUMED ||
                                                 receivedEventType == AdEvent.Type.STARTED || receivedEventType == AdEvent.Type.COMPLETED||
                                                 receivedEventType == AdEvent.Type.ALL_ADS_COMPLETED){
@@ -285,7 +341,7 @@ public class PlayerActivity extends AppCompatActivity {
             public void onEvent(PKEvent event) {
 
                 PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
-                log.d("XXX stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
+                log.d("stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
                 Date date = new Date();
                 eventsList.add(dateFormat.format(date) + " player:\n" + event.eventType().name() + ":" + stateChanged.newState);
                 recyclerAdapter.notifyData(eventsList);

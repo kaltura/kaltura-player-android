@@ -29,7 +29,76 @@
             android:layout_height="wrap_content">
         </com.kaltura.tvplayer.PlaybackControlsView>
 
+        <LinearLayout android:id="@+id/controls_root"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tracks_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:text="Video"
+                android:id="@+id/video_tracks"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+
+            <Button
+                android:text="Text"
+                android:id="@+id/text_tracks"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+
+            <Button
+                android:text="Audio"
+                android:id="@+id/audio_tracks"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+
+            <Button
+                android:text=""
+                android:visibility="invisible"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+
+            <Button
+                android:text=""
+                android:visibility="invisible"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+
+        </LinearLayout>
     </RelativeLayout>
+
 
     <SearchView
         android:id="@+id/search_events"

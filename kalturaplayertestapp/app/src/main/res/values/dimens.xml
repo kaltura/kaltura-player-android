@@ -5,4 +5,10 @@
     <dimen name="player_height">300dp</dimen>
     <dimen name="font_size">16dp</dimen>
     <dimen name="list_item_height">88dp</dimen>
+    <dimen name="DP8">8dp</dimen>
+    <dimen name="DP16">16dp</dimen>
+    <dimen name="DP24">24dp</dimen>
+    <dimen name="DP32">32dp</dimen>
+    <dimen name="DP64">64dp</dimen>
+
 </resources>

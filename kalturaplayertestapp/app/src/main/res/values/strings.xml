@@ -21,10 +21,11 @@
     <string name="add_default_items">Add Default Items</string>
     <string name="delete_all">Delete All</string>
     <string name="dialog_button_close">Close</string>
-
-
+    <string name="selection_disabled">Disabled</string>
+    <string name="selection_default">Default</string>
 
     <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
     <string name="permission_camera_rationale">Access to the camera is needed for detection</string>
     <string name="no_camera_permission">This application cannot run because it does not have the camera permission.  The application will now exit.</string>
     <string name="low_storage_error">Face detector dependencies cannot be downloaded due to low device storage</string>
