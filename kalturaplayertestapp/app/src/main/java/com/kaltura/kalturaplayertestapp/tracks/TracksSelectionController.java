@@ -7,14 +7,13 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 
-import com.kaltura.kalturaplayertestapp.R;
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
 import com.kaltura.playkit.player.VideoTrack;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.KalturaPlayer;
-
+import com.kaltura.kalturaplayertestapp.R;
 import java.util.ArrayList;
 import java.util.List;
 

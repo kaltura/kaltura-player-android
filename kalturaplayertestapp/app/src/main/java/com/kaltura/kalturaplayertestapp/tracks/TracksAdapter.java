@@ -7,14 +7,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.TextView;
-
 import com.kaltura.kalturaplayertestapp.R;
-
 import java.util.List;
 
-/**
- * Created by anton.afanasiev on 07/12/2016.
- */
 public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.ViewHolder> {
 
     private List<TrackItem> trackItems;
