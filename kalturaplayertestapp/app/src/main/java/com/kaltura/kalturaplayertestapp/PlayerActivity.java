@@ -95,9 +95,11 @@ public class PlayerActivity extends AppCompatActivity {
     private String ks;
     private List<Media> mediaList;
     private Integer uiConfPartnerId;
-    private EventsAdapter recyclerAdapter;
+    private EventsAdapter eventsListRecyclerAdapter;
     private RecyclerView eventsListView;
     private List<String> eventsList = new ArrayList<>();
+    private List<String> searchedEventsList = new ArrayList<>();
+    private String searchLogPattern = "";
     private SearchView searchView;
     private TracksSelectionController tracksSelectionController;
     private Button videoTracksBtn;
@@ -118,8 +120,8 @@ public class PlayerActivity extends AppCompatActivity {
         eventsListView = findViewById(R.id.events_list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         eventsListView.setLayoutManager(layoutManager);
-        recyclerAdapter = new EventsAdapter();
-        eventsListView.setAdapter(recyclerAdapter);
+        eventsListRecyclerAdapter = new EventsAdapter();
+        eventsListView.setAdapter(eventsListRecyclerAdapter);
 
         videoTracksBtn = findViewById(R.id.video_tracks);
         textTracksBtn  = findViewById(R.id.text_tracks);
@@ -187,21 +189,25 @@ public class PlayerActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextSubmit(String query) {
+
                 String queryToLowerCase = query.toLowerCase();
-                List<String> searchedEvents = new ArrayList<>();
+                searchLogPattern = queryToLowerCase;
+                searchedEventsList.clear();
                 for (String eventItem : eventsList) {
                     if (eventItem.toLowerCase().contains(queryToLowerCase)) {
-                        searchedEvents.add(eventItem);
+                        searchedEventsList.add(eventItem);
                     }
                 }
-                recyclerAdapter.notifyData(searchedEvents);
+                eventsListRecyclerAdapter.notifyData(searchedEventsList);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (TextUtils.isEmpty(newText)) {
-                    recyclerAdapter.notifyData(eventsList);
+                    searchedEventsList.clear();
+                    searchLogPattern = "";
+                    eventsListRecyclerAdapter.notifyData(eventsList);
                     return false;
                 }
                 return false;
@@ -270,9 +276,8 @@ public class PlayerActivity extends AppCompatActivity {
 
                                         Enum receivedEventType = event.eventType();
                                         if (event instanceof AdEvent) {
-                                            Date date = new Date();
-                                            eventsList.add(dateFormat.format(date) + " ad:\n" + event.eventType().name());
-                                            recyclerAdapter.notifyData(eventsList);
+                                            updateEventsLogsList("ad:\n" + event.eventType().name());
+
                                             if (receivedEventType == AdEvent.Type.ERROR) {
                                                 AdEvent.Error adError = (AdEvent.Error) event;
                                             } else if (receivedEventType == CAN_PLAY) {
@@ -303,9 +308,7 @@ public class PlayerActivity extends AppCompatActivity {
                                             }
                                         }
                                         if (event instanceof PlayerEvent) {
-                                            Date date = new Date();
-                                            eventsList.add(dateFormat.format(date) + " player:\n" + event.eventType().name());
-                                            recyclerAdapter.notifyData(eventsList);
+                                            updateEventsLogsList("player:\n" + event.eventType().name());
                                             if (receivedEventType == TRACKS_AVAILABLE) {
 
                                                 PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
@@ -342,9 +345,7 @@ public class PlayerActivity extends AppCompatActivity {
 
                 PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
                 log.d("stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
-                Date date = new Date();
-                eventsList.add(dateFormat.format(date) + " player:\n" + event.eventType().name() + ":" + stateChanged.newState);
-                recyclerAdapter.notifyData(eventsList);
+                updateEventsLogsList("player:\n" + event.eventType().name() + ":" + stateChanged.newState);
                 switch (stateChanged.newState){
                     case IDLE:
                         log.d("StateChange Idle");
@@ -368,9 +369,7 @@ public class PlayerActivity extends AppCompatActivity {
                 KalturaStatsEvent.KalturaStatsReport reportEvent = (KalturaStatsEvent.KalturaStatsReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    Date date = new Date();
-                    eventsList.add(dateFormat.format(date) + " stats:\n" + reportedEventName);
-                    recyclerAdapter.notifyData(eventsList);
+                    updateEventsLogsList("stats:\n" + reportedEventName);
                 }
             }
         }, KalturaStatsEvent.Type.REPORT_SENT);
@@ -382,9 +381,7 @@ public class PlayerActivity extends AppCompatActivity {
                 KavaAnalyticsEvent.KavaAnalyticsReport reportEvent= (KavaAnalyticsEvent.KavaAnalyticsReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    Date date = new Date();
-                    eventsList.add(dateFormat.format(date) + " kava:\n" + reportedEventName);
-                    recyclerAdapter.notifyData(eventsList);
+                    updateEventsLogsList("kava:\n" + reportedEventName);
                 }
             }
         }, KavaAnalyticsEvent.Type.REPORT_SENT);
@@ -395,9 +392,7 @@ public class PlayerActivity extends AppCompatActivity {
                 YouboraEvent.YouboraReport reportEvent = (YouboraEvent.YouboraReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    Date date = new Date();
-                    eventsList.add(dateFormat.format(date) + " youbora:\n" + reportedEventName);
-                    recyclerAdapter.notifyData(eventsList);
+                    updateEventsLogsList("youbora:\n" + reportedEventName);
                 }
 
             }
@@ -409,13 +404,25 @@ public class PlayerActivity extends AppCompatActivity {
                 PhoenixAnalyticsEvent.PhoenixAnalyticsReport reportEvent = (PhoenixAnalyticsEvent.PhoenixAnalyticsReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    Date date = new Date();
-                    eventsList.add(dateFormat.format(date) + " phoenix:\n" + reportedEventName);
-                    recyclerAdapter.notifyData(eventsList);
+                    updateEventsLogsList("phoenix:\n" + reportedEventName);
                 }
 
             }
         }, PhoenixAnalyticsEvent.Type.REPORT_SENT);
+    }
+
+    private void updateEventsLogsList(String eventMsg) {
+        Date date = new Date();
+        eventMsg = dateFormat.format(date) + " " + eventMsg;
+        eventsList.add(eventMsg);
+        if (!TextUtils.isEmpty(searchLogPattern)) {
+            if (eventMsg.toLowerCase().contains(searchLogPattern)) {
+                searchedEventsList.add(eventMsg);
+                eventsListRecyclerAdapter.notifyData(searchedEventsList);
+            }
+        } else {
+            eventsListRecyclerAdapter.notifyData(eventsList);
+        }
     }
 
     private PKPluginConfigs convertPluginsJsonArrayToPKPlugins(JsonArray pluginConfigs) {
