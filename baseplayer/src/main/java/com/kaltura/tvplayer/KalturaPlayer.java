@@ -36,6 +36,10 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
+import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
+import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
+import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
+import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.tvplayer.utils.GsonReader;
 import com.kaltura.tvplayer.utils.TokenResolver;
 
@@ -77,7 +81,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     protected KalturaPlayer(Context context, PlayerInitOptions initOptions) {
 
         this.context = context;
-
+        this.initOptions = initOptions;
         this.preload = initOptions.preload != null ? initOptions.preload : false;
         this.autoPlay = initOptions.autoplay != null ? initOptions.autoplay : false;
         if (this.autoPlay) {
@@ -90,8 +94,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         this.ks = initOptions.ks;
 
         registerPlugins(context);
-
-        loadPlayer(initOptions);
+        loadPlayer();
     }
 
     protected static String safeServerUrl(String url, String defaultUrl) {
@@ -162,12 +165,16 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         return object;
     }
 
+    private JsonObject kalturaStatsDefaults(int partnerId, int uiConfId) {
+        return new KalturaStatsConfig(uiConfId, partnerId, "", "", 0, true).toJson();
+        // KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String userId, int contextId, boolean hasKanalony)
+    }
+
     private JsonObject prepareKava(JsonObject uiConf, int partnerId, int uiConfId, String referrer) {
         return mergeJsonConfig(uiConf, kavaDefaults(partnerId, uiConfId, referrer));
     }
 
-    private void loadPlayer(PlayerInitOptions initOptions) {
-        this.initOptions = initOptions;
+    private void loadPlayer() {
         PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
         PKPluginConfigs combinedPluginConfigs = new PKPluginConfigs();
 
@@ -180,20 +187,44 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         JsonObject pluginsUIConf = (uiConf != null && uiConf.getObject(CONFIG) != null && uiConf.getObject(CONFIG).getAsJsonObject(PLAYER) != null) ? uiConf.getObject(CONFIG).getAsJsonObject(PLAYER).getAsJsonObject(PLUGINS) : new JsonObject();
 
 
-        // Special case: Kaltura Analytics plugins
+        // Special case: Kava plugin
         // KAVA
         if (initOptions.uiConfId != null && pluginsUIConf != null) {
             String name = KavaAnalyticsPlugin.factory.getName();
-            JsonObject appKavaJsonObject = null;
+            JsonObject kavaJsonObject = null;
             if (initOptions.pluginConfigs.hasConfig(name)) {
-                appKavaJsonObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
+                kavaJsonObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
             } else {
-                appKavaJsonObject = kavaDefaults(partnerId, initOptions.uiConfId, referrer);
+                kavaJsonObject = kavaDefaults(partnerId, initOptions.uiConfId, referrer);
             }
-            JsonObject uic = mergeJsonConfig(pluginsUIConf.getAsJsonObject(name), appKavaJsonObject);
-            if (uic != null) {
-                pluginsUIConf.add(name, uic);
+            pluginsUIConf.add(name, kavaJsonObject);
+        }
+
+        // Special case: Kaltura Stats plugin
+        // KalturaStats
+        if (initOptions.uiConfId != null && pluginsUIConf != null) {
+            String name = KalturaStatsPlugin.factory.getName();
+            JsonObject kalturaStatPluginObject = null;
+            if (initOptions.pluginConfigs.hasConfig(name)) {
+                kalturaStatPluginObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
+            } else {
+                kalturaStatPluginObject = kalturaStatsDefaults(partnerId, initOptions.uiConfId);
             }
+            pluginsUIConf.add(name, kalturaStatPluginObject);
+        }
+
+        // Special case: Phoenix plugin
+        // Phoenix
+        if ("KalturaOTTPlayer".equals(this.getClass().getSimpleName())) {
+            String name = PhoenixAnalyticsPlugin.factory.getName();
+            JsonObject phoenixAnalyticObject = null;
+            if (initOptions.pluginConfigs.hasConfig(name)) {
+                phoenixAnalyticObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
+            } else {
+                phoenixAnalyticObject = phoenixAnalyticDefaults(partnerId, initOptions.serverUrl, initOptions.ks, 0);
+            }
+            pluginsUIConf.add(name, phoenixAnalyticObject);
+
         }
 
         if (pluginConfigs != null) {
@@ -245,6 +276,10 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             }
             PlayManifestRequestAdapter.install(pkPlayer, referrer);
         }
+    }
+
+    private JsonObject phoenixAnalyticDefaults(int partnerId, String serverUrl, String ks, int timerInterval) {
+        return new PhoenixAnalyticsConfig(partnerId, serverUrl, ks, timerInterval).toJson();
     }
 
     public JsonObject mergeJsonConfig(JsonObject source, JsonObject target) {

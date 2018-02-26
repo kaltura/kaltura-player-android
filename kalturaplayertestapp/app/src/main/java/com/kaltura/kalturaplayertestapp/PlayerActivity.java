@@ -7,7 +7,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +45,7 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsEvent;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
+import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsEvent;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsConfig;
 import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsPlugin;
@@ -146,7 +146,8 @@ public class PlayerActivity extends AppCompatActivity {
         final PlayerConfig appPlayerInitConfig = gson.fromJson(config.toString(), PlayerConfig.class);
 
         if (appPlayerInitConfig.getUiConf() == null) {
-            log.e("App config json is invalid");
+            log.d("App config json is invalid");
+            buildPlayer(null, appPlayerInitConfig, playerType);
         } else {
             PlayerConfigManager.retrieve(Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getPartnerId()), appPlayerInitConfig.getKs(), appPlayerInitConfig.getUiConf().getBaseUrl(), new PlayerConfigManager.OnPlayerConfigLoaded() {
                 @Override
@@ -222,7 +223,6 @@ public class PlayerActivity extends AppCompatActivity {
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
         mediaList = appPlayerInitConfig.getMediaList();
-        //TvPlayerUtils.parseInitOptions(config.getAsJsonObject("initOptions"));
 
         if ("ovp".equals(playerType.toLowerCase())) {
             player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
@@ -402,6 +402,20 @@ public class PlayerActivity extends AppCompatActivity {
 
             }
         }, YouboraEvent.Type.REPORT_SENT);
+
+        player.addEventListener(new PKEvent.Listener() {
+            @Override
+            public void onEvent(PKEvent event) {
+                PhoenixAnalyticsEvent.PhoenixAnalyticsReport reportEvent = (PhoenixAnalyticsEvent.PhoenixAnalyticsReport) event;
+                String reportedEventName = reportEvent.reportedEventName;
+                if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
+                    Date date = new Date();
+                    eventsList.add(dateFormat.format(date) + " phoenix:\n" + reportedEventName);
+                    recyclerAdapter.notifyData(eventsList);
+                }
+
+            }
+        }, PhoenixAnalyticsEvent.Type.REPORT_SENT);
     }
 
     private PKPluginConfigs convertPluginsJsonArrayToPKPlugins(JsonArray pluginConfigs) {
@@ -418,7 +432,6 @@ public class PlayerActivity extends AppCompatActivity {
                     KavaAnalyticsConfig kavaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KavaAnalyticsConfig.class);
                     pkPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaPluginConfig.toJson());
                 } else if (IMAPlugin.factory.getName().equals(pluginName)) {
-
                     UiConfFormatIMAConfig imaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), UiConfFormatIMAConfig.class);
                     pkPluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig.toJson());
                 } else if (PhoenixAnalyticsPlugin.factory.getName().equals(pluginName)) {
@@ -490,8 +503,7 @@ public class PlayerActivity extends AppCompatActivity {
     public void setPlayer(final KalturaPlayer player) {
         this.player = player;
         if (player == null) {
-            Log.e("XXX", "Player is null");
-
+            log.e( "Player is null");
             return;
         }
         final ViewGroup container = findViewById(R.id.player_container_layout);
