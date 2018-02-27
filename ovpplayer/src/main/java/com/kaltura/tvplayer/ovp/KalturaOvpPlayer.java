@@ -40,20 +40,16 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
     @Override
     protected void updateKS(String ks) {
         // Update Kava
-        pkPlayer.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig(ks));
+        //pkPlayer.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig(ks));
     }
 
     private KavaAnalyticsConfig getKavaAnalyticsConfig(String ks) {
-        return new KavaAnalyticsConfig()
-                .setKs(ks).setPartnerId(getPartnerId()).setReferrer(referrer);
+        return new KavaAnalyticsConfig().setKs(ks).setPartnerId(getPartnerId()).setReferrer(referrer);
     }
 
     @Override
     protected void addKalturaPluginConfigs(PKPluginConfigs combined) {
-        KavaAnalyticsConfig kavaConfig = getKavaAnalyticsConfig(null);
-
-        // FIXME temporarily disabled Kava
-//        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaConfig);
+        //Do nothing special here
     }
 
     @Override

@@ -77,8 +77,9 @@
                 android:background="@color/cardview_dark_background"/>
 
             <Button
-                android:text=""
-                android:visibility="invisible"
+                android:text="Prev"
+                android:id="@+id/prev_btn"
+                android:clickable="false"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
@@ -87,8 +88,9 @@
                 android:background="@color/cardview_dark_background"/>
 
             <Button
-                android:text=""
-                android:visibility="invisible"
+                android:text="Next"
+                android:id="@+id/next_btn"
+                android:clickable="false"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"

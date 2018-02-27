@@ -1,7 +1,9 @@
 package com.kaltura.kalturaplayertestapp;
 
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -106,6 +108,10 @@ public class PlayerActivity extends AppCompatActivity {
     private Button audioTracksBtn;
     private Button textTracksBtn;
 
+    public int currentPlayedMediaIndex = 0;
+    private Button prevBtn;
+    private Button nextBtn;
+
 
 
     @Override
@@ -115,7 +121,6 @@ public class PlayerActivity extends AppCompatActivity {
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         eventsListView = findViewById(R.id.events_list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -128,8 +133,13 @@ public class PlayerActivity extends AppCompatActivity {
         audioTracksBtn = findViewById(R.id.audio_tracks);
         addTracksButtonsListener();
 
+        prevBtn        = findViewById(R.id.prev_btn);
+        nextBtn        = findViewById(R.id.next_btn);
+
+
         searchView = findViewById(R.id.search_events);
         addSearchListener();
+
 
         playerConfigTitle = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_TITLE_KEY);
         playerInitOptionsJson = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_JSON_KEY);
@@ -146,15 +156,19 @@ public class PlayerActivity extends AppCompatActivity {
 
 
         final PlayerConfig appPlayerInitConfig = gson.fromJson(config.toString(), PlayerConfig.class);
+        if (appPlayerInitConfig.getMediaList().size() > 1) {
+            addChangeMediaButtonsListener();
+        }
+        updatePrevNextBtnFunctionality(appPlayerInitConfig.getMediaList().size());
 
         if (appPlayerInitConfig.getUiConf() == null) {
             log.d("App config json is invalid");
-            buildPlayer(null, appPlayerInitConfig, playerType);
+            buildPlayer(null, appPlayerInitConfig, currentPlayedMediaIndex, playerType);
         } else {
             PlayerConfigManager.retrieve(Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getPartnerId()), appPlayerInitConfig.getKs(), appPlayerInitConfig.getUiConf().getBaseUrl(), new PlayerConfigManager.OnPlayerConfigLoaded() {
                 @Override
                 public void onConfigLoadComplete(int id, JsonObject studioUiConfJson, ErrorElement error, int freshness) {
-                    buildPlayer(studioUiConfJson, appPlayerInitConfig, playerType);
+                    buildPlayer(studioUiConfJson, appPlayerInitConfig, currentPlayedMediaIndex, playerType);
                 }
             });
         }
@@ -182,6 +196,91 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void addChangeMediaButtonsListener() {
+        prevBtn.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                currentPlayedMediaIndex--;
+                if (mediaList.size() <= 1)  {
+                    return;
+                }
+                updatePrevNextBtnFunctionality(mediaList.size());
+                clearLogView();
+                player.stop();
+
+                changeMedia();
+            }
+        });
+        nextBtn.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                currentPlayedMediaIndex++;
+                if (mediaList.size() <= 1)  {
+                    return;
+                }
+                updatePrevNextBtnFunctionality(mediaList.size());
+                clearLogView();
+                player.stop();
+                changeMedia();
+            }
+        });
+    }
+
+    private void changeMedia() {
+        if (player instanceof KalturaOvpPlayer) {
+            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, null,currentPlayedMediaIndex);
+            player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
+                @Override
+                public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
+                    log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
+                }
+            });
+        } else {
+            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, null,currentPlayedMediaIndex);
+            player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
+                @Override
+                public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
+                    log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
+                }
+            });
+        }
+    }
+
+    private void clearLogView() {
+        eventsList.clear();
+        searchedEventsList.clear();
+        searchLogPattern = "";
+    }
+
+    private void updatePrevNextBtnFunctionality(int mediaListSize) {
+        if (mediaListSize > 1) {
+            if (currentPlayedMediaIndex == 0) {
+                nextBtn.setClickable(true);
+                nextBtn.setBackgroundColor(Color.BLACK);
+                prevBtn.setClickable(false);
+                prevBtn.setBackgroundColor(Color.RED);
+            } else if (currentPlayedMediaIndex == mediaList.size() - 1) {
+                nextBtn.setClickable(false);
+                nextBtn.setBackgroundColor(Color.RED);
+                prevBtn.setClickable(true);
+                prevBtn.setBackgroundColor(Color.BLACK);
+            } else if (currentPlayedMediaIndex > 0 && currentPlayedMediaIndex < mediaList.size() - 1) {
+                nextBtn.setClickable(true);
+                nextBtn.setBackgroundColor(Color.BLACK);
+                prevBtn.setClickable(true);
+                prevBtn.setBackgroundColor(Color.BLACK);
+            } else {
+                nextBtn.setClickable(false);
+                nextBtn.setBackgroundColor(Color.RED);
+                prevBtn.setClickable(false);
+                prevBtn.setBackgroundColor(Color.RED);
+            }
+        } else {
+            nextBtn.setClickable(false);
+            nextBtn.setBackgroundColor(Color.RED);
+            prevBtn.setClickable(false);
+            prevBtn.setBackgroundColor(Color.RED);
+        }
     }
 
     private void addSearchListener() {
@@ -215,11 +314,15 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
-    private void buildPlayer(JsonObject studioUiConfJson, PlayerConfig appPlayerInitConfig, String playerType) {
+    private void buildPlayer(JsonObject studioUiConfJson, PlayerConfig appPlayerInitConfig, int playListMediaIndex, String playerType) {
         KalturaPlayer player = null;
         appPlayerInitConfig.setPlayerConfig(studioUiConfJson);
         JsonArray appPluginConfigJsonObject = appPlayerInitConfig.getPluginConfigs();
-        initOptions = new PlayerInitOptions(Integer.valueOf(appPlayerInitConfig.getPartnerId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), appPlayerInitConfig.getPlayerConfig())
+        int playerUiConfId = -1;
+        if (appPlayerInitConfig.getUiConf() != null) {
+            playerUiConfId = Integer.valueOf(appPlayerInitConfig.getUiConf().getId());
+        }
+        initOptions = new PlayerInitOptions(Integer.valueOf(appPlayerInitConfig.getPartnerId()), playerUiConfId, appPlayerInitConfig.getPlayerConfig())
                 .setAutoPlay(appPlayerInitConfig.getAutoPlay())
                 .setKs(appPlayerInitConfig.getKs())
                 .setPreload(appPlayerInitConfig.getPreload())
@@ -232,11 +335,8 @@ public class PlayerActivity extends AppCompatActivity {
 
         if ("ovp".equals(playerType.toLowerCase())) {
             player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
-            OVPMediaOptions ovpMediaOptions = new OVPMediaOptions().setEntryId(mediaList.get(0).getEntryId());
-            ovpMediaOptions.setKS(mediaList.get(0).getKs());
-            ovpMediaOptions.setStartPosition(appPlayerInitConfig.getStartPosition());
-            ovpMediaOptions.setPreferredMediaFormat(appPlayerInitConfig.getPreferredFormat(), initOptions.preferredMediaFormat);
 
+            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat(), playListMediaIndex);
             player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
                 @Override
                 public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
@@ -245,14 +345,7 @@ public class PlayerActivity extends AppCompatActivity {
             });
         } else  if ("ott".equals(playerType.toLowerCase())) {
             player = KalturaOTTPlayer.create(PlayerActivity.this, initOptions);
-            Media ottMedia = mediaList.get(0);
-            OTTMediaOptions ottMediaOptions = new OTTMediaOptions()
-                    .setAssetId(ottMedia.getAssetId())
-                    .setAssetType(ottMedia.getAssetType())
-                    .setContextType(ottMedia.getPlaybackContextType());
-            ottMediaOptions.setKS(ottMedia.getKs());
-            ottMediaOptions.setStartPosition(appPlayerInitConfig.getStartPosition());
-            ottMediaOptions.setPreferredMediaFormat(appPlayerInitConfig.getPreferredFormat(), initOptions.preferredMediaFormat);
+            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat() , playListMediaIndex);
             player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
                 @Override
                 public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
@@ -268,6 +361,36 @@ public class PlayerActivity extends AppCompatActivity {
         setPlayerListeners();
     }
 
+    @NonNull
+    private OTTMediaOptions buildOttMediaOptions(int startPosition, String preferredFormat, int playListMediaIndex) {
+        Media ottMedia = mediaList.get(playListMediaIndex);
+        OTTMediaOptions ottMediaOptions = new OTTMediaOptions()
+                .setAssetId(ottMedia.getAssetId())
+                .setAssetType(ottMedia.getAssetType())
+                .setContextType(ottMedia.getPlaybackContextType());
+        if (!TextUtils.isEmpty(ottMedia.getFormat())) {
+            ottMediaOptions.setFormats(new String [] {ottMedia.getFormat()});
+        }
+        if (ottMedia.getFileId() != null) {
+            ottMediaOptions.setFileIds(new String [] {String.valueOf(ottMedia.getFileId())});
+        }
+
+        ottMediaOptions.setKS(ottMedia.getKs());
+        ottMediaOptions.setStartPosition(startPosition);
+        ottMediaOptions.setPreferredMediaFormat(preferredFormat, initOptions.preferredMediaFormat);
+        return ottMediaOptions;
+    }
+
+    @NonNull
+    private OVPMediaOptions buildOvpMediaOptions(int startPosition, String preferredFormat, int playListMediaIndex) {
+        Media ovpMedia = mediaList.get(playListMediaIndex);
+        OVPMediaOptions ovpMediaOptions = new OVPMediaOptions().setEntryId(ovpMedia.getEntryId());
+        ovpMediaOptions.setKS(ovpMedia.getKs());
+        ovpMediaOptions.setStartPosition(startPosition);
+        ovpMediaOptions.setPreferredMediaFormat(preferredFormat, initOptions.preferredMediaFormat);
+        return ovpMediaOptions;
+    }
+
     private void setPlayerListeners() {
         player.addEventListener(new PKEvent.Listener() {
                                     @Override
@@ -281,10 +404,6 @@ public class PlayerActivity extends AppCompatActivity {
                                             if (receivedEventType == AdEvent.Type.ERROR) {
                                                 AdEvent.Error adError = (AdEvent.Error) event;
                                             } else if (receivedEventType == CAN_PLAY) {
-
-                                            } else if (receivedEventType == PLAYING) {
-
-                                            } else if (receivedEventType == ENDED) {
 
                                             } else if (receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED) {
                                                 AdCuePoints adCuePoints = ((AdEvent.AdCuePointsUpdateEvent) event).cuePoints;
@@ -309,7 +428,11 @@ public class PlayerActivity extends AppCompatActivity {
                                         }
                                         if (event instanceof PlayerEvent) {
                                             updateEventsLogsList("player:\n" + event.eventType().name());
-                                            if (receivedEventType == TRACKS_AVAILABLE) {
+                                            if (receivedEventType == PLAYING) {
+
+                                            } else if (receivedEventType == ENDED) {
+
+                                            } else if (receivedEventType == TRACKS_AVAILABLE) {
 
                                                 PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
 

@@ -8,9 +8,10 @@ import com.kaltura.playkit.api.phoenix.APIDefines;
 
 public class Media {
     private String entryId;   // ovp
-    private String ks;        // ovp
+    private String ks;        // ovp or ott
     private String assetId;   // ott
     private String format;    // ott
+    private Integer fileId;   // ott
     private String assetType; // ott
     private String playbackContextType; // ott
 
@@ -47,6 +48,14 @@ public class Media {
 
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    public Integer getFileId() {
+        return fileId;
+    }
+
+    public void setFileId(Integer fileId) {
+        this.fileId = fileId;
     }
 
     public APIDefines.KalturaAssetType getAssetType() {

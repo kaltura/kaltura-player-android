@@ -2,7 +2,10 @@ package com.kaltura.tvplayer.ott;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -48,14 +51,18 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
     @Override
     protected void updateKS(String ks) {
         // update plugins and provider
-        pkPlayer.updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), getPhoenixAnalyticsConfig());
-        pkPlayer.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
+        //pkPlayer.updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), getPhoenixAnalyticsConfig());
+        //pkPlayer.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
     }
 
     @Override
     protected void addKalturaPluginConfigs(PKPluginConfigs combined) {
-        combined.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), getPhoenixAnalyticsConfig());
-        combined.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig());
+        if (!TextUtils.isEmpty(getKS())) {
+            PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
+            if (phoenixConfig != null) {
+                combined.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
+            }
+        }
     }
 
     private KavaAnalyticsConfig getKavaAnalyticsConfig() {
@@ -67,14 +74,24 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
         return new KalturaLiveStatsConfig(getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null);
     }
 
-    private KalturaStatsConfig getStatsConfig() {
-        final PKMediaEntry mediaEntry = getMediaEntry();
-        return new KalturaStatsConfig(getUiConfId(), getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null, null, 0, true);
-    }
 
     @NonNull
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
-        return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), 30);
+        // Special case: Phoenix plugin
+        // Phoenix
+        String name = PhoenixAnalyticsPlugin.factory.getName();
+        JsonObject phoenixAnalyticObject = null;
+        if (getInitOptions().pluginConfigs.hasConfig(name)) {
+            phoenixAnalyticObject = (JsonObject) getInitOptions().pluginConfigs.getPluginConfig(name);
+        } else {
+            phoenixAnalyticObject = phoenixAnalyticDefaults(getPartnerId(), getServerUrl(), getKS(), -1);
+        }
+        return new Gson().fromJson(phoenixAnalyticObject, PhoenixAnalyticsConfig.class);
+
+    }
+
+    private JsonObject phoenixAnalyticDefaults(int partnerId, String serverUrl, String ks, int timerInterval) {
+        return new PhoenixAnalyticsConfig(partnerId, serverUrl, ks, timerInterval).toJson();
     }
 
 

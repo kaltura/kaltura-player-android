@@ -36,8 +36,6 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
-import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
-import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.tvplayer.utils.GsonReader;
@@ -88,9 +86,10 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             this.preload = true; // autoplay implies preload
         }
 
-        this.referrer = buildReferrer(context, initOptions.referrer);
+        this.referrer  = buildReferrer(context, initOptions.referrer);
         this.partnerId = initOptions.partnerId;
-        this.uiConfId = initOptions.uiConfId;
+        this.uiConfId  = initOptions.uiConfId;
+        this.serverUrl = initOptions.serverUrl;
         this.ks = initOptions.ks;
 
         registerPlugins(context);
@@ -213,19 +212,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             pluginsUIConf.add(name, kalturaStatPluginObject);
         }
 
-        // Special case: Phoenix plugin
-        // Phoenix
-        if ("KalturaOTTPlayer".equals(this.getClass().getSimpleName())) {
-            String name = PhoenixAnalyticsPlugin.factory.getName();
-            JsonObject phoenixAnalyticObject = null;
-            if (initOptions.pluginConfigs.hasConfig(name)) {
-                phoenixAnalyticObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
-            } else {
-                phoenixAnalyticObject = phoenixAnalyticDefaults(partnerId, initOptions.serverUrl, initOptions.ks, 0);
-            }
-            pluginsUIConf.add(name, phoenixAnalyticObject);
 
-        }
 
         if (pluginConfigs != null) {
             Gson gson = new Gson();
@@ -260,26 +247,23 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
                     combinedPluginConfigs.setPluginConfig(pluginName, config);
                 }
             }
-
-            //addKalturaPluginConfigs(combinedPluginConfigs);
-
-            pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
-            if (initOptions.audioLanguageMode != null && initOptions.audioLanguage != null) {
-                pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(initOptions.audioLanguageMode).setTrackLanguage(initOptions.audioLanguage));
-            }
-            if (initOptions.textLanguageMode != null && initOptions.textLanguage != null) {
-                pkPlayer.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(initOptions.textLanguageMode).setTrackLanguage(initOptions.textLanguage));
-            }
-
-            if (initOptions.allowCrossProtocolEnabled) {
-                pkPlayer.getSettings().setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
-            }
-            PlayManifestRequestAdapter.install(pkPlayer, referrer);
         }
-    }
 
-    private JsonObject phoenixAnalyticDefaults(int partnerId, String serverUrl, String ks, int timerInterval) {
-        return new PhoenixAnalyticsConfig(partnerId, serverUrl, ks, timerInterval).toJson();
+        addKalturaPluginConfigs(combinedPluginConfigs);
+
+        pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
+        if (initOptions.audioLanguageMode != null && initOptions.audioLanguage != null) {
+            pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(initOptions.audioLanguageMode).setTrackLanguage(initOptions.audioLanguage));
+        }
+        if (initOptions.textLanguageMode != null && initOptions.textLanguage != null) {
+            pkPlayer.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(initOptions.textLanguageMode).setTrackLanguage(initOptions.textLanguage));
+        }
+
+        if (initOptions.allowCrossProtocolEnabled) {
+            pkPlayer.getSettings().setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
+        }
+        PlayManifestRequestAdapter.install(pkPlayer, referrer);
+
     }
 
     public JsonObject mergeJsonConfig(JsonObject source, JsonObject target) {
@@ -532,6 +516,10 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         return this;
     }
 
+    public PlayerInitOptions getInitOptions() {
+        return initOptions;
+    }
+
     public int getPartnerId() {
         return partnerId;
     }
@@ -566,7 +554,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
     protected abstract void updateKS(String ks);
 
-public interface OnEntryLoadListener {
-    void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
-}
+    public interface OnEntryLoadListener {
+        void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
+    }
 }
