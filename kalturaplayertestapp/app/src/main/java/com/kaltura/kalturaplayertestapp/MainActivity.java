@@ -1,11 +1,13 @@
 package com.kaltura.kalturaplayertestapp;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -14,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -183,6 +186,9 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
             case R.id.action_remove_json:
 
                 break;
+            case R.id.about:
+                showAboutDialog();
+                break;
             case R.id.action_logout:
                 FirebaseAuth.getInstance().signOut();
                 startActivity(new Intent(this, SignInActivity.class));
@@ -190,6 +196,22 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showAboutDialog() {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
+        alertDialog.setTitle("About Test App");
+        alertDialog.setIcon(R.drawable.k_image);
+        // Setting Dialog Message
+        alertDialog.setMessage("Logged In: " + FirebaseAuth.getInstance().getCurrentUser().getEmail() + "\n\n" +
+                               "App Version:" + BuildConfig.VERSION_NAME);
+
+        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        alertDialog.show();
     }
 
     private void onScanItemsClicked() {

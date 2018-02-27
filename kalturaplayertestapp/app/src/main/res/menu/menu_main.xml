@@ -32,6 +32,10 @@
         android:title="@string/delete_all" />
 
     <item
+        android:id="@+id/about"
+        android:title="@string/about" />
+
+    <item
         android:id="@+id/action_logout"
         android:title="@string/menu_logout"
         android:visible="true"

@@ -20,6 +20,7 @@
     <string name="remove_json">Add Configuration</string>
     <string name="add_default_items">Add Default Items</string>
     <string name="delete_all">Delete All</string>
+    <string name="about">About</string>
     <string name="dialog_button_close">Close</string>
     <string name="selection_disabled">Disabled</string>
     <string name="selection_default">Default</string>
