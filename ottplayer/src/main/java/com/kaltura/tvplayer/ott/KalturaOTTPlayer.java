@@ -57,6 +57,7 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
 
     @Override
     protected void addKalturaPluginConfigs(PKPluginConfigs combined) {
+        //NOT ADDING PHOENIX IF KS IS NOT VALID
         if (!TextUtils.isEmpty(getKS())) {
             PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
             if (phoenixConfig != null) {
