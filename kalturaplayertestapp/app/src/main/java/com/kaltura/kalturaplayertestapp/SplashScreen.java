@@ -1,44 +1,53 @@
 package com.kaltura.kalturaplayertestapp;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.playkit.PKLog;
 import com.kaltura.tvplayer.PlayerConfigManager;
 
 import org.json.JSONObject;
 
 public class SplashScreen extends Activity {
-
+    private static final PKLog log = PKLog.get("SplashScreen");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
-        //PlayerConfigManager.retrieve(41188731, 2215841, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() );
+        boolean isPlayServicesAvailable = checkPlayServices();
 
-        PlayerConfigManager.initialize(this);
-        //PlayerConfigManager.retrieve(41604521, 1734762, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
-        PlayerConfigManager.retrieve(41742801, 2222401, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
+        if (isPlayServicesAvailable) {
+            //PlayerConfigManager.retrieve(41188731, 2215841, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() );
 
-            @Override
-            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-                if (error == null) {
-                    getAdTagFromUiConfJson(config);
+            PlayerConfigManager.initialize(this);
+            //PlayerConfigManager.retrieve(41604521, 1734762, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
+            PlayerConfigManager.retrieve(41742801, 2222401, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
+
+                @Override
+                public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
+                    if (error == null) {
+                        getAdTagFromUiConfJson(config);
+                    }
+                    Intent i = new Intent(SplashScreen.this, SignInActivity.class);
+                    startActivity(i);
+                    finish();
                 }
-                Intent i = new Intent(SplashScreen.this, SignInActivity.class);
-                startActivity(i);
-                finish();
-            }
-        });
+            });
+        }
     }
 
     private String getAdTagFromUiConfJson(JsonObject config) {
@@ -61,4 +70,19 @@ public class SplashScreen extends Activity {
         return adTagUrl;
     }
 
+    private boolean checkPlayServices() {
+        int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                log.e("This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
+    }
 }
