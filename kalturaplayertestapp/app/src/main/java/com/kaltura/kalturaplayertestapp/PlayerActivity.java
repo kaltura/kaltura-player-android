@@ -256,19 +256,19 @@ public class PlayerActivity extends AppCompatActivity {
         if (mediaListSize > 1) {
             if (currentPlayedMediaIndex == 0) {
                 nextBtn.setClickable(true);
-                nextBtn.setBackgroundColor(Color.BLACK);
+                nextBtn.setBackgroundColor(Color.rgb(66,165,245));
                 prevBtn.setClickable(false);
                 prevBtn.setBackgroundColor(Color.RED);
             } else if (currentPlayedMediaIndex == mediaList.size() - 1) {
                 nextBtn.setClickable(false);
                 nextBtn.setBackgroundColor(Color.RED);
                 prevBtn.setClickable(true);
-                prevBtn.setBackgroundColor(Color.BLACK);
+                prevBtn.setBackgroundColor(Color.rgb(66,165,245));
             } else if (currentPlayedMediaIndex > 0 && currentPlayedMediaIndex < mediaList.size() - 1) {
                 nextBtn.setClickable(true);
-                nextBtn.setBackgroundColor(Color.BLACK);
+                nextBtn.setBackgroundColor(Color.rgb(66,165,245));
                 prevBtn.setClickable(true);
-                prevBtn.setBackgroundColor(Color.BLACK);
+                prevBtn.setBackgroundColor(Color.rgb(66,165,245));
             } else {
                 nextBtn.setClickable(false);
                 nextBtn.setBackgroundColor(Color.RED);
