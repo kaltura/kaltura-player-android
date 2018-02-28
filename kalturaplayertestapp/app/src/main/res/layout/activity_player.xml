@@ -97,10 +97,8 @@
                 android:layout_marginLeft="8dp"
                 android:textColor="@android:color/white"
                 android:background="@color/cardview_dark_background"/>
-
         </LinearLayout>
     </RelativeLayout>
-
 
     <SearchView
         android:id="@+id/search_events"
