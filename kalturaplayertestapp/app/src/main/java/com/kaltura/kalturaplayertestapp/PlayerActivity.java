@@ -1,5 +1,6 @@
 package com.kaltura.kalturaplayertestapp;
 
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -8,13 +9,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.DisplayMetrics;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -107,7 +106,6 @@ public class PlayerActivity extends AppCompatActivity {
     private Button videoTracksBtn;
     private Button audioTracksBtn;
     private Button textTracksBtn;
-
     public int currentPlayedMediaIndex = 0;
     private Button prevBtn;
     private Button nextBtn;
@@ -135,7 +133,6 @@ public class PlayerActivity extends AppCompatActivity {
 
         prevBtn        = findViewById(R.id.prev_btn);
         nextBtn        = findViewById(R.id.next_btn);
-
 
         searchView = findViewById(R.id.search_events);
         addSearchListener();
@@ -642,7 +639,12 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onGlobalLayout() {
                 container.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, 600);
+
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, 600);
+                } else {
+                    player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                }
                 container.addView(player.getView());
                 playbackControlsView.setPlayer(player);
             }
@@ -657,34 +659,63 @@ public class PlayerActivity extends AppCompatActivity {
             if(getSupportActionBar()!=null) {
                 getSupportActionBar().hide();
             }
+            searchView.setVisibility(View.GONE);
+            eventsListView.setVisibility(View.GONE);
+            //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+            player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
-            DisplayMetrics metrics = new DisplayMetrics();
-            this.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-            int screenWidth = metrics.widthPixels;
-            int screenHeight = metrics.heightPixels;
-            getWindow().setFlags(metrics.widthPixels, metrics.heightPixels);
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) player.getView().getLayoutParams();
-            if (params != null) {
-                params.width = screenWidth;
-                params.height = screenHeight;
-                //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                player.getView().setLayoutParams(params);
-            }
         } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
             //unhide your objects here.
             if(getSupportActionBar()!=null) {
                 getSupportActionBar().show();
             }
-            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) player.getView().getLayoutParams();
-            if (params != null) {
-                params.width  = params.MATCH_PARENT;
-                params.height = params.WRAP_CONTENT;
-                params.gravity =  Gravity.START;
-                //getWindow().setFlags(params.width, params.height=600);
-                player.getView().setLayoutParams(params);
-            }
+            searchView.setVisibility(View.VISIBLE);
+            eventsListView.setVisibility(View.VISIBLE);
+            player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, 600);
         }
     }
+
+//    @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//        // Checking the orientation of the screen
+//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            if(getSupportActionBar()!=null) {
+//                getSupportActionBar().hide();
+//            }
+//            searchView.setVisibility(View.GONE);
+//            eventsListView.setVisibility(View.GONE);
+//            DisplayMetrics metrics = new DisplayMetrics();
+//            this.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+//            int screenWidth = metrics.widthPixels;
+//            int screenHeight = metrics.heightPixels;
+//            getWindow().setFlags(metrics.widthPixels, metrics.heightPixels);
+//            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) player.getView().getLayoutParams();
+//            if (params != null) {
+//                params.width = screenWidth;
+//                params.height = screenHeight;
+//                //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+//                player.getView().setLayoutParams(params);
+//            }
+//        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+//            //unhide your objects here.
+//            if(getSupportActionBar()!=null) {
+//                getSupportActionBar().show();
+//            }
+//            searchView.setVisibility(View.VISIBLE);
+//            eventsListView.setVisibility(View.VISIBLE);
+//            player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, 600);
+//            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) player.getView().getLayoutParams();
+//            if (params != null) {
+//                params.width  = params.MATCH_PARENT;
+//                params.height = params.WRAP_CONTENT;
+//                params.gravity =  Gravity.START;
+//                //getWindow().setFlags(params.width, params.height=600);
+//                player.getView().setLayoutParams(params);
+//            }
+//
+//        }
+//    }
 
     @Override
     protected void onResume() {
