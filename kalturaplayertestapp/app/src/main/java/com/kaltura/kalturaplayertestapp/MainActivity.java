@@ -12,11 +12,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
-
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -40,14 +41,9 @@ import com.kaltura.kalturaplayertestapp.converters.TestDescriptor;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
 import com.kaltura.kalturaplayertestapp.qrcode.BarcodeCaptureActivity;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 
@@ -187,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
 
                 break;
             case R.id.about:
-                showAboutDialog();
+                showCustomAboutDialog();
                 break;
             case R.id.action_logout:
                 FirebaseAuth.getInstance().signOut();
@@ -202,9 +198,14 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(MainActivity.this);
         alertDialog.setTitle("About Test App");
         alertDialog.setIcon(R.drawable.k_image);
-        // Setting Dialog Message
-        alertDialog.setMessage("Logged In: " + FirebaseAuth.getInstance().getCurrentUser().getEmail() + "\n\n" +
-                               "App Version:" + BuildConfig.VERSION_NAME);
+
+        String currentUser = "No User LoggedIn";
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            currentUser = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        }
+        alertDialog.setMessage("Logged In: " + currentUser + "\n\n" +
+                    "App Version:" + BuildConfig.VERSION_NAME);
+
 
         alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
@@ -212,6 +213,35 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
             }
         });
         alertDialog.show();
+    }
+
+    public void showCustomAboutDialog() {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = this.getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.custom_about_dialog, null);
+        dialogBuilder.setView(dialogView);
+        dialogBuilder.setIcon(R.drawable.k_image);
+
+        final TextView loogedInUserView =  dialogView.findViewById(R.id.mail_view);
+        loogedInUserView.setText(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+
+        final TextView appVerNo =  dialogView.findViewById(R.id.version_no_view);
+        appVerNo.setText(BuildConfig.VERSION_NAME);
+
+        dialogBuilder.setTitle("About");
+        dialogBuilder.setMessage("About App:");
+        dialogBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+
+            }
+        });
+//        dialogBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int whichButton) {
+//                //pass
+//            }
+//        });
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
     }
 
     private void onScanItemsClicked() {

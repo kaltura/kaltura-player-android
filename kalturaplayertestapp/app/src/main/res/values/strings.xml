@@ -17,7 +17,7 @@
     <string name="add_scanned_items">Scan QR Code</string>
     <string name="add_json">Add Configuration</string>
     <string name="remove_folder">Remove Folder</string>
-    <string name="remove_json">Add Configuration</string>
+    <string name="remove_json">Remove Test</string>
     <string name="add_default_items">Add Default Items</string>
     <string name="delete_all">Delete All</string>
     <string name="about">About</string>
