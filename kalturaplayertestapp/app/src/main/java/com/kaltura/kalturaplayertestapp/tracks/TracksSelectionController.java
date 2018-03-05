@@ -147,10 +147,14 @@ public class TracksSelectionController {
                 List<AudioTrack> audioTracksInfo = tracks.getAudioTracks();
                 for (int i = 0; i < audioTracksInfo.size(); i++) {
                     AudioTrack trackInfo = audioTracksInfo.get(i);
+                    String lang = trackInfo.getLabel();
+                    if (lang == null) {
+                        lang = trackInfo.getLanguage();
+                    }
                     if (trackInfo.isAdaptive()) {
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(trackInfo.getLabel()) + " " + "Auto");
+                        trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + "Auto");
                     } else {
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(trackInfo.getLabel()) + " " + buildBitrateString(trackInfo.getBitrate()));
+                        trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + buildBitrateString(trackInfo.getBitrate()));
                     }
 
                     trackItems.add(trackItem);
@@ -163,7 +167,11 @@ public class TracksSelectionController {
                     if (trackInfo.isAdaptive()) {
                         trackItem = new TrackItem(trackInfo.getUniqueId(), "Auto");
                     } else {
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(trackInfo.getLabel()));
+                        String lang = trackInfo.getLabel();
+                        if (lang == null) {
+                            lang = trackInfo.getLanguage();
+                        }
+                        trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang));
                     }
 
                     trackItems.add(trackItem);
