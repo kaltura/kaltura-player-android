@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
     private static String DEFAULT_TESTS_DESCRIPTOR = "http://externaltests.dev.kaltura.com/player/library_SDK_Kaltura_Player/KalturaPlayerApp/default_bulk_import.json";
     public static final String KEY_NEW_CONFIGURATION_PATH = "key_new_configuration_path";
 
-    public static final int LIMIT = 50;
+    public static final int LIMIT = 100;
 
     private boolean defaultItemsLoaded;
     private RecyclerView mConfigurationsRecycler;
