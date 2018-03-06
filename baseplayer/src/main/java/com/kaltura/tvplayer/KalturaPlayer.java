@@ -263,7 +263,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             pkPlayer.getSettings().setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
         }
         PlayManifestRequestAdapter.install(pkPlayer, referrer);
-
     }
 
     public JsonObject mergeJsonConfig(JsonObject source, JsonObject target) {

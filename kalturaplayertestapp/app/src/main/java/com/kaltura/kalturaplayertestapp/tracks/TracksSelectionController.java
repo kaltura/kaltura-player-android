@@ -2,6 +2,7 @@ package com.kaltura.kalturaplayertestapp.tracks;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -16,6 +17,7 @@ import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.kalturaplayertestapp.R;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
@@ -149,14 +151,13 @@ public class TracksSelectionController {
                     AudioTrack trackInfo = audioTracksInfo.get(i);
                     String lang = trackInfo.getLabel();
                     if (lang == null) {
-                        lang = trackInfo.getLanguage();
+                        lang = getFriendlyLanguageLabel(trackInfo.getLanguage());
                     }
                     if (trackInfo.isAdaptive()) {
                         trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + "Auto");
                     } else {
                         trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + buildBitrateString(trackInfo.getBitrate()));
                     }
-
                     trackItems.add(trackItem);
                 }
                 break;
@@ -169,16 +170,23 @@ public class TracksSelectionController {
                     } else {
                         String lang = trackInfo.getLabel();
                         if (lang == null) {
-                            lang = trackInfo.getLanguage();
+                            lang = getFriendlyLanguageLabel(trackInfo.getLanguage());
                         }
                         trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang));
                     }
-
                     trackItems.add(trackItem);
                 }
                 break;
         }
         return trackItems;
+    }
+
+    @NonNull
+    private String getFriendlyLanguageLabel(String languageCode) {
+        String lang;
+        lang = new Locale(languageCode).getDisplayLanguage();
+        lang = lang.substring(0, 1).toUpperCase() + lang.substring(1);
+        return (lang != null) ? lang : languageCode;
     }
 
     private static String buildBitrateString(long bitrate) {
