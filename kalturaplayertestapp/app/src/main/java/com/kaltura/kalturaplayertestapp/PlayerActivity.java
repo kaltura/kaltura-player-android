@@ -734,12 +734,13 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        if (player != null) {
+            player.onApplicationPaused();
+        }
         super.onPause();
         //if (controlsView != null) {
         //    controlsView.release();
         //}
-        if (player != null) {
-            player.onApplicationPaused();
-        }
+
     }
 }
