@@ -324,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
             e.printStackTrace();
         }
 
-        if (testUrl.startsWith("http")) {
+        if (testUrl.contains("/Tests/")) {
             List<TestDescriptor> testDescriptorArrayList = new ArrayList<>();
             TestDescriptor testDescriptor = new TestDescriptor();
 
