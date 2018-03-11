@@ -64,7 +64,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     private final Integer uiConfId;
     protected final String referrer;
     private final Context context;
-    protected Player pkPlayer;
+    private Player pkPlayer;
     private static Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean autoPlay;
     private boolean preload;
@@ -174,6 +174,24 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     private void loadPlayer() {
+        PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
+
+        pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
+        if (initOptions.audioLanguageMode != null && initOptions.audioLanguage != null) {
+            pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(initOptions.audioLanguageMode).setTrackLanguage(initOptions.audioLanguage));
+        }
+        if (initOptions.textLanguageMode != null && initOptions.textLanguage != null) {
+            pkPlayer.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(initOptions.textLanguageMode).setTrackLanguage(initOptions.textLanguage));
+        }
+
+        if (initOptions.allowCrossProtocolEnabled) {
+            pkPlayer.getSettings().setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
+        }
+        PlayManifestRequestAdapter.install(pkPlayer, referrer);
+    }
+
+    @NonNull
+    private PKPluginConfigs setupPluginsConfiguration() {
         PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
         PKPluginConfigs combinedPluginConfigs = new PKPluginConfigs();
 
@@ -213,7 +231,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         }
 
 
-
         if (pluginConfigs != null) {
             Gson gson = new Gson();
             for (Map.Entry<String, Object> entry : pluginConfigs) {
@@ -250,19 +267,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         }
 
         addKalturaPluginConfigs(combinedPluginConfigs);
-
-        pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
-        if (initOptions.audioLanguageMode != null && initOptions.audioLanguage != null) {
-            pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(initOptions.audioLanguageMode).setTrackLanguage(initOptions.audioLanguage));
-        }
-        if (initOptions.textLanguageMode != null && initOptions.textLanguage != null) {
-            pkPlayer.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(initOptions.textLanguageMode).setTrackLanguage(initOptions.textLanguage));
-        }
-
-        if (initOptions.allowCrossProtocolEnabled) {
-            pkPlayer.getSettings().setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
-        }
-        PlayManifestRequestAdapter.install(pkPlayer, referrer);
+        return combinedPluginConfigs;
     }
 
     public JsonObject mergeJsonConfig(JsonObject source, JsonObject target) {
@@ -549,6 +554,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     public abstract void loadMedia(MOT mediaOptions, OnEntryLoadListener listener);
+    //public abstract void updatePlugins();
     protected abstract void registerPlugins(Context context);
     protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
     protected abstract void updateKS(String ks);
