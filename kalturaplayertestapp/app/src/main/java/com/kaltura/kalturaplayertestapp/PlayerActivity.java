@@ -146,13 +146,13 @@ public class PlayerActivity extends AppCompatActivity {
         }
         initDrm();
 
-        JsonElement jElement = new JsonParser().parse(playerInitOptionsJson);
-        JsonObject config = jElement.getAsJsonObject();
+        //JsonObject config = new JsonParser().parse(playerInitOptionsJson).getAsJsonObject();
+        //JsonObject config = jElement.getAsJsonObject();
+        //final String playerType = safeString(config, "playerType");
 
-        final String playerType = safeString(config, "playerType");
 
-
-        final PlayerConfig appPlayerInitConfig = gson.fromJson(config.toString(), PlayerConfig.class);
+        final PlayerConfig appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
+        final String playerType = appPlayerInitConfig.getPlayerType();
         if (appPlayerInitConfig.getMediaList().size() > 1) {
             addChangeMediaButtonsListener();
         }
