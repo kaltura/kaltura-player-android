@@ -91,6 +91,7 @@ public class PlayerActivity extends AppCompatActivity {
     private PlayerInitOptions initOptions;
     private String playerConfigTitle;
     private String playerInitOptionsJson;
+    private boolean isAdPlaying;
 
     private Integer uiConfId;
     private String ks;
@@ -174,21 +175,21 @@ public class PlayerActivity extends AppCompatActivity {
     private void addTracksButtonsListener() {
         videoTracksBtn.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                if (tracksSelectionController != null) {
+                if (tracksSelectionController != null && !isAdPlaying) {
                     tracksSelectionController.showTracksSelectionDialog(Consts.TRACK_TYPE_VIDEO);
                 }
             }
         });
         textTracksBtn.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                if (tracksSelectionController != null) {
+                if (tracksSelectionController != null && !isAdPlaying) {
                     tracksSelectionController.showTracksSelectionDialog(Consts.TRACK_TYPE_TEXT);
                 }
             }
         });
         audioTracksBtn.setOnClickListener(new Button.OnClickListener() {
             public void onClick(View v) {
-                if (tracksSelectionController != null) {
+                if (tracksSelectionController != null && !isAdPlaying) {
                     tracksSelectionController.showTracksSelectionDialog(Consts.TRACK_TYPE_AUDIO);
                 }
             }
@@ -410,11 +411,13 @@ public class PlayerActivity extends AppCompatActivity {
                                             } else if (receivedEventType == AdEvent.Type.CONTENT_PAUSE_REQUESTED) {
 
                                             } else if (receivedEventType == AdEvent.Type.CONTENT_RESUME_REQUESTED) {
+                                                isAdPlaying = false;
 
                                             } else if (receivedEventType == AdEvent.Type.LOADED) {
 
                                             } else if (receivedEventType == AdEvent.Type.STARTED) {
                                                 AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
+                                                isAdPlaying = true;
                                             } else if (receivedEventType == AdEvent.Type.TAPPED) {
 
                                             } else if (receivedEventType == AdEvent.Type.COMPLETED) {
@@ -426,7 +429,7 @@ public class PlayerActivity extends AppCompatActivity {
                                         if (event instanceof PlayerEvent) {
                                             updateEventsLogsList("player:\n" + event.eventType().name());
                                             if (receivedEventType == PLAYING) {
-
+                                                isAdPlaying = false;
                                             } else if (receivedEventType == ENDED) {
 
                                             } else if (receivedEventType == TRACKS_AVAILABLE) {
