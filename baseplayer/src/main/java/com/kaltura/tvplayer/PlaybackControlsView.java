@@ -23,6 +23,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
     private static final PKLog log = PKLog.get("PlaybackControlsView");
     private static final int PROGRESS_BAR_MAX = 100;
+    private static final int UPDATE_TIME_INTERVAL = 300; //1000
 
     private KalturaPlayer player;
     private PlayerState playerState;
@@ -105,8 +106,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         removeCallbacks(updateProgressAction);
         // Schedule an update if necessary.
         if (playerState != PlayerState.IDLE) {
-            long delayMs = 1000;
-            postDelayed(updateProgressAction, delayMs);
+            postDelayed(updateProgressAction, UPDATE_TIME_INTERVAL);
         }
     }
 
