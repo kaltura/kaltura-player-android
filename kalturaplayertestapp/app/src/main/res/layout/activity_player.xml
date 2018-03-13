@@ -105,7 +105,7 @@
         android:layout_below="@+id/player_container"
         android:layout_width="match_parent"
         android:queryHint="Search an event"
-        android:background="@color/cardview_light_background"
+        android:background="@drawable/search_view_background"
         android:layout_height="wrap_content" />
 
     <android.support.v7.widget.RecyclerView

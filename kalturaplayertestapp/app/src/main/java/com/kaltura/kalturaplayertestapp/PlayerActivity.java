@@ -437,11 +437,11 @@ public class PlayerActivity extends AppCompatActivity {
                                                 showControls(View.INVISIBLE);
                                             } else if (receivedEventType == AdEvent.Type.LOADED) {
                                                 mAdPlayerState = AdEvent.Type.LOADED;
-                                                showControls(View.INVISIBLE);
                                             } else if (receivedEventType == AdEvent.Type.STARTED) {
                                                 AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
                                                 isAdDisplayed = true;
                                                 mAdPlayerState = AdEvent.Type.STARTED;
+                                                showControls(View.INVISIBLE);
                                             } else if (receivedEventType == AdEvent.Type.TAPPED) {
                                                 handleContainerClick();
                                             } else if (receivedEventType == AdEvent.Type.COMPLETED) {
@@ -724,7 +724,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (mPlayerState == null) {
             return;
         }
-        
+
         showControls(View.VISIBLE);
 
         hideButtonsHandler.removeCallbacks(hideButtonsRunnable);
