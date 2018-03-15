@@ -1,5 +1,6 @@
 package com.kaltura.kalturaplayertestapp;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -36,10 +38,15 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.kaltura.kalturaplayertestapp.adapter.TestConfigurationAdapter;
 import com.kaltura.kalturaplayertestapp.converters.TestDescriptor;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
 import com.kaltura.kalturaplayertestapp.qrcode.BarcodeCaptureActivity;
+import com.kaltura.playkit.PKDeviceCapabilities;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -181,6 +188,10 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
             case R.id.action_remove_json:
 
                 break;
+            case R.id.about_device:
+                String report = PKDeviceCapabilities.getReport(MainActivity.this);
+                openJsonDialog(getString(R.string.about_device), report);
+                break;
             case R.id.about:
                 showCustomAboutDialog();
                 break;
@@ -191,6 +202,30 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void openJsonDialog(String title, String json) {
+        final Dialog dialog = new Dialog(MainActivity.this, R.style.FilterDialogTheme);
+        dialog.setContentView(R.layout.dialog_layout);
+        dialog.setTitle(title);
+        TextView textViewUser = dialog.findViewById(R.id.txt);
+
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+
+            int spacesToIndentEachLevel = 2;
+            textViewUser.setText(jsonObject.toString(spacesToIndentEachLevel));
+            Button dialogButton = dialog.findViewById(R.id.dialogButton);
+            dialogButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     private void showAboutDialog() {

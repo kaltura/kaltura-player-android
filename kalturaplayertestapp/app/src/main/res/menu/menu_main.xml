@@ -32,6 +32,10 @@
         android:title="@string/delete_all" />
 
     <item
+        android:id="@+id/about_device"
+        android:title="@string/about_device" />
+
+    <item
         android:id="@+id/about"
         android:title="@string/about" />
 

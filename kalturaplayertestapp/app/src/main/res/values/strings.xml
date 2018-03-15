@@ -21,6 +21,7 @@
     <string name="add_default_items">Add Default Items</string>
     <string name="delete_all">Delete All</string>
     <string name="about">About</string>
+    <string name="about_device">Device Info</string>
     <string name="dialog_button_close">Close</string>
     <string name="selection_disabled">Disabled</string>
     <string name="selection_default">Default</string>
