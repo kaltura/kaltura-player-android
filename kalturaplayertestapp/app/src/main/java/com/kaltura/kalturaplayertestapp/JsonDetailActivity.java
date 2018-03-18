@@ -60,8 +60,7 @@ public class JsonDetailActivity extends BaseActivity implements TestConfiguratio
             public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
                 final Configuration configuration = mAdapter.getSnapshots().get(viewHolder.getAdapterPosition()).toObject(Configuration.class);
 
-                Snackbar snackbar = Snackbar
-                        .make(findViewById(android.R.id.content), configuration.getTitle() + " will be removed!", Snackbar.LENGTH_LONG);
+                Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), configuration.getTitle() + " will be removed!", Snackbar.LENGTH_LONG);
                 snackbar.setAction("Approve", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -105,8 +104,7 @@ public class JsonDetailActivity extends BaseActivity implements TestConfiguratio
             @Override
             protected void onError(FirebaseFirestoreException e) {
                 // Show a snackbar on errors
-                Snackbar.make(findViewById(android.R.id.content),
-                        "Error: check logs for info.", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(findViewById(android.R.id.content),"Error: check logs for info.", Snackbar.LENGTH_LONG).show();
             }
         };
         mConfigurationsRecycler.setLayoutManager(new LinearLayoutManager(this));
@@ -141,8 +139,7 @@ public class JsonDetailActivity extends BaseActivity implements TestConfiguratio
     @Override
     public void onJsonSelected(Configuration configuration) {
 
-        Snackbar.make(findViewById(android.R.id.content),
-                "Item Selected " + configuration.getId(), Snackbar.LENGTH_SHORT).show();
+        //Snackbar.make(findViewById(android.R.id.content), "Item Selected " + configuration.getId(), Snackbar.LENGTH_SHORT).show();
         Context context = this;
         if (configuration.getType() == Configuration.FOLDER) {
             //staticCollRef = collRef.document(configuration.getId()).collection("configurations");

@@ -162,16 +162,29 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         updateProgress();
     }
 
+    public Button getPlayPauseToggle() {
+        return playPauseToggle;
+    }
+
+    public SeekBar getSeekBar() {
+        return seekBar;
+    }
 
     public void togglePlayPauseClick() {
         if (player == null) {
             return;
         }
-        
         if (player.isPlaying()) {
             player.pause();
+            playPauseToggle.setBackgroundResource(R.drawable.play);
+
         } else {
-            player.play();
+            if (player.getCurrentPosition() >= player.getDuration()) {
+                player.replay();
+            } else {
+                player.play();
+            }
+            playPauseToggle.setBackgroundResource(R.drawable.pause);
         }
     }
 

@@ -1,11 +1,14 @@
 package com.kaltura.kalturaplayertestapp;
 
+import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,7 +16,10 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -75,12 +81,13 @@ import java.util.Set;
 import static com.kaltura.playkit.PlayerEvent.Type.CAN_PLAY;
 import static com.kaltura.playkit.PlayerEvent.Type.ENDED;
 import static com.kaltura.playkit.PlayerEvent.Type.PLAYING;
+import static com.kaltura.playkit.PlayerEvent.Type.SOURCE_SELECTED;
 import static com.kaltura.playkit.PlayerEvent.Type.TRACKS_AVAILABLE;
 
 public class PlayerActivity extends AppCompatActivity {
 
     private static final PKLog log = PKLog.get("PlayerActivity");
-    private static final int REMOVE_CONTROLS_TIMEOUT = 3000; //3250
+    private static final int REMOVE_CONTROLS_TIMEOUT = 3000;
     public static final String PLAYER_CONFIG_JSON_KEY = "player_config_json_key";
     public static final String PLAYER_CONFIG_TITLE_KEY = "player_config_title_key";
     private DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -103,23 +110,11 @@ public class PlayerActivity extends AppCompatActivity {
     private String searchLogPattern = "";
     private SearchView searchView;
     private TracksSelectionController tracksSelectionController;
-    private Button videoTracksBtn;
-    private Button audioTracksBtn;
-    private Button textTracksBtn;
-    public int currentPlayedMediaIndex = 0;
-    private Button prevBtn;
-    private Button nextBtn;
+    private int currentPlayedMediaIndex = 0;
     private PlaybackControlsView playbackControlsView;
-    private Enum mPlayerState;
-    private Enum mAdPlayerState;
-    private Handler hideButtonsHandler = new Handler(Looper.getMainLooper());
-    private Runnable hideButtonsRunnable = new Runnable() {
-        @Override
-        public void run() {
-            showControls(View.INVISIBLE);
-        }
-    };
-
+    private AdCuePoints adCuePoints;
+    private boolean allAdsCompeted;
+    private PlaybackControlsManager playbackControlsManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,18 +129,8 @@ public class PlayerActivity extends AppCompatActivity {
         eventsListView.setLayoutManager(layoutManager);
         eventsListRecyclerAdapter = new EventsAdapter();
         eventsListView.setAdapter(eventsListRecyclerAdapter);
-
-        videoTracksBtn = findViewById(R.id.video_tracks);
-        textTracksBtn  = findViewById(R.id.text_tracks);
-        audioTracksBtn = findViewById(R.id.audio_tracks);
-        addTracksButtonsListener();
-
-        prevBtn        = findViewById(R.id.prev_btn);
-        nextBtn        = findViewById(R.id.next_btn);
-        showControls(View.INVISIBLE);
         searchView = findViewById(R.id.search_events);
         addSearchListener();
-
 
         playerConfigTitle = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_TITLE_KEY);
         playerInitOptionsJson = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_JSON_KEY);
@@ -155,17 +140,8 @@ public class PlayerActivity extends AppCompatActivity {
         }
         initDrm();
 
-        //JsonObject config = new JsonParser().parse(playerInitOptionsJson).getAsJsonObject();
-        //JsonObject config = jElement.getAsJsonObject();
-        //final String playerType = safeString(config, "playerType");
-
-
         final PlayerConfig appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
         final String playerType = appPlayerInitConfig.getPlayerType();
-        if (appPlayerInitConfig.getMediaList().size() > 1) {
-            addChangeMediaButtonsListener();
-        }
-        updatePrevNextBtnFunctionality(appPlayerInitConfig.getMediaList().size());
 
         if (appPlayerInitConfig.getUiConf() == null) {
             log.d("App config json is invalid");
@@ -180,59 +156,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void addTracksButtonsListener() {
-        videoTracksBtn.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                if (tracksSelectionController != null && !isAdDisplayed) {
-                    tracksSelectionController.showTracksSelectionDialog(Consts.TRACK_TYPE_VIDEO);
-                }
-            }
-        });
-        textTracksBtn.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                if (tracksSelectionController != null && !isAdDisplayed) {
-                    tracksSelectionController.showTracksSelectionDialog(Consts.TRACK_TYPE_TEXT);
-                }
-            }
-        });
-        audioTracksBtn.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                if (tracksSelectionController != null && !isAdDisplayed) {
-                    tracksSelectionController.showTracksSelectionDialog(Consts.TRACK_TYPE_AUDIO);
-                }
-            }
-        });
-    }
-
-    private void addChangeMediaButtonsListener() {
-        prevBtn.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                currentPlayedMediaIndex--;
-                if (mediaList.size() <= 1)  {
-                    return;
-                }
-                updatePrevNextBtnFunctionality(mediaList.size());
-                clearLogView();
-                player.stop();
-
-                changeMedia();
-            }
-        });
-        nextBtn.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                currentPlayedMediaIndex++;
-                if (mediaList.size() <= 1)  {
-                    return;
-                }
-                updatePrevNextBtnFunctionality(mediaList.size());
-                clearLogView();
-                player.stop();
-                changeMedia();
-            }
-        });
-    }
-
-    private void changeMedia() {
+    public void changeMedia() {
         if (player instanceof KalturaOvpPlayer) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, null,currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
@@ -241,6 +165,13 @@ public class PlayerActivity extends AppCompatActivity {
                     log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
                     if (error != null) {
                         log.d("OTTMedia Error Extra = " + error.getExtra());
+                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
+                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                        playbackControlsManager.showControls(View.VISIBLE);
+                    } else {
+                        if (!initOptions.autoplay) {
+                            playbackControlsManager.showControls(View.VISIBLE);
+                        }
                     }
                 }
             });
@@ -252,47 +183,31 @@ public class PlayerActivity extends AppCompatActivity {
                     log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
                     if (error != null) {
                         log.d("OTTMedia Error Extra = " + error.getExtra());
+                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
+                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                        playbackControlsManager.showControls(View.VISIBLE);
+                    } else {
+                        if (!initOptions.autoplay) {
+                            playbackControlsManager.showControls(View.VISIBLE);
+                        }
                     }
                 }
             });
         }
     }
 
-    private void clearLogView() {
+    public void clearLogView() {
         eventsList.clear();
         searchedEventsList.clear();
         searchLogPattern = "";
     }
 
-    private void updatePrevNextBtnFunctionality(int mediaListSize) {
-        if (mediaListSize > 1) {
-            if (currentPlayedMediaIndex == 0) {
-                nextBtn.setClickable(true);
-                nextBtn.setBackgroundColor(Color.rgb(66,165,245));
-                prevBtn.setClickable(false);
-                prevBtn.setBackgroundColor(Color.RED);
-            } else if (currentPlayedMediaIndex == mediaList.size() - 1) {
-                nextBtn.setClickable(false);
-                nextBtn.setBackgroundColor(Color.RED);
-                prevBtn.setClickable(true);
-                prevBtn.setBackgroundColor(Color.rgb(66,165,245));
-            } else if (currentPlayedMediaIndex > 0 && currentPlayedMediaIndex < mediaList.size() - 1) {
-                nextBtn.setClickable(true);
-                nextBtn.setBackgroundColor(Color.rgb(66,165,245));
-                prevBtn.setClickable(true);
-                prevBtn.setBackgroundColor(Color.rgb(66,165,245));
-            } else {
-                nextBtn.setClickable(false);
-                nextBtn.setBackgroundColor(Color.RED);
-                prevBtn.setClickable(false);
-                prevBtn.setBackgroundColor(Color.RED);
-            }
-        } else {
-            nextBtn.setClickable(false);
-            nextBtn.setBackgroundColor(Color.RED);
-            prevBtn.setClickable(false);
-            prevBtn.setBackgroundColor(Color.RED);
-        }
+    public int getCurrentPlayedMediaIndex() {
+        return currentPlayedMediaIndex;
+    }
+
+    public void setCurrentPlayedMediaIndex(int currentPlayedMediaIndex) {
+        this.currentPlayedMediaIndex = currentPlayedMediaIndex;
     }
 
     private void addSearchListener() {
@@ -347,6 +262,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         if ("ovp".equals(playerType.toLowerCase())) {
             player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
+
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat(), playListMediaIndex);
             player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
                 @Override
@@ -354,6 +270,14 @@ public class PlayerActivity extends AppCompatActivity {
                     log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
                     if (error != null) {
                         log.d("OVPMedia Error Extra = " + error.getExtra());
+                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
+
+                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                        playbackControlsManager.showControls(View.VISIBLE);
+                    } else {
+                        if (!initOptions.autoplay) {
+                            playbackControlsManager.showControls(View.VISIBLE);
+                        }
                     }
                 }
             });
@@ -366,6 +290,13 @@ public class PlayerActivity extends AppCompatActivity {
                     log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
                     if (error != null) {
                         log.d("OTTMedia Error Extra = " + error.getExtra());
+                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
+                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                        playbackControlsManager.showControls(View.VISIBLE);
+                    } else {
+                        if (!initOptions.autoplay) {
+                            playbackControlsManager.showControls(View.VISIBLE);
+                        }
                     }
                 }
             });
@@ -373,8 +304,13 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (player != null) {
             setPlayer(player);
+            playbackControlsManager = new PlaybackControlsManager(this, player, playbackControlsView);
+            if (appPlayerInitConfig.getMediaList().size() > 1) {
+                playbackControlsManager.addChangeMediaButtonsListener(appPlayerInitConfig.getMediaList().size());
+            }
+            playbackControlsManager.updatePrevNextBtnFunctionality(currentPlayedMediaIndex, appPlayerInitConfig.getMediaList().size());
         } else {
-            log.e("Failed to initialze player...");
+            log.e("Failed to initialize player...");
         }
         setPlayerListeners();
     }
@@ -421,56 +357,67 @@ public class PlayerActivity extends AppCompatActivity {
 
                                             if (receivedEventType == AdEvent.Type.ERROR) {
                                                 AdEvent.Error adError = (AdEvent.Error) event;
-                                                mAdPlayerState = PKAdErrorType.VIDEO_PLAY_ERROR;
+                                                playbackControlsManager.setAdPlayerState(adError.type);
                                             } else if (receivedEventType == CAN_PLAY) {
 
                                             } else if (receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED) {
-                                                AdCuePoints adCuePoints = ((AdEvent.AdCuePointsUpdateEvent) event).cuePoints;
-
+                                                adCuePoints = ((AdEvent.AdCuePointsUpdateEvent) event).cuePoints;
                                             } else if (receivedEventType == AdEvent.Type.ALL_ADS_COMPLETED) {
-                                                mAdPlayerState = AdEvent.Type.ALL_ADS_COMPLETED;
 
+                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.ALL_ADS_COMPLETED);
+                                                allAdsCompeted = true;
+                                                if (isPlaybackEndedState()) {
+                                                    playbackControlsManager.showControls(View.VISIBLE);
+                                                }
                                             } else if (receivedEventType == AdEvent.Type.CONTENT_PAUSE_REQUESTED) {
-                                                showControls(View.INVISIBLE);
+                                                playbackControlsManager.showControls(View.INVISIBLE);
                                             } else if (receivedEventType == AdEvent.Type.CONTENT_RESUME_REQUESTED) {
                                                 isAdDisplayed = false;
-                                                showControls(View.INVISIBLE);
+                                                playbackControlsManager.showControls(View.INVISIBLE);
                                             } else if (receivedEventType == AdEvent.Type.LOADED) {
-                                                mAdPlayerState = AdEvent.Type.LOADED;
+                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.LOADED);
                                             } else if (receivedEventType == AdEvent.Type.STARTED) {
+                                                allAdsCompeted = false;
                                                 AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
                                                 isAdDisplayed = true;
-                                                mAdPlayerState = AdEvent.Type.STARTED;
-                                                showControls(View.INVISIBLE);
+                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.STARTED);
+                                                playbackControlsManager.showControls(View.INVISIBLE);
                                             } else if (receivedEventType == AdEvent.Type.TAPPED) {
-                                                handleContainerClick();
+                                                playbackControlsManager.handleContainerClick();
                                             } else if (receivedEventType == AdEvent.Type.COMPLETED) {
 
                                             } else if (receivedEventType == AdEvent.Type.PAUSED) {
-                                                mAdPlayerState = AdEvent.Type.PAUSED;
+                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.PAUSED);
                                             } else if (receivedEventType == AdEvent.Type.RESUMED) {
-                                                mAdPlayerState = AdEvent.Type.RESUMED;
+                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.RESUMED);
+                                                playbackControlsManager.showControls(View.INVISIBLE);
                                             }
                                             else if (receivedEventType == AdEvent.Type.SKIPPED) {
-                                                mAdPlayerState = AdEvent.Type.SKIPPED;
-
+                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.SKIPPED);
                                             }
-                                            mAdPlayerState = event.eventType();
                                         }
                                         if (event instanceof PlayerEvent) {
                                             updateEventsLogsList("player:\n" + event.eventType().name());
-                                            mPlayerState = event.eventType();
+                                            playbackControlsManager.setContentPlayerState(event.eventType());
                                             if (receivedEventType == PLAYING) {
                                                 isAdDisplayed = false;
+                                                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
+                                                playbackControlsManager.showControls(View.INVISIBLE);
+                                            } else if (receivedEventType == SOURCE_SELECTED) {
+                                                PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
+                                                log.d("Selected Source = " + sourceSelected.source.getUrl());
                                             } else if (receivedEventType == ENDED) {
-
+                                                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
+                                                if (!isPostrollAvailableInAdCuePoint()) {
+                                                    playbackControlsManager.showControls(View.VISIBLE);
+                                                }
+                                                //TODO SHOW Controls if not postroll
                                             } else if (receivedEventType == TRACKS_AVAILABLE) {
-
                                                 PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
-
                                                 //Obtain the actual tracks info from it.
                                                 PKTracks tracks = tracksAvailable.tracksInfo;
                                                 tracksSelectionController = new TracksSelectionController(PlayerActivity.this, player, tracks);
+                                                playbackControlsManager.setTracksSelectionController(tracksSelectionController);
                                                 int defaultAudioTrackIndex = tracks.getDefaultAudioTrackIndex();
                                                 int defaultTextTrackIndex = tracks.getDefaultTextTrackIndex();
                                                 if (tracks.getAudioTracks().size() > 0) {
@@ -489,7 +436,7 @@ public class PlayerActivity extends AppCompatActivity {
 
                                         }
                                     }
-                                }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.CAN_PLAY, PlayerEvent.Type.SEEKING, PlayerEvent.Type.SEEKED, PlayerEvent.Type.PLAYING,  PlayerEvent.Type.ENDED, PlayerEvent.Type.TRACKS_AVAILABLE,
+                                }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.CAN_PLAY, PlayerEvent.Type.SOURCE_SELECTED, PlayerEvent.Type.SEEKING, PlayerEvent.Type.SEEKED, PlayerEvent.Type.PLAYING,  PlayerEvent.Type.ENDED, PlayerEvent.Type.TRACKS_AVAILABLE,
                 AdEvent.Type.ERROR, AdEvent.Type.LOADED, AdEvent.Type.SKIPPED, AdEvent.Type.TAPPED, AdEvent.Type.CONTENT_PAUSE_REQUESTED, AdEvent.Type.CONTENT_RESUME_REQUESTED, AdEvent.Type.STARTED, AdEvent.Type.LOADED, AdEvent.Type.PAUSED, AdEvent.Type.RESUMED,
                 AdEvent.Type.COMPLETED, AdEvent.Type.ALL_ADS_COMPLETED,AdEvent.Type.CUEPOINTS_CHANGED);
 
@@ -532,7 +479,6 @@ public class PlayerActivity extends AppCompatActivity {
         player.addEventListener(new PKEvent.Listener() {
             @Override
             public void onEvent(PKEvent event) {
-                //Cast received event to AnalyticsEvent.BaseAnalyticsReportEvent.
                 KavaAnalyticsEvent.KavaAnalyticsReport reportEvent= (KavaAnalyticsEvent.KavaAnalyticsReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
@@ -663,8 +609,10 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     public void setPlayer(final KalturaPlayer player) {
-        mPlayerState = null; // init player state
-        mAdPlayerState = null;
+        if (playbackControlsManager != null) {
+            playbackControlsManager.setAdPlayerState(null);
+            playbackControlsManager.setContentPlayerState(null);
+        }
         this.player = player;
         if (player == null) {
             log.e( "Player is null");
@@ -685,7 +633,9 @@ public class PlayerActivity extends AppCompatActivity {
                 container.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        handleContainerClick();
+                        if (playbackControlsManager != null) {
+                            playbackControlsManager.handleContainerClick();
+                        }
                     }
                 });
                 container.addView(player.getView());
@@ -718,87 +668,27 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-
-    public void handleContainerClick() {
-        log.d("CLICK handleContainerClick XXXXXXXXX mPlayerState = " + mPlayerState);
-        if (mPlayerState == null) {
-            return;
-        }
-
-        showControls(View.VISIBLE);
-
-        hideButtonsHandler.removeCallbacks(hideButtonsRunnable);
-        hideButtonsHandler.postDelayed(hideButtonsRunnable, REMOVE_CONTROLS_TIMEOUT);
+    private boolean isPlaybackEndedState() {
+        return playbackControlsManager.getPlayerState() == ENDED || (allAdsCompeted && isPostrollAvailableInAdCuePoint());
     }
 
-    private void showControls(int visability) {
-        if (playbackControlsView != null) {
-            playbackControlsView.setVisibility(visability);
+    private boolean isPostrollAvailableInAdCuePoint() {
+        if (adCuePoints == null) {
+            return false;
         }
-        if (!isAdDisplayed) {
-            nextBtn.setVisibility(visability);
-            prevBtn.setVisibility(visability);
-            videoTracksBtn.setVisibility(visability);
-            audioTracksBtn.setVisibility(visability);
-            textTracksBtn.setVisibility(visability);
-        }
+        return adCuePoints.hasPostRoll();
     }
-
-//    @Override
-//    public void onConfigurationChanged(Configuration newConfig) {
-//        super.onConfigurationChanged(newConfig);
-//        // Checking the orientation of the screen
-//        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            if(getSupportActionBar()!=null) {
-//                getSupportActionBar().hide();
-//            }
-//            searchView.setVisibility(View.GONE);
-//            eventsListView.setVisibility(View.GONE);
-//            DisplayMetrics metrics = new DisplayMetrics();
-//            this.getWindowManager().getDefaultDisplay().getMetrics(metrics);
-//            int screenWidth = metrics.widthPixels;
-//            int screenHeight = metrics.heightPixels;
-//            getWindow().setFlags(metrics.widthPixels, metrics.heightPixels);
-//            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) player.getView().getLayoutParams();
-//            if (params != null) {
-//                params.width = screenWidth;
-//                params.height = screenHeight;
-//                //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-//                player.getView().setLayoutParams(params);
-//            }
-//        } else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
-//            //unhide your objects here.
-//            if(getSupportActionBar()!=null) {
-//                getSupportActionBar().show();
-//            }
-//            searchView.setVisibility(View.VISIBLE);
-//            eventsListView.setVisibility(View.VISIBLE);
-//            player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, 600);
-//            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) player.getView().getLayoutParams();
-//            if (params != null) {
-//                params.width  = params.MATCH_PARENT;
-//                params.height = params.WRAP_CONTENT;
-//                params.gravity =  Gravity.START;
-//                //getWindow().setFlags(params.width, params.height=600);
-//                player.getView().setLayoutParams(params);
-//            }
-//
-//        }
-//    }
 
     @Override
     protected void onResume() {
         log.d("Player Activity onResume");
         super.onResume();
+
         if (player != null) {
             player.onApplicationResumed();
-            //if (nowPlaying && AUTO_PLAY_ON_RESUME) {
-            //    player.play();
-            //}
+            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
         }
-        //if (controlsView != null) {
-        //    controlsView.resume();
-        //}
+
     }
 
     @Override
@@ -807,9 +697,6 @@ public class PlayerActivity extends AppCompatActivity {
             player.onApplicationPaused();
         }
         super.onPause();
-        //if (controlsView != null) {
-        //    controlsView.release();
-        //}
-
+        playbackControlsManager.showControls(View.VISIBLE);
     }
 }
