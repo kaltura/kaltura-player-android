@@ -2,11 +2,15 @@ package com.kaltura.kalturaplayertestapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -45,6 +49,38 @@ public class JsonDetailActivity extends BaseActivity implements TestConfiguratio
             throw new IllegalArgumentException("Must pass extra " + MainActivity.KEY_NEW_CONFIGURATION_PATH);
         }
         mConfigurationsRecycler = findViewById(R.id.details_recycler_configuration);
+
+        ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
+                final Configuration configuration = mAdapter.getSnapshots().get(viewHolder.getAdapterPosition()).toObject(Configuration.class);
+
+                Snackbar snackbar = Snackbar
+                        .make(findViewById(android.R.id.content), configuration.getTitle() + " will be removed!", Snackbar.LENGTH_LONG);
+                snackbar.setAction("Approve", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        mAdapter.removeItem(viewHolder.getAdapterPosition());
+
+                    }
+                });
+                snackbar.setActionTextColor(Color.YELLOW);
+                snackbar.show();
+            }
+
+            @Override
+            public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            }
+        };
+
+        // attaching the touch helper to recycler view
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mConfigurationsRecycler);
+
         mFirestore = FirebaseFirestore.getInstance();
         currenConfigurationRef = mFirestore.collection(configuatioPath);
         mQuery = currenConfigurationRef.limit(MainActivity.LIMIT);

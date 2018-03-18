@@ -11,10 +11,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 import com.kaltura.kalturaplayertestapp.R;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
+import com.kaltura.playkit.PKLog;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +26,18 @@ import org.json.JSONObject;
  * RecyclerView adapter for a list of Restaurants.
  */
 public class TestConfigurationAdapter extends FirestoreAdapter<TestConfigurationAdapter.ViewHolder> {
+    private static final PKLog log = PKLog.get("TestConfigurationAdapter");
     private Context context;
+
+    public void removeItem(int adapterPosition) {
+        getSnapshots().get(adapterPosition).getReference().delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                log.d( "Document Snapshot successfully deleted!");
+            }
+        });
+    }
+
     public interface OnJsonSelectedListener {
 
         void onJsonSelected(Configuration configuration);

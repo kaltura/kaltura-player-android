@@ -35,6 +35,10 @@ public abstract class FirestoreAdapter<VH extends RecyclerView.ViewHolder>
         mQuery = query;
     }
 
+    public ArrayList<DocumentSnapshot> getSnapshots() {
+        return mSnapshots;
+    }
+
     @Override
     public void onEvent(QuerySnapshot documentSnapshots, FirebaseFirestoreException e) {
         if (e != null) {
