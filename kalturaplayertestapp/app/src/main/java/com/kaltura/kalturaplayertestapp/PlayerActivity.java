@@ -156,6 +156,9 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     public void changeMedia() {
+        if (player != null) {
+            player.stop();
+        }
         if (player instanceof KalturaOvpPlayer) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, null,currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
@@ -407,9 +410,8 @@ public class PlayerActivity extends AppCompatActivity {
                                             } else if (receivedEventType == ENDED) {
                                                 playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
                                                 if (!isPostrollAvailableInAdCuePoint()) {
-                                                    playbackControlsManager.showControls(View.VISIBLE);
+                                                    //playbackControlsManager.showControls(View.VISIBLE);
                                                 }
-                                                //TODO SHOW Controls if not postroll
                                             } else if (receivedEventType == TRACKS_AVAILABLE) {
                                                 PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
                                                 //Obtain the actual tracks info from it.

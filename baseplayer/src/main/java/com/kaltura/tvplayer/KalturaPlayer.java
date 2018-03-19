@@ -360,6 +360,12 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     public void setMedia(PKMediaEntry mediaEntry) {
+        if (this.mediaEntry == null) {
+            log.d( "XXX new Player");
+        } else {
+            log.d( "XXX Change Media");
+        }
+
         this.mediaEntry = mediaEntry;
         tokenResolver.refresh(mediaEntry);
         prepared = false;
@@ -539,9 +545,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     // Called by implementation of loadMedia().
     protected void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
         final PKMediaEntry entry = response.getResponse();
-
-        mediaEntry = entry;
-
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -557,6 +560,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     //public abstract void updatePlugins();
     protected abstract void registerPlugins(Context context);
     protected abstract void addKalturaPluginConfigs(PKPluginConfigs combined);
+    protected abstract void updateKalturaPluginConfigs(PKPluginConfigs combined);
     protected abstract void updateKS(String ks);
 
     public interface OnEntryLoadListener {

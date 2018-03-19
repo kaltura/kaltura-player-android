@@ -66,6 +66,11 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
         }
     }
 
+    @Override
+    protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
+
+    }
+
     private KavaAnalyticsConfig getKavaAnalyticsConfig() {
         return new KavaAnalyticsConfig().setPartnerId(getPartnerId()).setReferrer(referrer);
     }

@@ -53,6 +53,11 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
     }
 
     @Override
+    protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
+
+    }
+
+    @Override
     public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
 
         if (mediaOptions.getKs() != null) {
