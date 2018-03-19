@@ -179,7 +179,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
             playPauseToggle.setBackgroundResource(R.drawable.play);
 
         } else {
-            if (player.getCurrentPosition() >= player.getDuration()) {
+            if (player.getCurrentPosition() >= 0 && player.getCurrentPosition() >= player.getDuration()) {
                 player.replay();
             } else {
                 player.play();
