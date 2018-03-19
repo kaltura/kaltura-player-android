@@ -68,7 +68,7 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
 
     @Override
     protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
-
+        log.d("OTTPlayer updateKalturaPluginConfigs");
     }
 
     private KavaAnalyticsConfig getKavaAnalyticsConfig() {

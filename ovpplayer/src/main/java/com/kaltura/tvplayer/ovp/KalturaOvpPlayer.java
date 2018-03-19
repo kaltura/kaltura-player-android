@@ -54,7 +54,7 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
 
     @Override
     protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
-
+        log.d("OVPPlayer updateKalturaPluginConfigs");
     }
 
     @Override
