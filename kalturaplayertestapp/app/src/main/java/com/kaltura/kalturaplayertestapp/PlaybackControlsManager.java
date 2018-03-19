@@ -108,19 +108,15 @@ public class PlaybackControlsManager implements PlaybackControls {
     @Override
     public void setContentPlayerState(Enum playerState) {
         this.playerState = playerState;
-        if (playerState == AdEvent.Type.CONTENT_RESUME_REQUESTED) {
-            isAdDisplayed = false;
-        } else if (playerState == AdEvent.Type.ALL_ADS_COMPLETED) {
-            isAdDisplayed = false;
-        }else if (playerState == AdEvent.Type.CONTENT_PAUSE_REQUESTED) {
-            isAdDisplayed = true;
-        }
+
     }
 
     @Override
     public void setAdPlayerState(Enum adPlayerState) {
         this.adPlayerState = adPlayerState;
-        if (adPlayerState == AdEvent.Type.CONTENT_RESUME_REQUESTED ) {
+        if (adPlayerState == AdEvent.Type.STARTED || adPlayerState == AdEvent.Type.CONTENT_PAUSE_REQUESTED || adPlayerState == AdEvent.Type.TAPPED) {
+            isAdDisplayed = true;
+        }  else if (adPlayerState == AdEvent.Type.CONTENT_RESUME_REQUESTED || adPlayerState == AdEvent.Type.ALL_ADS_COMPLETED) {
             isAdDisplayed = false;
         }
     }

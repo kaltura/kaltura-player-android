@@ -97,7 +97,6 @@ public class PlayerActivity extends AppCompatActivity {
     private PlayerInitOptions initOptions;
     private String playerConfigTitle;
     private String playerInitOptionsJson;
-    private boolean isAdDisplayed;
 
     private Integer uiConfId;
     private String ks;
@@ -370,17 +369,17 @@ public class PlayerActivity extends AppCompatActivity {
                                                     playbackControlsManager.showControls(View.VISIBLE);
                                                 }
                                             } else if (receivedEventType == AdEvent.Type.CONTENT_PAUSE_REQUESTED) {
+                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.CONTENT_PAUSE_REQUESTED);
                                                 playbackControlsManager.showControls(View.INVISIBLE);
                                             } else if (receivedEventType == AdEvent.Type.CONTENT_RESUME_REQUESTED) {
-                                                isAdDisplayed = false;
+                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.CONTENT_RESUME_REQUESTED);
                                                 playbackControlsManager.showControls(View.INVISIBLE);
                                             } else if (receivedEventType == AdEvent.Type.LOADED) {
                                                 playbackControlsManager.setAdPlayerState(AdEvent.Type.LOADED);
                                             } else if (receivedEventType == AdEvent.Type.STARTED) {
+                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.STARTED);
                                                 allAdsCompeted = false;
                                                 AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-                                                isAdDisplayed = true;
-                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.STARTED);
                                                 playbackControlsManager.showControls(View.INVISIBLE);
                                             } else if (receivedEventType == AdEvent.Type.TAPPED) {
                                                 playbackControlsManager.handleContainerClick();
@@ -400,7 +399,6 @@ public class PlayerActivity extends AppCompatActivity {
                                             updateEventsLogsList("player:\n" + event.eventType().name());
                                             playbackControlsManager.setContentPlayerState(event.eventType());
                                             if (receivedEventType == PLAYING) {
-                                                isAdDisplayed = false;
                                                 playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
                                                 playbackControlsManager.showControls(View.INVISIBLE);
                                             } else if (receivedEventType == SOURCE_SELECTED) {
