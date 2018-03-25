@@ -161,41 +161,36 @@ public class PlayerActivity extends AppCompatActivity {
             player.stop();
         }
         if (player instanceof KalturaOvpPlayer) {
-            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, null,currentPlayedMediaIndex);
+            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, null, currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
                 @Override
                 public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
                     log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
-                    if (error != null) {
-                        log.d("OTTMedia Error Extra = " + error.getExtra());
-                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
-                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
-                        playbackControlsManager.showControls(View.VISIBLE);
-                    } else {
-                        if (!initOptions.autoplay) {
-                            playbackControlsManager.showControls(View.VISIBLE);
-                        }
-                    }
+                    handleOnEntryLoadCompleate(error);
                 }
             });
         } else {
-            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, null,currentPlayedMediaIndex);
+            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, null, currentPlayedMediaIndex);
             player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
                 @Override
                 public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
                     log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
-                    if (error != null) {
-                        log.d("OTTMedia Error Extra = " + error.getExtra());
-                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
-                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
-                        playbackControlsManager.showControls(View.VISIBLE);
-                    } else {
-                        if (!initOptions.autoplay) {
-                            playbackControlsManager.showControls(View.VISIBLE);
-                        }
-                    }
+                    handleOnEntryLoadCompleate(error);
                 }
             });
+        }
+    }
+
+    private void handleOnEntryLoadCompleate(ErrorElement error) {
+        if (error != null) {
+            log.d("Load Error Extra = " + error.getExtra());
+            Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
+            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+            playbackControlsManager.showControls(View.VISIBLE);
+        } else {
+            if (!initOptions.autoplay) {
+                playbackControlsManager.showControls(View.VISIBLE);
+            }
         }
     }
 
