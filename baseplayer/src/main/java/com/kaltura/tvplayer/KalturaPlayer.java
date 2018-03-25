@@ -361,9 +361,11 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     public void setMedia(PKMediaEntry mediaEntry) {
         if (this.mediaEntry == null) {
-            log.d( "XXX new Player");
+            log.d( "setMedia new Player configuration");
         } else {
-            log.d( "XXX Change Media");
+            log.d( "setMedia Change Media configuration");
+            PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
+            updateKalturaPluginConfigs(combinedPluginConfigs);
         }
 
         this.mediaEntry = mediaEntry;

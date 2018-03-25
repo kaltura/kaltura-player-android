@@ -14,13 +14,13 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
-import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsConfig;
-import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlayerInitOptions;
+
+import java.util.Map;
 
 public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
 
@@ -69,6 +69,19 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
     @Override
     protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
         log.d("OTTPlayer updateKalturaPluginConfigs");
+        for (Map.Entry<String, Object> plugin : combined) {
+            if (plugin.getValue() instanceof JsonObject) {
+                updatePluginConfig(plugin.getKey(), (JsonObject) plugin.getValue());
+            } else {
+                log.e("OTTPlayer updateKalturaPluginConfigs " + plugin.getKey()  + " is not a JsonObject");
+            }
+        }
+        if (!TextUtils.isEmpty(getKS())) {
+            PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
+            if (phoenixConfig != null) {
+                updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
+            }
+        }
     }
 
     private KavaAnalyticsConfig getKavaAnalyticsConfig() {

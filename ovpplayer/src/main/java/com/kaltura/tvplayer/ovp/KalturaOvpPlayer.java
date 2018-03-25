@@ -2,6 +2,7 @@ package com.kaltura.tvplayer.ovp;
 
 import android.content.Context;
 
+import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.MediaEntryProvider;
 import com.kaltura.playkit.PKLog;
@@ -10,9 +11,10 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.mediaproviders.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.mediaproviders.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
-import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlayerInitOptions;
+
+import java.util.Map;
 
 public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
 
@@ -55,6 +57,13 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
     @Override
     protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
         log.d("OVPPlayer updateKalturaPluginConfigs");
+        for (Map.Entry<String, Object> plugin : combined) {
+            if (plugin.getValue() instanceof JsonObject) {
+                updatePluginConfig(plugin.getKey(), (JsonObject) plugin.getValue());
+            } else {
+                log.e("OVPPlayer updateKalturaPluginConfigs " + plugin.getKey() + " is not JsonObject");
+            }
+        }
     }
 
     @Override

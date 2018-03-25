@@ -46,6 +46,7 @@ import com.kaltura.playkit.ads.AdInfo;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKTracks;
+import com.kaltura.playkit.plugins.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ima.IMAPlugin;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsEvent;
@@ -60,6 +61,7 @@ import com.kaltura.playkit.plugins.ovp.KalturaStatsEvent;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
+import com.kaltura.playkit.plugins.youbora.pluginconfig.Properties;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.KalturaPlayer;
@@ -110,6 +112,7 @@ public class PlayerActivity extends AppCompatActivity {
     private String searchLogPattern = "";
     private SearchView searchView;
     private TracksSelectionController tracksSelectionController;
+    private PlayerConfig appPlayerInitConfig;
     private int currentPlayedMediaIndex = 0;
     private PlaybackControlsView playbackControlsView;
     private AdCuePoints adCuePoints;
@@ -140,8 +143,9 @@ public class PlayerActivity extends AppCompatActivity {
         }
         initDrm();
 
-        final PlayerConfig appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
+        appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
         final String playerType = appPlayerInitConfig.getPlayerType();
+
 
         if (appPlayerInitConfig.getUiConf() == null) {
             log.d("App config json is invalid");
@@ -160,8 +164,9 @@ public class PlayerActivity extends AppCompatActivity {
         if (player != null) {
             player.stop();
         }
+        updatePluginsConfig();
         if (player instanceof KalturaOvpPlayer) {
-            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, null, currentPlayedMediaIndex);
+            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, appPlayerInitConfig.getPreferredFormat(), currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
                 @Override
                 public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
@@ -170,7 +175,7 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             });
         } else {
-            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, null, currentPlayedMediaIndex);
+            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, appPlayerInitConfig.getPreferredFormat(), currentPlayedMediaIndex);
             player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
                 @Override
                 public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
@@ -179,6 +184,31 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             });
         }
+    }
+
+    private void updatePluginsConfig() {
+        if (initOptions.pluginConfigs.hasConfig(IMAPlugin.factory.getName())) {
+            JsonObject imaJson = (JsonObject) initOptions.pluginConfigs.getPluginConfig(IMAPlugin.factory.getName());
+            IMAConfig imaPluginConfig = gson.fromJson(imaJson, IMAConfig.class);
+
+            //Example to update the AdTag
+            //imaPluginConfig.setAdTagUrl("http://externaltests.dev.kaltura.com/playKitApp/adManager/customAdTags/vmap/inline/ima_pre_mid_post_bumber2.xml");
+            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig.toJson());
+        }
+
+        //EXAMPLE if there are no auto replacers in this format ->  {{key}}
+//        if (initOptions.pluginConfigs.hasConfig(YouboraPlugin.factory.getName())) {
+//            JsonObject imaJson = (JsonObject) initOptions.pluginConfigs.getPluginConfig(YouboraPlugin.factory.getName());
+//            YouboraConfig youboraPluginConfig = gson.fromJson(imaJson, YouboraConfig.class);
+//            Properties properties = new Properties();
+//            properties.setGenre("AAAA");
+//            properties.setOwner("SONY");
+//            properties.setQuality("HD");
+//            properties.setPrice("122");
+//            properties.setYear("2018");
+//            youboraPluginConfig.setProperties(properties);
+//            initOptions.pluginConfigs.setPluginConfig(YouboraPlugin.factory.getName(), youboraPluginConfig.toJson());
+//        }
     }
 
     private void handleOnEntryLoadCompleate(ErrorElement error) {
