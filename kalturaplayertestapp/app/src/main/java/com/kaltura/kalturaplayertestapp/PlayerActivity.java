@@ -82,6 +82,7 @@ import static com.kaltura.playkit.PlayerEvent.Type.CAN_PLAY;
 import static com.kaltura.playkit.PlayerEvent.Type.ENDED;
 import static com.kaltura.playkit.PlayerEvent.Type.PLAYING;
 import static com.kaltura.playkit.PlayerEvent.Type.SOURCE_SELECTED;
+import static com.kaltura.playkit.PlayerEvent.Type.STOPPED;
 import static com.kaltura.playkit.PlayerEvent.Type.TRACKS_AVAILABLE;
 
 public class PlayerActivity extends AppCompatActivity {
@@ -404,6 +405,8 @@ public class PlayerActivity extends AppCompatActivity {
                                             if (receivedEventType == PLAYING) {
                                                 playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
                                                 playbackControlsManager.showControls(View.INVISIBLE);
+                                            } else if (receivedEventType == STOPPED) {
+                                                playbackControlsManager.showControls(View.INVISIBLE);
                                             } else if (receivedEventType == SOURCE_SELECTED) {
                                                 PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
                                                 log.d("Selected Source = " + sourceSelected.source.getUrl());
@@ -436,7 +439,7 @@ public class PlayerActivity extends AppCompatActivity {
 
                                         }
                                     }
-                                }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.CAN_PLAY, PlayerEvent.Type.SOURCE_SELECTED, PlayerEvent.Type.SEEKING, PlayerEvent.Type.SEEKED, PlayerEvent.Type.PLAYING,  PlayerEvent.Type.ENDED, PlayerEvent.Type.TRACKS_AVAILABLE,
+                                }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.STOPPED, PlayerEvent.Type.CAN_PLAY, PlayerEvent.Type.SOURCE_SELECTED, PlayerEvent.Type.SEEKING, PlayerEvent.Type.SEEKED, PlayerEvent.Type.PLAYING,  PlayerEvent.Type.ENDED, PlayerEvent.Type.TRACKS_AVAILABLE,
                 AdEvent.Type.ERROR, AdEvent.Type.LOADED, AdEvent.Type.SKIPPED, AdEvent.Type.TAPPED, AdEvent.Type.CONTENT_PAUSE_REQUESTED, AdEvent.Type.CONTENT_RESUME_REQUESTED, AdEvent.Type.STARTED, AdEvent.Type.LOADED, AdEvent.Type.PAUSED, AdEvent.Type.RESUMED,
                 AdEvent.Type.COMPLETED, AdEvent.Type.ALL_ADS_COMPLETED,AdEvent.Type.CUEPOINTS_CHANGED);
 
