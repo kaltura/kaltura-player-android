@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 
-public class MainActivity extends AppCompatActivity implements TestConfigurationAdapter.OnJsonSelectedListener {
+public class MainActivity extends BaseActivity implements TestConfigurationAdapter.OnJsonSelectedListener {
 
     private static final String TAG = "MainActivity";
     private static final int RC_BARCODE_CAPTURE = 9001;
@@ -350,6 +350,7 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
     }
 
     private void loadTestsFromUrl(String testUrl) {
+        showProgressDialog();
         String jsonTests = "";
         try {
             jsonTests =  new DownloadFileFromURL().execute(testUrl).get();
@@ -359,17 +360,16 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
             e.printStackTrace();
         }
 
-        if (testUrl.contains("/Tests/")) {
+        if (testUrl.contains("/Tests/")) { // single test
             List<TestDescriptor> testDescriptorArrayList = new ArrayList<>();
             TestDescriptor testDescriptor = new TestDescriptor();
-
                 String fileName = testUrl.substring(testUrl.lastIndexOf('/') + 1, testUrl.length());
                 String fileNameWithoutExtn = fileName.substring(0, fileName.lastIndexOf('.'));
                 testDescriptor.setTitle(fileNameWithoutExtn);
                 testDescriptor.setUrl(testUrl);
                 testDescriptorArrayList.add(testDescriptor);
                 loadTests(testDescriptorArrayList);
-        } else {
+        } else { // multiple tests
             Gson gson = new Gson();
             TestDescriptor[] testDescriptors = gson.fromJson(jsonTests, TestDescriptor[].class);
             List<TestDescriptor> testDescriptorArrayList = new ArrayList<TestDescriptor>(Arrays.asList(testDescriptors));
@@ -379,6 +379,7 @@ public class MainActivity extends AppCompatActivity implements TestConfiguration
 
     private void loadTests(List<TestDescriptor> testDescriptorArray) {
         if (testDescriptorArray.size() == 0) {
+            hideProgressDialog();
             return;
         }
         TestDescriptor testDescriptor = testDescriptorArray.get(0);
