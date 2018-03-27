@@ -124,7 +124,7 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
         setStartPosition(mediaOptions.getStartPosition());
 
         final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                .setAssetId(mediaOptions.assetId);
+                .setAssetId(mediaOptions.assetId).setReferrer(referrer);
 
 
         if (mediaOptions.fileIds != null) {

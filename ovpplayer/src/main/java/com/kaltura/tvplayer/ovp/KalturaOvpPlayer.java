@@ -76,7 +76,7 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
         setStartPosition(mediaOptions.getStartPosition());
 
         MediaEntryProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                .setEntryId(mediaOptions.entryId);
+                .setEntryId(mediaOptions.entryId).setReferrer(referrer);
 
         provider.load(new OnMediaLoadCompletion() {
             @Override
