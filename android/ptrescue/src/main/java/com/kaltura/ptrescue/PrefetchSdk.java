@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.google.android.exoplayer2.offline.DownloadManager;
 import com.google.android.exoplayer2.offline.DownloaderConstructorHelper;
+import com.google.android.exoplayer2.offline.StreamKey;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
@@ -21,6 +22,7 @@ import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory;
 import com.google.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
 import com.google.android.exoplayer2.upstream.cache.SimpleCache;
 import com.google.android.exoplayer2.util.Util;
+import com.kaltura.playkit.ExoCacheProvider;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.Utils;
 
@@ -30,15 +32,16 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PrefetchSdk {
 
     private static final String TAG = "PrefetchSdk";
 //    private static final String SERVICE_URL = "http://192.168.164.17/ptr.json";
     private static final String SERVICE_URL = "https://***REMOVED***.execute-api.eu-central-1.amazonaws.com/default/getEntriesForPrefetch";
-    public static final String URI_STRING = "https://cdnapisec.kaltura.com/p/***REMOVED***/sp/***REMOVED***00/playManifest/entryId/1_aworxd15/format/applehttp/protocol/https/a.m3u8";
+    private static final String URI_STRING = "https://cdnapisec.kaltura.com/p/***REMOVED***/sp/***REMOVED***00/playManifest/entryId/1_aworxd15/format/applehttp/protocol/https/a.m3u8";
     private static PrefetchSdk shared;
     private final PrefetchDb db;
     private final Handler dbHandler;
@@ -55,6 +58,19 @@ public class PrefetchSdk {
     private static final int MAX_SIMULTANEOUS_DOWNLOADS = 2;
 
 
+    private PrefetchSdk(Context context) {
+        this.context = context.getApplicationContext();
+        db = Room.databaseBuilder(this.context, PrefetchDb.class, "history").build();
+
+        HandlerThread dbThread = new HandlerThread("dbThread");
+        dbThread.start();
+        dbHandler = new Handler(dbThread.getLooper());
+
+        userAgent = Util.getUserAgent(this.context, "PrimeTimeDemo");
+
+        initDownloadManager();
+    }
+
     /** Returns a {@link DataSource.Factory}. */
     public DataSource.Factory buildDataSourceFactory() {
         DefaultDataSourceFactory upstreamFactory =
@@ -63,18 +79,12 @@ public class PrefetchSdk {
     }
 
     /** Returns a {@link HttpDataSource.Factory}. */
-    public HttpDataSource.Factory buildHttpDataSourceFactory() {
+    private HttpDataSource.Factory buildHttpDataSourceFactory() {
         return new DefaultHttpDataSourceFactory(userAgent);
     }
 
-    public DownloadManager getDownloadManager() {
-        initDownloadManager();
+    DownloadManager getDownloadManager() {
         return downloadManager;
-    }
-
-    public DownloadTracker getDownloadTracker() {
-        initDownloadManager();
-        return downloadTracker;
     }
 
     private synchronized void initDownloadManager() {
@@ -113,7 +123,6 @@ public class PrefetchSdk {
         }
         return downloadDirectory;
     }
-
     private static CacheDataSourceFactory buildReadOnlyCacheDataSource(
             DefaultDataSourceFactory upstreamFactory, Cache cache) {
         return new CacheDataSourceFactory(
@@ -124,15 +133,16 @@ public class PrefetchSdk {
                 CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
                 /* eventListener= */ null);
     }
+
     public void reportWatchedEntry(@NonNull String entryId) {
         final long now = System.currentTimeMillis();
         dbHandler.post(() -> db.dao().insert(new WatchedEntry(entryId, now)));
     }
 
-    public void prefetchNow(OnComplete<List<String>> onComplete) {
+    public void prefetchNow(OnComplete<Map<String, String>> onComplete) {
         dbHandler.post(() -> {
             try {
-                final List<String> strings = prefetchNow();
+                final Map<String, String> strings = prefetchNow();
                 onComplete.accept(strings, null);
             } catch (JSONException | IOException e) {
                 onComplete.accept(null, e);
@@ -140,36 +150,22 @@ public class PrefetchSdk {
         });
     }
 
-    private List<String> prefetchNow() throws JSONException, IOException {
-        final List<String> strings = submit();
+    private Map<String, String> prefetchNow() throws JSONException, IOException {
+        final Map<String, String> entries = submit();
 
-        prefetchEntries(strings);
+        prefetchEntries(entries);
 
         db.dao().clearHistory();
 
-        return strings;
+        return entries;
     }
 
-    private void prefetchEntries(List<String> strings) {
+    private void prefetchEntries(Map<String, String> entries) {
 
-        Log.d(TAG, "prefetching entries: " + strings);
-
-        downloadTracker.startDownload("1_aworxd15", Uri.parse(URI_STRING));
-    }
-
-    private PrefetchSdk(Context context) {
-        this.context = context.getApplicationContext();
-        db = Room.databaseBuilder(this.context, PrefetchDb.class, "history").build();
-
-        HandlerThread dbThread = new HandlerThread("dbThread");
-        dbThread.start();
-        dbHandler = new Handler(dbThread.getLooper());
-
-        userAgent = Util.getUserAgent(this.context, "PrimeTimeDemo");
-
-        initDownloadManager();
+        Log.d(TAG, "prefetching entries: " + entries);
 
 
+        downloadTracker.startDownload(entries);
     }
 
     public static PrefetchSdk shared(Context context) {
@@ -183,7 +179,7 @@ public class PrefetchSdk {
         return shared;
     }
 
-    private List<String> submit() throws JSONException, IOException {
+    private Map<String, String> submit() throws JSONException, IOException {
         final List<WatchedEntry> all = db.dao().getAllWatched();
 
         JSONArray entries = new JSONArray();
@@ -197,24 +193,34 @@ public class PrefetchSdk {
         final byte[] bytes = Utils.executePost(SERVICE_URL, request.toString().getBytes(), null);
 
         JSONObject response = new JSONObject(new String(bytes));
-        List<String> entryIds = new ArrayList<>();
+
+        Map<String, String> prefetchList = new LinkedHashMap<>();
+
         JSONArray array = response.getJSONArray("entries");
         for (int i = 0, length = array.length(); i < length; i++) {
             final JSONObject object = array.getJSONObject(i);
-            entryIds.add(object.getString("id"));
+            prefetchList.put(object.getString("id"), object.getString("playManifestUrl"));
         }
 
-        return entryIds;
+        return prefetchList;
     }
 
     public void install(Player player) {
         player.getSettings()
-                .setOfflineDataSourceFactory(buildDataSourceFactory())
-                .setOfflineStreamKeys(downloadTracker.getOfflineStreamKeys(Uri.parse(URI_STRING)));
+                .setCacheProvider(new ExoCacheProvider() {
+                    @Override
+                    public DataSource.Factory buildDataSourceFactory() {
+                        return PrefetchSdk.this.buildDataSourceFactory();
+                    }
 
+                    @Override
+                    public List<StreamKey> getOfflineStreamKeys(Uri uri) {
+                        return downloadTracker.getOfflineStreamKeys(uri);
+                    }
+                });
     }
 
     public interface OnComplete<T> {
-        void accept(T t, Exception e);
+        void accept(Map<String, String> t, Exception e);
     }
 }

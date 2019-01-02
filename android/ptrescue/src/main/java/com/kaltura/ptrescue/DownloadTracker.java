@@ -19,6 +19,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Pair;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.offline.ActionFile;
@@ -46,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
@@ -56,6 +59,15 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * can be queried efficiently together with other information about the media.
  */
 public class DownloadTracker implements DownloadManager.Listener {
+
+  public void startDownload(Map<String, String> entries) {
+    if (entries.isEmpty()) {
+      return;
+    }
+    final Set<Map.Entry<String, String>> set = entries.entrySet();
+    final Map.Entry<String, String> first = set.iterator().next();
+    startDownload(first.getKey(), Uri.parse(first.getValue()));
+  }
 
   /** Listens for changes in the tracked downloads. */
   public interface Listener {
@@ -247,11 +259,10 @@ public class DownloadTracker implements DownloadManager.Listener {
           }
         }
       }
-      ArrayList<TrackKey> selectedTrackKeys = new ArrayList<>();
-      for (TrackKey trackKeys : trackKeys) {
-        selectedTrackKeys.add(trackKeys);
-        break;
-      }
+      ArrayList<TrackKey> selectedTrackKeys = new ArrayList<>(trackKeys);
+//      for (TrackKey trackKeys : trackKeys) {
+//        selectedTrackKeys.add(trackKeys);
+//      }
         // We have selected keys, or we're dealing with single stream content.
         DownloadAction downloadAction =
                 downloadHelper.getDownloadAction(Util.getUtf8Bytes(name), selectedTrackKeys);
