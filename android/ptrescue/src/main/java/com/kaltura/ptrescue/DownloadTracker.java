@@ -22,6 +22,7 @@ import android.os.HandlerThread;
 import android.util.Pair;
 
 import com.google.android.exoplayer2.C;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.offline.ActionFile;
 import com.google.android.exoplayer2.offline.DownloadAction;
 import com.google.android.exoplayer2.offline.DownloadHelper;
@@ -253,8 +254,15 @@ public class DownloadTracker implements DownloadManager.Listener {
         for (int j = 0; j < trackGroups.length; j++) {
           TrackGroup trackGroup = trackGroups.get(j);
           for (int k = 0; k < trackGroup.length; k++) {
-            TrackKey trackKeyToAdd = new TrackKey(i, j, k);
-            trackKeys.add(trackKeyToAdd); // add filter
+            Format format = trackGroup.getFormat(k);
+            int bitrate = format.bitrate;
+            android.util.Log.d(TAG, "onPrepared: " + bitrate + " " + format.id);
+            if (bitrate >= 500_000 && bitrate <= 900_000) {
+              TrackKey trackKeyToAdd = new TrackKey(i, j, k);
+
+              trackKeys.add(trackKeyToAdd); // add filter
+            }
+
             //trackTitles.add(trackNameProvider.getTrackName(trackGroup.getFormat(k)));
           }
         }
@@ -262,6 +270,7 @@ public class DownloadTracker implements DownloadManager.Listener {
       ArrayList<TrackKey> selectedTrackKeys = new ArrayList<>(trackKeys);
 //      for (TrackKey trackKeys : trackKeys) {
 //        selectedTrackKeys.add(trackKeys);
+//        break;
 //      }
         // We have selected keys, or we're dealing with single stream content.
         DownloadAction downloadAction =
