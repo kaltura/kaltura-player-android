@@ -38,6 +38,8 @@ def getPreFetchEntries(body):
     watchedEntryIds = {}
     parsedBody = json.loads(body)
     for entry in parsedBody['entries']:
+        if entry['id'].strip() == "":
+            continue
         watchedEntryIds[entry['id']] = True
         nextEpisodes = getNextEpisodes(entry['id'])
         if nextEpisodes is not None:
@@ -91,6 +93,7 @@ def getEpisodeData(entryId):
                'filter:objectIdEqual':entryId,
                'format':'1',
                'ks': ks}
+    print("getting metadata for entry [" + entryId + "]")
     metadata = doAPIRequest(listReq)
     xmlData = metadata['objects'][0]['xml']
     xmlObj = ET.fromstring(xmlData)
@@ -110,6 +113,8 @@ def getNextEpisodes(entryId):
         unmarshalled = json.loads( response['Item']['cached_value'])
         # return unmarshalled
     currEpisode = getEpisodeData(entryId)
+    if not currEpisode['e'] or not currEpisode['title'] or not currEpisode['s']:
+        return None
     # print("current episode data [" + json.dumps(currEpisode) + "]")
     episodeNumStr = currEpisode['e'].split('.')[0]
     nextEpNum = str(int(episodeNumStr) + 1)
@@ -135,26 +140,27 @@ def getNextEpisodes(entryId):
                         'searchParams:searchOperator:searchItems:item2:xpath':'/*[local-name()=\'metadata\']/*[local-name()=\'NUMRefSeriesSeason\']',
                         'searchParams:searchOperator:searchItems:item2:metadataProfileId': '***REMOVED***',
                         'ks': ks}
-    if currEpisode['contentType']:
-        nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:objectType']='KalturaESearchEntryMetadataItem'
-        nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:searchTerm']=currEpisode['contentType']
-        nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:itemType']='1'
-        nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:xpath']='/*[local-name()=\'metadata\']/*[local-name()=\'STRINGContentType\']'
-        nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:metadataProfileId']='***REMOVED***'
+    # if currEpisode['contentType']:
+    #     nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:objectType']='KalturaESearchEntryMetadataItem'
+    #     nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:searchTerm']=currEpisode['contentType']
+    #     nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:itemType']='1'
+    #     nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:xpath']='/*[local-name()=\'metadata\']/*[local-name()=\'STRINGContentType\']'
+    #     nextEpisodeRequest['searchParams:searchOperator:searchItems:item3:metadataProfileId']='***REMOVED***'
 
     # print("next episode request [" + json.dumps(nextEpisodeRequest) + "]")
     nextEpisodes = doAPIRequest(nextEpisodeRequest)
     # print("next episode response [" + json.dumps(nextEpisodes) + "]")
     if (nextEpisodes['totalCount'] > 0):
         # objForDynamo = cleanObjForDynamo(nextEpisodes['objects'][0]['object'])
-        objForDynamo = nextEpisodes['objects'][0]['object']
-        # cacheTable.put_item(
-        #     Item={
-        #         'cache_key': 'next_episode_' + entryId,
-        #         'cached_value': json.dumps(objForDynamo),
-        #         'updated_at': str(time.time())
-        #     }
-        # )
+        # objForDynamo = nextEpisodes['objects'][0]['object']
+        objForDynamo = nextEpisodes['objects']
+        cacheTable.put_item(
+            Item={
+                'cache_key': 'next_episode_' + entryId,
+                'cached_value': json.dumps(objForDynamo),
+                'updated_at': str(time.time())
+            }
+        )
         return nextEpisodes['objects']
     return None
 
@@ -218,9 +224,9 @@ def parsePopularEntries(popularShows):
 
 if __name__ == '__main__':
     response = lambda_handler({
-        # "body": "{\"entries\": [{ \"id\": \"***REMOVED***\" },{ \"id\": \"***REMOVED***\" },{ \"id\": \"***REMOVED***\" }]}",
-        # "body": "{\"entries\":[{\"id\":\"***REMOVED***\"},{\"id\":\"***REMOVED***\"},{\"id\":\"***REMOVED***\"}],\"dates\":{\"from\":\"20181212\",\"to\":\"20181213\"}}",
-        "body": "{\"entries\":[{\"id\":\"***REMOVED***\"},{\"id\":\"***REMOVED***\"},{\"id\":\"***REMOVED***\"}],\"dates\":{\"from\":\"20181212\"}}",
+        ***REMOVED***
+        ***REMOVED***
+        "body": "{\"entries\":[{\"id\":\"0_u7hr9tqz\"},{\"id\":\"0_u7hr9tqz\"},{\"id\":\"0_u7hr9tqz\"},{\"id\":\"0_u7hr9tqz\"},{\"id\":\"1_pp606y6u\"},{\"id\":\"1_gzyo9tjp\"},{\"id\":\"\"},{\"id\":\"1_gzyo9tjp\"},{\"id\":\"1_gzyo9tjp\"},{\"id\":\"\"},{\"id\":\"\"},{\"id\":\"\"}]}",
         "headers": {
             "Accept": "*/*",
             "Host": "***REMOVED***.execute-api.eu-central-1.amazonaws.com",
