@@ -38,12 +38,14 @@ def getPreFetchEntries(body):
     watchedEntryIds = {}
     parsedBody = json.loads(body)
     for entry in parsedBody['entries']:
-        if entry['id'].strip() == "":
+        if entry['id'].strip() == "" or entry['id'] in watchedEntryIds:
             continue
         watchedEntryIds[entry['id']] = True
         nextEpisodes = getNextEpisodes(entry['id'])
         if nextEpisodes is not None:
             for currEp in nextEpisodes:
+                if currEp['object']['objectType'] == 'KalturaMediaEntry':
+                    continue
                 pmUrl = playManifestTemplate % currEp['object']['id']
                 nextEntries.append({'id':currEp['object']['id'], 'playManifestUrl': pmUrl})
 
@@ -93,7 +95,7 @@ def getEpisodeData(entryId):
                'filter:objectIdEqual':entryId,
                'format':'1',
                'ks': ks}
-    print("getting metadata for entry [" + entryId + "]")
+    # print("getting metadata for entry [" + entryId + "]")
     metadata = doAPIRequest(listReq)
     xmlData = metadata['objects'][0]['xml']
     xmlObj = ET.fromstring(xmlData)
@@ -111,7 +113,7 @@ def getNextEpisodes(entryId):
     response = cacheTable.get_item(Key={'cache_key': 'next_episode_' + entryId})
     if 'Item' in response:
         unmarshalled = json.loads( response['Item']['cached_value'])
-        # return unmarshalled
+        return unmarshalled
     currEpisode = getEpisodeData(entryId)
     if not currEpisode['e'] or not currEpisode['title'] or not currEpisode['s']:
         return None
@@ -226,7 +228,24 @@ if __name__ == '__main__':
     response = lambda_handler({
         ***REMOVED***
         ***REMOVED***
-        "body": "{\"entries\":[{\"id\":\"0_u7hr9tqz\"},{\"id\":\"0_u7hr9tqz\"},{\"id\":\"0_u7hr9tqz\"},{\"id\":\"0_u7hr9tqz\"},{\"id\":\"1_pp606y6u\"},{\"id\":\"1_gzyo9tjp\"},{\"id\":\"\"},{\"id\":\"1_gzyo9tjp\"},{\"id\":\"1_gzyo9tjp\"},{\"id\":\"\"},{\"id\":\"\"},{\"id\":\"\"}]}",
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+        ***REMOVED***
+
         "headers": {
             "Accept": "*/*",
             "Host": "***REMOVED***.execute-api.eu-central-1.amazonaws.com",
