@@ -89,16 +89,20 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         if (partnerId == null) {
             throw new IllegalArgumentException("partnerId must not be null");
         }
-        final PlayerInitOptions options = new PlayerInitOptions(partnerId, safeObject(json, "playerConfig"));
-        options
-                .setServerUrl(safeString(json, "serverUrl"))
-                .setAutoPlay(safeBoolean(json, "autoPlay"))
-                .setPreload(safeBoolean(json, "preload"))
-                .setKs(safeString(json, "ks"))
-                .setPluginConfigs(parsePluginConfigs(json.get("plugins")))
-                .setReferrer(safeString(json, "referrer"));
 
-        initOptions = options;
+        if (json.has("playerConfig")) {
+            final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId, safeObject(json, "playerConfig"));
+            if (initOptions != null) {
+                options.setServerUrl(safeString(json, "serverUrl"))
+                        .setAutoPlay(safeBoolean(json, "autoPlay"))
+                        .setPreload(safeBoolean(json, "preload"))
+                        .setKs(safeString(json, "ks"))
+                        .setPluginConfigs(parsePluginConfigs(json.get("plugins")))
+                        .setReferrer(safeString(json, "referrer"));
+
+            }
+            initOptions = options;
+        }
     }
 
     private PKPluginConfigs parsePluginConfigs(JsonElement json) {
@@ -169,7 +173,9 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     protected void parseCommonOptions(JsonObject json) {
         parseInitOptions(safeObject(json, "initOptions"));
 
-        ks = initOptions.ks;
+        if (initOptions != null) {
+            ks = initOptions.ks;
+        }
         final JsonArray jsonItems = json.get("items").getAsJsonArray();
         List<DemoItem> itemList = new ArrayList<>(jsonItems.size());
         for (JsonElement item : jsonItems) {
@@ -192,6 +198,9 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     protected abstract void loadPlayerConfig();
     
     protected int partnerId() {
+        if (initOptions == null) {
+            return 0;
+        }
         return initOptions.partnerId;
     }
 

@@ -14,8 +14,9 @@ import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.netkit.utils.OnRequestCompletion;
-import com.kaltura.playkit.api.ovp.OvpConfigs;
-import com.kaltura.playkit.api.ovp.OvpRequestBuilder;
+import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
+import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
+
 
 import java.io.BufferedReader;
 import java.io.File;

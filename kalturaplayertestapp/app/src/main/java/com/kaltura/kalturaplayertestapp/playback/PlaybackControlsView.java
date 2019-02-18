@@ -13,6 +13,7 @@ import com.kaltura.kalturaplayertestapp.R;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Formatter;
@@ -106,7 +107,7 @@ public class PlaybackControlsView extends LinearLayout implements View.OnClickLi
         // Remove scheduled updates.
         removeCallbacks(updateProgressAction);
         // Schedule an update if necessary.
-        if (playerState != PlayerState.IDLE || (player.getAdController() != null && player.getAdController().getAdCurrentPosition() >= 0)) {
+        if (playerState != PlayerState.IDLE || (player.getController(AdController.class) != null && player.getController(AdController.class).getAdCurrentPosition() >= 0)) {
             long delayMs = 1000;
             postDelayed(updateProgressAction, delayMs);
         }

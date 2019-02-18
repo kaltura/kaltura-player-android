@@ -10,7 +10,7 @@ import android.widget.Button;
 
 import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.ads.AdEvent;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlaybackControlsView;

@@ -1,6 +1,6 @@
 package com.kaltura.kalturaplayertestapp.converters;
 
-import com.kaltura.playkit.api.phoenix.APIDefines;
+import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 
 /**
  * Created by gilad.nadav on 1/24/18.

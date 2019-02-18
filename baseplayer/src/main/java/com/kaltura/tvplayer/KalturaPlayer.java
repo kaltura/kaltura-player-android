@@ -165,7 +165,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     private JsonObject kalturaStatsDefaults(int partnerId, int uiConfId) {
-        return new KalturaStatsConfig(uiConfId, partnerId, "", "", 0, true).toJson();
+        return new KalturaStatsConfig(uiConfId, partnerId, "", "", 0, true).toJSONObject();
         // KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String userId, int contextId, boolean hasKanalony)
     }
 
@@ -401,9 +401,9 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
         final PKMediaConfig config = new PKMediaConfig()
                 .setMediaEntry(mediaEntry)
-                .setStartPosition((long) (startPosition))
-                .setPreferredMediaFormat(preferredMeidaFormat);
+                .setStartPosition((long) (startPosition));
 
+        pkPlayer.getSettings().setPreferredMediaFormat(preferredMeidaFormat);
         pkPlayer.prepare(config);
         prepared = true;
 
@@ -494,7 +494,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     public AdController getAdController() {
-        return pkPlayer.getAdController();
+        return pkPlayer.getController(AdController.class);
     }
 
     public String getSessionId() {

@@ -4,8 +4,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.google.gson.JsonObject;
-import com.kaltura.playkit.api.ovp.OvpRequestBuilder;
-import com.kaltura.playkit.api.ovp.services.OvpService;
+import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
+import com.kaltura.playkit.providers.api.ovp.services.OvpService;
+
 
 public class UIConfService extends OvpService {
     public static OvpRequestBuilder uiConfById(@NonNull String baseUrl, int partnerId, int confId, @Nullable String ks) {

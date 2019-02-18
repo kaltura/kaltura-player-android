@@ -1,12 +1,7 @@
 package com.kaltura.kalturaplayertestapp;
 
-import android.app.Activity;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.opengl.Visibility;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,10 +11,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -40,12 +31,12 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.ads.AdCuePoints;
-import com.kaltura.playkit.ads.AdEvent;
-import com.kaltura.playkit.ads.AdInfo;
 import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKTracks;
+import com.kaltura.playkit.plugins.ads.AdCuePoints;
+import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ima.IMAPlugin;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
@@ -193,7 +184,7 @@ public class PlayerActivity extends AppCompatActivity {
 
             //Example to update the AdTag
             //imaPluginConfig.setAdTagUrl("http://externaltests.dev.kaltura.com/playKitApp/adManager/customAdTags/vmap/inline/ima_pre_mid_post_bumber2.xml");
-            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig.toJson());
+            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig.toJSONObject());
         }
 
         //EXAMPLE if there are no auto replacers in this format ->  {{key}}
@@ -575,7 +566,7 @@ public class PlayerActivity extends AppCompatActivity {
                     pkPluginConfigs.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalyticsConfig.toJson());
                 } else if (KalturaStatsPlugin.factory.getName().equals(pluginName)) {
                     KalturaStatsConfig kalturaStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaStatsConfig.class);
-                    pkPluginConfigs.setPluginConfig(KalturaStatsPlugin.factory.getName(), kalturaStatsPluginConfig.toJson());
+                    pkPluginConfigs.setPluginConfig(KalturaStatsPlugin.factory.getName(), kalturaStatsPluginConfig.toJSONObject());
                 } else if (KalturaLiveStatsPlugin.factory.getName().equals(pluginName)) {
                     KalturaLiveStatsConfig kalturaLiveStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaLiveStatsConfig.class);
                     pkPluginConfigs.setPluginConfig(KalturaLiveStatsPlugin.factory.getName(), kalturaLiveStatsPluginConfig.toJson());

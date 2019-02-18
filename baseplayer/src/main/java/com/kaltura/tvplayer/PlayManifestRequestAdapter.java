@@ -28,7 +28,7 @@ public class PlayManifestRequestAdapter implements PKRequestParams.Adapter {
     public static PlayManifestRequestAdapter install(Player player, String referrer) {
         PlayManifestRequestAdapter decorator = new PlayManifestRequestAdapter(player, referrer);
         player.getSettings().setContentRequestAdapter(decorator);
-        
+
         return decorator;
     }
 
@@ -62,5 +62,10 @@ public class PlayManifestRequestAdapter implements PKRequestParams.Adapter {
     @Override
     public void updateParams(Player player) {
         this.playSessionId = player.getSessionId();
+    }
+
+    @Override
+    public String getApplicationName() {
+        return referrer;
     }
 }

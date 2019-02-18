@@ -8,6 +8,8 @@ include ':kalturaplayertestapp'
 project(':kalturaplayertestapp').projectDir = new File('kalturaplayertestapp/app')
 include ':playkit'
 project(':playkit').projectDir = new File(settingsDir,'../playkit-android/playkit')
+include ':providers'
+project(':providers').projectDir = new File(settingsDir,'../playkit-android-providers/mediaproviders')
 include ':ima'
 project(':ima').projectDir = new File(settingsDir,'../playkit-android-ima/imaplugin')
 include ':youbora'
