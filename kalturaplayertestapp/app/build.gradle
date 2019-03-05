@@ -29,13 +29,15 @@ configurations.all {
 }
 
 dependencies {
-    api project(path: ':baseplayer')
-    api project(path: ':ovpplayer')
-    api project(path: ':ottplayer')
+    api project(":baseplayer")
+    api project(":ovpplayer")
+    api project(":ottplayer")
 
-    api project(path: ":googlecast");
-    api project(path: ":youbora");
-    api project(path: ":ima");
+    api project(":googlecast");
+    api project(":youbora");
+    api project(":ima");
+    api project(":MD360");
+    api project(":playkitvr");
 
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 

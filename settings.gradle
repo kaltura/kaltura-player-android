@@ -18,3 +18,7 @@ include ':kava'
 project(':kava').projectDir = new File(settingsDir,'../playkit-android-kava/kavaplugin')
 include ':googlecast'
 project(':googlecast').projectDir = new File(settingsDir,'../playkit-android-googlecast/googlecast')
+include ':MD360'
+project(':MD360').projectDir = new File(settingsDir,'../MD360Player4Android/vrlib')
+include ':playkitvr'
+project(':playkitvr').projectDir = new File(settingsDir,'../playkit-android-vr/playkitvr')
