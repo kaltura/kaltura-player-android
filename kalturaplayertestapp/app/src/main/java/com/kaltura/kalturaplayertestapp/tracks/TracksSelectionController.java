@@ -37,6 +37,9 @@ public class TracksSelectionController {
         this.context = context;
         this.player = player;
         this.tracks = tracks;
+        lastAudioTrackSelection = tracks.getDefaultVideoTrackIndex();
+        lastAudioTrackSelection = tracks.getDefaultAudioTrackIndex();
+        lastTextTrackSelection = tracks.getDefaultTextTrackIndex();
     }
 
     private RecyclerView buildTracksSelectionView() {
@@ -55,7 +58,7 @@ public class TracksSelectionController {
         if (trackItems.size() <= 1) {
             return;
         }
-        int lastTrackSelection = -1;
+        int lastTrackSelection;
         switch (trackType) {
             case TRACK_TYPE_VIDEO:
                 lastTrackSelection = lastVideoTrackSelection;
