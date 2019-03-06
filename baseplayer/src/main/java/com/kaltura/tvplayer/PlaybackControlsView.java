@@ -145,15 +145,9 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
     public void setPlayer(KalturaPlayer player) {
         this.player = player;
-        player.addStateChangeListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                if (event instanceof PlayerEvent.StateChanged) {
-                    PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
-
-                    setPlayerState(stateChanged.newState);
-                }
-            }
+        this.player.addListener(this, PlayerEvent.stateChanged, event -> {
+            PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
+            setPlayerState(stateChanged.newState);
         });
     }
 

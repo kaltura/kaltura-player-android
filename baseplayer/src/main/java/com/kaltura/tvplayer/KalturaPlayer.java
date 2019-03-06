@@ -34,6 +34,7 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
@@ -477,12 +478,20 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         return pkPlayer.isPlaying();
     }
 
-    public void addEventListener(@NonNull PKEvent.Listener listener, Enum... events) {
-        pkPlayer.addEventListener(listener, events);
+    public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
+        pkPlayer.addListener(groupId, type, listener);
     }
 
-    public void addStateChangeListener(@NonNull PKEvent.Listener listener) {
-        pkPlayer.addStateChangeListener(listener);
+    public void addListener(Object groupId, Enum type, PKEvent.Listener listener) {
+        pkPlayer.addListener(groupId, type, listener);
+    }
+
+    public void removeListeners(@NonNull Object groupId) {
+        pkPlayer.removeListeners(groupId);
+    }
+
+    public void removeListener(@NonNull PKEvent.Listener listener) {
+        pkPlayer.removeListener(listener);
     }
 
     public void changeTrack(String uniqueId) {

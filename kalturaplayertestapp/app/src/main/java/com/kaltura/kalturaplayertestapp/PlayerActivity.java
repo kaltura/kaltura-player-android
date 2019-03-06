@@ -26,12 +26,10 @@ import com.kaltura.kalturaplayertestapp.models.ima.UiConfFormatIMAConfig;
 import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
-import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.ads.PKAdErrorType;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
@@ -52,10 +50,9 @@ import com.kaltura.playkit.plugins.ovp.KalturaStatsEvent;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
-import com.kaltura.playkit.plugins.youbora.pluginconfig.Properties;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
-import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.PlaybackControlsView;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
@@ -71,12 +68,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import static com.kaltura.playkit.PlayerEvent.Type.CAN_PLAY;
 import static com.kaltura.playkit.PlayerEvent.Type.ENDED;
-import static com.kaltura.playkit.PlayerEvent.Type.PLAYING;
-import static com.kaltura.playkit.PlayerEvent.Type.SOURCE_SELECTED;
-import static com.kaltura.playkit.PlayerEvent.Type.STOPPED;
-import static com.kaltura.playkit.PlayerEvent.Type.TRACKS_AVAILABLE;
+
 
 public class PlayerActivity extends AppCompatActivity {
 
@@ -129,7 +122,7 @@ public class PlayerActivity extends AppCompatActivity {
         playerConfigTitle = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_TITLE_KEY);
         playerInitOptionsJson = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_JSON_KEY);
 
-        if (playerConfigTitle == null|| playerInitOptionsJson == null) {
+        if (playerConfigTitle == null || playerInitOptionsJson == null) {
             throw new IllegalArgumentException("Must pass extra " + PlayerActivity.PLAYER_CONFIG_JSON_KEY);
         }
         initDrm();
@@ -300,9 +293,9 @@ public class PlayerActivity extends AppCompatActivity {
                     }
                 }
             });
-        } else  if ("ott".equals(playerType.toLowerCase())) {
+        } else if ("ott".equals(playerType.toLowerCase())) {
             player = KalturaOTTPlayer.create(PlayerActivity.this, initOptions);
-            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat() , playListMediaIndex);
+            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat(), playListMediaIndex);
             player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
                 @Override
                 public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
@@ -342,10 +335,10 @@ public class PlayerActivity extends AppCompatActivity {
                 .setAssetType(ottMedia.getAssetType())
                 .setContextType(ottMedia.getPlaybackContextType());
         if (!TextUtils.isEmpty(ottMedia.getFormat())) {
-            ottMediaOptions.setFormats(new String [] {ottMedia.getFormat()});
+            ottMediaOptions.setFormats(new String[]{ottMedia.getFormat()});
         }
         if (ottMedia.getFileId() != null) {
-            ottMediaOptions.setFileIds(new String [] {String.valueOf(ottMedia.getFileId())});
+            ottMediaOptions.setFileIds(new String[]{String.valueOf(ottMedia.getFileId())});
         }
 
         ottMediaOptions.setKS(ottMedia.getKs());
@@ -365,170 +358,227 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void setPlayerListeners() {
-        player.addEventListener(new PKEvent.Listener() {
-                                    @Override
-                                    public void onEvent(PKEvent event) {
-                                        log.d("onEvent " + event.eventType().name());
+        //////// AD Events
 
-                                        Enum receivedEventType = event.eventType();
-                                        if (event instanceof AdEvent) {
-                                            updateEventsLogsList("ad:\n" + event.eventType().name());
+        player.addListener(this, AdEvent.error, event -> {
+            log.d("AD ERROR");
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            AdEvent.Error adError = (AdEvent.Error) event;
+            playbackControlsManager.setAdPlayerState(adError.type);
+        });
 
-                                            if (receivedEventType == AdEvent.Type.ERROR) {
-                                                AdEvent.Error adError = (AdEvent.Error) event;
-                                                playbackControlsManager.setAdPlayerState(adError.type);
-                                            } else if (receivedEventType == CAN_PLAY) {
+        player.addListener(this, AdEvent.cuepointsChanged, event -> {
+            log.d("AD CUEPOINTS CHANGERD");
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            adCuePoints = ((AdEvent.AdCuePointsUpdateEvent) event).cuePoints;
+        });
 
-                                            } else if (receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED) {
-                                                adCuePoints = ((AdEvent.AdCuePointsUpdateEvent) event).cuePoints;
-                                            } else if (receivedEventType == AdEvent.Type.ALL_ADS_COMPLETED) {
+        player.addListener(this, AdEvent.completed, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD COMPLETED");
+        });
 
-                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.ALL_ADS_COMPLETED);
-                                                allAdsCompeted = true;
-                                                if (isPlaybackEndedState()) {
-                                                    playbackControlsManager.showControls(View.VISIBLE);
-                                                }
-                                            } else if (receivedEventType == AdEvent.Type.CONTENT_PAUSE_REQUESTED) {
-                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.CONTENT_PAUSE_REQUESTED);
-                                                playbackControlsManager.showControls(View.INVISIBLE);
-                                            } else if (receivedEventType == AdEvent.Type.CONTENT_RESUME_REQUESTED) {
-                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.CONTENT_RESUME_REQUESTED);
-                                                playbackControlsManager.showControls(View.INVISIBLE);
-                                            } else if (receivedEventType == AdEvent.Type.LOADED) {
-                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.LOADED);
-                                            } else if (receivedEventType == AdEvent.Type.STARTED) {
-                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.STARTED);
-                                                allAdsCompeted = false;
-                                                AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-                                                playbackControlsManager.showControls(View.INVISIBLE);
-                                            } else if (receivedEventType == AdEvent.Type.TAPPED) {
-                                                playbackControlsManager.handleContainerClick();
-                                            } else if (receivedEventType == AdEvent.Type.COMPLETED) {
-
-                                            } else if (receivedEventType == AdEvent.Type.PAUSED) {
-                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.PAUSED);
-                                            } else if (receivedEventType == AdEvent.Type.RESUMED) {
-                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.RESUMED);
-                                                playbackControlsManager.showControls(View.INVISIBLE);
-                                            }
-                                            else if (receivedEventType == AdEvent.Type.SKIPPED) {
-                                                playbackControlsManager.setAdPlayerState(AdEvent.Type.SKIPPED);
-                                            }
-                                        }
-                                        if (event instanceof PlayerEvent) {
-                                            updateEventsLogsList("player:\n" + event.eventType().name());
-                                            playbackControlsManager.setContentPlayerState(event.eventType());
-                                            if (receivedEventType == PLAYING) {
-                                                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
-                                                playbackControlsManager.showControls(View.INVISIBLE);
-                                            } else if (receivedEventType == STOPPED) {
-                                                playbackControlsManager.showControls(View.INVISIBLE);
-                                            } else if (receivedEventType == SOURCE_SELECTED) {
-                                                PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
-                                                log.d("Selected Source = " + sourceSelected.source.getUrl());
-                                            } else if (receivedEventType == ENDED) {
-                                                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
-                                                if (!isPostrollAvailableInAdCuePoint()) {
-                                                    //playbackControlsManager.showControls(View.VISIBLE);
-                                                }
-                                            } else if (receivedEventType == TRACKS_AVAILABLE) {
-                                                PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
-                                                //Obtain the actual tracks info from it.
-                                                PKTracks tracks = tracksAvailable.tracksInfo;
-                                                tracksSelectionController = new TracksSelectionController(PlayerActivity.this, player, tracks);
-                                                playbackControlsManager.setTracksSelectionController(tracksSelectionController);
-                                                int defaultAudioTrackIndex = tracks.getDefaultAudioTrackIndex();
-                                                int defaultTextTrackIndex = tracks.getDefaultTextTrackIndex();
-                                                if (tracks.getAudioTracks().size() > 0) {
-                                                    log.d("Default Audio lang = " + tracks.getAudioTracks().get(defaultAudioTrackIndex).getLabel());
-                                                }
-                                                if (tracks.getTextTracks().size() > 0) {
-                                                    log.d("Default Text lang = " + tracks.getTextTracks().get(defaultTextTrackIndex).getLabel());
-                                                }
-                                                if (tracks.getVideoTracks().size() > 0) {
-                                                    log.d("Default video isAdaptive = " + tracks.getVideoTracks().get(tracks.getDefaultAudioTrackIndex()).isAdaptive() + " bitrate = " + tracks.getVideoTracks().get(tracks.getDefaultAudioTrackIndex()).getBitrate());
-                                                }
-                                            }
-                                        } else if (receivedEventType == AdEvent.Type.CUEPOINTS_CHANGED || receivedEventType == AdEvent.Type.PAUSED || receivedEventType == AdEvent.Type.RESUMED ||
-                                                receivedEventType == AdEvent.Type.STARTED || receivedEventType == AdEvent.Type.COMPLETED||
-                                                receivedEventType == AdEvent.Type.ALL_ADS_COMPLETED){
-
-                                        }
-                                    }
-                                }, PlayerEvent.Type.PLAY, PlayerEvent.Type.PAUSE, PlayerEvent.Type.STOPPED, PlayerEvent.Type.CAN_PLAY, PlayerEvent.Type.SOURCE_SELECTED, PlayerEvent.Type.SEEKING, PlayerEvent.Type.SEEKED, PlayerEvent.Type.PLAYING,  PlayerEvent.Type.ENDED, PlayerEvent.Type.TRACKS_AVAILABLE,
-                AdEvent.Type.ERROR, AdEvent.Type.LOADED, AdEvent.Type.SKIPPED, AdEvent.Type.TAPPED, AdEvent.Type.CONTENT_PAUSE_REQUESTED, AdEvent.Type.CONTENT_RESUME_REQUESTED, AdEvent.Type.STARTED, AdEvent.Type.LOADED, AdEvent.Type.PAUSED, AdEvent.Type.RESUMED,
-                AdEvent.Type.COMPLETED, AdEvent.Type.ALL_ADS_COMPLETED,AdEvent.Type.CUEPOINTS_CHANGED);
-
-
-        player.addStateChangeListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-
-                PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
-                log.d("stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
-                updateEventsLogsList("player:\n" + event.eventType().name() + ":" + stateChanged.newState);
-                switch (stateChanged.newState){
-                    case IDLE:
-                        log.d("StateChange Idle");
-                        break;
-                    case LOADING:
-                        log.d("StateChange Loading");
-                        break;
-                    case READY:
-                        log.d("StateChange Ready");
-                        break;
-                    case BUFFERING:
-                        log.d("StateChange Buffering");
-                        break;
-                }
+        player.addListener(this, AdEvent.allAdsCompleted, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD ALL_ADS_COMPLETED");
+            playbackControlsManager.setAdPlayerState(AdEvent.Type.ALL_ADS_COMPLETED);
+            allAdsCompeted = true;
+            if (isPlaybackEndedState()) {
+                playbackControlsManager.showControls(View.VISIBLE);
             }
         });
 
-        player.addEventListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                KalturaStatsEvent.KalturaStatsReport reportEvent = (KalturaStatsEvent.KalturaStatsReport) event;
-                String reportedEventName = reportEvent.reportedEventName;
-                if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    updateEventsLogsList("stats:\n" + reportedEventName);
-                }
-            }
-        }, KalturaStatsEvent.Type.REPORT_SENT);
+        player.addListener(this, AdEvent.contentPauseRequested, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD CONTENT_PAUSE_REQUESTED");
+            playbackControlsManager.setAdPlayerState(AdEvent.Type.CONTENT_PAUSE_REQUESTED);
+            playbackControlsManager.showControls(View.INVISIBLE);
+        });
 
-        player.addEventListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
-                KavaAnalyticsEvent.KavaAnalyticsReport reportEvent= (KavaAnalyticsEvent.KavaAnalyticsReport) event;
-                String reportedEventName = reportEvent.reportedEventName;
-                if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    updateEventsLogsList("kava:\n" + reportedEventName);
-                }
-            }
-        }, KavaAnalyticsEvent.Type.REPORT_SENT);
+        player.addListener(this, AdEvent.contentResumeRequested, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD CONTENT_RESUME_REQUESTED");
+            playbackControlsManager.setAdPlayerState(AdEvent.Type.CONTENT_RESUME_REQUESTED);
+            playbackControlsManager.showControls(View.INVISIBLE);
+        });
 
-        player.addEventListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
+        player.addListener(this, AdEvent.loaded, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD LOADED");
+            playbackControlsManager.setAdPlayerState(AdEvent.Type.LOADED);
+        });
+
+        player.addListener(this, AdEvent.started, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD STARTED");
+            playbackControlsManager.setAdPlayerState(AdEvent.Type.STARTED);
+            allAdsCompeted = false;
+            AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
+            playbackControlsManager.showControls(View.INVISIBLE);
+        });
+
+        player.addListener(this, AdEvent.paused, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD PAUSED");
+            playbackControlsManager.setAdPlayerState(AdEvent.Type.PAUSED);
+        });
+
+        player.addListener(this, AdEvent.resumed, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD RESUMED");
+            playbackControlsManager.setAdPlayerState(AdEvent.Type.RESUMED);
+            playbackControlsManager.showControls(View.INVISIBLE);
+        });
+
+        player.addListener(this, AdEvent.tapped, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD TAPPED");
+            playbackControlsManager.handleContainerClick();
+        });
+
+        player.addListener(this, AdEvent.skipped, event -> {
+            updateEventsLogsList("ad:\n" + event.eventType().name());
+            log.d("AD SKIPPED");
+            playbackControlsManager.setAdPlayerState(AdEvent.Type.SKIPPED);
+        });
+
+        /////// PLAYER EVENTS
+
+//        player.addListener(this, PlayerEvent.play, event -> {
+//            log.d("Player LAY");
+//
+//        });
+
+
+        player.addListener(this, PlayerEvent.playing, event -> {
+            log.d("Player Event PLAYING");
+            updateEventsLogsList("player:\n" + event.eventType().name());
+            playbackControlsManager.setContentPlayerState(event.eventType());
+            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
+            playbackControlsManager.showControls(View.INVISIBLE);
+        });
+
+        player.addListener(this, PlayerEvent.pause, event -> {
+            log.d("Player Event PAUSE");
+            updateEventsLogsList("player:\n" + event.eventType().name());
+        });
+
+        player.addListener(this, PlayerEvent.stopped, event -> {
+            log.d("PLAYER PLAYING");
+            updateEventsLogsList("player:\n" + event.eventType().name());
+            playbackControlsManager.showControls(View.INVISIBLE);
+        });
+
+        player.addListener(this, PlayerEvent.ended, event -> {
+            log.d("PLAYER ENDED");
+            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
+            if (!isPostrollAvailableInAdCuePoint()) {
+                //playbackControlsManager.showControls(View.VISIBLE);
+            }
+        });
+
+        player.addListener(this, PlayerEvent.tracksAvailable, event -> {
+            log.d("PLAYER ");
+            updateEventsLogsList("player:\n" + event.eventType().name());
+            PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
+            //Obtain the actual tracks info from it.
+            PKTracks tracks = tracksAvailable.tracksInfo;
+            tracksSelectionController = new TracksSelectionController(PlayerActivity.this, player, tracks);
+            playbackControlsManager.setTracksSelectionController(tracksSelectionController);
+            int defaultAudioTrackIndex = tracks.getDefaultAudioTrackIndex();
+            int defaultTextTrackIndex = tracks.getDefaultTextTrackIndex();
+            if (tracks.getAudioTracks().size() > 0) {
+                log.d("Default Audio lang = " + tracks.getAudioTracks().get(defaultAudioTrackIndex).getLabel());
+            }
+            if (tracks.getTextTracks().size() > 0) {
+                log.d("Default Text lang = " + tracks.getTextTracks().get(defaultTextTrackIndex).getLabel());
+            }
+            if (tracks.getVideoTracks().size() > 0) {
+                log.d("Default video isAdaptive = " + tracks.getVideoTracks().get(tracks.getDefaultAudioTrackIndex()).isAdaptive() + " bitrate = " + tracks.getVideoTracks().get(tracks.getDefaultAudioTrackIndex()).getBitrate());
+            }
+        });
+
+        player.addListener(this, PlayerEvent.error, event -> {
+            log.d("PLAYER ERROR");
+        });
+
+        player.addListener(this, PlayerEvent.sourceSelected, event -> {
+            log.d("PLAYER SOURCE SELECTED");
+            updateEventsLogsList("player:\n" + event.eventType().name());
+            PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
+            log.d("Selected Source = " + sourceSelected.source.getUrl());
+        });
+
+        player.addListener(this, PlayerEvent.canPlay, event -> {
+            log.d("PLAYER CAN PLAY");
+            updateEventsLogsList("player:\n" + event.eventType().name());
+        });
+
+        player.addListener(this, PlayerEvent.stateChanged, event -> {
+            PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
+            log.d("PLAYER stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
+            updateEventsLogsList("player:\n" + event.eventType().name() + ":" + stateChanged.newState);
+            switch (stateChanged.newState) {
+                case IDLE:
+                    log.d("StateChange Idle");
+                    break;
+                case LOADING:
+                    log.d("StateChange Loading");
+                    break;
+                case READY:
+                    log.d("StateChange Ready");
+                    break;
+                case BUFFERING:
+                    log.d("StateChange Buffering");
+                    break;
+            }
+        });
+
+        player.addListener(this, PlayerEvent.seeking, event -> {
+            log.d("PLAYER SEEKING " + event);
+
+            PlayerActivity.this.updateEventsLogsList("player:\n" + event.eventType().name());
+        });
+
+        player.addListener(this, PlayerEvent.seeked, event -> {
+            log.d("PLAYER SEEKED");
+            updateEventsLogsList("player:\n" + event.eventType().name());
+        });
+
+
+        player.addListener(this, KalturaStatsEvent.reportSent, event -> {
+            KalturaStatsEvent.KalturaStatsReport reportEvent = (KalturaStatsEvent.KalturaStatsReport) event;
+            String reportedEventName = reportEvent.reportedEventName;
+            if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
+                updateEventsLogsList("stats:\n" + reportedEventName);
+            }
+        });
+
+        player.addListener(this, KavaAnalyticsEvent.reportSent, event -> {
+            KavaAnalyticsEvent.KavaAnalyticsReport reportEvent = (KavaAnalyticsEvent.KavaAnalyticsReport) event;
+            String reportedEventName = reportEvent.reportedEventName;
+            if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
+                updateEventsLogsList("kava:\n" + reportedEventName);
+            }
+        });
+
+        player.addListener(this, YouboraEvent.reportSent, event -> {
                 YouboraEvent.YouboraReport reportEvent = (YouboraEvent.YouboraReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
                     updateEventsLogsList("youbora:\n" + reportedEventName);
                 }
 
-            }
-        }, YouboraEvent.Type.REPORT_SENT);
+        });
 
-        player.addEventListener(new PKEvent.Listener() {
-            @Override
-            public void onEvent(PKEvent event) {
+        player.addListener(this, PhoenixAnalyticsEvent.reportSent, event -> {
                 PhoenixAnalyticsEvent.PhoenixAnalyticsReport reportEvent = (PhoenixAnalyticsEvent.PhoenixAnalyticsReport) event;
                 String reportedEventName = reportEvent.reportedEventName;
                 if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
                     updateEventsLogsList("phoenix:\n" + reportedEventName);
                 }
 
-            }
-        }, PhoenixAnalyticsEvent.Type.REPORT_SENT);
+        });
     }
 
     private void updateEventsLogsList(String eventMsg) {
@@ -620,6 +670,7 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         if (player != null) {
+            player.removeListeners(this);
             player.stop();
             player.destroy();
             player = null;
