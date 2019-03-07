@@ -1,7 +1,5 @@
 package com.kaltura.kalturaplayertestapp;
 
-import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,6 +8,7 @@ import android.widget.Button;
 
 import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.KalturaPlayer;
@@ -75,8 +74,8 @@ public class PlaybackControlsManager implements PlaybackControls {
 
     @Override
     public void handleContainerClick() {
-        log.d("CLICK handleContainerClick XXXXXXXXX playerState = " + playerState);
-        if (playerState == null) {
+        log.d("CLICK handleContainerClick XXXXXXXXX playerState = " + playerState + " adPlayerState " + adPlayerState);
+        if (playerState == null && adPlayerState == null) {
             return;
         }
         showControls(View.VISIBLE);
@@ -87,11 +86,12 @@ public class PlaybackControlsManager implements PlaybackControls {
     @Override
     public void showControls(int visability) {
         if (playbackControlsView != null) {
-            if (isAdDisplayed) {
-                if (player.isPlaying()) {
-                    playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
+            if(player != null) {
+                AdController adController = player.getController(AdController.class);
+                if (adController != null && adController.isAdDisplayed()) {
+                    playbackControlsView.setSeekbarDisabled();
                 } else {
-                    playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                    playbackControlsView.setSeekbarEnabled();
                 }
             }
             playbackControlsView.setVisibility(visability);

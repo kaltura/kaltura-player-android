@@ -69,6 +69,9 @@ import java.util.List;
 import java.util.Set;
 
 import static com.kaltura.playkit.PlayerEvent.Type.ENDED;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
+import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 
 public class PlayerActivity extends AppCompatActivity {
@@ -476,8 +479,50 @@ public class PlayerActivity extends AppCompatActivity {
             }
         });
 
+        player.addListener(this, PlayerEvent.textTrackChanged, event -> {
+            log.d("PLAYER textTrackChanged");
+            PlayerEvent.TextTrackChanged textTrackChanged = (PlayerEvent.TextTrackChanged) event;
+            if (tracksSelectionController != null && tracksSelectionController.getTracks() != null) {
+                for (int i = 0; i <= tracksSelectionController.getTracks().getTextTracks().size() - 1; i++) {
+                    log.d(tracksSelectionController.getTracks().getTextTracks().size() + "XXX PLAYER textTrackChanged " + tracksSelectionController.getTracks().getTextTracks().get(i).getUniqueId() + "/" + textTrackChanged.newTrack.getUniqueId());
+                    if (textTrackChanged.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getTextTracks().get(i).getUniqueId())) {
+                        if (tracksSelectionController != null) {
+                            tracksSelectionController.setTrackLastSelectionIndex(TRACK_TYPE_TEXT, i);
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+
+        player.addListener(this, PlayerEvent.audioTrackChanged, event -> {
+            log.d("PLAYER audioTrackChanged");
+            PlayerEvent.AudioTrackChanged audioTrackChanged = (PlayerEvent.AudioTrackChanged) event;
+            if (tracksSelectionController != null && tracksSelectionController.getTracks() != null) {
+                for (int i = 0; i <= tracksSelectionController.getTracks().getAudioTracks().size() - 1; i++) {
+                    if (audioTrackChanged.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getAudioTracks().get(i).getUniqueId())) {
+                        tracksSelectionController.setTrackLastSelectionIndex(TRACK_TYPE_AUDIO, i);
+                        break;
+                    }
+                }
+            }
+        });
+
+        player.addListener(this, PlayerEvent.videoTrackChanged, event -> {
+            log.d("PLAYER videoTrackChanged");
+            PlayerEvent.TextTrackChanged videoTrackChanged = (PlayerEvent.TextTrackChanged) event;
+            if (tracksSelectionController != null && tracksSelectionController.getTracks() != null) {
+                for (int i = 0; i <= tracksSelectionController.getTracks().getVideoTracks().size() - 1; i++) {
+                    if (videoTrackChanged.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getVideoTracks().get(i).getUniqueId())) {
+                        tracksSelectionController.setTrackLastSelectionIndex(TRACK_TYPE_VIDEO, i);
+                        break;
+                    }
+                }
+            }
+        });
+
         player.addListener(this, PlayerEvent.tracksAvailable, event -> {
-            log.d("PLAYER ");
+            log.d("PLAYER tracksAvailable");
             updateEventsLogsList("player:\n" + event.eventType().name());
             PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
             //Obtain the actual tracks info from it.
@@ -562,20 +607,20 @@ public class PlayerActivity extends AppCompatActivity {
         });
 
         player.addListener(this, YouboraEvent.reportSent, event -> {
-                YouboraEvent.YouboraReport reportEvent = (YouboraEvent.YouboraReport) event;
-                String reportedEventName = reportEvent.reportedEventName;
-                if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    updateEventsLogsList("youbora:\n" + reportedEventName);
-                }
+            YouboraEvent.YouboraReport reportEvent = (YouboraEvent.YouboraReport) event;
+            String reportedEventName = reportEvent.reportedEventName;
+            if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
+                updateEventsLogsList("youbora:\n" + reportedEventName);
+            }
 
         });
 
         player.addListener(this, PhoenixAnalyticsEvent.reportSent, event -> {
-                PhoenixAnalyticsEvent.PhoenixAnalyticsReport reportEvent = (PhoenixAnalyticsEvent.PhoenixAnalyticsReport) event;
-                String reportedEventName = reportEvent.reportedEventName;
-                if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                    updateEventsLogsList("phoenix:\n" + reportedEventName);
-                }
+            PhoenixAnalyticsEvent.PhoenixAnalyticsReport reportEvent = (PhoenixAnalyticsEvent.PhoenixAnalyticsReport) event;
+            String reportedEventName = reportEvent.reportedEventName;
+            if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
+                updateEventsLogsList("phoenix:\n" + reportedEventName);
+            }
 
         });
     }
@@ -754,7 +799,9 @@ public class PlayerActivity extends AppCompatActivity {
         super.onResume();
 
         if (player != null) {
-            player.onApplicationResumed();
+            if (appPlayerInitConfig != null) {
+                player.onApplicationResumed();
+            }
             playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
         }
     }

@@ -8,6 +8,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 
+import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.player.AudioTrack;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.player.TextTrack;
@@ -24,22 +25,24 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 public class TracksSelectionController {
+    private static final PKLog log = PKLog.get("TracksSelectionController");
+
 
     private Context context;
     private KalturaPlayer player;
     private PKTracks tracks;
 
-    private int lastVideoTrackSelection = 0;
-    private int lastAudioTrackSelection = 0;
-    private int lastTextTrackSelection  = 0;
+    private int lastVideoTrackSelectionIndex = 0;
+    private int lastAudioTrackSelectionIndex = 0;
+    private int lastTextTrackSelectionIndex  = 0;
 
     public TracksSelectionController(Context context, KalturaPlayer player, PKTracks tracks) {
         this.context = context;
         this.player = player;
         this.tracks = tracks;
-        lastAudioTrackSelection = tracks.getDefaultVideoTrackIndex();
-        lastAudioTrackSelection = tracks.getDefaultAudioTrackIndex();
-        lastTextTrackSelection = tracks.getDefaultTextTrackIndex();
+        lastVideoTrackSelectionIndex = tracks.getDefaultVideoTrackIndex();
+        lastAudioTrackSelectionIndex = tracks.getDefaultAudioTrackIndex();
+        lastTextTrackSelectionIndex = tracks.getDefaultTextTrackIndex();
     }
 
     private RecyclerView buildTracksSelectionView() {
@@ -61,13 +64,13 @@ public class TracksSelectionController {
         int lastTrackSelection;
         switch (trackType) {
             case TRACK_TYPE_VIDEO:
-                lastTrackSelection = lastVideoTrackSelection;
+                lastTrackSelection = lastVideoTrackSelectionIndex;
                 break;
             case TRACK_TYPE_AUDIO:
-                lastTrackSelection = lastAudioTrackSelection;
+                lastTrackSelection = lastAudioTrackSelectionIndex;
                 break;
             case TRACK_TYPE_TEXT:
-                lastTrackSelection = lastTextTrackSelection;
+                lastTrackSelection = lastTextTrackSelectionIndex;
                 break;
             default:
                 return;
@@ -92,20 +95,24 @@ public class TracksSelectionController {
         alertDialog.show();
     }
 
+    public PKTracks getTracks() {
+        return tracks;
+    }
 
     private  void onTrackSelected(int trackType, String uniqueId, int lastTrackSelected) {
         if (uniqueId == null) {
             return;
         }
+
         switch (trackType) {
             case TRACK_TYPE_VIDEO:
-                lastVideoTrackSelection = lastTrackSelected;
+                lastVideoTrackSelectionIndex = lastTrackSelected;
                 break;
             case TRACK_TYPE_AUDIO:
-                lastAudioTrackSelection = lastTrackSelected;
+                lastAudioTrackSelectionIndex = lastTrackSelected;
                 break;
             case TRACK_TYPE_TEXT:
-                lastTextTrackSelection = lastTrackSelected;
+                lastTextTrackSelectionIndex = lastTrackSelected;
                 break;
             default:
                 return;
@@ -144,7 +151,6 @@ public class TracksSelectionController {
                     } else {
                         trackItem = new TrackItem(trackInfo.getUniqueId(), buildBitrateString(trackInfo.getBitrate()));
                     }
-
                     trackItems.add(trackItem);
                 }
                 break;
@@ -200,5 +206,21 @@ public class TracksSelectionController {
     private static String buildLanguageString(String language) {
         return TextUtils.isEmpty(language) || "und".equals(language) ? ""
                 : language;
+    }
+
+    public void setTrackLastSelectionIndex(int trackType , int trackIndex) {
+        switch (trackType) {
+            case TRACK_TYPE_VIDEO:
+                lastVideoTrackSelectionIndex = trackIndex;
+                break;
+            case TRACK_TYPE_AUDIO:
+                lastAudioTrackSelectionIndex = trackIndex;
+                break;
+            case TRACK_TYPE_TEXT:
+                lastTextTrackSelectionIndex = trackIndex;
+                break;
+            default:
+                return;
+        }
     }
 }

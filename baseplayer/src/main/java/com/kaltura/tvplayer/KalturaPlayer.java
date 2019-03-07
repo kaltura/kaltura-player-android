@@ -442,16 +442,33 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         pkPlayer.stop();
     }
 
+    public AdController getController(Class<AdController> adControllerClass) {
+        return pkPlayer.getController(adControllerClass);
+    }
+
     public void play() {
         if (!prepared) {
             prepare();
         }
-
-        pkPlayer.play();
+        if(pkPlayer != null) {
+            AdController adController = pkPlayer.getController(AdController.class);
+            if (adController != null && adController.isAdDisplayed()) {
+                adController.play();
+            } else {
+                pkPlayer.play();
+            }
+        }
     }
 
     public void pause() {
-        pkPlayer.pause();
+        if(pkPlayer != null) {
+            AdController adController = pkPlayer.getController(AdController.class);
+            if (adController != null && adController.isAdDisplayed()) {
+               adController.pause();
+            } else {
+                pkPlayer.pause();
+            }
+        }
     }
 
     public void replay() {

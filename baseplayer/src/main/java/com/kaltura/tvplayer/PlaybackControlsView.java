@@ -9,10 +9,12 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.C;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Formatter;
@@ -86,12 +88,21 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         long duration = Consts.TIME_UNSET;
         long position = Consts.POSITION_UNSET;
         long bufferedPosition = 0;
-        if(player != null){
-            duration = player.getDuration();
-            position = player.getCurrentPosition();
-            bufferedPosition = player.getBufferedPosition();
+        if(player != null) {
+            AdController adController = player.getController(AdController.class);
+            if (adController != null && adController.isAdDisplayed()) {
+                duration = adController.getAdDuration();
+                position = adController.getAdCurrentPosition();
+                //log.d("adController Duration:" + duration);
+                //log.d("adController Position:" + position);
+            } else {
+                duration = player.getDuration();
+                position = player.getCurrentPosition();
+                //log.d("Duration:" + duration);
+                //log.d("Position:" + position);
+                bufferedPosition = player.getBufferedPosition();
+            }
         }
-
         if(duration != Consts.TIME_UNSET){
             tvTime.setText(stringForTime(duration));
         }
@@ -168,17 +179,30 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         if (player == null) {
             return;
         }
-        if (player.isPlaying()) {
-            player.pause();
-            playPauseToggle.setBackgroundResource(R.drawable.play);
-
-        } else {
-            if (player.getCurrentPosition() >= 0 && player.getCurrentPosition() >= player.getDuration()) {
-                player.replay();
+        if(player != null) {
+            AdController adController = player.getController(AdController.class);
+            if (adController != null && adController.isAdDisplayed()) {
+                if (adController.isAdPlaying()) {
+                    adController.pause();
+                    playPauseToggle.setBackgroundResource(R.drawable.play);
+                } else {
+                    adController.play();
+                    playPauseToggle.setBackgroundResource(R.drawable.pause);
+                }
             } else {
-                player.play();
+                if (player.isPlaying()) {
+                    player.pause();
+                    playPauseToggle.setBackgroundResource(R.drawable.play);
+
+                } else {
+                    if (player.getCurrentPosition() >= 0 && player.getCurrentPosition() >= player.getDuration()) {
+                        player.replay();
+                    } else {
+                        player.play();
+                    }
+                    playPauseToggle.setBackgroundResource(R.drawable.pause);
+                }
             }
-            playPauseToggle.setBackgroundResource(R.drawable.pause);
         }
     }
 
@@ -206,5 +230,13 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
     public void resume() {
         updateProgress();
+    }
+
+    public void setSeekbarDisabled() {
+        seekBar.setEnabled(false);
+    }
+
+    public void setSeekbarEnabled() {
+        seekBar.setEnabled(true);
     }
 }
