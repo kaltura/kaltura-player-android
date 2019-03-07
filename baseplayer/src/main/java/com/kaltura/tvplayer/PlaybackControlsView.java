@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -33,7 +34,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private Formatter formatter;
     private StringBuilder formatBuilder;
 
-    private Button playPauseToggle;
+    private ImageButton playPauseToggle;
     private SeekBar seekBar;
     private TextView tvCurTime, tvTime;
 
@@ -167,7 +168,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         updateProgress();
     }
 
-    public Button getPlayPauseToggle() {
+    public ImageButton getPlayPauseToggle() {
         return playPauseToggle;
     }
 
