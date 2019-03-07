@@ -8,9 +8,7 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -18,10 +16,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
-import com.kaltura.kalturaplayertestapp.adapter.TestConfigurationAdapter;
+import com.kaltura.kalturaplayertestapp.adapter.TestCaseConfigurationAdapter;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
 
-public class JsonDetailActivity extends BaseActivity implements TestConfigurationAdapter.OnJsonSelectedListener {
+public class JsonDetailActivity extends BaseActivity implements TestCaseConfigurationAdapter.OnJsonSelectedListener {
 
     private static final String TAG = "JsonDetailActivity";
 
@@ -32,7 +30,7 @@ public class JsonDetailActivity extends BaseActivity implements TestConfiguratio
     private CollectionReference currenConfigurationRef;
     private Query mQuery;
     private TextView mEmptyView;
-    private TestConfigurationAdapter mAdapter;
+    private TestCaseConfigurationAdapter mAdapter;
 
 
     @Override
@@ -88,7 +86,7 @@ public class JsonDetailActivity extends BaseActivity implements TestConfiguratio
         FirebaseFirestore.setLoggingEnabled(true);
 
         // RecyclerView
-        mAdapter = new TestConfigurationAdapter(mQuery, this) {
+        mAdapter = new TestCaseConfigurationAdapter(mQuery, this) {
             @Override
             protected void onDataChanged() {
                 // Show/hide content if the query returns empty.

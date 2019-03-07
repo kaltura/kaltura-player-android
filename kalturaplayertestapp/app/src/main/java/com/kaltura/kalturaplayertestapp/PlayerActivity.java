@@ -274,7 +274,6 @@ public class PlayerActivity extends AppCompatActivity {
 
         if ("ovp".equals(playerType.toLowerCase())) {
             player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
-
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat(), playListMediaIndex);
             player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
                 @Override
@@ -602,22 +601,22 @@ public class PlayerActivity extends AppCompatActivity {
         if (pluginDescriptors != null) {
             for (PluginDescriptor pluginDescriptor : pluginDescriptors) {
                 String pluginName = pluginDescriptor.getPluginName();
-                if (YouboraPlugin.factory.getName().equals(pluginName)) {
+                if (YouboraPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     YouboraConfig youboraPlugin = gson.fromJson(pluginDescriptor.getParams().get("options"), YouboraConfig.class);
                     pkPluginConfigs.setPluginConfig(YouboraPlugin.factory.getName(), youboraPlugin.toJson());
-                } else if (KavaAnalyticsPlugin.factory.getName().equals(pluginName)) {
+                } else if (KavaAnalyticsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     KavaAnalyticsConfig kavaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KavaAnalyticsConfig.class);
                     pkPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), kavaPluginConfig.toJson());
-                } else if (IMAPlugin.factory.getName().equals(pluginName)) {
+                } else if (IMAPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     UiConfFormatIMAConfig imaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), UiConfFormatIMAConfig.class);
                     pkPluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig.toJson());
-                } else if (PhoenixAnalyticsPlugin.factory.getName().equals(pluginName)) {
+                } else if (PhoenixAnalyticsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     PhoenixAnalyticsConfig phoenixAnalyticsConfig = gson.fromJson(pluginDescriptor.getParams(), PhoenixAnalyticsConfig.class);
                     pkPluginConfigs.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalyticsConfig.toJson());
-                } else if (KalturaStatsPlugin.factory.getName().equals(pluginName)) {
+                } else if (KalturaStatsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     KalturaStatsConfig kalturaStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaStatsConfig.class);
                     pkPluginConfigs.setPluginConfig(KalturaStatsPlugin.factory.getName(), kalturaStatsPluginConfig.toJSONObject());
-                } else if (KalturaLiveStatsPlugin.factory.getName().equals(pluginName)) {
+                } else if (KalturaLiveStatsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     KalturaLiveStatsConfig kalturaLiveStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaLiveStatsConfig.class);
                     pkPluginConfigs.setPluginConfig(KalturaLiveStatsPlugin.factory.getName(), kalturaLiveStatsPluginConfig.toJson());
                 }
@@ -758,7 +757,6 @@ public class PlayerActivity extends AppCompatActivity {
             player.onApplicationResumed();
             playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
         }
-
     }
 
     @Override

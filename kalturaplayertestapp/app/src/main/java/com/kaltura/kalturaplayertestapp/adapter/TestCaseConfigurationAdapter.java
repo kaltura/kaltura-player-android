@@ -25,8 +25,8 @@ import org.json.JSONObject;
 /**
  * RecyclerView adapter for a list of Restaurants.
  */
-public class TestConfigurationAdapter extends FirestoreAdapter<TestConfigurationAdapter.ViewHolder> {
-    private static final PKLog log = PKLog.get("TestConfigurationAdapter");
+public class TestCaseConfigurationAdapter extends FirestoreAdapter<TestCaseConfigurationAdapter.ViewHolder> {
+    private static final PKLog log = PKLog.get("TestCaseConfigurationAdapter");
     private Context context;
 
     public void removeItem(int adapterPosition) {
@@ -46,7 +46,7 @@ public class TestConfigurationAdapter extends FirestoreAdapter<TestConfiguration
 
     private OnJsonSelectedListener mListener;
 
-    public TestConfigurationAdapter(Query query, OnJsonSelectedListener listener) {
+    public TestCaseConfigurationAdapter(Query query, OnJsonSelectedListener listener) {
         super(query);
         mListener = listener;
     }
@@ -89,7 +89,7 @@ public class TestConfigurationAdapter extends FirestoreAdapter<TestConfiguration
             final Configuration configuration = snapshot.toObject(Configuration.class);
             configuration.setId(snapshot.getId());
             //Resources resources = itemView.getResources();
-            Log.e("XXX","" + configuration.getTitle());
+            Log.e("GILAD XXX","" + configuration.getTitle());
             jsonTitle.setText(configuration.getTitle());
             if (configuration.getType() == Configuration.FOLDER) {
                 folderIcon.setVisibility(View.VISIBLE);

@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,7 +17,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
@@ -38,8 +36,7 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.WriteBatch;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.kaltura.kalturaplayertestapp.adapter.TestConfigurationAdapter;
+import com.kaltura.kalturaplayertestapp.adapter.TestCaseConfigurationAdapter;
 import com.kaltura.kalturaplayertestapp.converters.TestDescriptor;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
 import com.kaltura.kalturaplayertestapp.qrcode.BarcodeCaptureActivity;
@@ -54,7 +51,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 
-public class MainActivity extends BaseActivity implements TestConfigurationAdapter.OnJsonSelectedListener {
+public class MainActivity extends BaseActivity implements TestCaseConfigurationAdapter.OnJsonSelectedListener {
 
     private static final String TAG = "MainActivity";
     private static final int RC_BARCODE_CAPTURE = 9001;
@@ -73,7 +70,7 @@ public class MainActivity extends BaseActivity implements TestConfigurationAdapt
     private Query mQuery;
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
-    private TestConfigurationAdapter mAdapter;
+    private TestCaseConfigurationAdapter mAdapter;
     private String newPath;
 
     @Override
@@ -121,7 +118,7 @@ public class MainActivity extends BaseActivity implements TestConfigurationAdapt
                 .limit(LIMIT);
 
         // RecyclerView
-        mAdapter = new TestConfigurationAdapter(mQuery, this) {
+        mAdapter = new TestCaseConfigurationAdapter(mQuery, this) {
             @Override
             protected void onDataChanged() {
                 // Show/hide content if the query returns empty.
