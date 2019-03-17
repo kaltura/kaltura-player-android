@@ -314,20 +314,19 @@ public class PlayerActivity extends AppCompatActivity {
                     }
                 }
             });
-        }
-
-        if (player != null) {
-            setPlayer(player);
-            playbackControlsManager = new PlaybackControlsManager(this, player, playbackControlsView);
-            if (appPlayerInitConfig.getMediaList().size() > 1) {
-                playbackControlsManager.addChangeMediaButtonsListener(appPlayerInitConfig.getMediaList().size());
-            }
-            playbackControlsManager.updatePrevNextBtnFunctionality(currentPlayedMediaIndex, appPlayerInitConfig.getMediaList().size());
         } else {
             log.e("Failed to initialize player...");
+            return;
         }
+
+        setPlayer(player);
+        playbackControlsManager = new PlaybackControlsManager(this, player, playbackControlsView);
+        if (appPlayerInitConfig.getMediaList().size() > 1) {
+            playbackControlsManager.addChangeMediaButtonsListener(appPlayerInitConfig.getMediaList().size());
+        }
+        playbackControlsManager.updatePrevNextBtnFunctionality(currentPlayedMediaIndex, appPlayerInitConfig.getMediaList().size());
         setPlayerListeners();
-    }
+}
 
     @NonNull
     private OTTMediaOptions buildOttMediaOptions(int startPosition, String preferredFormat, int playListMediaIndex) {

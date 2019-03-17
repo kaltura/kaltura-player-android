@@ -74,7 +74,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     private View view;
     private PKMediaEntry mediaEntry;
     private boolean prepared;
-    private Resolver tokenResolver = new Resolver(mediaEntry);
+    private Resolver tokenResolver = new Resolver();
     private PlayerInitOptions initOptions;
 
     protected KalturaPlayer(Context context, PlayerInitOptions initOptions) {
@@ -125,13 +125,20 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         String[] sources;
         String[] destinations;
 
-        Resolver(PKMediaEntry mediaEntry) {
-            refresh(mediaEntry);
+        Resolver() {
+            refresh(null);
         }
 
         void refresh(PKMediaEntry mediaEntry) {
-            // TODO: more tokens.
+
             if (mediaEntry != null) {
+                if (mediaEntry.getMetadata() != null) {
+                    for (Map.Entry<String, String> metadataEntry : mediaEntry.getMetadata().entrySet()) {
+                        //map.put("\\{\\{" + metadataEntry.getKey() + "\\}\\}", metadataEntry.getValue());
+                        map.put("{{" + metadataEntry.getKey() + "}}", metadataEntry.getValue());
+
+                    }
+                }
                 map.put("{{entryId}}", mediaEntry.getId());
             }
 
@@ -155,6 +162,13 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             }
             return TextUtils.replace(string, sources, destinations).toString();
         }
+
+        @Override
+        public JsonObject resolve(JsonObject pluginJsonConfig) {
+            String configStr = pluginJsonConfig.getAsJsonObject().toString();
+            JsonParser parser = new JsonParser();
+            return parser.parse(resolve(configStr)).getAsJsonObject();
+        }
     }
 
     private JsonObject kavaDefaults(int partnerId, int uiConfId, String referrer) {
@@ -176,7 +190,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     private void loadPlayer() {
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
-
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
         if (initOptions.audioLanguageMode != null && initOptions.audioLanguage != null) {
             pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(initOptions.audioLanguageMode).setTrackLanguage(initOptions.audioLanguage));
@@ -218,6 +231,9 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             pluginsUIConf.add(name, kavaJsonObject);
         }
 
+
+        // TODO Remove
+
         // Special case: Kaltura Stats plugin
         // KalturaStats
         if (initOptions.uiConfId != null && pluginsUIConf != null) {
@@ -239,17 +255,15 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
                 JsonObject appPluginConfig = (JsonObject) entry.getValue();
                 if (pluginsUIConf != null && pluginsUIConf.has(pluginName)) {
                     JsonObject uiconfPluginJsonObject = pluginsUIConf.getAsJsonObject(pluginName);
-                    if ("youbora".equals(pluginName)) {
-                        if (uiconfPluginJsonObject.has(OPTIONS)) {
-                            uiconfPluginJsonObject = uiconfPluginJsonObject.get(OPTIONS).getAsJsonObject();
-                        }
+                    if (uiconfPluginJsonObject.has(OPTIONS)) {
+                        uiconfPluginJsonObject = uiconfPluginJsonObject.get(OPTIONS).getAsJsonObject();
                     }
                     JsonObject mergedConfig = mergeJsonConfig(uiconfPluginJsonObject, appPluginConfig);
                     if (mergedConfig != null) {
-                        combinedPluginConfigs.setPluginConfig(pluginName, mergedConfig);
+                        combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(mergedConfig));
                     }
                 } else if (appPluginConfig != null){
-                    combinedPluginConfigs.setPluginConfig(pluginName, appPluginConfig);
+                    combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(appPluginConfig));
                 }
             }
         }
@@ -262,7 +276,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
                 }
                 JsonObject config = pluginsUIConf.getAsJsonObject(pluginName);
                 if (config != null) {
-                    combinedPluginConfigs.setPluginConfig(pluginName, config);
+                    combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(config));
                 }
             }
         }
@@ -361,16 +375,17 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     public void setMedia(PKMediaEntry mediaEntry) {
+        tokenResolver.refresh(mediaEntry);
         if (this.mediaEntry == null) {
             log.d( "setMedia new Player configuration");
         } else {
             log.d( "setMedia Change Media configuration");
-            PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
-            updateKalturaPluginConfigs(combinedPluginConfigs);
         }
 
+        PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
+        updateKalturaPluginConfigs(combinedPluginConfigs);
+
         this.mediaEntry = mediaEntry;
-        tokenResolver.refresh(mediaEntry);
         prepared = false;
 
         if (preload) {

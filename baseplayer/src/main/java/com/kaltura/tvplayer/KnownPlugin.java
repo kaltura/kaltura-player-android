@@ -24,7 +24,7 @@ enum KnownPlugin {
 
     // IMA
     ima("com.kaltura.playkit.plugins.ima.IMAPlugin"),
-
+    imadai("com.kaltura.playkit.plugins.ima.IMADAIPlugin"),
     // Youbora
     youbora("com.kaltura.playkit.plugins.youbora.YouboraPlugin"),
     ;
