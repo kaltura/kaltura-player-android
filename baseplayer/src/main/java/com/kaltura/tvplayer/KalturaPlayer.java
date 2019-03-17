@@ -126,7 +126,8 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         String[] destinations;
 
         Resolver() {
-            refresh(null);
+            sources = new String[map.size()];
+            destinations = new String[map.size()];
         }
 
         void refresh(PKMediaEntry mediaEntry) {
@@ -134,12 +135,61 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             if (mediaEntry != null) {
                 if (mediaEntry.getMetadata() != null) {
                     for (Map.Entry<String, String> metadataEntry : mediaEntry.getMetadata().entrySet()) {
-                        //map.put("\\{\\{" + metadataEntry.getKey() + "\\}\\}", metadataEntry.getValue());
                         map.put("{{" + metadataEntry.getKey() + "}}", metadataEntry.getValue());
-
                     }
                 }
+
                 map.put("{{entryId}}", mediaEntry.getId());
+                map.put("{{entryName}}", mediaEntry.getName());
+                map.put("{{entryType}}", mediaEntry.getMediaType().name());
+            }
+
+            sources = new String[map.size()];
+            destinations = new String[map.size()];
+
+            final Iterator<Map.Entry<String, String>> it = map.entrySet().iterator();
+            int i = 0;
+            while (it.hasNext()) {
+                final Map.Entry<String, String> entry = it.next();
+                sources[i] = entry.getKey();
+                destinations[i] = entry.getValue();
+                i++;
+            }
+        }
+
+        void refresh(PlayerInitOptions initOptions) {
+
+            if (initOptions != null) {
+                if (initOptions.uiConfId != null) {
+                    map.put("{{uiConfId}}", String.valueOf(initOptions.uiConfId));
+                }
+                if (initOptions.partnerId < 0) {
+                    map.put("{{partnerId}}", String.valueOf(initOptions.partnerId));
+                }
+                if (initOptions.ks != null) {
+                    map.put("{{ks}}", initOptions.ks);
+                }
+                if (initOptions.referrer != null) {
+                    map.put("{{referrer}}", initOptions.referrer);
+                }
+            }
+
+            sources = new String[map.size()];
+            destinations = new String[map.size()];
+
+            final Iterator<Map.Entry<String, String>> it = map.entrySet().iterator();
+            int i = 0;
+            while (it.hasNext()) {
+                final Map.Entry<String, String> entry = it.next();
+                sources[i] = entry.getKey();
+                destinations[i] = entry.getValue();
+                i++;
+            }
+        }
+
+        void refresh(String key,  String value) {
+            if (!TextUtils.isEmpty(key)) {
+                map.put("{{" + key + "}}", value);
             }
 
             sources = new String[map.size()];
@@ -376,6 +426,8 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     public void setMedia(PKMediaEntry mediaEntry) {
         tokenResolver.refresh(mediaEntry);
+        tokenResolver.refresh(initOptions);
+
         if (this.mediaEntry == null) {
             log.d( "setMedia new Player configuration");
         } else {
