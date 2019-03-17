@@ -160,18 +160,10 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         void refresh(PlayerInitOptions initOptions) {
 
             if (initOptions != null) {
-                if (initOptions.uiConfId != null) {
-                    map.put("{{uiConfId}}", String.valueOf(initOptions.uiConfId));
-                }
-                if (initOptions.partnerId < 0) {
-                    map.put("{{partnerId}}", String.valueOf(initOptions.partnerId));
-                }
-                if (initOptions.ks != null) {
-                    map.put("{{ks}}", initOptions.ks);
-                }
-                if (initOptions.referrer != null) {
-                    map.put("{{referrer}}", initOptions.referrer);
-                }
+                map.put("{{uiConfId}}", String.valueOf((initOptions.uiConfId != null) ? initOptions.uiConfId : ""));
+                map.put("{{partnerId}}", (initOptions.partnerId < 0) ? "" :String.valueOf(initOptions.partnerId));
+                map.put("{{ks}}", (initOptions.ks != null) ? initOptions.ks : "");
+                map.put("{{referrer}}", (initOptions.referrer != null) ? initOptions.referrer : "");
             }
 
             sources = new String[map.size()];
@@ -531,7 +523,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         if(pkPlayer != null) {
             AdController adController = pkPlayer.getController(AdController.class);
             if (adController != null && adController.isAdDisplayed()) {
-               adController.pause();
+                adController.pause();
             } else {
                 pkPlayer.pause();
             }
