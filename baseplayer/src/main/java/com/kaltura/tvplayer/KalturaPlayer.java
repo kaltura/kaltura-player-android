@@ -71,6 +71,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     private boolean preload;
     private double startPosition;
     private PKMediaFormat preferredMeidaFormat;
+    private boolean allowCrossProtocolRedirect;
     private View view;
     private PKMediaEntry mediaEntry;
     private boolean prepared;
@@ -86,7 +87,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
-
+        this.allowCrossProtocolRedirect = initOptions.allowCrossProtocolEnabled;
         this.referrer  = buildReferrer(context, initOptions.referrer);
         this.partnerId = initOptions.partnerId;
         this.uiConfId  = initOptions.uiConfId;
@@ -117,7 +118,13 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     public void setPreferrdMediaFormat(PKMediaFormat preferedMediaFormat) {
-        this.preferredMeidaFormat = preferedMediaFormat;
+        if (preferedMediaFormat != null) {
+            this.preferredMeidaFormat = preferedMediaFormat;
+        }
+    }
+
+    public void setAllowCrossProtocolRedirect(boolean allowCrossProtocolRedirect) {
+        this.allowCrossProtocolRedirect = allowCrossProtocolRedirect;
     }
 
     private static class Resolver implements TokenResolver {
@@ -265,7 +272,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         if (initOptions.uiConfId != null && pluginsUIConf != null) {
             String name = KavaAnalyticsPlugin.factory.getName();
             JsonObject kavaJsonObject = null;
-            if (initOptions.pluginConfigs.hasConfig(name)) {
+            if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(name)) {
                 kavaJsonObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
             } else {
                 kavaJsonObject = kavaDefaults(partnerId, initOptions.uiConfId, referrer);
@@ -281,7 +288,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         if (initOptions.uiConfId != null && pluginsUIConf != null) {
             String name = KalturaStatsPlugin.factory.getName();
             JsonObject kalturaStatPluginObject = null;
-            if (initOptions.pluginConfigs.hasConfig(name)) {
+            if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(name)) {
                 kalturaStatPluginObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
             } else {
                 kalturaStatPluginObject = kalturaStatsDefaults(partnerId, initOptions.uiConfId);
@@ -440,6 +447,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     public void setMedia(PKMediaEntry entry, MediaOptions mediaOptions) {
         setStartPosition(mediaOptions.getStartPosition());
         setPreferrdMediaFormat(mediaOptions.getPreferredMediaFormat());
+        setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
         setKS(mediaOptions.getKs());
         setMedia(entry);
     }
@@ -464,6 +472,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
                 .setStartPosition((long) (startPosition));
 
         pkPlayer.getSettings().setPreferredMediaFormat(preferredMeidaFormat);
+        pkPlayer.getSettings().setAllowCrossProtocolRedirect(allowCrossProtocolRedirect);
         pkPlayer.prepare(config);
         prepared = true;
 

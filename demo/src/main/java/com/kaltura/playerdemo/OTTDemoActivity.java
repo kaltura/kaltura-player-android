@@ -12,6 +12,7 @@ import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
@@ -21,12 +22,13 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import static com.kaltura.playkit.providers.ott.PhoenixMediaProvider.HttpProtocol.Https;
 
 public class OTTDemoActivity extends BaseDemoActivity {
 
     private static final PKLog log = PKLog.get("OTTDemoActivity");
 
-    private DemoItem currentItem;
+    private TVItem currentItem;
 
     @Override
     protected DemoItem[] items() {
@@ -45,7 +47,11 @@ public class OTTDemoActivity extends BaseDemoActivity {
     @NonNull
     @Override
     protected DemoItem parseItem(JsonObject object) {
-        return new TVItem(object.get("name").getAsString(), object.get("assetId").getAsString(), new String[]{"804398"});
+        if (object.has("protocol")) {
+            return new TVItem(object.get("name").getAsString(), object.get("assetId").getAsString(), new String[]{"804398"}, object.get("protocol").getAsString());
+        } else {
+            return new TVItem(object.get("name").getAsString(), object.get("assetId").getAsString(), new String[]{"804398"});
+        }
     }
 
     @Override
@@ -67,7 +73,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
 
     @Override
     protected void loadItem(DemoItem item) {
-        this.currentItem = item;
+        this.currentItem = (TVItem) item;
         startActivity(new Intent(this, PlayerActivity.class));
     }
 
@@ -76,7 +82,8 @@ public class OTTDemoActivity extends BaseDemoActivity {
 
         KalturaOTTPlayer player = KalturaOTTPlayer.create(playerActivity, initOptions);
 
-        player.loadMedia(new OTTMediaOptions().setAssetId(currentItem.id), new KalturaPlayer.OnEntryLoadListener() {
+        OTTMediaOptions ottMediaOptions = new OTTMediaOptions().setAssetId(currentItem.id).setProtocol(currentItem.protocol);
+        player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
             @Override
             public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
                 log.d("onEntryLoadComplete; " + entry + "; " + error);
@@ -108,11 +115,18 @@ public class OTTDemoActivity extends BaseDemoActivity {
     static class TVItem extends DemoItem {
     
         final String[] fileIds;
-    
+        final String protocol;
+
         TVItem(String name, String id, String[] fileIds) {
             super(name, id);
-    
             this.fileIds = fileIds;
+            this.protocol = Https;
+        }
+
+        TVItem(String name, String id, String[] fileIds, String protocol) {
+            super(name, id);
+            this.fileIds = fileIds;
+            this.protocol = protocol;
         }
     }
 }

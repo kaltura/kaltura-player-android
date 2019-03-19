@@ -120,12 +120,16 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
         if (mediaOptions.getKs() != null) {
             setKS(mediaOptions.getKs());
         }
+
         setPreferrdMediaFormat(mediaOptions.getPreferredMediaFormat());
         setStartPosition(mediaOptions.getStartPosition());
 
         final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
                 .setAssetId(mediaOptions.assetId).setReferrer(referrer);
 
+        if (mediaOptions.protocol != null) {
+            provider.setProtocol(mediaOptions.protocol);
+        }
 
         if (mediaOptions.fileIds != null) {
             provider.setFileIds(mediaOptions.fileIds);
@@ -141,6 +145,10 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
 
         if (mediaOptions.formats != null) {
             provider.setFormats(mediaOptions.formats);
+        }
+
+        if (mediaOptions.assetReferenceType != null) {
+            provider.setAssetReferenceType(mediaOptions.assetReferenceType);
         }
 
         provider.load(new OnMediaLoadCompletion() {

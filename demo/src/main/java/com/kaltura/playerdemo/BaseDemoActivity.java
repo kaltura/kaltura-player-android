@@ -89,16 +89,22 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         if (partnerId == null) {
             throw new IllegalArgumentException("partnerId must not be null");
         }
-
+        final JsonObject uiConfJson = safeObject(json, "uiConf");
+        if (uiConfJson != null) {
+            uiConfPartnerId = safeInteger(uiConfJson, "partnerId");
+            uiConfId = safeInteger(uiConfJson, "uiConfId");
+        }
         if (json.has("playerConfig")) {
+            JsonObject playerConfigJasonObject = safeObject(json, "playerConfig");
             final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId, safeObject(json, "playerConfig"));
-            if (initOptions != null) {
-                options.setServerUrl(safeString(json, "serverUrl"))
-                        .setAutoPlay(safeBoolean(json, "autoPlay"))
-                        .setPreload(safeBoolean(json, "preload"))
-                        .setKs(safeString(json, "ks"))
+            if (initOptions == null) {
+                options.setServerUrl(safeString(playerConfigJasonObject, "serverUrl"))
+                        .setAutoPlay(safeBoolean(playerConfigJasonObject, "autoPlay"))
+                        .setPreload(safeBoolean(playerConfigJasonObject, "preload"))
+                        .setKs(safeString(playerConfigJasonObject, "ks"))
                         .setPluginConfigs(parsePluginConfigs(json.get("plugins")))
-                        .setReferrer(safeString(json, "referrer"));
+                        .setAllowCrossProtocolEnabled(safeBoolean(playerConfigJasonObject, "allowCrossProtocolEnabled"))
+                        .setReferrer(safeString(playerConfigJasonObject, "referrer"));
 
             }
             initOptions = options;
@@ -185,11 +191,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
 
         items = itemList.toArray(new DemoItem[itemList.size()]);
 
-        final JsonObject uiConfJson = safeObject(json, "uiConf");
-        if (uiConfJson != null) {
-            uiConfPartnerId = safeInteger(uiConfJson, "partnerId");
-            uiConfId = safeInteger(uiConfJson, "uiConfId");
-        }
+
     }
 
     @NonNull

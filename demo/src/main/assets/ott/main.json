@@ -1,18 +1,33 @@
 {
-  "mode": "ott",
-  "initOptions": {
-    "partnerId": 198,
-    "autoPlay": true,
-    "ks": null,
-    "serverUrl": "http://api-preprod.ott.kaltura.com/v4_5/api_v3/"
-  },
-  "uiConf": {
-    "id": 41188731,
-    "partnerId": 2215841
-  },
-  "items": [
-    {"name": "Something?", "assetId": "259153"},
-    {"name": "The Wind Rises", "assetId": "258865"},
-    {"name": "Ice Age", "assetId": "258671"}
-  ]
+    "mode": "ott",
+    "initOptions": {
+      "partnerId": 198,
+      "playerConfig" : {
+        "autoPlay": true,
+        "ks": null,
+        "allowCrossProtocolEnabled": true,
+        "serverUrl": "https://api-preprod.ott.kaltura.com/v5_1_0/api_v3/"
+      },
+      "uiConf": {
+        "uiConfId": 41188731,
+        "partnerId": 2215841
+      }
+    },
+    "items": [
+      {
+        "name": "Nature",
+        "assetId": "259153",
+        "protocol": "http"
+      },
+      {
+        "name": "Sing",
+        "assetId": "480989",
+        "protocol": "http"
+      },
+      {
+        "name": "Ice Age",
+        "assetId": "258671",
+        "protocol": "http"
+      }
+    ]
 }

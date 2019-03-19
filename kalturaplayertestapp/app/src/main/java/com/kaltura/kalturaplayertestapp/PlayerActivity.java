@@ -149,6 +149,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     public void changeMedia() {
         if (player != null) {
+            tracksSelectionController = null;
             player.stop();
         }
         updatePluginsConfig();
@@ -798,7 +799,7 @@ public class PlayerActivity extends AppCompatActivity {
         super.onResume();
 
         if (player != null) {
-            if (appPlayerInitConfig != null) {
+            if (tracksSelectionController != null) {
                 player.onApplicationResumed();
             }
             playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
