@@ -171,8 +171,10 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setAllowCrossProtocolEnabled(boolean allowCrossProtocolEnabled) {
-        this.allowCrossProtocolEnabled = allowCrossProtocolEnabled;
+    public PlayerInitOptions setAllowCrossProtocolEnabled(Boolean allowCrossProtocolEnabled) {
+        if (allowCrossProtocolEnabled != null) {
+            this.allowCrossProtocolEnabled = allowCrossProtocolEnabled;
+        }
         return this;
     }
 
