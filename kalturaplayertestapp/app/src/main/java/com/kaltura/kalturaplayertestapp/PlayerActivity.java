@@ -325,11 +325,17 @@ public class PlayerActivity extends AppCompatActivity {
                 .setAssetType(ottMedia.getAssetType())
                 .setContextType(ottMedia.getPlaybackContextType())
                 .setAssetReferenceType(ottMedia.getAssetReferenceType())
-                .setFileIds(new String[]{String.valueOf(ottMedia.getFileId())})
-                .setFormats(new String[]{ottMedia.getFormat()})
                 .setKS(ottMedia.getKs())
                 .setStartPosition(startPosition)
                 .setPreferredMediaFormat(preferredFormat);
+
+        if (!TextUtils.isEmpty(ottMedia.getFormat())) {
+            ottMediaOptions.setFormats(new String[]{ottMedia.getFormat()});
+        }
+        if (ottMedia.getFileId() != null) {
+            ottMediaOptions.setFileIds(new String[]{String.valueOf(ottMedia.getFileId())});
+        }
+
         return ottMediaOptions;
     }
 
