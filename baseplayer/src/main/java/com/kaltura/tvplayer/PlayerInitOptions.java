@@ -25,6 +25,12 @@ public class PlayerInitOptions {
     public static final String PLUGINS = "plugins";
     public static final String AUTO = "auto";
     public static final String OPTIONS = "options";
+    public static final String UICONF_ID ="uiConfId";
+    public static final String PARTNER_ID = "partnerId";
+    public static final String REFERRER = "referrer";
+    public static final String KS = "ks";
+    public static final String SERVER_URL = "serverUrl";
+    public static final String ALLOW_CROSS_PROTOCOL_ENABLED = "allowCrossProtocolEnabled";
     public static final String STREAM_PRIORITY = "streamPriority";
 
     public final int partnerId;

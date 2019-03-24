@@ -43,7 +43,9 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, KalturaPlayer.OnEntryLoadListener {
 
     private static final PKLog log = PKLog.get("BaseDemoActivity");
-    
+    public static final String PLAYER_CONFIG = "playerConfig";
+    public static final String UICONF ="uiConf";
+
     protected final Context context = this;
     protected JsonObject playerConfig;
     protected PlayerInitOptions initOptions;
@@ -85,26 +87,26 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     }
 
     protected void parseInitOptions(JsonObject json) {
-        final Integer partnerId = safeInteger(json, "partnerId");
+        final Integer partnerId = safeInteger(json, PlayerInitOptions.PARTNER_ID);
         if (partnerId == null) {
             throw new IllegalArgumentException("partnerId must not be null");
         }
-        final JsonObject uiConfJson = safeObject(json, "uiConf");
+        final JsonObject uiConfJson = safeObject(json, UICONF);
         if (uiConfJson != null) {
-            uiConfPartnerId = safeInteger(uiConfJson, "partnerId");
-            uiConfId = safeInteger(uiConfJson, "uiConfId");
+            uiConfPartnerId = safeInteger(uiConfJson, PlayerInitOptions.PARTNER_ID);
+            uiConfId = safeInteger(uiConfJson, PlayerInitOptions.UICONF_ID);
         }
-        if (json.has("playerConfig")) {
-            JsonObject playerConfigJasonObject = safeObject(json, "playerConfig");
-            final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId, safeObject(json, "playerConfig"));
+        if (json.has(PLAYER_CONFIG)) {
+            JsonObject playerConfigJasonObject = safeObject(json, PLAYER_CONFIG);
+            final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId, safeObject(json, PLAYER_CONFIG));
             if (initOptions == null) {
-                options.setServerUrl(safeString(playerConfigJasonObject, "serverUrl"))
-                        .setAutoPlay(safeBoolean(playerConfigJasonObject, "autoPlay"))
-                        .setPreload(safeBoolean(playerConfigJasonObject, "preload"))
-                        .setKs(safeString(playerConfigJasonObject, "ks"))
-                        .setPluginConfigs(parsePluginConfigs(json.get("plugins")))
-                        .setAllowCrossProtocolEnabled(safeBoolean(playerConfigJasonObject, "allowCrossProtocolEnabled"))
-                        .setReferrer(safeString(playerConfigJasonObject, "referrer"));
+                options.setServerUrl(safeString(playerConfigJasonObject, PlayerInitOptions.SERVER_URL))
+                        .setAutoPlay(safeBoolean(playerConfigJasonObject, PlayerInitOptions.AUTOPLAY))
+                        .setPreload(safeBoolean(playerConfigJasonObject, PlayerInitOptions.PRELOAD))
+                        .setKs(safeString(playerConfigJasonObject, PlayerInitOptions.KS))
+                        .setPluginConfigs(parsePluginConfigs(json.get(PlayerInitOptions.PLUGINS)))
+                        .setAllowCrossProtocolEnabled(safeBoolean(playerConfigJasonObject, PlayerInitOptions.ALLOW_CROSS_PROTOCOL_ENABLED))
+                        .setReferrer(safeString(playerConfigJasonObject, PlayerInitOptions.REFERRER));
 
             }
             initOptions = options;
