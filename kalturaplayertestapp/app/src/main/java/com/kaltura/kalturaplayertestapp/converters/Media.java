@@ -14,6 +14,7 @@ public class Media {
     private Integer fileId;   // ott
     private String assetType; // ott
     private String playbackContextType; // ott
+    private String assetReferenceType; // ott
 
     public Media() {}
 
@@ -97,6 +98,21 @@ public class Media {
 
     public void setPlaybackContextType(String playbackContextType) {
         this.playbackContextType = playbackContextType;
+    }
+
+    public APIDefines.AssetReferenceType getAssetReferenceType() {
+        if (APIDefines.AssetReferenceType.Media.value.toLowerCase().equals(assetReferenceType.toLowerCase())) {
+          return APIDefines.AssetReferenceType.Media;
+        } else if (APIDefines.AssetReferenceType.ExternalEpg.value.toLowerCase().equals(assetReferenceType.toLowerCase())) {
+            return APIDefines.AssetReferenceType.ExternalEpg;
+        } else if (APIDefines.AssetReferenceType.InternalEpg.value.toLowerCase().equals(assetReferenceType.toLowerCase())) {
+            return APIDefines.AssetReferenceType.InternalEpg;
+        }
+        return null;
+    }
+
+    public void setAssetReferenceType(String assetReferenceType) {
+        this.assetReferenceType = assetReferenceType;
     }
 }
 
