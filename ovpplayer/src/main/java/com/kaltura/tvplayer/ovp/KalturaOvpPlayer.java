@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.providers.MediaEntryProvider;
@@ -72,7 +73,7 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
         if (mediaOptions.getKs() != null) {
             setKS(mediaOptions.getKs());
         }
-        setPreferrdMediaFormat(mediaOptions.getPreferredMediaFormat());
+        setPreferrdMediaFormat(getMediaFormat(mediaOptions));
         setStartPosition(mediaOptions.getStartPosition());
 
         MediaEntryProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
@@ -84,6 +85,16 @@ public class KalturaOvpPlayer extends KalturaPlayer<OVPMediaOptions> {
                 mediaLoadCompleted(response, listener);
             }
         });
+    }
+
+    private PKMediaFormat getMediaFormat(OVPMediaOptions mediaOptions) {
+            if (mediaOptions.getPreferredMediaFormat() != null) {
+                return mediaOptions.getPreferredMediaFormat();
+            } else if (getInitOptions() != null && getInitOptions().preferredMediaFormat != null){
+                return getInitOptions().preferredMediaFormat;
+            } else {
+                return PKMediaFormat.dash;
+            }
     }
 
     public interface PlayerReadyCallback {

@@ -279,39 +279,33 @@ public class PlayerActivity extends AppCompatActivity {
         if ("ovp".equals(playerType.toLowerCase())) {
             player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat(), playListMediaIndex);
-            player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
-                @Override
-                public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
-                    log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
-                    if (error != null) {
-                        log.d("OVPMedia Error Extra = " + error.getExtra());
-                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
+            player.loadMedia(ovpMediaOptions, (entry, error) -> {
+                log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
+                if (error != null) {
+                    log.d("OVPMedia Error Extra = " + error.getExtra());
+                    Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
 
-                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                    playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                    playbackControlsManager.showControls(View.VISIBLE);
+                } else {
+                    if (!initOptions.autoplay) {
                         playbackControlsManager.showControls(View.VISIBLE);
-                    } else {
-                        if (!initOptions.autoplay) {
-                            playbackControlsManager.showControls(View.VISIBLE);
-                        }
                     }
                 }
             });
         } else if ("ott".equals(playerType.toLowerCase())) {
             player = KalturaOTTPlayer.create(PlayerActivity.this, initOptions);
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat(), playListMediaIndex);
-            player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
-                @Override
-                public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
-                    log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
-                    if (error != null) {
-                        log.d("OTTMedia Error Extra = " + error.getExtra());
-                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
-                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+            player.loadMedia(ottMediaOptions, (entry, error) -> {
+                log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
+                if (error != null) {
+                    log.d("OTTMedia Error Extra = " + error.getExtra());
+                    Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
+                    playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                    playbackControlsManager.showControls(View.VISIBLE);
+                } else {
+                    if (!initOptions.autoplay) {
                         playbackControlsManager.showControls(View.VISIBLE);
-                    } else {
-                        if (!initOptions.autoplay) {
-                            playbackControlsManager.showControls(View.VISIBLE);
-                        }
                     }
                 }
             });
@@ -345,7 +339,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         ottMediaOptions.setKS(ottMedia.getKs());
         ottMediaOptions.setStartPosition(startPosition);
-        ottMediaOptions.setPreferredMediaFormat(preferredFormat, initOptions.preferredMediaFormat);
+        ottMediaOptions.setPreferredMediaFormat(preferredFormat);
         return ottMediaOptions;
     }
 
@@ -355,7 +349,7 @@ public class PlayerActivity extends AppCompatActivity {
         OVPMediaOptions ovpMediaOptions = new OVPMediaOptions().setEntryId(ovpMedia.getEntryId());
         ovpMediaOptions.setKS(ovpMedia.getKs());
         ovpMediaOptions.setStartPosition(startPosition);
-        ovpMediaOptions.setPreferredMediaFormat(preferredFormat, initOptions.preferredMediaFormat);
+        ovpMediaOptions.setPreferredMediaFormat(preferredFormat);
         return ovpMediaOptions;
     }
 

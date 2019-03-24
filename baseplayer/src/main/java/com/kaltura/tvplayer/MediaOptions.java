@@ -4,7 +4,7 @@ package com.kaltura.tvplayer;
 import com.kaltura.playkit.PKMediaFormat;
 
 public class MediaOptions {
-    private  String ks;
+    private String ks;
     private double startPosition;
     private PKMediaFormat preferredMediaFormat;
 
@@ -18,15 +18,9 @@ public class MediaOptions {
         return this;
     }
 
-    public MediaOptions setPreferredMediaFormat(String preferredMediaFormat, PKMediaFormat initOptionsPreferredMediaFormat) {
+    public MediaOptions setPreferredMediaFormat(String preferredMediaFormat) {
         if (preferredMediaFormat != null) {
             this.preferredMediaFormat = PKMediaFormat.valueOf(preferredMediaFormat);
-        } else {
-            if (initOptionsPreferredMediaFormat == null) {
-                this.preferredMediaFormat = PKMediaFormat.dash;
-            } else {
-                this.preferredMediaFormat = initOptionsPreferredMediaFormat;
-            }
         }
         return this;
     }

@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
@@ -121,7 +122,7 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
             setKS(mediaOptions.getKs());
         }
 
-        setPreferrdMediaFormat(mediaOptions.getPreferredMediaFormat());
+        setPreferrdMediaFormat(getMediaFormat(mediaOptions));
         setStartPosition(mediaOptions.getStartPosition());
 
         final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
@@ -157,5 +158,15 @@ public class KalturaOTTPlayer extends KalturaPlayer<OTTMediaOptions> {
                 mediaLoadCompleted(response, listener);
             }
         });
+    }
+
+    private PKMediaFormat getMediaFormat(OTTMediaOptions mediaOptions) {
+        if (mediaOptions.getPreferredMediaFormat() != null) {
+            return mediaOptions.getPreferredMediaFormat();
+        } else if (getInitOptions() != null && getInitOptions().preferredMediaFormat != null){
+            return getInitOptions().preferredMediaFormat;
+        } else {
+            return PKMediaFormat.dash;
+        }
     }
 }
