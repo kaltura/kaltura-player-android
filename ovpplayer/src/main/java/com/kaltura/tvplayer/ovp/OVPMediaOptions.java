@@ -9,5 +9,23 @@ public class OVPMediaOptions extends MediaOptions {
         this.entryId = entryId;
         return this;
     }
+
+    @Override
+    public OVPMediaOptions setKS(String ks) {
+        super.setKS(ks);
+        return this;
+    }
+
+    @Override
+    public OVPMediaOptions setStartPosition(double startPosition) {
+        super.setStartPosition(startPosition);
+        return this;
+    }
+
+    @Override
+    public OVPMediaOptions setPreferredMediaFormat(String preferredMediaFormat) {
+        super.setPreferredMediaFormat(preferredMediaFormat);
+        return this;
+    }
 }
 

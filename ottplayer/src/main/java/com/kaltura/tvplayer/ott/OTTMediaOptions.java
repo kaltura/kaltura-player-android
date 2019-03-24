@@ -2,6 +2,7 @@ package com.kaltura.tvplayer.ott;
 
 import android.support.annotation.NonNull;
 
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.tvplayer.MediaOptions;
@@ -55,6 +56,24 @@ public class OTTMediaOptions extends MediaOptions {
 
     public OTTMediaOptions setAssetReferenceType(APIDefines.AssetReferenceType assetReferenceType) {
         this.assetReferenceType = assetReferenceType;
+        return this;
+    }
+
+    @Override
+    public OTTMediaOptions setKS(String ks) {
+        super.setKS(ks);
+        return this;
+    }
+
+    @Override
+    public OTTMediaOptions setStartPosition(double startPosition) {
+        super.setStartPosition(startPosition);
+        return this;
+    }
+
+    @Override
+    public OTTMediaOptions setPreferredMediaFormat(String preferredMediaFormat) {
+        super.setPreferredMediaFormat(preferredMediaFormat);
         return this;
     }
 }

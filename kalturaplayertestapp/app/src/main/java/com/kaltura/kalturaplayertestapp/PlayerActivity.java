@@ -329,27 +329,24 @@ public class PlayerActivity extends AppCompatActivity {
         OTTMediaOptions ottMediaOptions = new OTTMediaOptions()
                 .setAssetId(ottMedia.getAssetId())
                 .setAssetType(ottMedia.getAssetType())
-                .setContextType(ottMedia.getPlaybackContextType());
-        if (!TextUtils.isEmpty(ottMedia.getFormat())) {
-            ottMediaOptions.setFormats(new String[]{ottMedia.getFormat()});
-        }
-        if (ottMedia.getFileId() != null) {
-            ottMediaOptions.setFileIds(new String[]{String.valueOf(ottMedia.getFileId())});
-        }
-
-        ottMediaOptions.setKS(ottMedia.getKs());
-        ottMediaOptions.setStartPosition(startPosition);
-        ottMediaOptions.setPreferredMediaFormat(preferredFormat);
+                .setContextType(ottMedia.getPlaybackContextType())
+                .setAssetReferenceType(ottMedia.getAssetReferenceType())
+                .setFileIds(new String[]{String.valueOf(ottMedia.getFileId())})
+                .setFormats(new String[]{ottMedia.getFormat()})
+                .setKS(ottMedia.getKs())
+                .setStartPosition(startPosition)
+                .setPreferredMediaFormat(preferredFormat);
         return ottMediaOptions;
     }
 
     @NonNull
     private OVPMediaOptions buildOvpMediaOptions(int startPosition, String preferredFormat, int playListMediaIndex) {
         Media ovpMedia = mediaList.get(playListMediaIndex);
-        OVPMediaOptions ovpMediaOptions = new OVPMediaOptions().setEntryId(ovpMedia.getEntryId());
-        ovpMediaOptions.setKS(ovpMedia.getKs());
-        ovpMediaOptions.setStartPosition(startPosition);
-        ovpMediaOptions.setPreferredMediaFormat(preferredFormat);
+        OVPMediaOptions ovpMediaOptions = new OVPMediaOptions()
+                .setEntryId(ovpMedia.getEntryId())
+                .setKS(ovpMedia.getKs())
+                .setStartPosition(startPosition)
+                .setPreferredMediaFormat(preferredFormat);
         return ovpMediaOptions;
     }
 
