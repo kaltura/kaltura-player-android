@@ -155,21 +155,15 @@ public class PlayerActivity extends AppCompatActivity {
         updatePluginsConfig();
         if (player instanceof KalturaOvpPlayer) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, appPlayerInitConfig.getPreferredFormat(), currentPlayedMediaIndex);
-            player.loadMedia(ovpMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
-                @Override
-                public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
-                    log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
-                    handleOnEntryLoadCompleate(error);
-                }
+            player.loadMedia(ovpMediaOptions, (entry, error) -> {
+                log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
+                handleOnEntryLoadCompleate(error);
             });
         } else {
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, appPlayerInitConfig.getPreferredFormat(), currentPlayedMediaIndex);
-            player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
-                @Override
-                public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
-                    log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
-                    handleOnEntryLoadCompleate(error);
-                }
+            player.loadMedia(ottMediaOptions, (entry, error) -> {
+                log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
+                handleOnEntryLoadCompleate(error);
             });
         }
     }
