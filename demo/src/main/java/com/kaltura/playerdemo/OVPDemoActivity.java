@@ -97,12 +97,7 @@ public class OVPDemoActivity extends BaseDemoActivity {
 
         KalturaOvpPlayer player = KalturaOvpPlayer.create(playerActivity, initOptions);
 
-        player.loadMedia(new OVPMediaOptions().setEntryId(currentItem.id), new KalturaPlayer.OnEntryLoadListener() {
-            @Override
-            public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
-                log.d("onEntryLoadComplete; " + entry + "; " + error);
-            }
-        });
+        player.loadMedia(new OVPMediaOptions().setEntryId(currentItem.id), (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
         player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 
         playerActivity.setPlayer(player);

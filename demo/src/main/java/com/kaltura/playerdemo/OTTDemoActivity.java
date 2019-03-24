@@ -83,12 +83,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
         KalturaOTTPlayer player = KalturaOTTPlayer.create(playerActivity, initOptions);
 
         OTTMediaOptions ottMediaOptions = new OTTMediaOptions().setAssetId(currentItem.id).setProtocol(currentItem.protocol);
-        player.loadMedia(ottMediaOptions, new KalturaPlayer.OnEntryLoadListener() {
-            @Override
-            public void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error) {
-                log.d("onEntryLoadComplete; " + entry + "; " + error);
-            }
-        });
+        player.loadMedia(ottMediaOptions, (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
         player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 
         playerActivity.setPlayer(player);
