@@ -154,13 +154,13 @@ public class PlayerActivity extends AppCompatActivity {
         }
         updatePluginsConfig();
         if (player instanceof KalturaOvpPlayer) {
-            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, appPlayerInitConfig.getPreferredFormat(), currentPlayedMediaIndex);
+            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
                 log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
                 handleOnEntryLoadCompleate(error);
             });
         } else {
-            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, appPlayerInitConfig.getPreferredFormat(), currentPlayedMediaIndex);
+            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ottMediaOptions, (entry, error) -> {
                 log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
                 handleOnEntryLoadCompleate(error);
@@ -266,13 +266,14 @@ public class PlayerActivity extends AppCompatActivity {
                 .setReferrer(appPlayerInitConfig.getReferrer())
                 .setServerUrl(appPlayerInitConfig.getBaseUrl())
                 .setAllowCrossProtocolEnabled(appPlayerInitConfig.getAllowCrossProtocolEnabled())
+                .setPreferredMediaFormat(appPlayerInitConfig.getPreferredFormat())
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
         mediaList = appPlayerInitConfig.getMediaList();
 
         if ("ovp".equals(playerType.toLowerCase())) {
             player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
-            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat(), playListMediaIndex);
+            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
                 log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
                 if (error != null) {
@@ -289,7 +290,7 @@ public class PlayerActivity extends AppCompatActivity {
             });
         } else if ("ott".equals(playerType.toLowerCase())) {
             player = KalturaOTTPlayer.create(PlayerActivity.this, initOptions);
-            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), appPlayerInitConfig.getPreferredFormat(), playListMediaIndex);
+            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
             player.loadMedia(ottMediaOptions, (entry, error) -> {
                 log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
                 if (error != null) {
@@ -318,7 +319,7 @@ public class PlayerActivity extends AppCompatActivity {
 }
 
     @NonNull
-    private OTTMediaOptions buildOttMediaOptions(int startPosition, String preferredFormat, int playListMediaIndex) {
+    private OTTMediaOptions buildOttMediaOptions(int startPosition, int playListMediaIndex) {
         Media ottMedia = mediaList.get(playListMediaIndex);
         OTTMediaOptions ottMediaOptions = new OTTMediaOptions()
                 .setAssetId(ottMedia.getAssetId())
@@ -326,8 +327,7 @@ public class PlayerActivity extends AppCompatActivity {
                 .setContextType(ottMedia.getPlaybackContextType())
                 .setAssetReferenceType(ottMedia.getAssetReferenceType())
                 .setKS(ottMedia.getKs())
-                .setStartPosition(startPosition)
-                .setPreferredMediaFormat(preferredFormat);
+                .setStartPosition(startPosition);
 
         if (!TextUtils.isEmpty(ottMedia.getFormat())) {
             ottMediaOptions.setFormats(new String[]{ottMedia.getFormat()});
@@ -340,13 +340,12 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     @NonNull
-    private OVPMediaOptions buildOvpMediaOptions(int startPosition, String preferredFormat, int playListMediaIndex) {
+    private OVPMediaOptions buildOvpMediaOptions(int startPosition, int playListMediaIndex) {
         Media ovpMedia = mediaList.get(playListMediaIndex);
         OVPMediaOptions ovpMediaOptions = new OVPMediaOptions()
                 .setEntryId(ovpMedia.getEntryId())
                 .setKS(ovpMedia.getKs())
-                .setStartPosition(startPosition)
-                .setPreferredMediaFormat(preferredFormat);
+                .setStartPosition(startPosition);
         return ovpMediaOptions;
     }
 

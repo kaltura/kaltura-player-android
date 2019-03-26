@@ -21,11 +21,5 @@ public class OVPMediaOptions extends MediaOptions {
         super.setStartPosition(startPosition);
         return this;
     }
-
-    @Override
-    public OVPMediaOptions setPreferredMediaFormat(String preferredMediaFormat) {
-        super.setPreferredMediaFormat(preferredMediaFormat);
-        return this;
-    }
 }
 

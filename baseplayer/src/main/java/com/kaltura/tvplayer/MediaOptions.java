@@ -6,7 +6,6 @@ import com.kaltura.playkit.PKMediaFormat;
 public class MediaOptions {
     private String ks;
     private double startPosition;
-    private PKMediaFormat preferredMediaFormat;
 
     public MediaOptions setKS(String ks) {
         this.ks = ks;
@@ -18,23 +17,12 @@ public class MediaOptions {
         return this;
     }
 
-    public MediaOptions setPreferredMediaFormat(String preferredMediaFormat) {
-        if (preferredMediaFormat != null) {
-            this.preferredMediaFormat = PKMediaFormat.valueOf(preferredMediaFormat);
-        }
-        return this;
-    }
-
     public String getKs() {
         return ks;
     }
 
     public double getStartPosition() {
         return startPosition;
-    }
-
-    public PKMediaFormat getPreferredMediaFormat() {
-        return preferredMediaFormat;
     }
 }
 

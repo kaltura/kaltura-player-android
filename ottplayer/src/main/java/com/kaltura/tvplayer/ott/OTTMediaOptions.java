@@ -70,10 +70,4 @@ public class OTTMediaOptions extends MediaOptions {
         super.setStartPosition(startPosition);
         return this;
     }
-
-    @Override
-    public OTTMediaOptions setPreferredMediaFormat(String preferredMediaFormat) {
-        super.setPreferredMediaFormat(preferredMediaFormat);
-        return this;
-    }
 }

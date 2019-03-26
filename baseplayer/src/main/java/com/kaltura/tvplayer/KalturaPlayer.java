@@ -1,24 +1,17 @@
 package com.kaltura.tvplayer;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
@@ -29,12 +22,10 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
-import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
-import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
@@ -70,7 +61,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     private boolean autoPlay;
     private boolean preload;
     private double startPosition;
-    private PKMediaFormat preferredMeidaFormat;
+    private PKMediaFormat preferredMediaFormat;
     private boolean allowCrossProtocolRedirect;
     private View view;
     private PKMediaEntry mediaEntry;
@@ -117,9 +108,9 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         return new Uri.Builder().scheme("app").authority(context.getPackageName()).toString();
     }
 
-    public void setPreferrdMediaFormat(PKMediaFormat preferedMediaFormat) {
-        if (preferedMediaFormat != null) {
-            this.preferredMeidaFormat = preferedMediaFormat;
+    public void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+        if (preferredMediaFormat != null) {
+            this.preferredMediaFormat = preferredMediaFormat;
         }
     }
 
@@ -446,7 +437,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     public void setMedia(PKMediaEntry entry, MediaOptions mediaOptions) {
         setStartPosition(mediaOptions.getStartPosition());
-        setPreferrdMediaFormat(mediaOptions.getPreferredMediaFormat());
         setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
         setKS(mediaOptions.getKs());
         setMedia(entry);
@@ -471,7 +461,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
                 .setMediaEntry(mediaEntry)
                 .setStartPosition((long) (startPosition));
 
-        pkPlayer.getSettings().setPreferredMediaFormat(preferredMeidaFormat);
+        pkPlayer.getSettings().setPreferredMediaFormat(preferredMediaFormat);
         pkPlayer.getSettings().setAllowCrossProtocolRedirect(allowCrossProtocolRedirect);
         pkPlayer.prepare(config);
         prepared = true;
