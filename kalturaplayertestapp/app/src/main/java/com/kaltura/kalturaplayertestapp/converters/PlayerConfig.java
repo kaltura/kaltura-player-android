@@ -19,6 +19,7 @@ public class PlayerConfig {
     private int startPosition;
     private Boolean autoPlay;
     private Boolean preload;
+    private Boolean allowCrossProtocolEnabled;
     private String  preferredFormat;
     private String referrer;
     private List<Media> mediaList;
@@ -138,5 +139,13 @@ public class PlayerConfig {
 
     public void setPlayerConfig(JsonObject uiConfPlayerConfig) {
              playerConfig = uiConfPlayerConfig;
+    }
+
+    public Boolean getAllowCrossProtocolEnabled() {
+        return allowCrossProtocolEnabled;
+    }
+
+    public void setAllowCrossProtocolEnabled(Boolean allowCrossProtocolEnabled) {
+        this.allowCrossProtocolEnabled = allowCrossProtocolEnabled;
     }
 }
