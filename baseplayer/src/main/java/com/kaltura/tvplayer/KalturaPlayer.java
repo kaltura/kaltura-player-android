@@ -61,8 +61,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     private boolean autoPlay;
     private boolean preload;
     private double startPosition;
-    private PKMediaFormat preferredMediaFormat;
-    private boolean allowCrossProtocolRedirect;
     private View view;
     private PKMediaEntry mediaEntry;
     private boolean prepared;
@@ -78,7 +76,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
-        this.allowCrossProtocolRedirect = initOptions.allowCrossProtocolEnabled;
         this.referrer  = buildReferrer(context, initOptions.referrer);
         this.partnerId = initOptions.partnerId;
         this.uiConfId  = initOptions.uiConfId;
@@ -106,16 +103,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         }
 
         return new Uri.Builder().scheme("app").authority(context.getPackageName()).toString();
-    }
-
-    public void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
-        if (preferredMediaFormat != null) {
-            this.preferredMediaFormat = preferredMediaFormat;
-        }
-    }
-
-    public void setAllowCrossProtocolRedirect(boolean allowCrossProtocolRedirect) {
-        this.allowCrossProtocolRedirect = allowCrossProtocolRedirect;
     }
 
     private static class Resolver implements TokenResolver {
@@ -231,6 +218,12 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     private void loadPlayer() {
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
+        updatePlayerSettings();
+
+        PlayManifestRequestAdapter.install(pkPlayer, referrer);
+    }
+
+    private void updatePlayerSettings() {
         if (initOptions.audioLanguageMode != null && initOptions.audioLanguage != null) {
             pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(initOptions.audioLanguageMode).setTrackLanguage(initOptions.audioLanguage));
         }
@@ -238,10 +231,55 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             pkPlayer.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(initOptions.textLanguageMode).setTrackLanguage(initOptions.textLanguage));
         }
 
-        if (initOptions.allowCrossProtocolEnabled) {
+        if (initOptions.allowCrossProtocolEnabled != null) {
             pkPlayer.getSettings().setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
         }
-        PlayManifestRequestAdapter.install(pkPlayer, referrer);
+
+        if (initOptions.preferredMediaFormat != null) {
+            pkPlayer.getSettings().setPreferredMediaFormat(initOptions.preferredMediaFormat);
+        }
+
+        if (initOptions.allowClearLead != null) {
+            pkPlayer.getSettings().allowClearLead(initOptions.allowClearLead);
+        }
+
+        if (initOptions.secureSurface != null) {
+            pkPlayer.getSettings().setSecureSurface(initOptions.secureSurface);
+        }
+
+        if (initOptions.setSubtitleStyle != null) {
+            pkPlayer.getSettings().setSubtitleStyle(initOptions.setSubtitleStyle);//(new SubtitleStyleSettings("Default"));
+        }
+
+        if (initOptions.adAutoPlayOnResume != null) {
+            pkPlayer.getSettings().setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
+        }
+
+        if (initOptions.vrPlayerEnabled != null) {
+            pkPlayer.getSettings().setVRPlayerEnabled(initOptions.vrPlayerEnabled);
+        }
+
+        if (initOptions.aspectRatioResizeMode != null) {
+            pkPlayer.getSettings().setSurfaceAspectRatioResizeMode(initOptions.aspectRatioResizeMode);//(PKAspectRatioResizeMode.fit);
+        }
+
+        if (initOptions.contentRequestAdapter != null) {
+            //PKRequestParams.Adapter contentAdapter = null;
+            pkPlayer.getSettings().setContentRequestAdapter(initOptions.contentRequestAdapter);//(contentAdapter);
+        }
+
+        if (initOptions.licenseRequestAdapter != null) {
+            //PKRequestParams.Adapter licenseAdapter = null;
+            pkPlayer.getSettings().setLicenseRequestAdapter(initOptions.licenseRequestAdapter);//(licenseAdapter);
+        }
+
+        if (initOptions.loadControlBuffers != null) {
+            pkPlayer.getSettings().setPlayerBuffers(initOptions.loadControlBuffers);//(new LoadControlBuffers());
+        }
+
+        if (initOptions.abrSettings != null) {
+            pkPlayer.getSettings().setABRSettings(initOptions.abrSettings);//(new ABRSettings());
+        }
     }
 
     @NonNull
@@ -437,7 +475,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     public void setMedia(PKMediaEntry entry, MediaOptions mediaOptions) {
         setStartPosition(mediaOptions.getStartPosition());
-        setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
         setKS(mediaOptions.getKs());
         setMedia(entry);
     }
@@ -461,8 +498,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
                 .setMediaEntry(mediaEntry)
                 .setStartPosition((long) (startPosition));
 
-        pkPlayer.getSettings().setPreferredMediaFormat(preferredMediaFormat);
-        pkPlayer.getSettings().setAllowCrossProtocolRedirect(allowCrossProtocolRedirect);
         pkPlayer.prepare(config);
         prepared = true;
 

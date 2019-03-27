@@ -267,6 +267,16 @@ public class PlayerActivity extends AppCompatActivity {
                 .setServerUrl(appPlayerInitConfig.getBaseUrl())
                 .setAllowCrossProtocolEnabled(appPlayerInitConfig.getAllowCrossProtocolEnabled())
                 .setPreferredMediaFormat(appPlayerInitConfig.getPreferredFormat())
+                .setSecureSurface(appPlayerInitConfig.getSecureSurface())
+                .setAspectRatioResizeMode(appPlayerInitConfig.getAspectRatioResizeMode())
+                .setAbrSettings(appPlayerInitConfig.getAbrSettings())
+                .setLoadControlBuffers(appPlayerInitConfig.getLoadControlBuffers())
+                .setSubtitleStyle(appPlayerInitConfig.getSetSubtitleStyle())
+                .setAllowClearLead(appPlayerInitConfig.getAllowClearLead())
+                .setAdAutoPlayOnResume(appPlayerInitConfig.getAdAutoPlayOnResume())
+                .setVrPlayerEnabled(appPlayerInitConfig.getVrPlayerEnabled())
+                .setContentRequestAdapter(appPlayerInitConfig.getContentRequestAdapter())
+                .setLicenseRequestAdapter(appPlayerInitConfig.getLicenseRequestAdapter())
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
         mediaList = appPlayerInitConfig.getMediaList();

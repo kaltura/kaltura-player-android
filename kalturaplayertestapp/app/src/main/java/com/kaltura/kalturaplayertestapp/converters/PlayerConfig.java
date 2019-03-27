@@ -2,6 +2,11 @@ package com.kaltura.kalturaplayertestapp.converters;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.SubtitleStyleSettings;
 
 
 import java.util.List;
@@ -21,6 +26,16 @@ public class PlayerConfig {
     private Boolean preload;
     private Boolean allowCrossProtocolEnabled;
     private String  preferredFormat;
+    private Boolean allowClearLead;
+    private Boolean secureSurface;
+    private Boolean adAutoPlayOnResume;
+    private Boolean vrPlayerEnabled;
+    private SubtitleStyleSettings setSubtitleStyle;
+    private PKAspectRatioResizeMode aspectRatioResizeMode;
+    private PKRequestParams.Adapter contentRequestAdapter;
+    private PKRequestParams.Adapter licenseRequestAdapter;
+    private LoadControlBuffers loadControlBuffers;
+    private ABRSettings abrSettings;
     private String referrer;
     private List<Media> mediaList;
     private TrackSelection trackSelection;
@@ -147,5 +162,85 @@ public class PlayerConfig {
 
     public void setAllowCrossProtocolEnabled(Boolean allowCrossProtocolEnabled) {
         this.allowCrossProtocolEnabled = allowCrossProtocolEnabled;
+    }
+
+    public Boolean getAllowClearLead() {
+        return allowClearLead;
+    }
+
+    public void setAllowClearLead(Boolean allowClearLead) {
+        this.allowClearLead = allowClearLead;
+    }
+
+    public Boolean getSecureSurface() {
+        return secureSurface;
+    }
+
+    public void setSecureSurface(Boolean setSecureSurface) {
+        this.secureSurface = setSecureSurface;
+    }
+
+    public Boolean getAdAutoPlayOnResume() {
+        return adAutoPlayOnResume;
+    }
+
+    public void setAdAutoPlayOnResume(Boolean adAutoPlayOnResume) {
+        this.adAutoPlayOnResume = adAutoPlayOnResume;
+    }
+
+    public Boolean getVrPlayerEnabled() {
+        return vrPlayerEnabled;
+    }
+
+    public void setVrPlayerEnabled(Boolean vrPlayerEnabled) {
+        this.vrPlayerEnabled = vrPlayerEnabled;
+    }
+
+    public SubtitleStyleSettings getSetSubtitleStyle() {
+        return setSubtitleStyle;
+    }
+
+    public void setSetSubtitleStyle(SubtitleStyleSettings setSubtitleStyle) {
+        this.setSubtitleStyle = setSubtitleStyle;
+    }
+
+    public PKAspectRatioResizeMode getAspectRatioResizeMode() {
+        return aspectRatioResizeMode;
+    }
+
+    public void setAspectRatioResizeMode(PKAspectRatioResizeMode aspectRatioResizeMode) {
+        this.aspectRatioResizeMode = aspectRatioResizeMode;
+    }
+
+    public PKRequestParams.Adapter getContentRequestAdapter() {
+        return contentRequestAdapter;
+    }
+
+    public void setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
+        this.contentRequestAdapter = contentRequestAdapter;
+    }
+
+    public PKRequestParams.Adapter getLicenseRequestAdapter() {
+        return licenseRequestAdapter;
+    }
+
+    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        this.licenseRequestAdapter = licenseRequestAdapter;
+    }
+
+    public LoadControlBuffers getLoadControlBuffers() {
+        return loadControlBuffers;
+    }
+
+    public void setLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
+        this.loadControlBuffers = loadControlBuffers;
+    }
+
+    public ABRSettings getAbrSettings() {
+        return abrSettings;
+    }
+
+    public void setAbrSettings(ABRSettings abrSettings) {
+        this.abrSettings = abrSettings;
     }
 }

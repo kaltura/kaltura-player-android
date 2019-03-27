@@ -1,10 +1,14 @@
 package com.kaltura.tvplayer;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
+import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.tvplayer.config.player.StreamType;
 import com.kaltura.tvplayer.config.player.UiConfPlayer;
 import com.kaltura.tvplayer.utils.GsonReader;
@@ -50,7 +54,17 @@ public class PlayerInitOptions {
     public PKTrackConfig.Mode textLanguageMode;
     public String textLanguage;
     public PKMediaFormat preferredMediaFormat;
-    public boolean allowCrossProtocolEnabled;
+    public Boolean allowCrossProtocolEnabled;
+    public Boolean allowClearLead;
+    public Boolean secureSurface;
+    public Boolean adAutoPlayOnResume;
+    public Boolean vrPlayerEnabled;
+    public SubtitleStyleSettings setSubtitleStyle;
+    public PKAspectRatioResizeMode aspectRatioResizeMode;
+    public PKRequestParams.Adapter contentRequestAdapter;
+    public PKRequestParams.Adapter licenseRequestAdapter;
+    public LoadControlBuffers loadControlBuffers;
+    public ABRSettings abrSettings;
 
     public PlayerInitOptions(int partnerId, int uiConfId, JsonObject uiConf) {
         this.partnerId = partnerId;
@@ -186,9 +200,82 @@ public class PlayerInitOptions {
 
     public PlayerInitOptions setPreferredMediaFormat(String preferredMediaFormat) {
         if (preferredMediaFormat != null) {
+            if (preferredMediaFormat.equals("progressive")) {
+                preferredMediaFormat = "mp4";
+            }
             this.preferredMediaFormat = PKMediaFormat.valueOf(preferredMediaFormat);
         } else {
             this.preferredMediaFormat = PKMediaFormat.dash;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setAllowClearLead(Boolean allowClearLead) {
+        if (allowClearLead != null) {
+            this.allowClearLead = allowClearLead;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setSecureSurface(Boolean secureSurface) {
+        if (secureSurface != null) {
+            this.secureSurface = secureSurface;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setAdAutoPlayOnResume(Boolean adAutoPlayOnResume) {
+        if (adAutoPlayOnResume != null) {
+            this.adAutoPlayOnResume = adAutoPlayOnResume;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setVrPlayerEnabled(Boolean vrPlayerEnabled) {
+        if (vrPlayerEnabled != null) {
+            this.vrPlayerEnabled = vrPlayerEnabled;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setSubtitleStyle(SubtitleStyleSettings setSubtitleStyle) {
+        if (setSubtitleStyle != null) {
+            this.setSubtitleStyle = setSubtitleStyle;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setAspectRatioResizeMode(PKAspectRatioResizeMode aspectRatioResizeMode) {
+        if (aspectRatioResizeMode != null) {
+            this.aspectRatioResizeMode = aspectRatioResizeMode;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setContentRequestAdapter(PKRequestParams.Adapter contentRequestAdapter) {
+        if (contentRequestAdapter != null) {
+            this.contentRequestAdapter = contentRequestAdapter;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        if (contentRequestAdapter != null) {
+            this.licenseRequestAdapter = licenseRequestAdapter;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setLoadControlBuffers(LoadControlBuffers loadControlBuffers) {
+        if (loadControlBuffers != null) {
+            this.loadControlBuffers = loadControlBuffers;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setAbrSettings(ABRSettings abrSettings) {
+        if (abrSettings != null) {
+            this.abrSettings = abrSettings;
         }
         return this;
     }
