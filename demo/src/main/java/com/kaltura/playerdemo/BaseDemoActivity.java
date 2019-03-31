@@ -47,7 +47,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     public static final String UICONF ="uiConf";
 
     protected final Context context = this;
-    protected JsonObject playerConfig;
+    protected JsonObject playerConfigUiConfJson;
     protected PlayerInitOptions initOptions;
     Integer uiConfId;
     String ks;
@@ -56,7 +56,8 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     private ViewGroup contentContainer;
     private NavigationView navigationView;
     private ListView itemListView;
-    
+    String uiConfServerUrl;
+
     protected abstract DemoItem[] items();
     
     @Override
@@ -95,10 +96,11 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         if (uiConfJson != null) {
             uiConfPartnerId = safeInteger(uiConfJson, PlayerInitOptions.PARTNER_ID);
             uiConfId = safeInteger(uiConfJson, PlayerInitOptions.UICONF_ID);
+            uiConfServerUrl = safeString(uiConfJson, PlayerInitOptions.SERVER_URL);
         }
         if (json.has(PLAYER_CONFIG)) {
             JsonObject playerConfigJasonObject = safeObject(json, PLAYER_CONFIG);
-            final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId, safeObject(json, PLAYER_CONFIG));
+            final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId, uiConfJson);
             if (initOptions == null) {
                 options.setServerUrl(safeString(playerConfigJasonObject, PlayerInitOptions.SERVER_URL))
                         .setAutoPlay(safeBoolean(playerConfigJasonObject, PlayerInitOptions.AUTOPLAY))

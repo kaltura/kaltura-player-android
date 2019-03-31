@@ -36,6 +36,7 @@ import com.kaltura.tvplayer.utils.TokenResolver;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import static com.kaltura.tvplayer.PlayerInitOptions.CONFIG;
 import static com.kaltura.tvplayer.PlayerInitOptions.OPTIONS;
@@ -295,6 +296,17 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
         JsonObject pluginsUIConf = (uiConf != null && uiConf.getObject(CONFIG) != null && uiConf.getObject(CONFIG).getAsJsonObject(PLAYER) != null) ? uiConf.getObject(CONFIG).getAsJsonObject(PLAYER).getAsJsonObject(PLUGINS) : new JsonObject();
 
+        Set<String> pluginsInUiConf =  pluginsUIConf.keySet();
+        if (pluginsInUiConf != null) {
+            Iterator<String> it = pluginsInUiConf.iterator();
+            while (it.hasNext()) {
+                String pluginName = it.next();
+                if (pluginsUIConf.getAsJsonObject(pluginName).has(OPTIONS)){
+                    pluginsUIConf.add(pluginName, pluginsUIConf.getAsJsonObject(pluginName).get(OPTIONS).getAsJsonObject());
+                    break;
+                }
+            }
+        }
 
         // Special case: Kava plugin
         // KAVA
@@ -308,7 +320,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             }
             pluginsUIConf.add(name, kavaJsonObject);
         }
-
 
         // TODO Remove
 
@@ -325,7 +336,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             pluginsUIConf.add(name, kalturaStatPluginObject);
         }
 
-
         if (pluginConfigs != null) {
             Gson gson = new Gson();
             for (Map.Entry<String, Object> entry : pluginConfigs) {
@@ -333,9 +343,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
                 JsonObject appPluginConfig = (JsonObject) entry.getValue();
                 if (pluginsUIConf != null && pluginsUIConf.has(pluginName)) {
                     JsonObject uiconfPluginJsonObject = pluginsUIConf.getAsJsonObject(pluginName);
-                    if (uiconfPluginJsonObject.has(OPTIONS)) {
-                        uiconfPluginJsonObject = uiconfPluginJsonObject.get(OPTIONS).getAsJsonObject();
-                    }
                     JsonObject mergedConfig = mergeJsonConfig(uiconfPluginJsonObject, appPluginConfig);
                     if (mergedConfig != null) {
                         combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(mergedConfig));

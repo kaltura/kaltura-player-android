@@ -2,7 +2,6 @@ package com.kaltura.playerdemo;
 
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.view.Gravity;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -12,6 +11,7 @@ import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.PlayerConfigManager;
+import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
 import com.kaltura.tvplayer.ott.OTTMediaOptions;
 
@@ -63,7 +63,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
             @Override
             public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
                 Toast.makeText(OTTDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-                playerConfig = config;
+                playerConfigUiConfJson = config;
             }
         });
     }
@@ -77,7 +77,30 @@ public class OTTDemoActivity extends BaseDemoActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
 
-        KalturaOTTPlayer player = KalturaOTTPlayer.create(playerActivity, initOptions);
+
+
+        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId, initOptions.uiConfId, playerConfigUiConfJson);
+        updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
+        updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
+        updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
+        updatedInitOptions.setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
+        updatedInitOptions.setSubtitleStyle(initOptions.setSubtitleStyle);
+        updatedInitOptions.setLoadControlBuffers(initOptions.loadControlBuffers);
+        updatedInitOptions.setAbrSettings(initOptions.abrSettings);
+        updatedInitOptions.setAspectRatioResizeMode(initOptions.aspectRatioResizeMode);
+        updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ?initOptions.preferredMediaFormat.name() : null);
+        updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
+        updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
+        updatedInitOptions.setAudioLanguage(initOptions.audioLanguage);
+        updatedInitOptions.setTextLanguage(initOptions.textLanguage);
+        updatedInitOptions.setSecureSurface(initOptions.secureSurface);
+        updatedInitOptions.setKs(initOptions.ks);
+        updatedInitOptions.setServerUrl(initOptions.serverUrl);
+        updatedInitOptions.setAutoPlay(initOptions.autoplay);
+        updatedInitOptions.setReferrer(initOptions.referrer);
+        updatedInitOptions.setStartTime(initOptions.startTime);
+
+        KalturaOTTPlayer player = KalturaOTTPlayer.create(playerActivity, updatedInitOptions);
 
         OTTMediaOptions ottMediaOptions = new OTTMediaOptions().setAssetId(currentItem.id).setProtocol(currentItem.protocol);
         player.loadMedia(ottMediaOptions, (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));

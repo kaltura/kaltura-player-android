@@ -301,8 +301,8 @@ public class MainActivity extends BaseActivity implements TestCaseConfigurationA
                                                                   }
                                                               }
         );
-
     }
+
     @Override
     public void onJsonSelected(Configuration configuration) {
         Snackbar.make(findViewById(android.R.id.content),

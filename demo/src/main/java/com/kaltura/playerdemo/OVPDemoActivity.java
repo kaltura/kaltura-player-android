@@ -12,6 +12,7 @@ import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.PlayerConfigManager;
+import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.ovp.KalturaOvpPlayer;
 import com.kaltura.tvplayer.ovp.OVPMediaOptions;
 
@@ -74,11 +75,11 @@ public class OVPDemoActivity extends BaseDemoActivity {
         if (uiConfPartnerId == null) {
             uiConfPartnerId = partnerId();
         }
-        PlayerConfigManager.retrieve(uiConfId, initOptions.partnerId, ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
+        PlayerConfigManager.retrieve(uiConfId, uiConfPartnerId, ks, uiConfServerUrl, new PlayerConfigManager.OnPlayerConfigLoaded() {
             @Override
             public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
                 Toast.makeText(OVPDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-                playerConfig = config;
+                playerConfigUiConfJson = config;
             }
         });
     }
@@ -91,8 +92,28 @@ public class OVPDemoActivity extends BaseDemoActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
+        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId, initOptions.uiConfId, playerConfigUiConfJson);
+        updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
+        updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
+        updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
+        updatedInitOptions.setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
+        updatedInitOptions.setSubtitleStyle(initOptions.setSubtitleStyle);
+        updatedInitOptions.setLoadControlBuffers(initOptions.loadControlBuffers);
+        updatedInitOptions.setAbrSettings(initOptions.abrSettings);
+        updatedInitOptions.setAspectRatioResizeMode(initOptions.aspectRatioResizeMode);
+        updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ?initOptions.preferredMediaFormat.name() : null);
+        updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
+        updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
+        updatedInitOptions.setAudioLanguage(initOptions.audioLanguage);
+        updatedInitOptions.setTextLanguage(initOptions.textLanguage);
+        updatedInitOptions.setSecureSurface(initOptions.secureSurface);
+        updatedInitOptions.setKs(initOptions.ks);
+        updatedInitOptions.setServerUrl(initOptions.serverUrl);
+        updatedInitOptions.setAutoPlay(initOptions.autoplay);
+        updatedInitOptions.setReferrer(initOptions.referrer);
+        updatedInitOptions.setStartTime(initOptions.startTime);
 
-        KalturaOvpPlayer player = KalturaOvpPlayer.create(playerActivity, initOptions);
+        KalturaOvpPlayer player = KalturaOvpPlayer.create(playerActivity, updatedInitOptions);
 
         player.loadMedia(new OVPMediaOptions().setEntryId(currentItem.id), (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
         player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
