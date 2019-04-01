@@ -156,18 +156,20 @@ public class TracksSelectionController {
                 break;
             case TRACK_TYPE_AUDIO:
                 List<AudioTrack> audioTracksInfo = tracks.getAudioTracks();
-                for (int i = 0; i < audioTracksInfo.size(); i++) {
-                    AudioTrack trackInfo = audioTracksInfo.get(i);
-                    String lang = trackInfo.getLabel();
-                    if (lang == null) {
-                        lang = getFriendlyLanguageLabel(trackInfo.getLanguage());
+                if (audioTracksInfo != null && audioTracksInfo.size() > 1) {
+                    for (int i = 0; i < audioTracksInfo.size(); i++) {
+                        AudioTrack trackInfo = audioTracksInfo.get(i);
+                        String lang = trackInfo.getLabel();
+                        if (lang == null) {
+                            lang = getFriendlyLanguageLabel(trackInfo.getLanguage());
+                        }
+                        if (trackInfo.isAdaptive()) {
+                            trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + "Auto");
+                        } else {
+                            trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + buildBitrateString(trackInfo.getBitrate()));
+                        }
+                        trackItems.add(trackItem);
                     }
-                    if (trackInfo.isAdaptive()) {
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + "Auto");
-                    } else {
-                        trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + buildBitrateString(trackInfo.getBitrate()));
-                    }
-                    trackItems.add(trackItem);
                 }
                 break;
             case TRACK_TYPE_TEXT:
@@ -192,6 +194,10 @@ public class TracksSelectionController {
 
     @NonNull
     private String getFriendlyLanguageLabel(String languageCode) {
+        if (languageCode == null) {
+            return "";
+        }
+
         String lang;
         lang = new Locale(languageCode).getDisplayLanguage();
         lang = lang.substring(0, 1).toUpperCase() + lang.substring(1);
