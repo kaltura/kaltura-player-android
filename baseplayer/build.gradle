@@ -33,5 +33,6 @@ dependencies {
 //    compile 'com.kaltura.playkit:kavaplugin:0.1.1'
     api project(":playkit");
     api project(":providers");
-    api project(":kava");
+    api project(":kava")
+    api project(path: ':netkit');
 }
