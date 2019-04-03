@@ -208,7 +208,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     }
 
     private JsonObject kalturaStatsDefaults(int partnerId, int uiConfId) {
-        return new KalturaStatsConfig(uiConfId, partnerId, "", "", 0, true).toJSONObject();
+        return new KalturaStatsConfig(uiConfId, partnerId, "", "", 0, true).toJson();
         // KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String userId, int contextId, boolean hasKanalony)
     }
 

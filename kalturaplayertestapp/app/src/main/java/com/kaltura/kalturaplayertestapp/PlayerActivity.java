@@ -23,6 +23,7 @@ import com.kaltura.kalturaplayertestapp.converters.PlayerConfig;
 import com.kaltura.kalturaplayertestapp.converters.PluginDescriptor;
 
 import com.kaltura.kalturaplayertestapp.models.ima.UiConfFormatIMAConfig;
+import com.kaltura.kalturaplayertestapp.models.ima.UiConfFormatIMADAIConfig;
 import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
@@ -37,6 +38,8 @@ import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
 import com.kaltura.playkit.plugins.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ima.IMAPlugin;
+import com.kaltura.playkit.plugins.imadai.IMADAIConfig;
+import com.kaltura.playkit.plugins.imadai.IMADAIPlugin;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsEvent;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
@@ -175,7 +178,11 @@ public class PlayerActivity extends AppCompatActivity {
 
             //Example to update the AdTag
             //imaPluginConfig.setAdTagUrl("http://externaltests.dev.kaltura.com/playKitApp/adManager/customAdTags/vmap/inline/ima_pre_mid_post_bumber2.xml");
-            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig.toJSONObject());
+            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig);
+        } else if (initOptions.pluginConfigs.hasConfig(IMADAIPlugin.factory.getName())) {
+            JsonObject imadaiJson = (JsonObject) initOptions.pluginConfigs.getPluginConfig(IMADAIPlugin.factory.getName());
+            IMADAIConfig imaPluginConfig = gson.fromJson(imadaiJson, IMADAIConfig.class);
+            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig);
         }
 
         //EXAMPLE if there are no auto replacers in this format ->  {{key}}
@@ -655,12 +662,15 @@ public class PlayerActivity extends AppCompatActivity {
                 } else if (IMAPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     UiConfFormatIMAConfig imaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), UiConfFormatIMAConfig.class);
                     pkPluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig.toJson());
+                }  else if (IMADAIPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
+                    UiConfFormatIMADAIConfig imaPluginConfig = gson.fromJson(pluginDescriptor.getParams(), UiConfFormatIMADAIConfig.class);
+                    pkPluginConfigs.setPluginConfig(IMADAIPlugin.factory.getName(), imaPluginConfig.toJson());
                 } else if (PhoenixAnalyticsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     PhoenixAnalyticsConfig phoenixAnalyticsConfig = gson.fromJson(pluginDescriptor.getParams(), PhoenixAnalyticsConfig.class);
                     pkPluginConfigs.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalyticsConfig.toJson());
                 } else if (KalturaStatsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     KalturaStatsConfig kalturaStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaStatsConfig.class);
-                    pkPluginConfigs.setPluginConfig(KalturaStatsPlugin.factory.getName(), kalturaStatsPluginConfig.toJSONObject());
+                    pkPluginConfigs.setPluginConfig(KalturaStatsPlugin.factory.getName(), kalturaStatsPluginConfig.toJson());
                 } else if (KalturaLiveStatsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     KalturaLiveStatsConfig kalturaLiveStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaLiveStatsConfig.class);
                     pkPluginConfigs.setPluginConfig(KalturaLiveStatsPlugin.factory.getName(), kalturaLiveStatsPluginConfig.toJson());
