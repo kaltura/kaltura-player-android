@@ -21,7 +21,6 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayKitManager;
@@ -104,6 +103,12 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         }
 
         return new Uri.Builder().scheme("app").authority(context.getPackageName()).toString();
+    }
+
+    private JsonObject resolvePluginJsonConfig(JsonObject pluginJsonConfig) {
+        String configStr = pluginJsonConfig.getAsJsonObject().toString();
+        JsonParser parser = new JsonParser();
+        return parser.parse(tokenResolver.resolve(configStr)).getAsJsonObject();
     }
 
     private static class Resolver implements TokenResolver {
@@ -191,12 +196,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             return TextUtils.replace(string, sources, destinations).toString();
         }
 
-        @Override
-        public JsonObject resolve(JsonObject pluginJsonConfig) {
-            String configStr = pluginJsonConfig.getAsJsonObject().toString();
-            JsonParser parser = new JsonParser();
-            return parser.parse(resolve(configStr)).getAsJsonObject();
-        }
     }
 
     private JsonObject kavaDefaults(int partnerId, int uiConfId, String referrer) {
@@ -298,10 +297,8 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
         Set<String> pluginsInUiConf =  pluginsUIConf.keySet();
         if (pluginsInUiConf != null) {
-            Iterator<String> it = pluginsInUiConf.iterator();
-            while (it.hasNext()) {
-                String pluginName = it.next();
-                if (pluginsUIConf.getAsJsonObject(pluginName).has(OPTIONS)){
+            for (String pluginName : pluginsInUiConf) {
+                if (pluginsUIConf.getAsJsonObject(pluginName).has(OPTIONS)) {
                     pluginsUIConf.add(pluginName, pluginsUIConf.getAsJsonObject(pluginName).get(OPTIONS).getAsJsonObject());
                     break;
                 }
@@ -310,9 +307,9 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
         // Special case: Kava plugin
         // KAVA
-        if (initOptions.uiConfId != null && pluginsUIConf != null) {
+        if (initOptions.uiConfId != null) {
             String name = KavaAnalyticsPlugin.factory.getName();
-            JsonObject kavaJsonObject = null;
+            JsonObject kavaJsonObject;
             if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(name)) {
                 kavaJsonObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
             } else {
@@ -325,9 +322,9 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
         // Special case: Kaltura Stats plugin
         // KalturaStats
-        if (initOptions.uiConfId != null && pluginsUIConf != null) {
+        if (initOptions.uiConfId != null) {
             String name = KalturaStatsPlugin.factory.getName();
-            JsonObject kalturaStatPluginObject = null;
+            JsonObject kalturaStatPluginObject;
             if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(name)) {
                 kalturaStatPluginObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
             } else {
@@ -341,27 +338,27 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             for (Map.Entry<String, Object> entry : pluginConfigs) {
                 String pluginName = entry.getKey();
                 JsonObject appPluginConfig = (JsonObject) entry.getValue();
-                if (pluginsUIConf != null && pluginsUIConf.has(pluginName)) {
+                if (pluginsUIConf.has(pluginName)) {
                     JsonObject uiconfPluginJsonObject = pluginsUIConf.getAsJsonObject(pluginName);
                     JsonObject mergedConfig = mergeJsonConfig(uiconfPluginJsonObject, appPluginConfig);
                     if (mergedConfig != null) {
-                        combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(mergedConfig));
+                        combinedPluginConfigs.setPluginConfig(pluginName, resolvePluginJsonConfig(mergedConfig));
                     }
                 } else if (appPluginConfig != null){
-                    combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(appPluginConfig));
+                    combinedPluginConfigs.setPluginConfig(pluginName, resolvePluginJsonConfig(appPluginConfig));
                 }
             }
         }
 
         // Add the plugins that are ONLY mentioned in UIConf and not merged yet
-        if (pluginsUIConf != null && pluginsUIConf.keySet() != null) {
+        if (pluginsUIConf.keySet() != null) {
             for (String pluginName : pluginsUIConf.keySet()) {
                 if (combinedPluginConfigs.hasConfig(pluginName)) {
                     continue;
                 }
                 JsonObject config = pluginsUIConf.getAsJsonObject(pluginName);
                 if (config != null) {
-                    combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(config));
+                    combinedPluginConfigs.setPluginConfig(pluginName, resolvePluginJsonConfig(config));
                 }
             }
         }

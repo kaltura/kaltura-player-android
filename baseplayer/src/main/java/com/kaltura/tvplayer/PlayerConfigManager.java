@@ -6,8 +6,10 @@ import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.request.ExecutedRequest;
 import com.kaltura.netkit.connect.response.ResponseElement;
@@ -79,22 +81,33 @@ public class PlayerConfigManager {
         }
     }
 
+    private static String extractConfigObject(String json) {
+        try {
+            final JsonObject jsonObject = GsonParser.toJson(json).getAsJsonObject();
+            final String configString = jsonObject.get("config").getAsString();
+            return GsonParser.toJson(configString).toString();
+        } catch (JsonSyntaxException | IllegalStateException e) {
+            return null;
+        }
+    }
+
     private static void refreshCache(final int id, int partnerId, String ks, String serverUrl, final CachedConfig cachedConfig, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
-        load(partnerId, id, ks, serverUrl, new InternalCallback() {
-            @Override
-            public void finished(String json, ErrorElement error) {
-                if (error == null) {
-                    // No error 
-                    saveToCache(id, json);
-                    configLoaded(onPlayerConfigLoaded, id, new CachedConfig(0, json));
+        load(partnerId, id, ks, serverUrl, (json, error) -> {
+            if (error == null) {
+                // No error
+
+                // Extract "config"
+                final String configObject = extractConfigObject(json);
+
+                saveToCache(id, configObject);
+                configLoaded(onPlayerConfigLoaded, id, new CachedConfig(0, configObject));
+            } else {
+                if (cachedConfig != null) {
+                    Log.e(TAG, "Failed to load new config from network -- returning old cache");
+                    configLoaded(onPlayerConfigLoaded, id, cachedConfig);
                 } else {
-                    if (cachedConfig != null) {
-                        Log.e(TAG, "Failed to load new config from network -- returning old cache");
-                        configLoaded(onPlayerConfigLoaded, id, cachedConfig);
-                    } else {
-                        Log.e(TAG, "Failed to load config from network, no cache");
-                        onPlayerConfigLoaded.onConfigLoadComplete(id, null, error, -1);
-                    }
+                    Log.e(TAG, "Failed to load config from network, no cache");
+                    onPlayerConfigLoaded.onConfigLoadComplete(id, null, error, -1);
                 }
             }
         });
@@ -105,7 +118,7 @@ public class PlayerConfigManager {
         Object jsonResponseObject = jsonParser.parse(responseString);
         if (jsonResponseObject instanceof JsonObject) {
             JsonObject responseJson = (JsonObject) jsonResponseObject;
-            if (responseJson != null && responseJson.has("objectType")) {
+            if (responseJson.has("objectType")) {
                 String objectType = responseJson.getAsJsonPrimitive("objectType").getAsString();
                 if (objectType.equals("KalturaAPIException")) {
                     errorMessage.append(responseJson.getAsJsonPrimitive("message").getAsString());
@@ -121,24 +134,15 @@ public class PlayerConfigManager {
 
         final String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
 
-        OvpRequestBuilder request = UIConfService.uiConfById(apiServerUrl, partnerId, configId, ks).completion(new OnRequestCompletion() {
-            @Override
-            public void onComplete(final ResponseElement response) {
-
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        StringBuffer errorMessage = new StringBuffer();
-                        int errorCode = -1;
-                        ErrorElement errorElement = response.getError();
-                        if (!isValidResponse(response.getResponse(), errorMessage)){
-                            errorElement = ErrorElement.fromCode(errorCode, errorMessage.toString());
-                        }
-                        callback.finished(response.getResponse(), errorElement);
-                    }
-                });
+        OvpRequestBuilder request = UIConfService.uiConfById(apiServerUrl, partnerId, configId, ks).completion(response -> mainHandler.post(() -> {
+            StringBuffer errorMessage = new StringBuffer();
+            int errorCode = -1;
+            ErrorElement errorElement = response.getError();
+            if (!isValidResponse(response.getResponse(), errorMessage)){
+                errorElement = ErrorElement.fromCode(errorCode, errorMessage.toString());
             }
-        });
+            callback.finished(response.getResponse(), errorElement);
+        }));
         requestsExecutor.queue(request.build());
     }
 
