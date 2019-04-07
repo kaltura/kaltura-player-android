@@ -27,9 +27,11 @@ import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
+import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.utils.GsonReader;
 import com.kaltura.tvplayer.utils.TokenResolver;
 
@@ -40,6 +42,7 @@ import java.util.Set;
 
 import static com.kaltura.playkit.utils.Consts.DEFAULT_KAVA_PARTNER_ID;
 import static com.kaltura.tvplayer.PlayerInitOptions.CONFIG;
+import static com.kaltura.tvplayer.PlayerInitOptions.KS;
 import static com.kaltura.tvplayer.PlayerInitOptions.OPTIONS;
 import static com.kaltura.tvplayer.PlayerInitOptions.PLAYER;
 import static com.kaltura.tvplayer.PlayerInitOptions.PLUGINS;
@@ -201,8 +204,18 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     private JsonObject kavaDefaults(int partnerId, String referrer) {
         JsonObject object = new JsonObject();
-        object.addProperty("partnerId", partnerId);
-        object.addProperty("referrer", referrer);
+        object.addProperty(KavaAnalyticsConfig.BASE_URL, KavaAnalyticsConfig.DEFAULT_BASE_URL);
+        object.addProperty(KavaAnalyticsConfig.DVR_THRESHOLD, Consts.DISTANCE_FROM_LIVE_THRESHOLD);
+        object.addProperty(KavaAnalyticsConfig.PARTNER_ID, partnerId);
+        if (mediaEntry != null && mediaEntry.getId() != null) {
+            object.addProperty(KavaAnalyticsConfig.ENTRY_ID, mediaEntry.getId());
+        }
+        if (!TextUtils.isEmpty(ks)) {
+            object.addProperty(KavaAnalyticsConfig.KS, ks);
+        }
+        if (!TextUtils.isEmpty(referrer)) {
+            object.addProperty(KavaAnalyticsConfig.REFERRER, referrer);
+        }
         return object;
     }
 
