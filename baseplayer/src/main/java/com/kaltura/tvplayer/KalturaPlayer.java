@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import static com.kaltura.playkit.utils.Consts.DEFAULT_KAVA_PARTNER_ID;
 import static com.kaltura.tvplayer.PlayerInitOptions.CONFIG;
 import static com.kaltura.tvplayer.PlayerInitOptions.OPTIONS;
 import static com.kaltura.tvplayer.PlayerInitOptions.PLAYER;
@@ -49,9 +50,6 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
 
     public static final String DEFAULT_OVP_SERVER_URL =
             BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
-
-    public static final int DEFAULT_PARTNER_ID = 2504201;
-    public static final int DEFAULT_UICONF_ID = 43856921;
 
     protected String serverUrl;
     private String ks;
@@ -80,8 +78,8 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             this.preload = true; // autoplay implies preload
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
-        this.partnerId = (initOptions.partnerId <= 0) ? initOptions.partnerId : DEFAULT_PARTNER_ID;
-        this.uiConfId = (initOptions.uiConfId != null) ? initOptions.uiConfId : DEFAULT_UICONF_ID;
+        this.partnerId = (initOptions.partnerId <= 0) ? initOptions.partnerId : DEFAULT_KAVA_PARTNER_ID;
+        this.uiConfId = initOptions.uiConfId;
         this.serverUrl = initOptions.serverUrl;
         this.ks = initOptions.ks;
 
@@ -148,8 +146,8 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         void refresh(PlayerInitOptions initOptions) {
 
             if (initOptions != null) {
-                map.put("{{uiConfId}}", String.valueOf((initOptions.uiConfId != null) ? initOptions.uiConfId : DEFAULT_UICONF_ID));
-                map.put("{{partnerId}}", (initOptions.partnerId < 0) ? String.valueOf(DEFAULT_PARTNER_ID) :String.valueOf(initOptions.partnerId));
+                map.put("{{uiConfId}}", String.valueOf((initOptions.uiConfId != null) ? initOptions.uiConfId : ""));
+                map.put("{{partnerId}}", (initOptions.partnerId < 0) ? String.valueOf(DEFAULT_KAVA_PARTNER_ID) : String.valueOf(initOptions.partnerId));
                 map.put("{{ks}}", (initOptions.ks != null) ? initOptions.ks : "");
                 map.put("{{referrer}}", (initOptions.referrer != null) ? initOptions.referrer : "");
             }
@@ -201,10 +199,9 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         }
     }
 
-    private JsonObject kavaDefaults(int partnerId, int uiConfId, String referrer) {
+    private JsonObject kavaDefaults(int partnerId, String referrer) {
         JsonObject object = new JsonObject();
         object.addProperty("partnerId", partnerId);
-        object.addProperty("uiConfId", uiConfId);
         object.addProperty("referrer", referrer);
         return object;
     }
@@ -214,8 +211,8 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         // KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String userId, int contextId, boolean hasKanalony)
     }
 
-    private JsonObject prepareKava(JsonObject uiConf, int partnerId, int uiConfId, String referrer) {
-        return mergeJsonConfig(uiConf, kavaDefaults(partnerId, uiConfId, referrer));
+    private JsonObject prepareKava(JsonObject uiConf, int partnerId, String referrer) {
+        return mergeJsonConfig(uiConf, kavaDefaults(partnerId, referrer));
     }
 
     private void loadPlayer() {
@@ -318,7 +315,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(name)) {
                 kavaJsonObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
             } else {
-                kavaJsonObject = kavaDefaults(partnerId, uiConfId, referrer);
+                kavaJsonObject = kavaDefaults(partnerId, referrer);
             }
             pluginsUIConf.add(name, kavaJsonObject);
         }
