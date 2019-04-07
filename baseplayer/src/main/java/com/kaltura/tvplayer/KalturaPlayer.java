@@ -50,10 +50,12 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
     public static final String DEFAULT_OVP_SERVER_URL =
             BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
 
+    public static final int DEFAULT_PARTNER_ID = 2504201;
+    public static final int DEFAULT_UICONF_ID = 43856921;
 
     protected String serverUrl;
     private String ks;
-    private int partnerId;
+    private Integer partnerId;
     private final Integer uiConfId;
     protected final String referrer;
     private final Context context;
@@ -77,9 +79,9 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
-        this.referrer  = buildReferrer(context, initOptions.referrer);
-        this.partnerId = initOptions.partnerId;
-        this.uiConfId  = initOptions.uiConfId;
+        this.referrer = buildReferrer(context, initOptions.referrer);
+        this.partnerId = (initOptions.partnerId <= 0) ? initOptions.partnerId : DEFAULT_PARTNER_ID;
+        this.uiConfId = (initOptions.uiConfId != null) ? initOptions.uiConfId : DEFAULT_UICONF_ID;
         this.serverUrl = initOptions.serverUrl;
         this.ks = initOptions.ks;
 
@@ -146,8 +148,8 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
         void refresh(PlayerInitOptions initOptions) {
 
             if (initOptions != null) {
-                map.put("{{uiConfId}}", String.valueOf((initOptions.uiConfId != null) ? initOptions.uiConfId : ""));
-                map.put("{{partnerId}}", (initOptions.partnerId < 0) ? "" :String.valueOf(initOptions.partnerId));
+                map.put("{{uiConfId}}", String.valueOf((initOptions.uiConfId != null) ? initOptions.uiConfId : DEFAULT_UICONF_ID));
+                map.put("{{partnerId}}", (initOptions.partnerId < 0) ? String.valueOf(DEFAULT_PARTNER_ID) :String.valueOf(initOptions.partnerId));
                 map.put("{{ks}}", (initOptions.ks != null) ? initOptions.ks : "");
                 map.put("{{referrer}}", (initOptions.referrer != null) ? initOptions.referrer : "");
             }
@@ -316,12 +318,12 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(name)) {
                 kavaJsonObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
             } else {
-                kavaJsonObject = kavaDefaults(partnerId, initOptions.uiConfId, referrer);
+                kavaJsonObject = kavaDefaults(partnerId, uiConfId, referrer);
             }
             pluginsUIConf.add(name, kavaJsonObject);
         }
 
-        // TODO Remove
+        // TODO Remove?
 
         // Special case: Kaltura Stats plugin
         // KalturaStats
@@ -331,7 +333,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(name)) {
                 kalturaStatPluginObject = (JsonObject) initOptions.pluginConfigs.getPluginConfig(name);
             } else {
-                kalturaStatPluginObject = kalturaStatsDefaults(partnerId, initOptions.uiConfId);
+                kalturaStatPluginObject = kalturaStatsDefaults(partnerId, uiConfId);
             }
             pluginsUIConf.add(name, kalturaStatPluginObject);
         }
