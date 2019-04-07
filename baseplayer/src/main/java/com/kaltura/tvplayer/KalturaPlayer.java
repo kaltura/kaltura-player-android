@@ -81,7 +81,7 @@ public abstract class KalturaPlayer <MOT extends MediaOptions> {
             this.preload = true; // autoplay implies preload
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
-        this.partnerId = (initOptions.partnerId <= 0) ? initOptions.partnerId : DEFAULT_KAVA_PARTNER_ID;
+        this.partnerId = (initOptions.partnerId > 0) ? initOptions.partnerId : DEFAULT_KAVA_PARTNER_ID;
         this.uiConfId = initOptions.uiConfId;
         this.serverUrl = initOptions.serverUrl;
         this.ks = initOptions.ks;
