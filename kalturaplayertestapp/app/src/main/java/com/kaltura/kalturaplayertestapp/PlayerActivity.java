@@ -28,7 +28,6 @@ import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.player.MediaSupport;
@@ -55,14 +54,13 @@ import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.tvplayer.KalturaPlayer;
-import com.kaltura.tvplayer.MediaOptions;
+
 import com.kaltura.tvplayer.PlaybackControlsView;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
-import com.kaltura.tvplayer.ott.OTTMediaOptions;
-import com.kaltura.tvplayer.ovp.KalturaOvpPlayer;
-import com.kaltura.tvplayer.ovp.OVPMediaOptions;
+import com.kaltura.tvplayer.OTTMediaOptions;
+import com.kaltura.tvplayer.OVPMediaOptions;
+
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -156,7 +154,7 @@ public class PlayerActivity extends AppCompatActivity {
             player.stop();
         }
         updatePluginsConfig();
-        if (player instanceof KalturaOvpPlayer) {
+        if ("ovp".equals(appPlayerInitConfig.getPlayerType())) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
                 log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
@@ -287,9 +285,9 @@ public class PlayerActivity extends AppCompatActivity {
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
         mediaList = appPlayerInitConfig.getMediaList();
-
+        //initOptions = new PlayerInitOptions(Integer.valueOf(appPlayerInitConfig.getPartnerId()), playerUiConfId, appPlayerInitConfig.getPlayerConfig());
         if ("ovp".equals(playerType.toLowerCase())) {
-            player = KalturaOvpPlayer.create(PlayerActivity.this, initOptions);
+            player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
                 log.d("OVPMedia onEntryLoadComplete; " + entry + "; " + error);
@@ -306,7 +304,7 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             });
         } else if ("ott".equals(playerType.toLowerCase())) {
-            player = KalturaOTTPlayer.create(PlayerActivity.this, initOptions);
+            player = KalturaPlayer.createOTTPlayer(PlayerActivity.this, initOptions);
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
             player.loadMedia(ottMediaOptions, (entry, error) -> {
                 log.d("OTTMedia onEntryLoadComplete; " + entry + "; " + error);
@@ -343,6 +341,7 @@ public class PlayerActivity extends AppCompatActivity {
                 .setAssetType(ottMedia.getAssetType())
                 .setContextType(ottMedia.getPlaybackContextType())
                 .setAssetReferenceType(ottMedia.getAssetReferenceType())
+                .setProtocol(ottMedia.getProtocol())
                 .setKS(ottMedia.getKs())
                 .setStartPosition(startPosition);
 
@@ -517,10 +516,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         player.addListener(this, PlayerEvent.videoTrackChanged, event -> {
             log.d("PLAYER videoTrackChanged");
-            PlayerEvent.TextTrackChanged videoTrackChanged = (PlayerEvent.TextTrackChanged) event;
             if (tracksSelectionController != null && tracksSelectionController.getTracks() != null) {
                 for (int i = 0; i <= tracksSelectionController.getTracks().getVideoTracks().size() - 1; i++) {
-                    if (videoTrackChanged.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getVideoTracks().get(i).getUniqueId())) {
+                    if (event.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getVideoTracks().get(i).getUniqueId())) {
                         tracksSelectionController.setTrackLastSelectionIndex(TRACK_TYPE_VIDEO, i);
                         break;
                     }

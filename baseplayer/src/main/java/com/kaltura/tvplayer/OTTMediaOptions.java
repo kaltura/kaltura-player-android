@@ -1,11 +1,9 @@
-package com.kaltura.tvplayer.ott;
+package com.kaltura.tvplayer;
 
 import android.support.annotation.NonNull;
 
-import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
-import com.kaltura.tvplayer.MediaOptions;
 
 public class OTTMediaOptions extends MediaOptions {
     String assetId;
@@ -16,18 +14,26 @@ public class OTTMediaOptions extends MediaOptions {
     String[] formats;
     String[] fileIds;
 
+
+
     public OTTMediaOptions setAssetId(String assetId) {
-        this.assetId = assetId;
+        if (assetId != null) {
+            this.assetId = assetId;
+        }
         return this;
     }
 
     public OTTMediaOptions setAssetType(APIDefines.KalturaAssetType assetType) {
-        this.assetType = assetType;
+        if (assetType != null) {
+            this.assetType = assetType;
+        }
         return this;
     }
 
     public OTTMediaOptions setContextType(APIDefines.PlaybackContextType contextType) {
-        this.contextType = contextType;
+        if (contextType != null) {
+            this.contextType = contextType;
+        }
         return this;
     }
 
@@ -36,26 +42,30 @@ public class OTTMediaOptions extends MediaOptions {
     }
 
     public OTTMediaOptions setProtocol(@NonNull @PhoenixMediaProvider.HttpProtocol String protocol) {
-        this.protocol = protocol;
+        if (protocol != null) {
+            this.protocol = protocol;
+        }
         return this;
     }
 
     public OTTMediaOptions setFormats(String[] formats) {
-        this.formats = formats;
+        if (formats != null) {
+            this.formats = formats;
+        }
         return this;
     }
 
     public OTTMediaOptions setFileIds(String[] fileIds) {
-        this.fileIds = fileIds;
+        if (fileIds != null) {
+            this.fileIds = fileIds;
+        }
         return this;
     }
 
-    public APIDefines.AssetReferenceType getAssetReferenceType() {
-        return assetReferenceType;
-    }
-
     public OTTMediaOptions setAssetReferenceType(APIDefines.AssetReferenceType assetReferenceType) {
-        this.assetReferenceType = assetReferenceType;
+        if (assetReferenceType != null) {
+            this.assetReferenceType = assetReferenceType;
+        }
         return this;
     }
 

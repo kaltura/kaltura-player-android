@@ -1,6 +1,4 @@
-package com.kaltura.tvplayer.ovp;
-
-import com.kaltura.tvplayer.MediaOptions;
+package com.kaltura.tvplayer;
 
 public class OVPMediaOptions extends MediaOptions {
     String entryId;

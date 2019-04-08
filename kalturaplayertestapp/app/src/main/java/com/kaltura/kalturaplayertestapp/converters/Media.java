@@ -1,6 +1,7 @@
 package com.kaltura.kalturaplayertestapp.converters;
 
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
+import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 
 /**
  * Created by gilad.nadav on 1/24/18.
@@ -15,6 +16,7 @@ public class Media {
     private String assetType; // ott
     private String playbackContextType; // ott
     private String assetReferenceType; // ott
+    private String protocol; // ott
 
     public Media() {}
 
@@ -92,7 +94,6 @@ public class Media {
         } else if (APIDefines.PlaybackContextType.Catchup.value.toLowerCase().equals(playbackContextType.toLowerCase())) {
             return APIDefines.PlaybackContextType.Catchup;
         }
-
         return null;
     }
 
@@ -101,12 +102,29 @@ public class Media {
     }
 
     public APIDefines.AssetReferenceType getAssetReferenceType() {
+        if (assetReferenceType == null) {
+            return null;
+        }
         if (APIDefines.AssetReferenceType.Media.value.toLowerCase().equals(assetReferenceType.toLowerCase())) {
-          return APIDefines.AssetReferenceType.Media;
+            return APIDefines.AssetReferenceType.Media;
         } else if (APIDefines.AssetReferenceType.ExternalEpg.value.toLowerCase().equals(assetReferenceType.toLowerCase())) {
             return APIDefines.AssetReferenceType.ExternalEpg;
         } else if (APIDefines.AssetReferenceType.InternalEpg.value.toLowerCase().equals(assetReferenceType.toLowerCase())) {
             return APIDefines.AssetReferenceType.InternalEpg;
+        }
+        return null;
+    }
+
+    public String getProtocol() {
+        if (protocol == null) {
+            return null;
+        }
+        if (PhoenixMediaProvider.HttpProtocol.All.toLowerCase().equals(protocol.toLowerCase())) {
+            return PhoenixMediaProvider.HttpProtocol.All;
+        } else if (PhoenixMediaProvider.HttpProtocol.Http.toLowerCase().equals(protocol.toLowerCase())) {
+            return PhoenixMediaProvider.HttpProtocol.Http;
+        } else if (PhoenixMediaProvider.HttpProtocol.Https.toLowerCase().equals(protocol.toLowerCase())) {
+            return PhoenixMediaProvider.HttpProtocol.Https;
         }
         return null;
     }
