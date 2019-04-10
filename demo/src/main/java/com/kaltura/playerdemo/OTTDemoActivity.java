@@ -10,10 +10,10 @@ import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
+import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.ott.KalturaOTTPlayer;
-import com.kaltura.tvplayer.ott.OTTMediaOptions;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -51,22 +51,21 @@ public class OTTDemoActivity extends BaseDemoActivity {
         }
     }
 
-    @Override
-    protected void loadPlayerConfig() {
-        PlayerConfigManager.initialize(this);
-
-        if (uiConfId == null || uiConfPartnerId == null) {
-            return;
-        }
-        
-        PlayerConfigManager.retrieve(uiConfId, uiConfPartnerId, ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
-            @Override
-            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-                Toast.makeText(OTTDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-                playerConfigUiConfJson = config;
-            }
-        });
-    }
+//    @Override
+//    protected void loadPlayerConfig() {
+//
+//        if (uiConfId == null || uiConfPartnerId == null) {
+//            return;
+//        }
+//        PlayerConfigManager.initialize(this);
+//        PlayerConfigManager.retrieve(uiConfId, uiConfPartnerId, ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
+//            @Override
+//            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
+//                Toast.makeText(OTTDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
+//                playerConfigUiConfJson = config;
+//            }
+//        });
+//    }
 
     @Override
     protected void loadItem(DemoItem item) {
@@ -79,7 +78,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
 
 
 
-        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId, initOptions.uiConfId, playerConfigUiConfJson);
+        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId, initOptions.uiConfId);
         updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
         updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
         updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
@@ -100,7 +99,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setReferrer(initOptions.referrer);
         updatedInitOptions.setStartTime(initOptions.startTime);
 
-        KalturaOTTPlayer player = KalturaOTTPlayer.create(playerActivity, updatedInitOptions);
+        KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
 
         OTTMediaOptions ottMediaOptions = new OTTMediaOptions().setAssetId(currentItem.id).setProtocol(currentItem.protocol);
         player.loadMedia(ottMediaOptions, (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));

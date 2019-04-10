@@ -36,8 +36,6 @@ dependencies {
     }
 
     api project(path: ':baseplayer')
-    api project(path: ':ovpplayer')
-    api project(path: ':ottplayer')
     
     //compile 'com.kaltura.playkit:imaplugin:0.1.2'
     //compile 'com.kaltura.playkit:youboraplugin:0.1.2'

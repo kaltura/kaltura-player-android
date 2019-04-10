@@ -38,7 +38,6 @@ public class PlayerInitOptions {
     public static final String STREAM_PRIORITY = "streamPriority";
 
     public final int partnerId;
-    public final JsonObject uiConf;
 
     public String ks;
     public Integer uiConfId;
@@ -66,71 +65,77 @@ public class PlayerInitOptions {
     public LoadControlBuffers loadControlBuffers;
     public ABRSettings abrSettings;
 
-    public PlayerInitOptions(int partnerId, int uiConfId, JsonObject uiConf) {
+    public PlayerInitOptions(int partnerId, int uiConfId) {
         this.partnerId = partnerId;
         this.uiConfId  = uiConfId;
-        // Fields not found in the UIConf: partnerId*, ks*, serverUrl, referrer
-
-        if (uiConf == null) {
-            this.uiConf = null;
-            return;
-        }
-        this.uiConf = uiConf;
-        fillUiConfPlaybackData(uiConf);
     }
 
-    private void fillUiConfPlaybackData(JsonObject uiConf) {
-
-        GsonReader reader = GsonReader.withObject(uiConf);
-        JsonObject playbackJson = (reader != null && reader.getObject(CONFIG) != null && reader.getObject(CONFIG).getAsJsonObject(PLAYER) != null) ? reader.getObject(CONFIG).getAsJsonObject(PLAYER).getAsJsonObject(PLAYBACK) : null;
-        if (playbackJson != null && playbackJson.keySet().size() > 0) {
-            Gson gson = new Gson();
-            UiConfPlayer uiconfPlayer = gson.fromJson(playbackJson, UiConfPlayer.class);
-            String audioLang = uiconfPlayer.getAudioLanguage();
-            if (audioLang != null) {
-                if (AUTO.equals(audioLang)) { // maybe "" is also considered as AUTO????
-                    audioLanguageMode = PKTrackConfig.Mode.AUTO;
-                    audioLanguage = "";
-                } else if (!"".equals(audioLang)){
-                    audioLanguageMode = PKTrackConfig.Mode.SELECTION;
-                    audioLanguage = audioLang;
-                }
-            }
-
-            String textLang = uiconfPlayer.getTextLanguage();
-            if (textLang != null) {
-                if (OFF.equals(textLang)) {
-                    textLanguageMode = PKTrackConfig.Mode.OFF;
-                    textLanguage = "";
-                } else if (AUTO.equals(textLang)) {
-                    textLanguageMode = PKTrackConfig.Mode.AUTO;
-                    textLanguage = "";
-                } else {
-                    textLanguageMode = PKTrackConfig.Mode.SELECTION;
-                    textLanguage = textLang;
-                }
-            }
-            if (uiconfPlayer.getAutoplay() != null) {
-                autoplay = uiconfPlayer.getAutoplay();
-            }
-
-            if (uiconfPlayer.getPreload() != null) {
-                String playerConfigPreload = uiconfPlayer.getPreload();
-                preload = AUTO.equals(playerConfigPreload);
-            }
-
-            if (uiconfPlayer.getStartTime() != null) {
-                startTime = uiconfPlayer.getStartTime();
-            }
-
-            if (uiconfPlayer.getStreamPriority() != null) {
-                List<StreamType> streamTypeList = uiconfPlayer.getStreamPriority();
-                if (streamTypeList != null && streamTypeList.size() > 0) {
-                    setPreferredMediaFormat(streamTypeList.get(0).getFormat());
-                }
-            }
-        }
-    }
+//    @Deprecated
+//    public PlayerInitOptions(int partnerId, int uiConfId, JsonObject uiConfJsonObjet) {
+//        this.partnerId = partnerId;
+//        this.uiConfId  = uiConfId;
+//        // Fields not found in the UIConf: partnerId*, ks*, serverUrl, referrer
+//
+//        if (uiConfJsonObjet == null) {
+//            this.uiConfJsonObjet = null;
+//            return;
+//        }
+//        this.uiConfJsonObjet = uiConfJsonObjet;
+//        fillUiConfPlaybackData(uiConfJsonObjet);
+//    }
+//
+//    private void fillUiConfPlaybackData(JsonObject uiConfJson) {
+//
+//        GsonReader reader = GsonReader.withObject(uiConfJson);
+//        JsonObject playbackJson = (reader != null && reader.getObject(CONFIG) != null && reader.getObject(CONFIG).getAsJsonObject(PLAYER) != null) ? reader.getObject(CONFIG).getAsJsonObject(PLAYER).getAsJsonObject(PLAYBACK) : null;
+//        if (playbackJson != null && playbackJson.keySet().size() > 0) {
+//            Gson gson = new Gson();
+//            UiConfPlayer uiconfPlayer = gson.fromJson(playbackJson, UiConfPlayer.class);
+//            String audioLang = uiconfPlayer.getAudioLanguage();
+//            if (audioLang != null) {
+//                if (AUTO.equals(audioLang)) { // maybe "" is also considered as AUTO????
+//                    audioLanguageMode = PKTrackConfig.Mode.AUTO;
+//                    audioLanguage = "";
+//                } else if (!"".equals(audioLang)){
+//                    audioLanguageMode = PKTrackConfig.Mode.SELECTION;
+//                    audioLanguage = audioLang;
+//                }
+//            }
+//
+//            String textLang = uiconfPlayer.getTextLanguage();
+//            if (textLang != null) {
+//                if (OFF.equals(textLang)) {
+//                    textLanguageMode = PKTrackConfig.Mode.OFF;
+//                    textLanguage = "";
+//                } else if (AUTO.equals(textLang)) {
+//                    textLanguageMode = PKTrackConfig.Mode.AUTO;
+//                    textLanguage = "";
+//                } else {
+//                    textLanguageMode = PKTrackConfig.Mode.SELECTION;
+//                    textLanguage = textLang;
+//                }
+//            }
+//            if (uiconfPlayer.getAutoplay() != null) {
+//                autoplay = uiconfPlayer.getAutoplay();
+//            }
+//
+//            if (uiconfPlayer.getPreload() != null) {
+//                String playerConfigPreload = uiconfPlayer.getPreload();
+//                preload = AUTO.equals(playerConfigPreload);
+//            }
+//
+//            if (uiconfPlayer.getStartTime() != null) {
+//                startTime = uiconfPlayer.getStartTime();
+//            }
+//
+//            if (uiconfPlayer.getStreamPriority() != null) {
+//                List<StreamType> streamTypeList = uiconfPlayer.getStreamPriority();
+//                if (streamTypeList != null && streamTypeList.size() > 0) {
+//                    setPreferredMediaFormat(streamTypeList.get(0).getFormat());
+//                }
+//            }
+//        }
+//    }
 
     public PlayerInitOptions setKs(String ks) {
         this.ks = ks;

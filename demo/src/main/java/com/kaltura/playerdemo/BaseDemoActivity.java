@@ -71,8 +71,6 @@ public abstract class BaseDemoActivity extends AppCompatActivity
 
         loadConfigFile();
 
-        loadPlayerConfig();
-        
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -100,7 +98,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         }
         if (json.has(PLAYER_CONFIG)) {
             JsonObject playerConfigJasonObject = safeObject(json, PLAYER_CONFIG);
-            final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId, uiConfJson);
+            final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId);
             if (initOptions == null) {
                 options.setServerUrl(safeString(playerConfigJasonObject, PlayerInitOptions.SERVER_URL))
                         .setAutoPlay(safeBoolean(playerConfigJasonObject, PlayerInitOptions.AUTOPLAY))
@@ -201,8 +199,6 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     @NonNull
     protected abstract DemoItem parseItem(JsonObject object);
 
-    protected abstract void loadPlayerConfig();
-    
     protected int partnerId() {
         if (initOptions == null) {
             return 0;

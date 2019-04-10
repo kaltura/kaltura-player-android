@@ -11,10 +11,10 @@ import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
+import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.OVPMediaOptions;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.ovp.KalturaOvpPlayer;
-import com.kaltura.tvplayer.ovp.OVPMediaOptions;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -26,7 +26,7 @@ import java.net.URL;
 public class OVPDemoActivity extends BaseDemoActivity {
 
     private static final PKLog log = PKLog.get("OVPDemoActivity");
-    
+
     private DemoItem currentItem;
 
     @Override
@@ -39,7 +39,7 @@ public class OVPDemoActivity extends BaseDemoActivity {
 
         final Uri url = getIntent().getData();
         String jsonString = null;
-        
+
         if (url != null) {
             jsonString = readUrlToString(url);
         } else {
@@ -65,24 +65,25 @@ public class OVPDemoActivity extends BaseDemoActivity {
         return new DemoItem(object.get("name").getAsString(), object.get("entryId").getAsString());
     }
 
-    @Override
-    protected void loadPlayerConfig() {
-        PlayerConfigManager.initialize(this);
-        if (uiConfId == null) {
-            return;
-        }
-        
-        if (uiConfPartnerId == null) {
-            uiConfPartnerId = partnerId();
-        }
-        PlayerConfigManager.retrieve(uiConfId, uiConfPartnerId, ks, uiConfServerUrl, new PlayerConfigManager.OnPlayerConfigLoaded() {
-            @Override
-            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-                Toast.makeText(OVPDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-                playerConfigUiConfJson = config;
-            }
-        });
-    }
+//    @Override
+//    protected void loadPlayerConfig() {
+//
+//        if (uiConfId == null) {
+//            return;
+//        }
+//
+//        if (uiConfPartnerId == null) {
+//            uiConfPartnerId = partnerId();
+//        }
+//        PlayerConfigManager.initialize(this);
+//        PlayerConfigManager.retrieve(uiConfId, uiConfPartnerId, ks, uiConfServerUrl, new PlayerConfigManager.OnPlayerConfigLoaded() {
+//            @Override
+//            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
+//                Toast.makeText(OVPDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
+//                playerConfigUiConfJson = config;
+//            }
+//        });
+//    }
 
     @Override
     protected void loadItem(DemoItem item) {
@@ -92,7 +93,7 @@ public class OVPDemoActivity extends BaseDemoActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
-        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId, initOptions.uiConfId, playerConfigUiConfJson);
+        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId, initOptions.uiConfId);
         updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
         updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
         updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
@@ -113,8 +114,7 @@ public class OVPDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setReferrer(initOptions.referrer);
         updatedInitOptions.setStartTime(initOptions.startTime);
 
-        KalturaOvpPlayer player = KalturaOvpPlayer.create(playerActivity, updatedInitOptions);
-
+        KalturaPlayer player = KalturaPlayer.createOVPPlayer(playerActivity, updatedInitOptions);
         player.loadMedia(new OVPMediaOptions().setEntryId(currentItem.id), (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
         player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 

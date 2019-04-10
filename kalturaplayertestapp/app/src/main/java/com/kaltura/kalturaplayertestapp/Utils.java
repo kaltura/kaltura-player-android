@@ -22,7 +22,7 @@ public class Utils {
 
         JsonObject uiconfJson = null;
         String mediaProvider = safeString(json, "mediaProvider");
-        final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId, uiconfJson);
+        final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId);
 //
 //        {
 //           "mode": "ovp",
