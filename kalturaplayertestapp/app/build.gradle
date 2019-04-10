@@ -30,8 +30,6 @@ configurations.all {
 
 dependencies {
     api project(":baseplayer")
-    api project(":ovpplayer")
-    api project(":ottplayer")
 
     api project(":googlecast");
     api project(":youbora");
