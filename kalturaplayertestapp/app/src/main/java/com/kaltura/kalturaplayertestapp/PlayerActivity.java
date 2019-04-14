@@ -291,13 +291,13 @@ public class PlayerActivity extends AppCompatActivity {
             player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
-                log.d("OVPMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
                 if (error != null) {
                     log.d("OVPMedia Error Extra = " + error.getExtra());
                     Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
                     playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
                     playbackControlsManager.showControls(View.VISIBLE);
                 } else {
+                    log.d("OVPMedia onEntryLoadComplete entry =" + entry.getId());
                     if (!initOptions.autoplay) {
                         playbackControlsManager.showControls(View.VISIBLE);
                     }
@@ -307,13 +307,13 @@ public class PlayerActivity extends AppCompatActivity {
             player = KalturaPlayer.createOTTPlayer(PlayerActivity.this, initOptions);
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
             player.loadMedia(ottMediaOptions, (entry, error) -> {
-                log.d("OTTMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
                 if (error != null) {
                     log.d("OTTMedia Error Extra = " + error.getExtra());
                     Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
                     playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
                     playbackControlsManager.showControls(View.VISIBLE);
                 } else {
+                    log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
                     if (!initOptions.autoplay) {
                         playbackControlsManager.showControls(View.VISIBLE);
                     }
