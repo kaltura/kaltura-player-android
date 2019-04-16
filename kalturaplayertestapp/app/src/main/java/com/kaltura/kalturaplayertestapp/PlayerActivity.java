@@ -28,9 +28,11 @@ import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.player.MediaSupport;
+import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
@@ -53,8 +55,10 @@ import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
+import com.kaltura.tvplayer.BasicMediaOptions;
 import com.kaltura.tvplayer.KalturaPlayer;
 
+import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.PlaybackControlsView;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
@@ -107,11 +111,13 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean allAdsCompeted;
     private PlaybackControlsManager playbackControlsManager;
 
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
@@ -156,18 +162,25 @@ public class PlayerActivity extends AppCompatActivity {
             player.stop();
         }
         updatePluginsConfig();
-        if ("ovp".equals(appPlayerInitConfig.getPlayerType())) {
+        if ("ovp".equals(appPlayerInitConfig.getPlayerType().toLowerCase())) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
                 log.d("OVPMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
                 handleOnEntryLoadCompleate(error);
             });
-        } else {
+        } else if ("ott".equals(appPlayerInitConfig.getPlayerType().toLowerCase())){
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ottMediaOptions, (entry, error) -> {
                 log.d("OTTMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
                 handleOnEntryLoadCompleate(error);
             });
+        } else if ("basic".equals(appPlayerInitConfig.getPlayerType().toLowerCase())) {
+            BasicMediaOptions basicMediaOptions = buildBasicMediaOptions(0);
+            if (appPlayerInitConfig.getMediaList() != null && appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex) != null) {
+                player.setMedia(appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex).getPkMediaEntry(), basicMediaOptions);
+            }
+        }
+        else {
         }
     }
 
@@ -266,7 +279,9 @@ public class PlayerActivity extends AppCompatActivity {
         if (appPlayerInitConfig.getUiConf() != null) {
             playerUiConfId = Integer.valueOf(appPlayerInitConfig.getUiConf().getId());
         }
-        initOptions = new PlayerInitOptions(Integer.valueOf(appPlayerInitConfig.getPartnerId()), playerUiConfId)
+
+        Integer configPartnerId = (appPlayerInitConfig.getPartnerId() != null) ? Integer.valueOf(appPlayerInitConfig.getPartnerId()) : null;
+        initOptions = new PlayerInitOptions(configPartnerId, playerUiConfId)
                 .setAutoPlay(appPlayerInitConfig.getAutoPlay())
                 .setKs(appPlayerInitConfig.getKs())
                 .setPreload(appPlayerInitConfig.getPreload())
@@ -319,7 +334,14 @@ public class PlayerActivity extends AppCompatActivity {
                     }
                 }
             });
-        } else {
+        } else if ("basic".equals(playerType.toLowerCase())) {
+            player = KalturaPlayer.createBasicPlayer(PlayerActivity.this, initOptions);
+            BasicMediaOptions basicMediaOptions = buildBasicMediaOptions(appPlayerInitConfig.getStartPosition());
+            if (appPlayerInitConfig.getMediaList() != null && appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex) != null) {
+                player.setMedia(appPlayerInitConfig.getMediaList().get(playListMediaIndex).getPkMediaEntry(), basicMediaOptions);
+            }
+        }
+        else {
             log.e("Failed to initialize player...");
             return;
         }
@@ -331,6 +353,12 @@ public class PlayerActivity extends AppCompatActivity {
         }
         playbackControlsManager.updatePrevNextBtnFunctionality(currentPlayedMediaIndex, appPlayerInitConfig.getMediaList().size());
         setPlayerListeners();
+    }
+
+    @NonNull
+    private BasicMediaOptions buildBasicMediaOptions(int startPosition) {
+        BasicMediaOptions basicMediaOptions = new BasicMediaOptions().setStartPosition(startPosition);
+        return basicMediaOptions;
     }
 
     @NonNull
@@ -481,7 +509,7 @@ public class PlayerActivity extends AppCompatActivity {
             log.d("PLAYER ENDED");
             playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
             if (!isPostrollAvailableInAdCuePoint()) {
-                //playbackControlsManager.showControls(View.VISIBLE);
+                playbackControlsManager.showControls(View.VISIBLE);
             }
         });
 

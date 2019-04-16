@@ -41,6 +41,7 @@ import com.kaltura.kalturaplayertestapp.converters.TestDescriptor;
 import com.kaltura.kalturaplayertestapp.models.Configuration;
 import com.kaltura.kalturaplayertestapp.qrcode.BarcodeCaptureActivity;
 import com.kaltura.playkit.PKDeviceCapabilities;
+import com.kaltura.playkit.player.PKHttpClientManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -76,6 +77,7 @@ public class MainActivity extends BaseActivity implements TestCaseConfigurationA
     @Override
     protected void onStart() {
         super.onStart();
+
         mFirestore.collection("users").document(currentUser.getUid()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(DocumentSnapshot documentSnapshot, FirebaseFirestoreException e) {
@@ -143,7 +145,25 @@ public class MainActivity extends BaseActivity implements TestCaseConfigurationA
         mConfigurationsRecycler.setHasFixedSize(true);
         mConfigurationsRecycler.setAdapter(mAdapter);
         mAdapter.startListening();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                doConnectionsWarmup();
+            }
+        });
+        thread.start();
 
+    }
+
+    private void doConnectionsWarmup() {
+        PKHttpClientManager.setHttpProvider("okhttp");
+        PKHttpClientManager.warmUp(
+                "https://rest-as.ott.kaltura.com/crossdomain.xml",
+                "https://api-preprod.ott.kaltura.com/crossdomain.xml",
+                "https://vootvideo.akamaized.net/favicon.ico",
+                "https://cdnapisec.kaltura.com/alive.html",
+                "https://cfvod.kaltura.com/alive.html"
+        );
     }
 
     @Override
@@ -245,6 +265,8 @@ public class MainActivity extends BaseActivity implements TestCaseConfigurationA
         });
         alertDialog.show();
     }
+
+
 
     public void showCustomAboutDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);

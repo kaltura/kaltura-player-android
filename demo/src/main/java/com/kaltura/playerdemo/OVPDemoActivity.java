@@ -7,13 +7,12 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.google.gson.JsonObject;
-import com.kaltura.netkit.utils.ErrorElement;
+
 import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OVPMediaOptions;
-import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
 
 import org.greenrobot.eventbus.EventBus;

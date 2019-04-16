@@ -1,5 +1,6 @@
 package com.kaltura.kalturaplayertestapp.converters;
 
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 
@@ -17,6 +18,8 @@ public class Media {
     private String playbackContextType; // ott
     private String assetReferenceType; // ott
     private String protocol; // ott
+    private PKMediaEntry pkMediaEntry; // player without provider
+
 
     public Media() {}
 
@@ -55,6 +58,10 @@ public class Media {
 
     public Integer getFileId() {
         return fileId;
+    }
+
+    public PKMediaEntry getPkMediaEntry() {
+        return pkMediaEntry;
     }
 
     public void setFileId(Integer fileId) {

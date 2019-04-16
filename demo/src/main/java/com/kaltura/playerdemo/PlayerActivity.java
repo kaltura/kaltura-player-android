@@ -23,6 +23,22 @@ public class PlayerActivity extends AppCompatActivity {
         EventBus.getDefault().post(this);
     }
 
+    @Override
+    protected void onPause() {
+        if (player != null) {
+            player.onApplicationPaused();
+        }
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (player != null) {
+            player.onApplicationResumed();
+            player.play();
+        }
+    }
 
     @Override
     protected void onDestroy() {

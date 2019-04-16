@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -22,22 +23,32 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlayerInitOptions;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Unknown;
 
 public abstract class BaseDemoActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, KalturaPlayer.OnEntryLoadListener {
@@ -192,8 +203,74 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         }
 
         items = itemList.toArray(new DemoItem[itemList.size()]);
+    }
 
+    protected void parseBasicCommonOptions(JsonObject json) {
+        parseInitOptions(safeObject(json, "initOptions"));
 
+        if (initOptions != null) {
+            ks = initOptions.ks;
+        }
+        final JsonArray jsonItems = json.get("items").getAsJsonArray();
+        List<DemoItem> itemList = new ArrayList<>(jsonItems.size());
+        for (JsonElement item : jsonItems) {
+            final JsonObject object = item.getAsJsonObject();
+            PKMediaEntry pkMediaEntry = MockMediaParser.parseMedia(object);
+            itemList.add(new DemoItem(pkMediaEntry.getName(), pkMediaEntry.getId(), pkMediaEntry));
+        }
+
+        items = itemList.toArray(new DemoItem[itemList.size()]);
+    }
+
+    static class MockMediaParser {
+
+        static PKMediaEntry parseMedia(JsonObject mediaObject) throws JsonSyntaxException {
+
+            PKMediaEntry mediaEntry = new Gson().fromJson(mediaObject, PKMediaEntry.class);
+            if (mediaEntry.getMediaType() == null) {
+                mediaEntry.setMediaType(Unknown);
+            }
+            List<PKMediaSource> mediaSources = mediaEntry.getSources();
+            for (PKMediaSource mediaSource : mediaSources) {
+                PKMediaFormat format = PKMediaFormat.valueOfUrl(mediaSource.getUrl());
+                if (format == null) {
+                    String mimeType = getMimeTypeFromJson(mediaObject);
+                    if (mimeType != null) {
+                        if (mimeType.equals(PKMediaFormat.dash.mimeType)) {
+                            format = PKMediaFormat.dash;
+                        } else if (mimeType.equals(PKMediaFormat.hls.mimeType)) {
+                            format = PKMediaFormat.hls;
+                        } else if (mimeType.equals(PKMediaFormat.wvm.mimeType)) {
+                            format = PKMediaFormat.wvm;
+                        } else if (mimeType.equals(PKMediaFormat.mp4.mimeType)) {
+                            format = PKMediaFormat.mp4;
+                        } else if (mimeType.equals(PKMediaFormat.mp3.mimeType)) {
+                            format = PKMediaFormat.mp3;
+                        }
+                    }
+                }
+                mediaSource.setMediaFormat(format);
+            }
+            return mediaEntry;
+        }
+    }
+
+    @Nullable
+    private static String getMimeTypeFromJson(JsonObject mediaObject) {
+        String mimeType = null;
+        try {
+            JSONObject jsonObj = new JSONObject(mediaObject.toString());
+            JSONArray sources = jsonObj.getJSONArray("sources");
+            if (sources != null && sources.length() > 0) {
+                JSONObject sourcesJson = sources.getJSONObject(0);
+                mimeType = sourcesJson.getString("mimeType");
+                return mimeType;
+            }
+        } catch (JSONException e) {
+            //e.printStackTrace();
+            log.d("Sources does not contain mime type in it - hope url extension is valid...");
+        }
+        return mimeType;
     }
 
     @NonNull

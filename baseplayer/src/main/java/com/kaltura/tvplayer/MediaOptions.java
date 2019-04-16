@@ -1,8 +1,5 @@
 package com.kaltura.tvplayer;
 
-
-import com.kaltura.playkit.PKMediaFormat;
-
 public class MediaOptions {
     private String ks;
     private double startPosition;

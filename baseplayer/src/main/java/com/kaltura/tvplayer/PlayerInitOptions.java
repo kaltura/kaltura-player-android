@@ -1,6 +1,5 @@
 package com.kaltura.tvplayer;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
@@ -9,12 +8,6 @@ import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
-import com.kaltura.tvplayer.config.player.StreamType;
-import com.kaltura.tvplayer.config.player.UiConfPlayer;
-import com.kaltura.tvplayer.utils.GsonReader;
-
-import java.util.List;
-
 
 public class PlayerInitOptions {
     public static final String PLAYER = "player";
@@ -37,7 +30,7 @@ public class PlayerInitOptions {
     public static final String ALLOW_CROSS_PROTOCOL_ENABLED = "allowCrossProtocolEnabled";
     public static final String STREAM_PRIORITY = "streamPriority";
 
-    public final int partnerId;
+    public final Integer partnerId;
 
     public String ks;
     public Integer uiConfId;
@@ -65,7 +58,15 @@ public class PlayerInitOptions {
     public LoadControlBuffers loadControlBuffers;
     public ABRSettings abrSettings;
 
-    public PlayerInitOptions(int partnerId, int uiConfId) {
+    public PlayerInitOptions() {
+        partnerId = null;
+    }
+
+    public PlayerInitOptions(Integer partnerId) {
+        this.partnerId = partnerId;
+    }
+
+    public PlayerInitOptions(Integer partnerId, Integer uiConfId) {
         this.partnerId = partnerId;
         this.uiConfId  = uiConfId;
     }
@@ -145,6 +146,14 @@ public class PlayerInitOptions {
     public PlayerInitOptions setPluginConfigs(PKPluginConfigs pluginConfigs) {
         if (pluginConfigs != null) {
             this.pluginConfigs = pluginConfigs;
+        }
+        return this;
+    }
+
+
+    public PlayerInitOptions setUiConfId(Integer uiConfId) {
+        if (uiConfId != null) {
+            this.uiConfId = uiConfId;
         }
         return this;
     }
