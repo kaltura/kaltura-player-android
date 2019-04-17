@@ -96,12 +96,39 @@ public class PlaybackControlsManager implements PlaybackControls {
             }
             playbackControlsView.setVisibility(visability);
         }
-        if (!isAdDisplayed) {
-            nextBtn.setVisibility(visability);
-            prevBtn.setVisibility(visability);
+
+        if (isAdDisplayed) {
+            nextBtn.setVisibility(View.INVISIBLE);
+            prevBtn.setVisibility(View.INVISIBLE);
+            videoTracksBtn.setVisibility(View.INVISIBLE);
+            audioTracksBtn.setVisibility(View.INVISIBLE);
+            textTracksBtn.setVisibility(View.INVISIBLE);
+            return;
+        }
+
+        if (tracksSelectionController == null || tracksSelectionController.getTracks() == null) {
+            return;
+        }
+
+        nextBtn.setVisibility(visability);
+        prevBtn.setVisibility(visability);
+
+        if (tracksSelectionController.getTracks().getVideoTracks().size() > 1) {
             videoTracksBtn.setVisibility(visability);
+        } else {
+            videoTracksBtn.setVisibility(View.INVISIBLE);
+        }
+
+        if (tracksSelectionController.getTracks().getAudioTracks().size() > 1) {
             audioTracksBtn.setVisibility(visability);
+        } else {
+            audioTracksBtn.setVisibility(View.INVISIBLE);
+        }
+
+        if (tracksSelectionController.getTracks().getTextTracks().size() > 1) {
             textTracksBtn.setVisibility(visability);
+        } else {
+            textTracksBtn.setVisibility(View.INVISIBLE);
         }
     }
 
