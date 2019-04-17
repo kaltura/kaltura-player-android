@@ -241,23 +241,25 @@ public class KalturaPlayer  {
     }
 
     private JsonObject kavaDefaults(Integer partnerId, Integer uiconfId, String referrer) {
-        JsonObject object = new JsonObject();
-        object.addProperty(KavaAnalyticsConfig.BASE_URL, KavaAnalyticsConfig.DEFAULT_BASE_URL);
-        object.addProperty(KavaAnalyticsConfig.DVR_THRESHOLD, Consts.DISTANCE_FROM_LIVE_THRESHOLD);
-        object.addProperty(KavaAnalyticsConfig.PARTNER_ID, partnerId);
-        if (uiconfId != null) {
-            object.addProperty(KavaAnalyticsConfig.UICONF_ID, uiconfId);
+        JsonObject kavaAnalyticsConfigJson = new JsonObject();
+        kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.BASE_URL, KavaAnalyticsConfig.DEFAULT_BASE_URL);
+        kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.DVR_THRESHOLD, Consts.DISTANCE_FROM_LIVE_THRESHOLD);
+        kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.PARTNER_ID, partnerId);
+        if (uiconfId != null && uiconfId > 0) {
+            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.UICONF_ID, uiconfId);
         }
-        if (mediaEntry != null && mediaEntry.getId() != null) {
-            object.addProperty(KavaAnalyticsConfig.ENTRY_ID, mediaEntry.getId());
+        if (partnerId == Consts.DEFAULT_KAVA_PARTNER_ID) {
+            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.ENTRY_ID, Consts.DEFAULT_KAVA_ENTRY_ID);
+        } else if (mediaEntry != null && mediaEntry.getId() != null) {
+            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.ENTRY_ID, mediaEntry.getId());
         }
         if (!TextUtils.isEmpty(ks)) {
-            object.addProperty(KavaAnalyticsConfig.KS, ks);
+            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.KS, ks);
         }
         if (!TextUtils.isEmpty(referrer)) {
-            object.addProperty(KavaAnalyticsConfig.REFERRER, referrer);
+            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.REFERRER, referrer);
         }
-        return object;
+        return kavaAnalyticsConfigJson;
     }
 
     private JsonObject kalturaStatsDefaults(int partnerId, int uiConfId) {
@@ -346,7 +348,8 @@ public class KalturaPlayer  {
                     combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(appPluginConfig));
                 }
             }
-            if (pluginConfigs.getPluginConfig(KavaAnalyticsPlugin.factory.getName()) == null) {
+            if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
+                log.d("Adding Automatic Kava Plugin");
                 combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), tokenResolver.resolve(kavaDefaults(partnerId, uiConfId, referrer)));
             }
         }
@@ -912,7 +915,7 @@ public class KalturaPlayer  {
         // Special case: Phoenix plugin
         // Phoenix
         String name = PhoenixAnalyticsPlugin.factory.getName();
-        JsonObject phoenixAnalyticObject = null;
+        JsonObject phoenixAnalyticObject;
         if (getInitOptions().pluginConfigs.hasConfig(name)) {
             phoenixAnalyticObject = (JsonObject) getInitOptions().pluginConfigs.getPluginConfig(name);
         } else {
