@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -31,6 +32,8 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.PlayerState;
+import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.PKTracks;
@@ -102,6 +105,7 @@ public class PlayerActivity extends AppCompatActivity {
     private List<String> eventsList = new ArrayList<>();
     private List<String> searchedEventsList = new ArrayList<>();
     private String searchLogPattern = "";
+    private ProgressBar progressBar;
     private SearchView searchView;
     private TracksSelectionController tracksSelectionController;
     private PlayerConfig appPlayerInitConfig;
@@ -127,6 +131,7 @@ public class PlayerActivity extends AppCompatActivity {
         eventsListRecyclerAdapter = new EventsAdapter();
         eventsListView.setAdapter(eventsListRecyclerAdapter);
         searchView = findViewById(R.id.search_events);
+        progressBar = findViewById(R.id.videoProgressBar);
         addSearchListener();
 
         playerConfigTitle = getIntent().getExtras().getString(PlayerActivity.PLAYER_CONFIG_TITLE_KEY);
@@ -429,6 +434,7 @@ public class PlayerActivity extends AppCompatActivity {
             log.d("AD CONTENT_PAUSE_REQUESTED");
             playbackControlsManager.setAdPlayerState(AdEvent.Type.CONTENT_PAUSE_REQUESTED);
             playbackControlsManager.showControls(View.INVISIBLE);
+            progressBar.setVisibility(View.VISIBLE);
         });
 
         player.addListener(this, AdEvent.contentResumeRequested, event -> {
@@ -451,6 +457,7 @@ public class PlayerActivity extends AppCompatActivity {
             allAdsCompeted = false;
             AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
             playbackControlsManager.showControls(View.INVISIBLE);
+            progressBar.setVisibility(View.INVISIBLE);
         });
 
         player.addListener(this, AdEvent.paused, event -> {
@@ -478,6 +485,16 @@ public class PlayerActivity extends AppCompatActivity {
             playbackControlsManager.setAdPlayerState(AdEvent.Type.SKIPPED);
         });
 
+        player.addListener(this, AdEvent.adBufferStart, event -> {
+            log.d("AD_BUFFER_START pos = " + event.adPosition);
+            progressBar.setVisibility(View.VISIBLE);
+        });
+
+        player.addListener(this, AdEvent.adBufferEnd, event -> {
+            log.d("AD_BUFFER_END pos = " + event.adPosition);
+            progressBar.setVisibility(View.INVISIBLE);
+        });
+
         /////// PLAYER EVENTS
 
 //        player.addListener(this, PlayerEvent.play, event -> {
@@ -489,6 +506,7 @@ public class PlayerActivity extends AppCompatActivity {
         player.addListener(this, PlayerEvent.playing, event -> {
             log.d("Player Event PLAYING");
             updateEventsLogsList("player:\n" + event.eventType().name());
+            progressBar.setVisibility(View.INVISIBLE);
             playbackControlsManager.setContentPlayerState(event.eventType());
             playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
             playbackControlsManager.showControls(View.INVISIBLE);
@@ -595,6 +613,8 @@ public class PlayerActivity extends AppCompatActivity {
             PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
             log.d("PLAYER stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
             updateEventsLogsList("player:\n" + event.eventType().name() + ":" + stateChanged.newState);
+            //log.d("XXX State changed from " + event.oldState + " to " + event.newState);
+
             switch (stateChanged.newState) {
                 case IDLE:
                     log.d("StateChange Idle");
@@ -604,10 +624,19 @@ public class PlayerActivity extends AppCompatActivity {
                     break;
                 case READY:
                     log.d("StateChange Ready");
+                    progressBar.setVisibility(View.INVISIBLE);
                     break;
                 case BUFFERING:
                     log.d("StateChange Buffering");
+                    AdController adController = player.getController(AdController.class);
+                    if (adController != null && !adController.isAdDisplayed()) {
+                        progressBar.setVisibility(View.VISIBLE);
+                    }
                     break;
+            }
+
+            if ((event.oldState == PlayerState.LOADING || event.oldState == PlayerState.BUFFERING) && event.newState == PlayerState.READY) {
+                progressBar.setVisibility(View.INVISIBLE);
             }
         });
 

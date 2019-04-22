@@ -13,7 +13,6 @@
         android:background="@android:color/black"
         android:keepScreenOn="true">
 
-
         <LinearLayout
             android:id="@+id/player_container_layout"
             android:layout_width="match_parent"
@@ -21,6 +20,14 @@
             android:layout_gravity="start"
             android:orientation="vertical"
             />
+
+        <ProgressBar
+            android:id="@+id/videoProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="invisible"
+            style="@android:style/Widget.ProgressBar.Large" />
 
         <com.kaltura.tvplayer.PlaybackControlsView
             android:id="@+id/player_controls"
