@@ -186,6 +186,7 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
         else {
+            log.e("Error no such player type <" + appPlayerInitConfig.getPlayerType() + ">");
         }
     }
 
@@ -309,6 +310,8 @@ public class PlayerActivity extends AppCompatActivity {
         mediaList = appPlayerInitConfig.getMediaList();
         if ("ovp".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
+            setPlayer(player);
+
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
                 if (error != null) {
@@ -325,6 +328,7 @@ public class PlayerActivity extends AppCompatActivity {
             });
         } else if ("ott".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createOTTPlayer(PlayerActivity.this, initOptions);
+            setPlayer(player);
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
             player.loadMedia(ottMediaOptions, (entry, error) -> {
                 if (error != null) {
@@ -341,6 +345,7 @@ public class PlayerActivity extends AppCompatActivity {
             });
         } else if ("basic".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createBasicPlayer(PlayerActivity.this, initOptions);
+            setPlayer(player);
             BasicMediaOptions basicMediaOptions = buildBasicMediaOptions(appPlayerInitConfig.getStartPosition());
             if (appPlayerInitConfig.getMediaList() != null && appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex) != null) {
                 player.setMedia(appPlayerInitConfig.getMediaList().get(playListMediaIndex).getPkMediaEntry(), basicMediaOptions);
@@ -351,13 +356,12 @@ public class PlayerActivity extends AppCompatActivity {
             return;
         }
 
-        setPlayer(player);
         playbackControlsManager = new PlaybackControlsManager(this, player, playbackControlsView);
         if (appPlayerInitConfig.getMediaList().size() > 1) {
             playbackControlsManager.addChangeMediaButtonsListener(appPlayerInitConfig.getMediaList().size());
         }
         playbackControlsManager.updatePrevNextBtnFunctionality(currentPlayedMediaIndex, appPlayerInitConfig.getMediaList().size());
-        setPlayerListeners();
+
     }
 
     @NonNull
@@ -498,10 +502,20 @@ public class PlayerActivity extends AppCompatActivity {
         /////// PLAYER EVENTS
 
 //        player.addListener(this, PlayerEvent.play, event -> {
-//            log.d("Player LAY");
+//            log.d("Player PLAY");
 //
 //        });
 
+
+        player.addListener(this, PlayerEvent.loadedMetadata, event -> {
+            log.d("Player Event LoadedMetadata");
+            updateEventsLogsList("player:\n" + event.eventType().name());
+        });
+
+        player.addListener(this, PlayerEvent.durationChanged, event -> {
+            log.d("Player Event DurationChanged");
+            updateEventsLogsList("player:\n" + event.eventType().name());
+        });
 
         player.addListener(this, PlayerEvent.playing, event -> {
             log.d("Player Event PLAYING");
@@ -613,7 +627,6 @@ public class PlayerActivity extends AppCompatActivity {
             PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
             log.d("PLAYER stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
             updateEventsLogsList("player:\n" + event.eventType().name() + ":" + stateChanged.newState);
-            //log.d("XXX State changed from " + event.oldState + " to " + event.newState);
 
             switch (stateChanged.newState) {
                 case IDLE:
@@ -629,14 +642,10 @@ public class PlayerActivity extends AppCompatActivity {
                 case BUFFERING:
                     log.d("StateChange Buffering");
                     AdController adController = player.getController(AdController.class);
-                    if (adController != null && !adController.isAdDisplayed()) {
+                    if (adController == null || (adController != null && !adController.isAdDisplayed())) {
                         progressBar.setVisibility(View.VISIBLE);
                     }
                     break;
-            }
-
-            if ((event.oldState == PlayerState.LOADING || event.oldState == PlayerState.BUFFERING) && event.newState == PlayerState.READY) {
-                progressBar.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -797,6 +806,7 @@ public class PlayerActivity extends AppCompatActivity {
             log.e( "Player is null");
             return;
         }
+        setPlayerListeners();
         final ViewGroup container = findViewById(R.id.player_container_layout);
         playbackControlsView = findViewById(R.id.player_controls);
         playbackControlsView.setVisibility(View.INVISIBLE);
@@ -865,7 +875,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         if (player != null) {
             if (tracksSelectionController != null) {
+                log.d("onResume -> Player Activity onResume");
                 player.onApplicationResumed();
+                setPlayerListeners();
             }
             playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
         }
