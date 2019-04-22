@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.tvplayer.PlayerInitOptions;
+import com.kaltura.tvplayer.config.player.UiConf;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,11 +19,11 @@ import java.util.Scanner;
 
 public class Utils {
 
-    public static PlayerInitOptions parseInitOptions(int partnerId, int uiConfId, JsonObject json) {
+    public static PlayerInitOptions parseInitOptions(int partnerId, int uiconfPartnerId, int uiConfId, JsonObject json) {
 
         JsonObject uiconfJson = null;
         String mediaProvider = safeString(json, "mediaProvider");
-        final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId);
+        final PlayerInitOptions options = new PlayerInitOptions(partnerId, new UiConf(Integer.valueOf(uiConfId), Integer.valueOf(uiconfPartnerId)));
 //
 //        {
 //           "mode": "ovp",

@@ -63,6 +63,7 @@ import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
+import com.kaltura.tvplayer.config.player.UiConf;
 
 
 import java.text.DateFormat;
@@ -282,8 +283,8 @@ public class PlayerActivity extends AppCompatActivity {
             playerUiConfId = Integer.valueOf(appPlayerInitConfig.getUiConf().getId());
         }
 
-        Integer configPartnerId = (appPlayerInitConfig.getPartnerId() != null) ? Integer.valueOf(appPlayerInitConfig.getPartnerId()) : null;
-        initOptions = new PlayerInitOptions(configPartnerId, playerUiConfId)
+        Integer partnerId = (appPlayerInitConfig.getPartnerId() != null) ? Integer.valueOf(appPlayerInitConfig.getPartnerId()) : null;
+        initOptions = new PlayerInitOptions(partnerId, new UiConf(appPlayerInitConfig.getUiConf() == null ? null : Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), appPlayerInitConfig.getUiConf() == null ? null : Integer.valueOf(appPlayerInitConfig.getUiConf().getPartnerId())))
                 .setAutoPlay(appPlayerInitConfig.getAutoPlay())
                 .setKs(appPlayerInitConfig.getKs())
                 .setPreload(appPlayerInitConfig.getPreload())

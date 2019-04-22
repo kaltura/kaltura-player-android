@@ -38,6 +38,7 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlayerInitOptions;
+import com.kaltura.tvplayer.config.player.UiConf;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -109,7 +110,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         }
         if (json.has(PLAYER_CONFIG)) {
             JsonObject playerConfigJasonObject = safeObject(json, PLAYER_CONFIG);
-            final PlayerInitOptions options = new PlayerInitOptions(partnerId, uiConfId);
+            final PlayerInitOptions options = new PlayerInitOptions(partnerId, new UiConf(Integer.valueOf(uiConfId), Integer.valueOf(uiConfPartnerId)));
             if (initOptions == null) {
                 options.setServerUrl(safeString(playerConfigJasonObject, PlayerInitOptions.SERVER_URL))
                         .setAutoPlay(safeBoolean(playerConfigJasonObject, PlayerInitOptions.AUTOPLAY))

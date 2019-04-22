@@ -8,6 +8,7 @@ import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.tvplayer.config.player.UiConf;
 
 public class PlayerInitOptions {
     public static final String PLAYER = "player";
@@ -31,6 +32,7 @@ public class PlayerInitOptions {
     public static final String STREAM_PRIORITY = "streamPriority";
 
     public final Integer partnerId;
+    public final Integer uiConfPartnerId;
 
     public String ks;
     public Integer uiConfId;
@@ -60,16 +62,16 @@ public class PlayerInitOptions {
 
     public PlayerInitOptions() {
         partnerId = null;
+        uiConfPartnerId = null;
     }
 
-    public PlayerInitOptions(Integer partnerId) {
+    public PlayerInitOptions(Integer partnerId, UiConf uiConf) {
         this.partnerId = partnerId;
+        this.uiConfPartnerId = uiConf.getPartnerId();
+        this.uiConfId  = uiConf.getId();
     }
 
-    public PlayerInitOptions(Integer partnerId, Integer uiConfId) {
-        this.partnerId = partnerId;
-        this.uiConfId  = uiConfId;
-    }
+
 
 //    @Deprecated
 //    public PlayerInitOptions(int partnerId, int uiConfId, JsonObject uiConfJsonObjet) {

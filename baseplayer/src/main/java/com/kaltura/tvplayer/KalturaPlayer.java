@@ -64,6 +64,7 @@ public class KalturaPlayer  {
 
     private String ks;
     private Integer partnerId;
+    private Integer uiConfPartnerId;
     private final Integer uiConfId;
     protected final String referrer;
     private final Context context;
@@ -111,8 +112,10 @@ public class KalturaPlayer  {
         this.referrer = buildReferrer(context, initOptions.referrer);
         if (kalturaPlayerType == KalturaPlayerType.basic) {
             this.partnerId = DEFAULT_KAVA_PARTNER_ID;
+            this.uiConfPartnerId = DEFAULT_KAVA_PARTNER_ID;
         } else {
             this.partnerId = (initOptions.partnerId != null && initOptions.partnerId > 0) ? initOptions.partnerId : null;
+            this.uiConfPartnerId = (initOptions.uiConfPartnerId != null && initOptions.uiConfPartnerId > 0) ? initOptions.uiConfPartnerId : null;
         }
         this.uiConfId = initOptions.uiConfId;
         this.serverUrl = initOptions.serverUrl;
@@ -350,7 +353,7 @@ public class KalturaPlayer  {
             }
             if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
                 log.d("Adding Automatic Kava Plugin");
-                combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), tokenResolver.resolve(kavaDefaults(partnerId, uiConfId, referrer)));
+                combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), tokenResolver.resolve(kavaDefaults(uiConfPartnerId, uiConfId, referrer)));
             }
         }
         addKalturaPluginConfigs(combinedPluginConfigs);
@@ -919,10 +922,9 @@ public class KalturaPlayer  {
         if (getInitOptions().pluginConfigs.hasConfig(name)) {
             phoenixAnalyticObject = (JsonObject) getInitOptions().pluginConfigs.getPluginConfig(name);
         } else {
-            phoenixAnalyticObject = phoenixAnalyticDefaults(getPartnerId(), getServerUrl(), getKS(), -1);
+            phoenixAnalyticObject = phoenixAnalyticDefaults(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH);
         }
         return new Gson().fromJson(phoenixAnalyticObject, PhoenixAnalyticsConfig.class);
-
     }
 
     private JsonObject phoenixAnalyticDefaults(int partnerId, String serverUrl, String ks, int timerInterval) {
