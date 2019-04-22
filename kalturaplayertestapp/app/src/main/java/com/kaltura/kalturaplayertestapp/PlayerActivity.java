@@ -29,13 +29,10 @@ import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.MediaSupport;
-import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
@@ -61,7 +58,6 @@ import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.tvplayer.BasicMediaOptions;
 import com.kaltura.tvplayer.KalturaPlayer;
 
-import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.PlaybackControlsView;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
@@ -171,13 +167,13 @@ public class PlayerActivity extends AppCompatActivity {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
                 log.d("OVPMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
-                handleOnEntryLoadCompleate(error);
+                handleOnEntryLoadComplete(error);
             });
         } else if ("ott".equals(appPlayerInitConfig.getPlayerType().toLowerCase())){
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ottMediaOptions, (entry, error) -> {
                 log.d("OTTMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
-                handleOnEntryLoadCompleate(error);
+                handleOnEntryLoadComplete(error);
             });
         } else if ("basic".equals(appPlayerInitConfig.getPlayerType().toLowerCase())) {
             BasicMediaOptions basicMediaOptions = buildBasicMediaOptions(0);
@@ -219,7 +215,7 @@ public class PlayerActivity extends AppCompatActivity {
 //        }
     }
 
-    private void handleOnEntryLoadCompleate(ErrorElement error) {
+    private void handleOnEntryLoadComplete(ErrorElement error) {
         if (error != null) {
             log.d("Load Error Extra = " + error.getExtra());
             Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
