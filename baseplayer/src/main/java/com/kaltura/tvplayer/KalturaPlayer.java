@@ -251,7 +251,7 @@ public class KalturaPlayer  {
         if (uiconfId != null && uiconfId > 0) {
             kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.UICONF_ID, uiconfId);
         }
-        if (partnerId == Consts.DEFAULT_KAVA_PARTNER_ID) {
+        if (partnerId == Integer.valueOf(Consts.DEFAULT_KAVA_PARTNER_ID)) {
             kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.ENTRY_ID, Consts.DEFAULT_KAVA_ENTRY_ID);
         } else if (mediaEntry != null && mediaEntry.getId() != null) {
             kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.ENTRY_ID, mediaEntry.getId());
