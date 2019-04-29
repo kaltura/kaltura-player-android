@@ -111,7 +111,7 @@ public class PlayerActivity extends AppCompatActivity {
     private AdCuePoints adCuePoints;
     private boolean allAdsCompeted;
     private PlaybackControlsManager playbackControlsManager;
-
+    private boolean isFirstOnResume = true;
 
 
 
@@ -869,13 +869,15 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onResume() {
         log.d("Player Activity onResume");
         super.onResume();
-
+        if (isFirstOnResume) {
+            isFirstOnResume = false;
+            return;
+        }
         if (player != null) {
-            if (tracksSelectionController != null) {
-                log.d("onResume -> Player Activity onResume");
-                player.onApplicationResumed();
-                setPlayerListeners();
-            }
+            log.d("onResume -> Player Activity onResume");
+            player.onApplicationResumed();
+            setPlayerListeners();
+
             playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
         }
     }
