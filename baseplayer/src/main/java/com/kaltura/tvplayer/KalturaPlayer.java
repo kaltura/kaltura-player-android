@@ -351,10 +351,7 @@ public class KalturaPlayer  {
                     combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(appPluginConfig));
                 }
             }
-            if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
-                log.d("Adding Automatic Kava Plugin");
-                combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), tokenResolver.resolve(kavaDefaults(uiConfPartnerId, uiConfId, referrer)));
-            }
+
         }
         addKalturaPluginConfigs(combinedPluginConfigs);
         return combinedPluginConfigs;
@@ -538,15 +535,9 @@ public class KalturaPlayer  {
         return view;
     }
 
-    public void setMedia(PKMediaEntry mediaEntry) {
+    public void setMedia(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.refresh(mediaEntry);
         tokenResolver.refresh(initOptions);
-
-        if (this.mediaEntry == null) {
-            log.d( "setMedia new Player configuration");
-        } else {
-            log.d( "setMedia Change Media configuration");
-        }
 
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         updateKalturaPluginConfigs(combinedPluginConfigs);
@@ -559,9 +550,10 @@ public class KalturaPlayer  {
         }
     }
 
-    public void setMedia(PKMediaEntry entry, MediaOptions mediaOptions) {
-        setStartPosition(mediaOptions.getStartPosition());
-        setKS(mediaOptions.getKs());
+    public void setMedia(PKMediaEntry entry, Long startPosition) {
+        if (startPosition != null) {
+            setStartPosition(startPosition);
+        }
         setMedia(entry);
     }
 
@@ -571,7 +563,6 @@ public class KalturaPlayer  {
 
     public void setKS(String ks) {
         this.ks = ks;
-        updateKS(ks);
     }
 
     public void prepare() {
@@ -755,10 +746,10 @@ public class KalturaPlayer  {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
-                onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
                 if (entry != null) {
                     setMedia(entry);
                 }
+                onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
             }
         });
     }
@@ -866,9 +857,13 @@ public class KalturaPlayer  {
 
 
 
-    protected void addKalturaPluginConfigs(PKPluginConfigs combined) {
+    protected void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
+        if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
+            log.d("Adding Automatic Kava Plugin");
+            combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), tokenResolver.resolve(kavaDefaults(uiConfPartnerId, uiConfId, referrer)));
+        }
         if (isOTTPlayer()) {
-            addKalturaPluginConfigsOTT(combined);
+            addKalturaPluginConfigsOTT(combinedPluginConfigs);
         }
     }
 
@@ -929,11 +924,6 @@ public class KalturaPlayer  {
 
     private JsonObject phoenixAnalyticDefaults(int partnerId, String serverUrl, String ks, int timerInterval) {
         return new PhoenixAnalyticsConfig(partnerId, serverUrl, ks, timerInterval).toJson();
-    }
-
-    protected void updateKS(String ks) {
-        // Update Kava
-        //pkPlayer.updatePluginConfig(KavaAnalyticsPlugin.factory.getName(), getKavaAnalyticsConfig(ks));
     }
 
     public interface OnEntryLoadListener {

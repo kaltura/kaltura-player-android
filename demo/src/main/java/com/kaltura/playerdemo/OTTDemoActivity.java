@@ -97,7 +97,6 @@ public class OTTDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setServerUrl(initOptions.serverUrl);
         updatedInitOptions.setAutoPlay(initOptions.autoplay);
         updatedInitOptions.setReferrer(initOptions.referrer);
-        updatedInitOptions.setStartTime(initOptions.startTime);
 
         KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
 

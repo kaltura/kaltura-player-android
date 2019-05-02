@@ -55,7 +55,6 @@ import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
-import com.kaltura.tvplayer.BasicMediaOptions;
 import com.kaltura.tvplayer.KalturaPlayer;
 
 import com.kaltura.tvplayer.PlaybackControlsView;
@@ -177,9 +176,8 @@ public class PlayerActivity extends AppCompatActivity {
                 handleOnEntryLoadComplete(error);
             });
         } else if ("basic".equals(appPlayerInitConfig.getPlayerType().toLowerCase())) {
-            BasicMediaOptions basicMediaOptions = buildBasicMediaOptions(0);
             if (appPlayerInitConfig.getMediaList() != null && appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex) != null) {
-                player.setMedia(appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex).getPkMediaEntry(), basicMediaOptions);
+                player.setMedia(appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex).getPkMediaEntry(), 0L);
             }
         }
         else {
@@ -343,9 +341,8 @@ public class PlayerActivity extends AppCompatActivity {
         } else if ("basic".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createBasicPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
-            BasicMediaOptions basicMediaOptions = buildBasicMediaOptions(appPlayerInitConfig.getStartPosition());
             if (appPlayerInitConfig.getMediaList() != null && appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex) != null) {
-                player.setMedia(appPlayerInitConfig.getMediaList().get(playListMediaIndex).getPkMediaEntry(), basicMediaOptions);
+                player.setMedia(appPlayerInitConfig.getMediaList().get(playListMediaIndex).getPkMediaEntry(), 0L);
             }
         }
         else {
@@ -359,12 +356,6 @@ public class PlayerActivity extends AppCompatActivity {
         }
         playbackControlsManager.updatePrevNextBtnFunctionality(currentPlayedMediaIndex, appPlayerInitConfig.getMediaList().size());
 
-    }
-
-    @NonNull
-    private BasicMediaOptions buildBasicMediaOptions(int startPosition) {
-        BasicMediaOptions basicMediaOptions = new BasicMediaOptions().setStartPosition(startPosition);
-        return basicMediaOptions;
     }
 
     @NonNull
