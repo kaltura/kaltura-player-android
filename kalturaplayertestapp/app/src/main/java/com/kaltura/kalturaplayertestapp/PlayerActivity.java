@@ -112,7 +112,7 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean allAdsCompeted;
     private PlaybackControlsManager playbackControlsManager;
     private boolean isFirstOnResume = true;
-
+    private boolean isPlayingOnPause;
 
 
     @Override
@@ -877,14 +877,20 @@ public class PlayerActivity extends AppCompatActivity {
             log.d("onResume -> Player Activity onResume");
             player.onApplicationResumed();
             setPlayerListeners();
-
-            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+            if (isPlayingOnPause) {
+                isPlayingOnPause = false;
+                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+            }
         }
     }
 
     @Override
     protected void onPause() {
+
         if (player != null) {
+            if (player.isPlaying()) {
+                isPlayingOnPause = true;
+            }
             player.onApplicationPaused();
         }
         super.onPause();

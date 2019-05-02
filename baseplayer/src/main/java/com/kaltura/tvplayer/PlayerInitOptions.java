@@ -1,5 +1,7 @@
 package com.kaltura.tvplayer;
 
+import android.support.annotation.NonNull;
+
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
@@ -18,7 +20,7 @@ public class PlayerInitOptions {
     public static final String OFF = "off";
     public static final String AUTOPLAY = "autoplay";
     public static final String PRELOAD = "preload";
-    public static final String START_TIME = "startTime";
+    //public static final String START_TIME = "startTime";
     public static final String CONFIG = "config";
     public static final String PLUGINS = "plugins";
     public static final String AUTO = "auto";
@@ -40,7 +42,7 @@ public class PlayerInitOptions {
 
     public Boolean autoplay = true;
     public Boolean preload = true;
-    public int startTime;
+    //public int startTime;
     public String serverUrl;
     public String referrer;
     public PKTrackConfig.Mode audioLanguageMode;
@@ -167,10 +169,10 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setStartTime(int startTime) {
-        this.startTime = startTime;
-        return this;
-    }
+//    public PlayerInitOptions setStartTime(int startTime) {
+//        this.startTime = startTime;
+//        return this;
+//    }
 
     public PlayerInitOptions setPreload(Boolean preload) {
         if (preload != null) {
