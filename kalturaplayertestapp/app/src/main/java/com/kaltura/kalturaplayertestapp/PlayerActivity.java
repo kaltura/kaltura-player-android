@@ -188,15 +188,14 @@ public class PlayerActivity extends AppCompatActivity {
     private void updatePluginsConfig() {
         if (initOptions.pluginConfigs.hasConfig(IMAPlugin.factory.getName())) {
             JsonObject imaJson = (JsonObject) initOptions.pluginConfigs.getPluginConfig(IMAPlugin.factory.getName());
-            IMAConfig imaPluginConfig = gson.fromJson(imaJson, IMAConfig.class);
-
+            //IMAConfig imaPluginConfig = gson.fromJson(imaJson, IMAConfig.class);
             //Example to update the AdTag
             //imaPluginConfig.setAdTagUrl("http://externaltests.dev.kaltura.com/playKitApp/adManager/customAdTags/vmap/inline/ima_pre_mid_post_bumber2.xml");
-            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig);
+            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaJson);
         } else if (initOptions.pluginConfigs.hasConfig(IMADAIPlugin.factory.getName())) {
             JsonObject imadaiJson = (JsonObject) initOptions.pluginConfigs.getPluginConfig(IMADAIPlugin.factory.getName());
-            IMADAIConfig imaPluginConfig = gson.fromJson(imadaiJson, IMADAIConfig.class);
-            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imaPluginConfig);
+            //IMADAIConfig imaPluginConfig = gson.fromJson(imadaiJson, IMADAIConfig.class);
+            initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imadaiJson);
         }
 
         //EXAMPLE if there are no auto replacers in this format ->  {{key}}

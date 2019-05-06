@@ -346,9 +346,11 @@ public class KalturaPlayer  {
             Gson gson = new Gson();
             for (Map.Entry<String, Object> entry : pluginConfigs) {
                 String pluginName = entry.getKey();
-                JsonObject appPluginConfig = (JsonObject) entry.getValue();
-                if (appPluginConfig != null){
-                    combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(appPluginConfig));
+                if (entry.getValue() instanceof JsonObject) {
+                    JsonObject appPluginConfig = (JsonObject) entry.getValue();
+                    if (appPluginConfig != null) {
+                        combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(appPluginConfig));
+                    }
                 }
             }
 
@@ -591,7 +593,7 @@ public class KalturaPlayer  {
         return uiConfId;
     }
 
-    // Player controls
+
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
     }
@@ -862,7 +864,7 @@ public class KalturaPlayer  {
             log.d("Adding Automatic Kava Plugin");
             combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), tokenResolver.resolve(kavaDefaults(uiConfPartnerId, uiConfId, referrer)));
         }
-        if (isOTTPlayer()) {
+        if (isOTTPlayer() && !combinedPluginConfigs.hasConfig(PhoenixAnalyticsPlugin.factory.getName())) {
             addKalturaPluginConfigsOTT(combinedPluginConfigs);
         }
     }
@@ -881,17 +883,16 @@ public class KalturaPlayer  {
         log.d("updateKalturaPluginConfigs");
         for (Map.Entry<String, Object> plugin : combined) {
             if (plugin.getValue() instanceof JsonObject) {
-                updatePluginConfig(plugin.getKey(), (JsonObject) plugin.getValue());
+                if (isOTTPlayer() && PhoenixAnalyticsPlugin.factory.getName().equals(plugin.getKey()) && !TextUtils.isEmpty(getKS())) {
+                    PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
+                    if (phoenixConfig != null) {
+                        updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
+                    }
+                } else {
+                    updatePluginConfig(plugin.getKey(), plugin.getValue());
+                }
             } else {
                 log.e("updateKalturaPluginConfigs " + plugin.getKey()  + " is not a JsonObject");
-            }
-        }
-        if (isOTTPlayer()) {
-            if (!TextUtils.isEmpty(getKS())) {
-                PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
-                if (phoenixConfig != null) {
-                    updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
-                }
             }
         }
     }
