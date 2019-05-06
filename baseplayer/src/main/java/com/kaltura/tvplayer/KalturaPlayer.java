@@ -15,6 +15,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
+import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -614,8 +615,8 @@ public class KalturaPlayer  {
         pkPlayer.stop();
     }
 
-    public AdController getController(Class<AdController> adControllerClass) {
-        return pkPlayer.getController(adControllerClass);
+    public <T extends PKController> T getController(Class<T> type) {
+        return pkPlayer.getController(type);
     }
 
     public void play() {
@@ -623,23 +624,13 @@ public class KalturaPlayer  {
             prepare();
         }
         if(pkPlayer != null) {
-            AdController adController = pkPlayer.getController(AdController.class);
-            if (adController != null && adController.isAdDisplayed()) {
-                adController.play();
-            } else {
-                pkPlayer.play();
-            }
+            pkPlayer.play();
         }
     }
 
     public void pause() {
         if(pkPlayer != null) {
-            AdController adController = pkPlayer.getController(AdController.class);
-            if (adController != null && adController.isAdDisplayed()) {
-                adController.pause();
-            } else {
-                pkPlayer.pause();
-            }
+            pkPlayer.pause();
         }
     }
 
