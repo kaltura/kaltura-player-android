@@ -1,7 +1,5 @@
 package com.kaltura.tvplayer;
 
-import android.support.annotation.NonNull;
-
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
@@ -70,7 +68,7 @@ public class PlayerInitOptions {
     public PlayerInitOptions(Integer partnerId, UiConf uiConf) {
         this.partnerId = partnerId;
         this.uiConfPartnerId = uiConf.getPartnerId();
-        this.uiConfId  = uiConf.getId();
+        this.uiConfId  = uiConf.getUiConfId();
     }
 
 

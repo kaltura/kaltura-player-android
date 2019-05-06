@@ -1,23 +1,19 @@
 package com.kaltura.tvplayer.config.player;
 
-/**
- * Created by gilad.nadav on 1/28/18.
- */
-
 public class UiConf {
     private static final String BASE_URL = "https://cdnapisec.kaltura.com/";
-    private Integer id;
+    private Integer uiConfId;
     private Integer partnerId;
     private String baseUrl;
 
-    public UiConf(Integer id, Integer partnerId) {
-        this.id = id;
+    public UiConf(Integer uiConfId, Integer partnerId) {
+        this.uiConfId = uiConfId;
         this.partnerId = partnerId;
         this.baseUrl = BASE_URL;
     }
 
-    public UiConf(Integer id, Integer partnerId, String baseUrl) {
-        this.id = id;
+    public UiConf(Integer uiconfId, Integer partnerId, String baseUrl) {
+        this.uiConfId = uiconfId;
         this.partnerId = partnerId;
         this.baseUrl = baseUrl;
     }
@@ -38,11 +34,11 @@ public class UiConf {
         this.partnerId = partnerId;
     }
 
-    public Integer getId() {
-        return id;
+    public Integer getUiConfId() {
+        return uiConfId;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setUiConfId(Integer uiConfId) {
+        this.uiConfId = uiConfId;
     }
 }
