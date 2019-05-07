@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 
 import com.kaltura.playkit.PKLog;
@@ -19,6 +20,7 @@ import com.kaltura.kalturaplayertestapp.R;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_AUDIO;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
@@ -156,21 +158,56 @@ public class TracksSelectionController {
                 break;
             case TRACK_TYPE_AUDIO:
                 List<AudioTrack> audioTracksInfo = tracks.getAudioTracks();
-                if (audioTracksInfo != null && audioTracksInfo.size() > 1) {
-                    for (int i = 0; i < audioTracksInfo.size(); i++) {
-                        AudioTrack trackInfo = audioTracksInfo.get(i);
-                        String lang = trackInfo.getLabel();
-                        if (lang == null) {
-                            lang = getFriendlyLanguageLabel(trackInfo.getLanguage());
-                        }
-                        if (trackInfo.isAdaptive()) {
-                            trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + "Auto");
-                        } else {
-                            trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + buildBitrateString(trackInfo.getBitrate()));
-                        }
-                        trackItems.add(trackItem);
+                SparseArray<AtomicInteger> channelSparseIntArray = new SparseArray<>();
+
+                for (int i = 0; i < audioTracksInfo.size(); i++) {
+                    if (channelSparseIntArray.get(((AudioTrack) audioTracksInfo.get(i)).getChannelCount()) != null) {
+                        channelSparseIntArray.get(((AudioTrack) audioTracksInfo.get(i)).getChannelCount()).incrementAndGet();
+                    } else {
+                        channelSparseIntArray.put(((AudioTrack) audioTracksInfo.get(i)).getChannelCount(), new AtomicInteger(1));
                     }
                 }
+                boolean addChannel = false;
+                if (channelSparseIntArray.size() > 0 && !(new AtomicInteger(audioTracksInfo.size()).toString().equals(channelSparseIntArray.get(((AudioTrack) audioTracksInfo.get(0)).getChannelCount()).toString()))) {
+                    addChannel = true;
+                }
+                for (int i = 0; i < audioTracksInfo.size(); i++) {
+                    AudioTrack audioTrackInfo = (AudioTrack) audioTracksInfo.get(i);
+                    String label = audioTrackInfo.getLabel() != null ? audioTrackInfo.getLabel() : audioTrackInfo.getLanguage();
+                    String bitrate = (audioTrackInfo.getBitrate() > 0) ? "" + audioTrackInfo.getBitrate() : "";
+                    if (TextUtils.isEmpty(bitrate) && addChannel) {
+                        bitrate = buildAudioChannelString(audioTrackInfo.getChannelCount());
+                    }
+                    if (audioTrackInfo.isAdaptive()) {
+                        if (!TextUtils.isEmpty(bitrate)) {
+                            bitrate += " Adaptive";
+                        } else {
+                            bitrate = "Adaptive";
+                        }
+                        if (label == null) {
+                            label = "";
+                        }
+                    }
+                    trackItem = new TrackItem(audioTrackInfo.getUniqueId(), label  + " " + bitrate);
+                    trackItems.add(trackItem);
+                }
+
+
+//                if (audioTracksInfo != null && audioTracksInfo.size() > 1) {
+//                    for (int i = 0; i < audioTracksInfo.size(); i++) {
+//                        AudioTrack trackInfo = audioTracksInfo.get(i);
+//                        String lang = trackInfo.getLabel();
+//                        if (lang == null) {
+//                            lang = getFriendlyLanguageLabel(trackInfo.getLanguage());
+//                        }
+//                        if (trackInfo.isAdaptive()) {
+//                            trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + "Auto");
+//                        } else {
+//                            trackItem = new TrackItem(trackInfo.getUniqueId(), buildLanguageString(lang) + " " + buildBitrateString(trackInfo.getBitrate()));
+//                        }
+//                        trackItems.add(trackItem);
+//                    }
+                //}
                 break;
             case TRACK_TYPE_TEXT:
                 List<TextTrack> textTracksInfo = tracks.getTextTracks();
@@ -191,6 +228,22 @@ public class TracksSelectionController {
         }
         return trackItems;
     }
+
+        private String buildAudioChannelString(int channelCount) {
+            switch (channelCount) {
+                case 1:
+                    return "Mono";
+                case 2:
+                    return "Stereo";
+                case 6:
+                case 7:
+                    return "Surround_5.1";
+                case 8:
+                    return "Surround_7.1";
+                default:
+                    return "Surround";
+            }
+        }
 
     @NonNull
     private String getFriendlyLanguageLabel(String languageCode) {
