@@ -111,7 +111,7 @@ public class KalturaPlayer  {
             this.preload = true; // autoplay implies preload
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
-        if (kalturaPlayerType == KalturaPlayerType.basic) {
+        if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && uiConfPartnerId == null)) {
             this.partnerId = DEFAULT_KAVA_PARTNER_ID;
             this.uiConfPartnerId = DEFAULT_KAVA_PARTNER_ID;
         } else {
