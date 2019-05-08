@@ -576,6 +576,9 @@ public class KalturaPlayer  {
 
     public void prepare() {
 
+        // TODO: 2019-05-08 Also add a flag "preparing" to make sure we're not in the middle of prepare
+        // when preload is true, if the app calls setMedia() and immediately calls prepare(), we'll have a
+        // problem -- the player will prepare twice. need to prevent it.
         if (prepared) {
             return;
         }
