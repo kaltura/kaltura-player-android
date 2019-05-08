@@ -114,7 +114,9 @@ public class OVPDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setReferrer(initOptions.referrer);
 
         KalturaPlayer player = KalturaPlayer.createOVPPlayer(playerActivity, updatedInitOptions);
-        player.loadMedia(new OVPMediaOptions().setEntryId(currentItem.id), (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
+       OVPMediaOptions ovpMediaOptions = new OVPMediaOptions();
+        ovpMediaOptions.entryId = currentItem.id;
+        player.loadMedia(ovpMediaOptions, (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
         player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 
         playerActivity.setPlayer(player);

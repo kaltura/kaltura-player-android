@@ -365,20 +365,21 @@ public class PlayerActivity extends AppCompatActivity {
     @NonNull
     private OTTMediaOptions buildOttMediaOptions(int startPosition, int playListMediaIndex) {
         Media ottMedia = mediaList.get(playListMediaIndex);
-        OTTMediaOptions ottMediaOptions = new OTTMediaOptions()
-                .setAssetId(ottMedia.getAssetId())
-                .setAssetType(ottMedia.getAssetType())
-                .setContextType(ottMedia.getPlaybackContextType())
-                .setAssetReferenceType(ottMedia.getAssetReferenceType())
-                .setProtocol(ottMedia.getProtocol())
-                .setKS(ottMedia.getKs())
-                .setStartPosition(startPosition);
+        OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
+        ottMediaOptions.assetId = ottMedia.getAssetId();
+        ottMediaOptions.assetType = ottMedia.getAssetType();
+        ottMediaOptions.contextType = ottMedia.getPlaybackContextType();
+        ottMediaOptions.assetReferenceType = ottMedia.getAssetReferenceType();
+        ottMediaOptions.protocol = ottMedia.getProtocol();
+        ottMediaOptions.ks = ottMedia.getKs();
+        ottMediaOptions.startPosition = startPosition;
+
 
         if (!TextUtils.isEmpty(ottMedia.getFormat())) {
-            ottMediaOptions.setFormats(new String[]{ottMedia.getFormat()});
+            ottMediaOptions.formats = new String[]{ottMedia.getFormat()};
         }
         if (ottMedia.getFileId() != null) {
-            ottMediaOptions.setFileIds(new String[]{String.valueOf(ottMedia.getFileId())});
+            ottMediaOptions.fileIds = new String[]{String.valueOf(ottMedia.getFileId())};
         }
 
         return ottMediaOptions;
@@ -387,10 +388,10 @@ public class PlayerActivity extends AppCompatActivity {
     @NonNull
     private OVPMediaOptions buildOvpMediaOptions(int startPosition, int playListMediaIndex) {
         Media ovpMedia = mediaList.get(playListMediaIndex);
-        OVPMediaOptions ovpMediaOptions = new OVPMediaOptions()
-                .setEntryId(ovpMedia.getEntryId())
-                .setKS(ovpMedia.getKs())
-                .setStartPosition(startPosition);
+        OVPMediaOptions ovpMediaOptions = new OVPMediaOptions();
+        ovpMediaOptions.entryId = ovpMedia.getEntryId();
+        ovpMediaOptions.ks = ovpMedia.getKs();
+        ovpMediaOptions.startPosition = startPosition;
         return ovpMediaOptions;
     }
 

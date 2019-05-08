@@ -100,7 +100,9 @@ public class OTTDemoActivity extends BaseDemoActivity {
 
         KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
 
-        OTTMediaOptions ottMediaOptions = new OTTMediaOptions().setAssetId(currentItem.id).setProtocol(currentItem.protocol);
+        OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
+        ottMediaOptions.assetId = currentItem.id;
+        ottMediaOptions.protocol = currentItem.protocol;
         player.loadMedia(ottMediaOptions, (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
         player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 

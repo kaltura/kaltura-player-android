@@ -759,11 +759,11 @@ public class KalturaPlayer  {
             return;
         }
 
-        if (mediaOptions.getKs() != null) {
-            setKS(mediaOptions.getKs());
+        if (mediaOptions.ks != null) {
+            setKS(mediaOptions.ks);
         }
 
-        setStartPosition(mediaOptions.getStartPosition());
+        setStartPosition(mediaOptions.startPosition);
 
         MediaEntryProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
                 .setEntryId(mediaOptions.entryId).setReferrer(referrer);
@@ -788,17 +788,17 @@ public class KalturaPlayer  {
             return;
         }
 
-        if (mediaOptions.getKs() != null) {
-            setKS(mediaOptions.getKs());
+        if (mediaOptions.ks != null) {
+            setKS(mediaOptions.ks);
         }
 
-        setStartPosition(mediaOptions.getStartPosition());
+        setStartPosition(mediaOptions.startPosition);
 
         final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
                 .setAssetId(mediaOptions.assetId).setReferrer(referrer);
 
-        if (mediaOptions.getProtocol() != null) {
-            provider.setProtocol(mediaOptions.getProtocol());
+        if (mediaOptions.protocol != null) {
+            provider.setProtocol(mediaOptions.protocol);
         }
 
         if (mediaOptions.fileIds != null) {
