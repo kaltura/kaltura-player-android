@@ -17,13 +17,7 @@ import java.util.List;
 public class ConfigResolver {
     private static PKLog log = PKLog.get("ConfigResolver");
 
-    private final TokenResolver tokenResolver;
-
-    public ConfigResolver(TokenResolver tokenResolver) {
-        this.tokenResolver = tokenResolver;
-    }
-
-    public <T> T resolve(T config, JsonObject defaults) {
+    public static <T> T resolve(T config, JsonObject defaults) {
         try {
             // We know for sure that the return type is T because of how resolveImp() works.
             //noinspection unchecked
@@ -38,7 +32,7 @@ public class ConfigResolver {
 
     }
 
-    private JsonObject resolveJsonConfig(JsonObject appConfig, JsonObject defaults) {
+    private static JsonObject resolveJsonConfig(JsonObject appConfig, JsonObject defaults) {
         if (defaults == null && appConfig != null) {
             return appConfig;
         } else if (defaults != null && appConfig == null) {
@@ -50,7 +44,7 @@ public class ConfigResolver {
         return resolveJsonConfigImp(appConfig.deepCopy(), defaults);
     }
 
-    private JsonObject resolveJsonConfigImp(JsonObject appConfig, JsonObject defaults) {
+    private static JsonObject resolveJsonConfigImp(JsonObject appConfig, JsonObject defaults) {
 
         // If we're here, both defaults and appConfig are not null.
 
@@ -64,7 +58,7 @@ public class ConfigResolver {
             if (!appConfig.has(key)) {
                 // new value for "key":
                 if (sourceValue instanceof JsonArray || sourceValue instanceof JsonPrimitive) {
-                    appConfig.add(key, resolveValue(sourceValue));
+                    appConfig.add(key, sourceValue);
                 } else {
                     appConfig.add(key, null);
                 }
@@ -107,19 +101,7 @@ public class ConfigResolver {
         return appConfig;
     }
 
-    private JsonElement resolveValue(JsonElement jsonElement) {
-        if (jsonElement.isJsonPrimitive()) {
-
-            final JsonPrimitive jsonPrimitive = jsonElement.getAsJsonPrimitive();
-            if (jsonPrimitive.isString()) {
-                return new JsonPrimitive(resolveValue(jsonPrimitive.getAsString()));
-            }
-        }
-
-        return jsonElement;
-    }
-
-    private Object resolveImp(Object config, JsonObject uiconf) throws SecurityException, InstantiationException, IllegalAccessException {
+    private static Object resolveImp(Object config, JsonObject uiconf) throws SecurityException, InstantiationException, IllegalAccessException {
 
         if (config instanceof JsonObject) {
             return resolveJsonConfig((JsonObject) config, uiconf);
@@ -156,7 +138,7 @@ public class ConfigResolver {
             final Class<?> type = field.getType();
 
             if (type == String.class) {
-                field.set(out, resolveValue(jsonElement.getAsString()));
+                field.set(out, jsonElement.getAsString());
             } else if (type == Integer.class) {
                 field.set(out, jsonElement.getAsInt());
             } else if (type == Long.class) {
@@ -183,11 +165,7 @@ public class ConfigResolver {
         return out;
     }
 
-    private String resolveValue(String string) {
-        return tokenResolver.resolve(string);
-    }
-
-    private void copyArray(Field field, Class<?> type, Object out, JsonArray jsonArray) throws IllegalAccessException {
+    private static void copyArray(Field field, Class<?> type, Object out, JsonArray jsonArray) throws IllegalAccessException {
         if (type == String[].class) {
             field.set(out, toStringArray(jsonArray));
         } else if (type == int[].class) {
@@ -203,7 +181,7 @@ public class ConfigResolver {
         }
     }
 
-    private void copyList(Field field, Object out, JsonArray jsonArray) throws IllegalAccessException {
+    private static void copyList(Field field, Object out, JsonArray jsonArray) throws IllegalAccessException {
 
         final Type typeArgument = ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
 
@@ -222,10 +200,10 @@ public class ConfigResolver {
         }
     }
 
-    private String[] toStringArray(JsonArray ja) {
+    private static String[] toStringArray(JsonArray ja) {
         String[] out = new String[ja.size()];
         for (int i = 0; i < out.length; i++) {
-            out[i] = resolveValue(ja.get(i).getAsString());
+            out[i] = ja.get(i).getAsString();
         }
         return out;
     }
