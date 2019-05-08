@@ -19,6 +19,7 @@ public class Media {
     private String assetReferenceType; // ott
     private String protocol; // ott
     private PKMediaEntry pkMediaEntry; // player without provider
+    private String mediaAdTag;
 
 
     public Media() {}
@@ -66,6 +67,18 @@ public class Media {
 
     public void setFileId(Integer fileId) {
         this.fileId = fileId;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    public String getMediaAdTag() {
+        return mediaAdTag;
+    }
+
+    public void setMediaAdTag(String mediaAdTag) {
+        this.mediaAdTag = mediaAdTag;
     }
 
     public APIDefines.KalturaAssetType getAssetType() {

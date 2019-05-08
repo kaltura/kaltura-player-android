@@ -54,6 +54,7 @@ import com.kaltura.playkit.plugins.ovp.KalturaStatsEvent;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
+import com.kaltura.playkit.plugins.youbora.pluginconfig.Properties;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.tvplayer.KalturaPlayer;
 
@@ -113,7 +114,6 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean isFirstOnResume = true;
     private boolean isPlayingOnPause;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -162,7 +162,8 @@ public class PlayerActivity extends AppCompatActivity {
             tracksSelectionController = null;
             player.stop();
         }
-        updatePluginsConfig();
+
+        updatePluginsConfig(mediaList.get(currentPlayedMediaIndex));
         if ("ovp".equals(appPlayerInitConfig.getPlayerType().toLowerCase())) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
@@ -185,9 +186,12 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void updatePluginsConfig() {
+    private void updatePluginsConfig(Media media) {
         if (initOptions.pluginConfigs.hasConfig(IMAPlugin.factory.getName())) {
             JsonObject imaJson = (JsonObject) initOptions.pluginConfigs.getPluginConfig(IMAPlugin.factory.getName());
+            if (media.getMediaAdTag() != null) {
+                imaJson.addProperty("adTagUrl", media.getMediaAdTag());
+            }
             //IMAConfig imaPluginConfig = gson.fromJson(imaJson, IMAConfig.class);
             //Example to update the AdTag
             //imaPluginConfig.setAdTagUrl("http://externaltests.dev.kaltura.com/playKitApp/adManager/customAdTags/vmap/inline/ima_pre_mid_post_bumber2.xml");
@@ -198,10 +202,10 @@ public class PlayerActivity extends AppCompatActivity {
             initOptions.pluginConfigs.setPluginConfig(IMAPlugin.factory.getName(), imadaiJson);
         }
 
-        //EXAMPLE if there are no auto replacers in this format ->  {{key}}
+//        //EXAMPLE if there are no auto replacers in this format ->  {{key}}
 //        if (initOptions.pluginConfigs.hasConfig(YouboraPlugin.factory.getName())) {
-//            JsonObject imaJson = (JsonObject) initOptions.pluginConfigs.getPluginConfig(YouboraPlugin.factory.getName());
-//            YouboraConfig youboraPluginConfig = gson.fromJson(imaJson, YouboraConfig.class);
+//            JsonObject youboraJson = (JsonObject) initOptions.pluginConfigs.getPluginConfig(YouboraPlugin.factory.getName());
+//            YouboraConfig youboraPluginConfig = gson.fromJson(youboraJson, YouboraConfig.class);
 //            Properties properties = new Properties();
 //            properties.setGenre("AAAA");
 //            properties.setOwner("SONY");
@@ -279,6 +283,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (appPlayerInitConfig.getUiConf() != null) {
             playerUiConfId = Integer.valueOf(appPlayerInitConfig.getUiConf().getId());
         }
+        mediaList = appPlayerInitConfig.getMediaList();
 
         Integer partnerId = (appPlayerInitConfig.getPartnerId() != null) ? Integer.valueOf(appPlayerInitConfig.getPartnerId()) : null;
         initOptions = new PlayerInitOptions(partnerId, new UiConf(appPlayerInitConfig.getUiConf() == null ? null : Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), appPlayerInitConfig.getUiConf() == null ? null : Integer.valueOf(appPlayerInitConfig.getUiConf().getPartnerId())))
@@ -301,7 +306,7 @@ public class PlayerActivity extends AppCompatActivity {
                 .setLicenseRequestAdapter(appPlayerInitConfig.getLicenseRequestAdapter())
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
-        mediaList = appPlayerInitConfig.getMediaList();
+
         if ("ovp".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
