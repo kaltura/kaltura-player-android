@@ -29,7 +29,7 @@ configurations.all {
 }
 
 dependencies {
-    api project(":baseplayer")
+    api project(':tvplayer')
 
     api project(":googlecast");
     api project(":youbora");
