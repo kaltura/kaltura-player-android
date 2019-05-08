@@ -1,5 +1,7 @@
 package com.kaltura.tvplayer.config.player;
 
+// TODO: use public fields, no getters/setters
+
 public class UiConf {
     private static final String BASE_URL = "https://cdnapisec.kaltura.com/";
     private Integer uiConfId;

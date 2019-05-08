@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
 import com.kaltura.playkit.providers.api.ovp.services.OvpService;
 
+// TODO: 2019-05-08 Use GET
 
 public class UIConfService extends OvpService {
     public static OvpRequestBuilder uiConfById(@NonNull String baseUrl, int partnerId, int confId, @Nullable String ks) {

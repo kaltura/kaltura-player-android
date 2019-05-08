@@ -7,16 +7,23 @@ import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 
 public class OTTMediaOptions extends MediaOptions {
     String assetId;
+
+    // TODO: create local enums for assetType and contextType
+
     APIDefines.KalturaAssetType assetType;
     APIDefines.PlaybackContextType contextType;
+
+    // TODO: 2019-05-07 Remove referenceType, only use the default
     APIDefines.AssetReferenceType assetReferenceType;
-    String protocol;
+
+    String protocol;// TODO: 2019-05-07 default to "https"
     String[] formats;
     String[] fileIds;
 
 
 
     public OTTMediaOptions setAssetId(String assetId) {
+        // why only if not null?
         if (assetId != null) {
             this.assetId = assetId;
         }
@@ -41,6 +48,7 @@ public class OTTMediaOptions extends MediaOptions {
         return protocol;
     }
 
+    // TODO: 2019-05-07 remove the annotation
     public OTTMediaOptions setProtocol(@NonNull @PhoenixMediaProvider.HttpProtocol String protocol) {
         if (protocol != null) {
             this.protocol = protocol;

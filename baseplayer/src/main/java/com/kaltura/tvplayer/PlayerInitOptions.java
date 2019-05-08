@@ -11,6 +11,7 @@ import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.tvplayer.config.player.UiConf;
 
 public class PlayerInitOptions {
+    // Why are these finals needed?
     public static final String PLAYER = "player";
     public static final String AUDIO_LANG = "audioLanguage";
     public static final String TEXT_LANG = "textLanguage";
@@ -30,6 +31,8 @@ public class PlayerInitOptions {
     public static final String SERVER_URL = "serverUrl";
     public static final String ALLOW_CROSS_PROTOCOL_ENABLED = "allowCrossProtocolEnabled";
     public static final String STREAM_PRIORITY = "streamPriority";
+
+    // TODO: 2019-05-08 Mark optional settings as @Nullable
 
     public final Integer partnerId;
     public final Integer uiConfPartnerId;
@@ -53,7 +56,7 @@ public class PlayerInitOptions {
     public Boolean secureSurface;
     public Boolean adAutoPlayOnResume;
     public Boolean vrPlayerEnabled;
-    public SubtitleStyleSettings setSubtitleStyle;
+    public SubtitleStyleSettings setSubtitleStyle; // TODO: 2019-05-08 Rename to subtitleStyleSettings
     public PKAspectRatioResizeMode aspectRatioResizeMode;
     public PKRequestParams.Adapter contentRequestAdapter;
     public PKRequestParams.Adapter licenseRequestAdapter;

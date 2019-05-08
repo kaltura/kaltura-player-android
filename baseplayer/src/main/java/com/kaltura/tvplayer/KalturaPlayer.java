@@ -1,5 +1,8 @@
 package com.kaltura.tvplayer;
 
+// TODO: rename module from baseplayer to tvplayer
+
+
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
@@ -360,6 +363,7 @@ public class KalturaPlayer  {
         return combinedPluginConfigs;
     }
 
+    // TODO: 2019-05-08 Remove commented-out code 
 
 //    @NonNull
 //    @Deprecated
@@ -526,6 +530,8 @@ public class KalturaPlayer  {
         return null;
     }
 
+    // TODO: 2019-05-08 I don't think this method should return the view 
+    // It should be called createPlayerView and return void. Add getPlayerView().
     public View setPlayerView(int playerWidth, int playerHeight) {
 
         ViewGroup.LayoutParams params = pkPlayer.getView().getLayoutParams();
@@ -670,6 +676,7 @@ public class KalturaPlayer  {
         pkPlayer.removeListeners(groupId);
     }
 
+    // TODO: 2019-05-08 remove this?
     public void removeListener(@NonNull PKEvent.Listener listener) {
         pkPlayer.removeListener(listener);
     }
@@ -690,6 +697,7 @@ public class KalturaPlayer  {
         return pkPlayer.getSessionId();
     }
 
+    // TODO: 2019-05-08 Why is this needed?
     public double getStartPosition() {
         return startPosition;
     }
@@ -699,6 +707,7 @@ public class KalturaPlayer  {
         return this;
     }
 
+    // TODO: 2019-05-08 Why is this needed?
     public boolean isPreload() {
         return preload;
     }
@@ -708,6 +717,7 @@ public class KalturaPlayer  {
         return this;
     }
 
+    // TODO: 2019-05-08 Why is this needed?
     public boolean isAutoPlay() {
         return autoPlay;
     }
@@ -717,24 +727,28 @@ public class KalturaPlayer  {
         return this;
     }
 
+    // TODO: 2019-05-08 Why is this needed?
     public PlayerInitOptions getInitOptions() {
         return initOptions;
     }
 
+    // TODO: 2019-05-08 Why is this needed?
     public int getPartnerId() {
         return partnerId;
     }
 
+    // TODO: 2019-05-08 Why is this needed?
     public String getKS() {
         return ks;
     }
 
+    // TODO: 2019-05-08 Why is this needed?
     public String getServerUrl() {
         return serverUrl;
     }
 
     // Called by implementation of loadMedia().
-    protected void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
+    private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
         final PKMediaEntry entry = response.getResponse();
         mainHandler.post(new Runnable() {
             @Override
@@ -848,8 +862,6 @@ public class KalturaPlayer  {
         PlayKitManager.registerPlugins(context, PhoenixAnalyticsPlugin.factory);
     }
 
-
-
     protected void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
         if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
             log.d("Adding Automatic Kava Plugin");
@@ -896,6 +908,7 @@ public class KalturaPlayer  {
         return kavaAnalyticsConfig;
     }
 
+    // TODO: 2019-05-08 Remove
     private KalturaLiveStatsConfig getLiveStatsConfig() {
         final PKMediaEntry mediaEntry = getMediaEntry();
         return new KalturaLiveStatsConfig(getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null);

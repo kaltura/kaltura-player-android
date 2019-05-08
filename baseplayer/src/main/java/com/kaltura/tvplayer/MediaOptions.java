@@ -1,5 +1,7 @@
 package com.kaltura.tvplayer;
 
+// TODO: use public fields, no getters
+
 public class MediaOptions {
     private String ks;
     private double startPosition;

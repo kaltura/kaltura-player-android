@@ -20,6 +20,7 @@ enum KnownPlugin {
     liveStats("com.kaltura.playkit.plugins.ovp.KalturaLiveStatsPlugin", KalturaLiveStatsPlugin.factory),
 
     // Kaltura Phoenix MediaHit/MediaMark
+    // TODO: this plugin is not optional, should specify factory class
     phoenixBookmarks("com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin"),
 
     // IMA

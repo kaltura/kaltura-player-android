@@ -1,5 +1,6 @@
 package com.kaltura.tvplayer.config.player;
 
+// Why do we need this class?
 public class StreamType {
 
     private String engine;

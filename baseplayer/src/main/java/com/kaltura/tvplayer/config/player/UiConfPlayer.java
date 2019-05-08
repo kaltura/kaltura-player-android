@@ -3,6 +3,8 @@ package com.kaltura.tvplayer.config.player;
 
 import java.util.List;
 
+// TODO: use public fields, no getters/setters
+
 public class UiConfPlayer {
 
     private String audioLanguage;

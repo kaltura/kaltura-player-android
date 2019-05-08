@@ -1,7 +1,7 @@
 package com.kaltura.tvplayer;
 
 public class OVPMediaOptions extends MediaOptions {
-    String entryId;
+    String entryId; // TODO: public
 
     public OVPMediaOptions setEntryId(String entryId) {
         this.entryId = entryId;
