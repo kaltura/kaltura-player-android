@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import static com.kaltura.playkit.utils.Consts.DEFAULT_KAVA_PARTNER_ID;
 
 public class KalturaPlayer  {
 
@@ -112,8 +111,8 @@ public class KalturaPlayer  {
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
         if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && uiConfPartnerId == null)) {
-            this.partnerId = DEFAULT_KAVA_PARTNER_ID;
-            this.uiConfPartnerId = DEFAULT_KAVA_PARTNER_ID;
+            this.partnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
+            this.uiConfPartnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
         } else {
             this.partnerId = (initOptions.partnerId != null && initOptions.partnerId > 0) ? initOptions.partnerId : null;
             this.uiConfPartnerId = (initOptions.uiConfPartnerId != null && initOptions.uiConfPartnerId > 0) ? initOptions.uiConfPartnerId : null;
@@ -252,8 +251,8 @@ public class KalturaPlayer  {
         if (uiconfId != null && uiconfId > 0) {
             kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.UICONF_ID, uiconfId);
         }
-        if (partnerId == Integer.valueOf(Consts.DEFAULT_KAVA_PARTNER_ID)) {
-            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.ENTRY_ID, Consts.DEFAULT_KAVA_ENTRY_ID);
+        if (partnerId == Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID)) {
+            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.ENTRY_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
         } else if (mediaEntry != null && mediaEntry.getId() != null) {
             kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.ENTRY_ID, mediaEntry.getId());
         }
