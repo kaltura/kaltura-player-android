@@ -574,7 +574,7 @@ public class KalturaPlayer  {
     }
 
     // Called by implementation of loadMedia().
-    protected void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
+    private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
         final PKMediaEntry entry = response.getResponse();
         mainHandler.post(new Runnable() {
             @Override
