@@ -5,16 +5,16 @@ import java.util.List;
 
 public class UiConfPlayer {
 
-    private String audioLanguage;
-    private String textLanguage;
-    private Boolean useNativeTextTrack;
-    private Integer volume;
-    private String preload;
-    private Boolean autoplay;
-    private Boolean allowMutedAutoPlay;
-    private Boolean muted;
-    private Integer startTime;
-    private List<StreamType> streamPriority;
+    public String audioLanguage;
+    public String textLanguage;
+    public Boolean useNativeTextTrack;
+    public Integer volume;
+    public String preload;
+    public Boolean autoplay;
+    public Boolean allowMutedAutoPlay;
+    public Boolean muted;
+    public Integer startTime;
+    public List<StreamType> streamPriority;
 
     public String getAudioLanguage() {
         return audioLanguage;

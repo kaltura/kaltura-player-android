@@ -2,9 +2,9 @@ package com.kaltura.tvplayer.config.player;
 
 public class UiConf {
     private static final String BASE_URL = "https://cdnapisec.kaltura.com/";
-    private Integer uiConfId;
-    private Integer partnerId;
-    private String baseUrl;
+    public Integer uiConfId;
+    public Integer partnerId;
+    public String baseUrl;
 
     public UiConf(Integer uiConfId, Integer partnerId) {
         this.uiConfId = uiConfId;
@@ -22,23 +22,11 @@ public class UiConf {
         return baseUrl;
     }
 
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
-
     public Integer getPartnerId() {
         return partnerId;
     }
 
-    public void setPartnerId(Integer partnerId) {
-        this.partnerId = partnerId;
-    }
-
     public Integer getUiConfId() {
         return uiConfId;
-    }
-
-    public void setUiConfId(Integer uiConfId) {
-        this.uiConfId = uiConfId;
     }
 }
