@@ -37,9 +37,7 @@ import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
-import com.kaltura.playkit.plugins.ima.IMAConfig;
 import com.kaltura.playkit.plugins.ima.IMAPlugin;
-import com.kaltura.playkit.plugins.imadai.IMADAIConfig;
 import com.kaltura.playkit.plugins.imadai.IMADAIPlugin;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsEvent;
@@ -54,7 +52,6 @@ import com.kaltura.playkit.plugins.ovp.KalturaStatsEvent;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
-import com.kaltura.playkit.plugins.youbora.pluginconfig.Properties;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
 import com.kaltura.tvplayer.KalturaPlayer;
 
@@ -820,7 +817,7 @@ public class PlayerActivity extends AppCompatActivity {
                         }
                     }
                 });
-                container.addView(player.getView());
+                container.addView(player.getPlayerView());
                 playbackControlsView.setPlayer(player);
             }
         });

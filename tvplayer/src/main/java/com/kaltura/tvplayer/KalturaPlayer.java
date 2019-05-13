@@ -187,7 +187,7 @@ public class KalturaPlayer  {
 
             if (initOptions != null) {
                 if (initOptions.uiConfId != null) {
-                     map.put("{{uiConfId}}", String.valueOf(initOptions.uiConfId));
+                    map.put("{{uiConfId}}", String.valueOf(initOptions.uiConfId));
                 }
                 if (initOptions.partnerId != null) {
                     map.put("{{partnerId}}", String.valueOf(initOptions.partnerId));
@@ -359,14 +359,11 @@ public class KalturaPlayer  {
         return combinedPluginConfigs;
     }
 
-    public View getView() {
-        if (this.view != null) {
-            return view;
-        }
-        return null;
+    public View getPlayerView() {
+        return view;
     }
 
-    public View setPlayerView(int playerWidth, int playerHeight) {
+    public void setPlayerView(int playerWidth, int playerHeight) {
 
         ViewGroup.LayoutParams params = pkPlayer.getView().getLayoutParams();
         if (params != null) {
@@ -375,7 +372,6 @@ public class KalturaPlayer  {
             pkPlayer.getView().setLayoutParams(params);
         }
         this.view = pkPlayer.getView();
-        return view;
     }
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
@@ -736,7 +732,6 @@ public class KalturaPlayer  {
 
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
         // Special case: Phoenix plugin
-        // Phoenix
         String name = PhoenixAnalyticsPlugin.factory.getName();
         JsonObject phoenixAnalyticObject;
         if (getInitOptions().pluginConfigs.hasConfig(name)) {

@@ -57,6 +57,6 @@ public class PlayerActivity extends AppCompatActivity {
         this.player = player;
 
         ViewGroup container = findViewById(R.id.player_container);
-        container.addView(player.getView());
+        container.addView(player.getPlayerView());
     }
 }
