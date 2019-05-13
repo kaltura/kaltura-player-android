@@ -13,7 +13,4 @@ public class OTTMediaOptions extends MediaOptions {
     public String protocol;
     public String[] formats;
     public String[] fileIds;
-
-
-
 }

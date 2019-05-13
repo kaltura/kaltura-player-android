@@ -687,7 +687,7 @@ public class KalturaPlayer  {
     protected void registerPluginsOTT(Context context) {
         PlayKitManager.registerPlugins(context, PhoenixAnalyticsPlugin.factory);
     }
-    
+
     protected void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
         if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
             log.d("Adding Automatic Kava Plugin");
@@ -732,11 +732,6 @@ public class KalturaPlayer  {
             kavaAnalyticsConfig.setUiConfId(getUiConfId());
         }
         return kavaAnalyticsConfig;
-    }
-
-    private KalturaLiveStatsConfig getLiveStatsConfig() {
-        final PKMediaEntry mediaEntry = getMediaEntry();
-        return new KalturaLiveStatsConfig(getPartnerId(), mediaEntry != null ? mediaEntry.getId() : null);
     }
 
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {

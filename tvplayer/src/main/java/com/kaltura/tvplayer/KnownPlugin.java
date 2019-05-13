@@ -20,7 +20,7 @@ enum KnownPlugin {
     liveStats("com.kaltura.playkit.plugins.ovp.KalturaLiveStatsPlugin", KalturaLiveStatsPlugin.factory),
 
     // Kaltura Phoenix MediaHit/MediaMark
-    phoenixBookmarks("com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin"),
+    phoenixBookmarks("com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin", KavaAnalyticsPlugin.factory),
 
     // IMA
     ima("com.kaltura.playkit.plugins.ima.IMAPlugin"),
