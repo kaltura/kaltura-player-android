@@ -265,9 +265,7 @@ public class MainActivity extends BaseActivity implements TestCaseConfigurationA
         });
         alertDialog.show();
     }
-
-
-
+    
     public void showCustomAboutDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         LayoutInflater inflater = this.getLayoutInflater();
