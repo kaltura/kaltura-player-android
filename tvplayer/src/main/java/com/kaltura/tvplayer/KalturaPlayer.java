@@ -110,7 +110,11 @@ public class KalturaPlayer  {
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
         if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && uiConfPartnerId == null)) {
-            this.partnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
+            if (kalturaPlayerType == KalturaPlayerType.basic) {
+                this.partnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
+            } else {
+                this.partnerId = initOptions.partnerId;
+            }
             this.uiConfPartnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
         } else {
             this.partnerId = (initOptions.partnerId != null && initOptions.partnerId > 0) ? initOptions.partnerId : null;
