@@ -67,8 +67,8 @@ public class PlayerInitOptions {
 
     public PlayerInitOptions(Integer partnerId, UiConf uiConf) {
         this.partnerId = partnerId;
-        this.uiConfPartnerId = uiConf.getPartnerId();
-        this.uiConfId  = uiConf.getUiConfId();
+        this.uiConfPartnerId = uiConf.partnerId;
+        this.uiConfId  = uiConf.uiConfId;
     }
 
 

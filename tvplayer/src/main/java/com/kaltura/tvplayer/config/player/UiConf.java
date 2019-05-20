@@ -17,16 +17,4 @@ public class UiConf {
         this.partnerId = partnerId;
         this.baseUrl = baseUrl;
     }
-
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public Integer getPartnerId() {
-        return partnerId;
-    }
-
-    public Integer getUiConfId() {
-        return uiConfId;
-    }
 }

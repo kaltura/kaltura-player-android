@@ -5,31 +5,9 @@ package com.kaltura.kalturaplayertestapp.converters;
  */
 
 public class UiConf {
-    private String baseUrl;
-    private String partnerId;
-    private String id;
+    public String baseUrl;
+    public String partnerId;
+    public String id;
 
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
-
-    public String getPartnerId() {
-        return partnerId;
-    }
-
-    public void setPartnerId(String partnerId) {
-        this.partnerId = partnerId;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    public UiConf() {}
 }

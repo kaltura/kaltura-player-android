@@ -9,77 +9,19 @@ import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
  */
 
 public class Media {
-    private String entryId;   // ovp
-    private String ks;        // ovp or ott
-    private String assetId;   // ott
-    private String format;    // ott
-    private Integer fileId;   // ott
-    private String assetType; // ott
-    private String playbackContextType; // ott
-    private String assetReferenceType; // ott
-    private String protocol; // ott
-    private PKMediaEntry pkMediaEntry; // player without provider
-    private String mediaAdTag;
-
+    public String entryId;   // ovp
+    public String ks;        // ovp or ott
+    public String assetId;   // ott
+    public String format;    // ott
+    public Integer fileId;   // ott
+    public String assetType; // ott
+    public String playbackContextType; // ott
+    public String assetReferenceType; // ott
+    public String protocol; // ott
+    public PKMediaEntry pkMediaEntry; // player without provider
+    public String mediaAdTag;
 
     public Media() {}
-
-    public String getEntryId() {
-        return entryId;
-    }
-
-    public String getKs() {
-        return ks;
-    }
-
-    public void setKs(String ks) {
-        this.ks = ks;
-    }
-
-    public void setEntryId(String entryId) {
-        this.entryId = entryId;
-    }
-
-
-    public String getAssetId() {
-        return assetId;
-    }
-
-    public void setAssetId(String assetId) {
-        this.assetId = assetId;
-    }
-
-    public String getFormat() {
-        return format;
-    }
-
-    public void setFormat(String format) {
-        this.format = format;
-    }
-
-    public Integer getFileId() {
-        return fileId;
-    }
-
-    public PKMediaEntry getPkMediaEntry() {
-        return pkMediaEntry;
-    }
-
-    public void setFileId(Integer fileId) {
-        this.fileId = fileId;
-    }
-
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
-    }
-
-    public String getMediaAdTag() {
-        return mediaAdTag;
-    }
-
-    public void setMediaAdTag(String mediaAdTag) {
-        this.mediaAdTag = mediaAdTag;
-    }
 
     public APIDefines.KalturaAssetType getAssetType() {
         if (assetType == null) {

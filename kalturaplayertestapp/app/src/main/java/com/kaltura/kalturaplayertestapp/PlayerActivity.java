@@ -137,7 +137,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
 
-        final String playerType = appPlayerInitConfig.getPlayerType();
+        final String playerType = appPlayerInitConfig.playerType;
         buildPlayer( appPlayerInitConfig, currentPlayedMediaIndex, playerType);
 
 //        if (appPlayerInitConfig.getUiConf() == null) {
@@ -161,33 +161,33 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         updatePluginsConfig(mediaList.get(currentPlayedMediaIndex));
-        if ("ovp".equals(appPlayerInitConfig.getPlayerType().toLowerCase())) {
+        if ("ovp".equals(appPlayerInitConfig.playerType.toLowerCase())) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
                 log.d("OVPMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
                 handleOnEntryLoadComplete(error);
             });
-        } else if ("ott".equals(appPlayerInitConfig.getPlayerType().toLowerCase())){
+        } else if ("ott".equals(appPlayerInitConfig.playerType.toLowerCase())){
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, currentPlayedMediaIndex);
             player.loadMedia(ottMediaOptions, (entry, error) -> {
                 log.d("OTTMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
                 handleOnEntryLoadComplete(error);
             });
-        } else if ("basic".equals(appPlayerInitConfig.getPlayerType().toLowerCase())) {
-            if (appPlayerInitConfig.getMediaList() != null && appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex) != null) {
-                player.setMedia(appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex).getPkMediaEntry(), 0L);
+        } else if ("basic".equals(appPlayerInitConfig.playerType.toLowerCase())) {
+            if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
+                player.setMedia(appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry, 0L);
             }
         }
         else {
-            log.e("Error no such player type <" + appPlayerInitConfig.getPlayerType() + ">");
+            log.e("Error no such player type <" + appPlayerInitConfig.playerType + ">");
         }
     }
 
     private void updatePluginsConfig(Media media) {
         if (initOptions.pluginConfigs.hasConfig(IMAPlugin.factory.getName())) {
             JsonObject imaJson = (JsonObject) initOptions.pluginConfigs.getPluginConfig(IMAPlugin.factory.getName());
-            if (media.getMediaAdTag() != null) {
-                imaJson.addProperty("adTagUrl", media.getMediaAdTag());
+            if (media.mediaAdTag != null) {
+                imaJson.addProperty("adTagUrl", media.mediaAdTag);
             }
             //IMAConfig imaPluginConfig = gson.fromJson(imaJson, IMAConfig.class);
             //Example to update the AdTag
@@ -275,32 +275,32 @@ public class PlayerActivity extends AppCompatActivity {
     private void buildPlayer(PlayerConfig appPlayerInitConfig, int playListMediaIndex, String playerType) {
         KalturaPlayer player = null;
 
-        JsonArray appPluginConfigJsonObject = appPlayerInitConfig.getPluginConfigs();
+        JsonArray appPluginConfigJsonObject = appPlayerInitConfig.plugins;
         int playerUiConfId = -1;
-        if (appPlayerInitConfig.getUiConf() != null) {
-            playerUiConfId = Integer.valueOf(appPlayerInitConfig.getUiConf().getId());
+        if (appPlayerInitConfig.uiConf != null) {
+            playerUiConfId = Integer.valueOf(appPlayerInitConfig.uiConf.id);
         }
-        mediaList = appPlayerInitConfig.getMediaList();
+        mediaList = appPlayerInitConfig.mediaList;
 
-        Integer partnerId = (appPlayerInitConfig.getPartnerId() != null) ? Integer.valueOf(appPlayerInitConfig.getPartnerId()) : null;
-        initOptions = new PlayerInitOptions(partnerId, new UiConf(appPlayerInitConfig.getUiConf() == null ? null : Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), appPlayerInitConfig.getUiConf() == null ? null : Integer.valueOf(appPlayerInitConfig.getUiConf().getPartnerId())))
-                .setAutoPlay(appPlayerInitConfig.getAutoPlay())
-                .setKs(appPlayerInitConfig.getKs())
-                .setPreload(appPlayerInitConfig.getPreload())
-                .setReferrer(appPlayerInitConfig.getReferrer())
-                .setServerUrl(appPlayerInitConfig.getBaseUrl())
-                .setAllowCrossProtocolEnabled(appPlayerInitConfig.getAllowCrossProtocolEnabled())
-                .setPreferredMediaFormat(appPlayerInitConfig.getPreferredFormat())
-                .setSecureSurface(appPlayerInitConfig.getSecureSurface())
-                .setAspectRatioResizeMode(appPlayerInitConfig.getAspectRatioResizeMode())
-                .setAbrSettings(appPlayerInitConfig.getAbrSettings())
-                .setLoadControlBuffers(appPlayerInitConfig.getLoadControlBuffers())
-                .setSubtitleStyle(appPlayerInitConfig.getSetSubtitleStyle())
-                .setAllowClearLead(appPlayerInitConfig.getAllowClearLead())
-                .setAdAutoPlayOnResume(appPlayerInitConfig.getAdAutoPlayOnResume())
-                .setVrPlayerEnabled(appPlayerInitConfig.getVrPlayerEnabled())
-                .setContentRequestAdapter(appPlayerInitConfig.getContentRequestAdapter())
-                .setLicenseRequestAdapter(appPlayerInitConfig.getLicenseRequestAdapter())
+        Integer partnerId = (appPlayerInitConfig.partnerId != null) ? Integer.valueOf(appPlayerInitConfig.partnerId) : null;
+        initOptions = new PlayerInitOptions(partnerId, new UiConf(appPlayerInitConfig.uiConf == null ? null : Integer.valueOf(appPlayerInitConfig.uiConf.id), appPlayerInitConfig.uiConf == null ? null : Integer.valueOf(appPlayerInitConfig.uiConf.partnerId)))
+                .setAutoPlay(appPlayerInitConfig.autoPlay)
+                .setKs(appPlayerInitConfig.ks)
+                .setPreload(appPlayerInitConfig.preload)
+                .setReferrer(appPlayerInitConfig.referrer)
+                .setServerUrl(appPlayerInitConfig.baseUrl)
+                .setAllowCrossProtocolEnabled(appPlayerInitConfig.allowCrossProtocolEnabled)
+                .setPreferredMediaFormat(appPlayerInitConfig.preferredFormat)
+                .setSecureSurface(appPlayerInitConfig.secureSurface)
+                .setAspectRatioResizeMode(appPlayerInitConfig.aspectRatioResizeMode)
+                .setAbrSettings(appPlayerInitConfig.abrSettings)
+                .setLoadControlBuffers(appPlayerInitConfig.loadControlBuffers)
+                .setSubtitleStyle(appPlayerInitConfig.setSubtitleStyle)
+                .setAllowClearLead(appPlayerInitConfig.allowClearLead)
+                .setAdAutoPlayOnResume(appPlayerInitConfig.adAutoPlayOnResume)
+                .setVrPlayerEnabled(appPlayerInitConfig.vrPlayerEnabled)
+                .setContentRequestAdapter(appPlayerInitConfig.contentRequestAdapter)
+                .setLicenseRequestAdapter(appPlayerInitConfig.licenseRequestAdapter)
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
 
@@ -308,7 +308,7 @@ public class PlayerActivity extends AppCompatActivity {
             player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
 
-            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
+            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.startPosition, playListMediaIndex);
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
                 if (error != null) {
                     log.d("OVPMedia Error Extra = " + error.getExtra());
@@ -325,7 +325,7 @@ public class PlayerActivity extends AppCompatActivity {
         } else if ("ott".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createOTTPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
-            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.getStartPosition(), playListMediaIndex);
+            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.startPosition, playListMediaIndex);
             player.loadMedia(ottMediaOptions, (entry, error) -> {
                 if (error != null) {
                     log.d("OTTMedia Error Extra = " + error.getExtra());
@@ -342,8 +342,8 @@ public class PlayerActivity extends AppCompatActivity {
         } else if ("basic".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createBasicPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
-            if (appPlayerInitConfig.getMediaList() != null && appPlayerInitConfig.getMediaList().get(currentPlayedMediaIndex) != null) {
-                player.setMedia(appPlayerInitConfig.getMediaList().get(playListMediaIndex).getPkMediaEntry(), 0L);
+            if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
+                player.setMedia(appPlayerInitConfig.mediaList.get(playListMediaIndex).pkMediaEntry, 0L);
             }
         }
         else {
@@ -352,10 +352,12 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         playbackControlsManager = new PlaybackControlsManager(this, player, playbackControlsView);
-        if (appPlayerInitConfig.getMediaList().size() > 1) {
-            playbackControlsManager.addChangeMediaButtonsListener(appPlayerInitConfig.getMediaList().size());
+        if (appPlayerInitConfig.mediaList != null) {
+            if (appPlayerInitConfig.mediaList.size() > 1) {
+                playbackControlsManager.addChangeMediaButtonsListener(appPlayerInitConfig.mediaList.size());
+            }
+            playbackControlsManager.updatePrevNextBtnFunctionality(currentPlayedMediaIndex, appPlayerInitConfig.mediaList.size());
         }
-        playbackControlsManager.updatePrevNextBtnFunctionality(currentPlayedMediaIndex, appPlayerInitConfig.getMediaList().size());
 
     }
 
@@ -363,20 +365,20 @@ public class PlayerActivity extends AppCompatActivity {
     private OTTMediaOptions buildOttMediaOptions(int startPosition, int playListMediaIndex) {
         Media ottMedia = mediaList.get(playListMediaIndex);
         OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
-        ottMediaOptions.assetId = ottMedia.getAssetId();
+        ottMediaOptions.assetId = ottMedia.assetId;
         ottMediaOptions.assetType = ottMedia.getAssetType();
         ottMediaOptions.contextType = ottMedia.getPlaybackContextType();
         ottMediaOptions.assetReferenceType = ottMedia.getAssetReferenceType();
         ottMediaOptions.protocol = ottMedia.getProtocol();
-        ottMediaOptions.ks = ottMedia.getKs();
+        ottMediaOptions.ks = ottMedia.ks;
         ottMediaOptions.startPosition = startPosition;
 
 
-        if (!TextUtils.isEmpty(ottMedia.getFormat())) {
-            ottMediaOptions.formats = new String[]{ottMedia.getFormat()};
+        if (!TextUtils.isEmpty(ottMedia.format)) {
+            ottMediaOptions.formats = new String[]{ottMedia.format};
         }
-        if (ottMedia.getFileId() != null) {
-            ottMediaOptions.fileIds = new String[]{String.valueOf(ottMedia.getFileId())};
+        if (ottMedia.fileId != null) {
+            ottMediaOptions.fileIds = new String[]{String.valueOf(ottMedia.fileId)};
         }
 
         return ottMediaOptions;
@@ -386,8 +388,8 @@ public class PlayerActivity extends AppCompatActivity {
     private OVPMediaOptions buildOvpMediaOptions(int startPosition, int playListMediaIndex) {
         Media ovpMedia = mediaList.get(playListMediaIndex);
         OVPMediaOptions ovpMediaOptions = new OVPMediaOptions();
-        ovpMediaOptions.entryId = ovpMedia.getEntryId();
-        ovpMediaOptions.ks = ovpMedia.getKs();
+        ovpMediaOptions.entryId = ovpMedia.entryId;
+        ovpMediaOptions.ks = ovpMedia.ks;
         ovpMediaOptions.startPosition = startPosition;
         return ovpMediaOptions;
     }
@@ -419,6 +421,7 @@ public class PlayerActivity extends AppCompatActivity {
             playbackControlsManager.setAdPlayerState(AdEvent.Type.ALL_ADS_COMPLETED);
             allAdsCompeted = true;
             if (isPlaybackEndedState()) {
+                progressBar.setVisibility(View.GONE);
                 playbackControlsManager.showControls(View.VISIBLE);
             }
         });
@@ -530,6 +533,7 @@ public class PlayerActivity extends AppCompatActivity {
         player.addListener(this, PlayerEvent.ended, event -> {
             log.d("PLAYER ENDED");
             playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
+            progressBar.setVisibility(View.GONE);
             if (!isPostrollAvailableInAdCuePoint()) {
                 playbackControlsManager.showControls(View.VISIBLE);
             }
