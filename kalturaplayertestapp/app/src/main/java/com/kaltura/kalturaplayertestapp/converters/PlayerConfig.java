@@ -30,6 +30,7 @@ public class PlayerConfig {
     public Boolean secureSurface;
     public Boolean adAutoPlayOnResume;
     public Boolean vrPlayerEnabled;
+    public Boolean isVideoViewHidden;
     public SubtitleStyleSettings setSubtitleStyle;
     public PKAspectRatioResizeMode aspectRatioResizeMode;
     public PKRequestParams.Adapter contentRequestAdapter;

@@ -3,7 +3,6 @@ package com.kaltura.playerdemo;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import com.google.gson.JsonObject;
 

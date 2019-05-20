@@ -299,6 +299,7 @@ public class PlayerActivity extends AppCompatActivity {
                 .setAllowClearLead(appPlayerInitConfig.allowClearLead)
                 .setAdAutoPlayOnResume(appPlayerInitConfig.adAutoPlayOnResume)
                 .setVrPlayerEnabled(appPlayerInitConfig.vrPlayerEnabled)
+                .setIsVideoViewHidden(appPlayerInitConfig.isVideoViewHidden)
                 .setContentRequestAdapter(appPlayerInitConfig.contentRequestAdapter)
                 .setLicenseRequestAdapter(appPlayerInitConfig.licenseRequestAdapter)
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));

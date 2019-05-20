@@ -29,7 +29,6 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
-import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsConfig;
 import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
@@ -312,6 +311,10 @@ public class KalturaPlayer  {
 
         if (initOptions.vrPlayerEnabled != null) {
             pkPlayer.getSettings().setVRPlayerEnabled(initOptions.vrPlayerEnabled);
+        }
+
+        if (initOptions.isVideoViewHidden != null) {
+            pkPlayer.getSettings().setHideVideoViews(initOptions.isVideoViewHidden);
         }
 
         if (initOptions.aspectRatioResizeMode != null) {
@@ -602,7 +605,7 @@ public class KalturaPlayer  {
         setStartPosition(mediaOptions.startPosition);
 
         MediaEntryProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                .setEntryId(mediaOptions.entryId).setReferrer(referrer);
+                .setEntryId(mediaOptions.entryId).setUseApiCaptions(mediaOptions.useApiCaptions).setReferrer(referrer);
 
         provider.load(new OnMediaLoadCompletion() {
             @Override

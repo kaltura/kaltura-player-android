@@ -53,6 +53,7 @@ public class PlayerInitOptions {
     public Boolean secureSurface;
     public Boolean adAutoPlayOnResume;
     public Boolean vrPlayerEnabled;
+    public Boolean isVideoViewHidden;
     public SubtitleStyleSettings setSubtitleStyle;
     public PKAspectRatioResizeMode aspectRatioResizeMode;
     public PKRequestParams.Adapter contentRequestAdapter;
@@ -250,6 +251,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setVrPlayerEnabled(Boolean vrPlayerEnabled) {
         if (vrPlayerEnabled != null) {
             this.vrPlayerEnabled = vrPlayerEnabled;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setIsVideoViewHidden(Boolean isVideoViewHidden) {
+        if (isVideoViewHidden != null) {
+            this.isVideoViewHidden = isVideoViewHidden;
         }
         return this;
     }
