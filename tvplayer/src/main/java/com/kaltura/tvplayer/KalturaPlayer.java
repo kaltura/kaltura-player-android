@@ -24,6 +24,7 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
+import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
@@ -57,6 +58,12 @@ public class KalturaPlayer  {
         basic
     }
 
+    private enum PrepareState {
+        not_prepared,
+        preparing,
+        prepared
+    }
+
     private boolean pluginsRegistered;
 
     protected String serverUrl;
@@ -74,7 +81,7 @@ public class KalturaPlayer  {
     private double startPosition;
     private View view;
     private PKMediaEntry mediaEntry;
-    private boolean prepared;
+    private PrepareState prepareState = PrepareState.not_prepared;
     private Resolver tokenResolver = new Resolver();
     private PlayerInitOptions initOptions;
 
@@ -118,7 +125,7 @@ public class KalturaPlayer  {
             this.uiConfPartnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
         } else {
             this.partnerId = (initOptions.partnerId != null && initOptions.partnerId > 0) ? initOptions.partnerId : null;
-            this.uiConfPartnerId = (initOptions.uiConfPartnerId != null && initOptions.uiConfPartnerId > 0) ? initOptions.uiConfPartnerId : null;
+            this.uiConfPartnerId = (initOptions.uiConfPartnerId != null && initOptions.uiConfPartnerId > 0) ? initOptions.uiConfPartnerId : this.partnerId;
         }
         this.uiConfId = initOptions.uiConfId;
         this.serverUrl = initOptions.serverUrl;
@@ -389,7 +396,7 @@ public class KalturaPlayer  {
         updateKalturaPluginConfigs(combinedPluginConfigs);
 
         this.mediaEntry = mediaEntry;
-        prepared = false;
+        prepareState = PrepareState.not_prepared;
 
         if (preload) {
             prepare();
@@ -413,7 +420,7 @@ public class KalturaPlayer  {
 
     public void prepare() {
 
-        if (prepared) {
+        if (prepareState == PrepareState.preparing) {
             return;
         }
 
@@ -422,8 +429,14 @@ public class KalturaPlayer  {
                 .setStartPosition((long) (startPosition));
 
         pkPlayer.prepare(config);
-        prepared = true;
-
+        prepareState = PrepareState.preparing;
+        pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent.DurationChanged>() {
+            @Override
+            public void onEvent(PlayerEvent.DurationChanged event) {
+                prepareState = PrepareState.prepared;
+                pkPlayer.removeListener(this);
+            }
+        });
         if (autoPlay) {
             pkPlayer.play();
         }
@@ -463,7 +476,7 @@ public class KalturaPlayer  {
     }
 
     public void play() {
-        if (!prepared) {
+        if (prepareState == PrepareState.not_prepared) {
             prepare();
         }
         if(pkPlayer != null) {
