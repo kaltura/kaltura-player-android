@@ -40,6 +40,9 @@ public class UiConfFormatIMAConfig {
     }
 
     public SdkSettings getSdkSettings() {
+        if (sdkSettings == null) {
+            sdkSettings = new SdkSettings();
+        }
         return sdkSettings;
     }
 
