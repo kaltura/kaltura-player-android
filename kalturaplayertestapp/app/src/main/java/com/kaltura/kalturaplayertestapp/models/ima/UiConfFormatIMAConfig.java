@@ -36,6 +36,9 @@ public class UiConfFormatIMAConfig {
     }
 
     public AdsRenderingSettings getAdsRenderingSettings() {
+        if (adsRenderingSettings == null) {
+            adsRenderingSettings = new AdsRenderingSettings();
+        }
         return adsRenderingSettings;
     }
 
@@ -48,14 +51,14 @@ public class UiConfFormatIMAConfig {
 
     public JsonObject toJson() { // to Json will return format like IMAConfig
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty(AD_TAG_LANGUAGE, sdkSettings.getLanguage());
+        jsonObject.addProperty(AD_TAG_LANGUAGE, getSdkSettings().getLanguage());
         jsonObject.addProperty(AD_TAG_TYPE, adTagType.name());
         jsonObject.addProperty(AD_TAG_URL, adTagUrl);
-        jsonObject.addProperty(AD_VIDEO_BITRATE, adsRenderingSettings.getBitrate());
-        jsonObject.addProperty(AD_ATTRIBUTION_UIELEMENT, adsRenderingSettings.getUiElements().isAdAttribution());
-        jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, adsRenderingSettings.getUiElements().isAdCountDown());
-        jsonObject.addProperty(AD_LOAD_TIMEOUT, adsRenderingSettings.getLoadVideoTimeout());
-        jsonObject.addProperty(AD_ENABLE_DEBUG_MODE, sdkSettings.isDebugMode());
+        jsonObject.addProperty(AD_VIDEO_BITRATE, getAdsRenderingSettings().getBitrate());
+        jsonObject.addProperty(AD_ATTRIBUTION_UIELEMENT, getAdsRenderingSettings().getUiElements().isAdAttribution());
+        jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, getAdsRenderingSettings().getUiElements().isAdCountDown());
+        jsonObject.addProperty(AD_LOAD_TIMEOUT, getAdsRenderingSettings().getLoadVideoTimeout());
+        jsonObject.addProperty(AD_ENABLE_DEBUG_MODE, getSdkSettings().isDebugMode());
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();

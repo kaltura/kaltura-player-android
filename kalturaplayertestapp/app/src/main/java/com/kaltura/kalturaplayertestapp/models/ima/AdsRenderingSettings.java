@@ -10,11 +10,17 @@ public class AdsRenderingSettings {
     private UiElements uiElements;
 
     public Integer getBitrate() {
+        if (bitrate == null) {
+            bitrate = -1;
+        }
         return bitrate;
     }
 
 
     public Integer getLoadVideoTimeout() {
+        if (loadVideoTimeout == null) {
+            loadVideoTimeout = 0;
+        }
         return loadVideoTimeout;
     }
 
