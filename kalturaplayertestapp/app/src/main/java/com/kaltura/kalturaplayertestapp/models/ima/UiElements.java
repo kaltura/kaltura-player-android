@@ -4,6 +4,11 @@ public class UiElements {
     private boolean adAttribution;
     private boolean adCountDown;
 
+    public UiElements(boolean adAttribution, boolean adCountDown) {
+        this.adAttribution = adAttribution;
+        this.adCountDown = adCountDown;
+    }
+
     public boolean isAdAttribution() {
         return adAttribution;
     }

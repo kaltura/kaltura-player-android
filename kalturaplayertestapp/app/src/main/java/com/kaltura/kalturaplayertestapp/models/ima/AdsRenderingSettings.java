@@ -23,6 +23,9 @@ public class AdsRenderingSettings {
     }
 
     public UiElements getUiElements() {
+        if (uiElements == null) {
+            uiElements = new UiElements(true, true);
+        }
         return uiElements;
     }
 }
