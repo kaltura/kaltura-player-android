@@ -30,6 +30,7 @@ import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.MediaSupport;
@@ -303,6 +304,15 @@ public class PlayerActivity extends AppCompatActivity {
                 .setContentRequestAdapter(appPlayerInitConfig.contentRequestAdapter)
                 .setLicenseRequestAdapter(appPlayerInitConfig.licenseRequestAdapter)
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
+
+        if (appPlayerInitConfig.trackSelection != null) {
+            if (appPlayerInitConfig.trackSelection.audioSelectionMode != null) {
+                initOptions.setAudioLanguage(appPlayerInitConfig.trackSelection.audioSelectionLanguage, PKTrackConfig.Mode.valueOf(appPlayerInitConfig.trackSelection.audioSelectionMode));
+            }
+            if (appPlayerInitConfig.trackSelection.textSelectionMode != null) {
+                initOptions.setTextLanguage(appPlayerInitConfig.trackSelection.textSelectionLanguage, PKTrackConfig.Mode.valueOf(appPlayerInitConfig.trackSelection.textSelectionMode));
+            }
+        }
 
 
         if ("ovp".equals(playerType.toLowerCase())) {

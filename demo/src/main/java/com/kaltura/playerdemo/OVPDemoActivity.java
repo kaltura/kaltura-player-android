@@ -105,13 +105,17 @@ public class OVPDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ?initOptions.preferredMediaFormat.name() : null);
         updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
         updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
-        updatedInitOptions.setAudioLanguage(initOptions.audioLanguage);
-        updatedInitOptions.setTextLanguage(initOptions.textLanguage);
         updatedInitOptions.setSecureSurface(initOptions.secureSurface);
         updatedInitOptions.setKs(initOptions.ks);
         updatedInitOptions.setServerUrl(initOptions.serverUrl);
         updatedInitOptions.setAutoPlay(initOptions.autoplay);
         updatedInitOptions.setReferrer(initOptions.referrer);
+        if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
+            updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
+        }
+        if (initOptions.textLanguage != null && initOptions.textLanguageMode != null) {
+            updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
+        }
 
         KalturaPlayer player = KalturaPlayer.createOVPPlayer(playerActivity, updatedInitOptions);
        OVPMediaOptions ovpMediaOptions = new OVPMediaOptions();
