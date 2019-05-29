@@ -102,13 +102,17 @@ public class BasicDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ?initOptions.preferredMediaFormat.name() : null);
         updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
         updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
-        updatedInitOptions.setAudioLanguage(initOptions.audioLanguage);
-        updatedInitOptions.setTextLanguage(initOptions.textLanguage);
         updatedInitOptions.setSecureSurface(initOptions.secureSurface);
         updatedInitOptions.setKs(initOptions.ks);
         updatedInitOptions.setServerUrl(initOptions.serverUrl);
         updatedInitOptions.setAutoPlay(initOptions.autoplay);
         updatedInitOptions.setReferrer(initOptions.referrer);
+        if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
+            updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
+        }
+        if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
+            updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
+        }
 
         KalturaPlayer player = KalturaPlayer.createBasicPlayer(playerActivity, updatedInitOptions);
         player.setMedia(currentItem.pkMediaEntry, 0L);

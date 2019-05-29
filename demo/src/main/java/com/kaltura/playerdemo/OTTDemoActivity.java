@@ -8,6 +8,7 @@ import com.google.gson.JsonObject;
 
 import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
@@ -89,13 +90,17 @@ public class OTTDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ?initOptions.preferredMediaFormat.name() : null);
         updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
         updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
-        updatedInitOptions.setAudioLanguage(initOptions.audioLanguage);
-        updatedInitOptions.setTextLanguage(initOptions.textLanguage);
         updatedInitOptions.setSecureSurface(initOptions.secureSurface);
         updatedInitOptions.setKs(initOptions.ks);
         updatedInitOptions.setServerUrl(initOptions.serverUrl);
         updatedInitOptions.setAutoPlay(initOptions.autoplay);
         updatedInitOptions.setReferrer(initOptions.referrer);
+        if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
+            updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
+        }
+        if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
+            updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
+        }
 
         KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
 
@@ -127,7 +132,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
     }
 
     static class TVItem extends DemoItem {
-    
+
         final String[] fileIds;
         final String protocol;
 
