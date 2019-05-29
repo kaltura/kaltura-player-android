@@ -8,7 +8,6 @@ import com.google.gson.JsonObject;
 
 import com.kaltura.netkit.utils.GsonParser;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
