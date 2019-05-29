@@ -97,7 +97,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
         if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
             updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
         }
-        if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
+        if (initOptions.textLanguage != null && initOptions.textLanguageMode != null) {
             updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
         }
 
