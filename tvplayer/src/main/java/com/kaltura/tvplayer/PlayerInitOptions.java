@@ -194,16 +194,18 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setAudioLanguage(String audioLanguage) {
-        if (audioLanguage != null) {
+    public PlayerInitOptions setAudioLanguage(String audioLanguage, PKTrackConfig.Mode audioLanguageMode) {
+        if (audioLanguage != null && audioLanguageMode != null) {
             this.audioLanguage = audioLanguage;
+            this.audioLanguageMode = audioLanguageMode;
         }
         return this;
     }
 
-    public PlayerInitOptions setTextLanguage(String textLanguage) {
-        if (textLanguage != null) {
+    public PlayerInitOptions setTextLanguage(String textLanguage, PKTrackConfig.Mode textLanguageMode) {
+        if (textLanguage != null && textLanguageMode != null) {
             this.textLanguage = textLanguage;
+            this.textLanguageMode = textLanguageMode;
         }
         return this;
     }
