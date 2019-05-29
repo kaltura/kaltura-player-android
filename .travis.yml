@@ -1,8 +1,4 @@
 language: android
-dist: trusty
-sudo: required
-jdk:
-  - oraclejdk8
 android:
   components:
     - tools
@@ -14,8 +10,6 @@ script:
   - ./gradlew tvplayer:build
 after_failure:
   - cat tvplayer/build/outputs/lint-results-debug.xml
-after_success:
-  - ./travis-push-to-bintray.sh
 notifications:
   email:
     recipients:
