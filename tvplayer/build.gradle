@@ -35,3 +35,9 @@ dependencies {
     api project(":providers");
     api project(":kava");
 }
+
+repositories {
+    google()
+    jcenter()
+    maven { url "https://jitpack.io" }
+}
