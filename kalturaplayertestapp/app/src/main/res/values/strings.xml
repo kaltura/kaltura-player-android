@@ -25,7 +25,9 @@
     <string name="dialog_button_close">Close</string>
     <string name="selection_disabled">Disabled</string>
     <string name="selection_default">Default</string>
-
+    <string name="network_connected">Network Connected</string>
+    <string name="network_disconnected">Network Disconnected</string>
+    <string name="error_empty_input">Error, bad input</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="permission_camera_rationale">Access to the camera is needed for detection</string>

@@ -28,13 +28,16 @@ android {
 print gradle.startParameter.taskNames
 
 dependencies {
-//    compile 'com.kaltura.playkit:playkit:3.3.0'
-//    compile 'com.kaltura.playkit:playkit:3.3.0'
-//    compile 'com.kaltura:playkit-android:a67c77e412f2678325b74def67e766be823235f5'
-//    compile 'com.kaltura.playkit:kavaplugin:0.1.1'
-    api project(":playkit");
-    api project(":providers");
-    api project(":kava");
+    implementation 'com.kaltura:playkit-android:dev-SNAPSHOT'
+    //implementation 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
+    //implementation 'com.kaltura:playkit-android-ima:develop-SNAPSHOT'
+    implementation 'com.kaltura:playkit-android-providers:fbf91bcbadee1c6589a5c5521930d2b61f231895'
+    implementation 'com.kaltura:playkit-android-kava:60b2bc24922b87d9b3a6fca9a27569b2c4612146'
+
+
+//    api project(":playkit");
+//    api project(":providers");
+//    api project(":kava");
 }
 
 repositories {

@@ -1,22 +1,22 @@
 
 include ':tvplayer'
-include ':demo'
-
-include ':kalturaplayertestapp'
-project(':kalturaplayertestapp').projectDir = new File('kalturaplayertestapp/app')
-include ':playkit'
-project(':playkit').projectDir = new File(settingsDir,'../playkit-android/playkit')
-include ':providers'
-project(':providers').projectDir = new File(settingsDir,'../playkit-android-providers/mediaproviders')
-include ':ima'
-project(':ima').projectDir = new File(settingsDir,'../playkit-android-ima/imaplugin')
-include ':youbora'
-project(':youbora').projectDir = new File(settingsDir,'../playkit-android-youbora/youboraplugin')
-include ':kava'
-project(':kava').projectDir = new File(settingsDir,'../playkit-android-kava/kavaplugin')
-include ':googlecast'
-project(':googlecast').projectDir = new File(settingsDir,'../playkit-android-googlecast/googlecast')
-include ':MD360'
-project(':MD360').projectDir = new File(settingsDir,'../MD360Player4Android/vrlib')
-include ':playkitvr'
-project(':playkitvr').projectDir = new File(settingsDir,'../playkit-android-vr/playkitvr')
+//ile(settingsDir,'../playkit-android-vr/playkitvr')include ':demo'
+////
+////include ':kalturaplayertestapp'
+////project(':kalturaplayertestapp').projectDir = new File('kalturaplayertestapp/app')
+////include ':playkit'
+////project(':playkit').projectDir = new File(settingsDir,'../playkit-android/playkit')
+////include ':providers'
+////project(':providers').projectDir = new File(settingsDir,'../playkit-android-providers/mediaproviders')
+////include ':ima'
+////project(':ima').projectDir = new File(settingsDir,'../playkit-android-ima/imaplugin')
+////include ':youbora'
+////project(':youbora').projectDir = new File(settingsDir,'../playkit-android-youbora/youboraplugin')
+////include ':kava'
+////project(':kava').projectDir = new File(settingsDir,'../playkit-android-kava/kavaplugin')
+////include ':googlecast'
+////project(':googlecast').projectDir = new File(settingsDir,'../playkit-android-googlecast/googlecast')
+////include ':MD360'
+////project(':MD360').projectDir = new File(settingsDir,'../MD360Player4Android/vrlib')
+////include ':playkitvr'
+////project(':playkitvr').projectDir = new F

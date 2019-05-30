@@ -3,6 +3,7 @@ package com.kaltura.kalturaplayertestapp.adapter;
 import android.app.Dialog;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -124,10 +125,15 @@ public class TestCaseConfigurationAdapter extends FirestoreAdapter<TestCaseConfi
             TextView textViewUser = dialog.findViewById(R.id.txt);
 
             try {
-                JSONObject jsonObject = new JSONObject(json);
-
                 int spacesToIndentEachLevel = 2;
-                textViewUser.setText(jsonObject.toString(spacesToIndentEachLevel));
+                JSONObject jsonObject;
+                if (!TextUtils.isEmpty(json)) {
+                    jsonObject= new JSONObject(json);
+                    textViewUser.setText(jsonObject.toString(spacesToIndentEachLevel));
+                }  else {
+                    textViewUser.setText("Json is not valid!");
+                }
+
                 Button dialogButton = dialog.findViewById(R.id.dialogButton);
                 dialogButton.setOnClickListener(new View.OnClickListener() {
                     @Override

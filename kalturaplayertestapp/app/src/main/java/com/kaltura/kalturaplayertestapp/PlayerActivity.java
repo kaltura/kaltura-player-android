@@ -1,5 +1,6 @@
 package com.kaltura.kalturaplayertestapp;
 
+import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -11,7 +12,9 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.SearchView;
 import android.widget.Toast;
 
@@ -69,6 +72,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import static com.kaltura.playkit.PlayerEvent.Type.ENDED;
@@ -77,7 +82,7 @@ import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_TEXT;
 import static com.kaltura.playkit.utils.Consts.TRACK_TYPE_VIDEO;
 
 
-public class PlayerActivity extends AppCompatActivity {
+public class PlayerActivity extends AppCompatActivity implements Observer {
 
     private static final PKLog log = PKLog.get("PlayerActivity");
     private static final int REMOVE_CONTROLS_TIMEOUT = 3000;
@@ -112,13 +117,15 @@ public class PlayerActivity extends AppCompatActivity {
     private boolean isFirstOnResume = true;
     private boolean isPlayingOnPause;
 
+    private NetworkChangeReceiver networkChangeReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
-
+        networkChangeReceiver = new NetworkChangeReceiver();
         eventsListView = findViewById(R.id.events_list);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         eventsListView.setLayoutManager(layoutManager);
@@ -137,9 +144,11 @@ public class PlayerActivity extends AppCompatActivity {
         initDrm();
 
         appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
+        if (appPlayerInitConfig != null) {
 
-        final String playerType = appPlayerInitConfig.playerType;
-        buildPlayer( appPlayerInitConfig, currentPlayedMediaIndex, playerType);
+
+            final String playerType = appPlayerInitConfig.playerType;
+            buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
 
 //        if (appPlayerInitConfig.getUiConf() == null) {
 //            log.d("App config json is invalid");
@@ -153,6 +162,10 @@ public class PlayerActivity extends AppCompatActivity {
 //                }
 //            });
 //        }
+
+        } else {
+            showMessage(R.string.error_empty_input);
+        }
     }
 
     public void changeMedia() {
@@ -799,6 +812,7 @@ public class PlayerActivity extends AppCompatActivity {
             player = null;
             eventsList.clear();
         }
+        networkChangeReceiver = null;
     }
 
     public void setPlayer(final KalturaPlayer player) {
@@ -877,6 +891,8 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onResume() {
         log.d("Player Activity onResume");
         super.onResume();
+        NetworkChangeReceiver.getObservable().addObserver(this);
+        this.registerReceiver(networkChangeReceiver, new IntentFilter(android.net.ConnectivityManager.CONNECTIVITY_ACTION));
         if (isFirstOnResume) {
             isFirstOnResume = false;
             return;
@@ -887,7 +903,9 @@ public class PlayerActivity extends AppCompatActivity {
             setPlayerListeners();
             if (isPlayingOnPause) {
                 isPlayingOnPause = false;
-                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                if (playbackControlsView != null && playbackControlsView.getPlayPauseToggle() != null) {
+                    playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                }
             }
         }
     }
@@ -902,6 +920,41 @@ public class PlayerActivity extends AppCompatActivity {
             player.onApplicationPaused();
         }
         super.onPause();
-        playbackControlsManager.showControls(View.VISIBLE);
+        unregisterReceiver(networkChangeReceiver);
+        NetworkChangeReceiver.getObservable().deleteObserver(this);
+        if (playbackControlsManager != null) {
+            playbackControlsManager.showControls(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void update(Observable observable, Object objectStatus) {
+        Boolean isConnected = (Boolean) objectStatus;
+        if (isConnected) {
+            onNetworkConnected();
+        } else {
+            onNetworkDisConnected();
+        }
+    }
+
+    protected void onNetworkConnected() {
+        showMessage(R.string.network_connected);
+        if (player != null) {
+            player.onApplicationResumed();
+            player.play();
+        }
+    }
+
+    protected void onNetworkDisConnected() {
+        showMessage(R.string.network_disconnected);
+        if (player != null) {
+            player.onApplicationPaused();
+        }
+    }
+
+    private void showMessage(int string) {
+        RelativeLayout itemView = findViewById(R.id.player_container);
+        Snackbar snackbar = Snackbar.make(itemView, string, Snackbar.LENGTH_LONG);
+        snackbar.show();
     }
 }

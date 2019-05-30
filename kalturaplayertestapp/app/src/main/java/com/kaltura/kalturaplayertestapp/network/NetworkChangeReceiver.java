@@ -1,4 +1,4 @@
-package com.kaltura.kalturaplayertestapp;
+package com.kaltura.kalturaplayertestapp.network;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -10,7 +10,6 @@ import java.util.Observable;
 
 public class NetworkChangeReceiver extends BroadcastReceiver {
 
-    private static boolean isConnected = true;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -25,11 +24,8 @@ public class NetworkChangeReceiver extends BroadcastReceiver {
         }
 
         public void connectionChanged(Boolean connected) {
-            if (isConnected != connected) {
-                setChanged();
-                notifyObservers(connected);
-                isConnected = connected;
-            }
+            setChanged();
+            notifyObservers(connected);
         }
 
         public static NetworkObservable getInstance() {
