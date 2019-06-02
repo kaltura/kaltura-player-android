@@ -123,26 +123,4 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"/>
-
-
-    <!--<ScrollView-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-    <!--android:layout_alignParentLeft="true"-->
-    <!--android:layout_alignParentStart="true"-->
-    <!--android:layout_alignParentBottom="true"-->
-    <!--android:id="@+id/logScroll"-->
-    <!--android:background="#DDDDDD"-->
-    <!--android:padding="5dp"-->
-    <!--android:tooltipText="Events"-->
-    <!--android:layout_below="@+id/player_container">-->
-
-    <!--<TextView-->
-    <!--android:id="@+id/logText"-->
-    <!--android:text="Event"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content">-->
-    <!--</TextView>-->
-    <!--</ScrollView>-->
-
 </RelativeLayout>
