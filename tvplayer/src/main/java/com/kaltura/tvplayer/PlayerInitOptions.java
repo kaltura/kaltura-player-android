@@ -8,6 +8,7 @@ import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.tvplayer.config.player.UiConf;
 
 public class PlayerInitOptions {
@@ -60,6 +61,7 @@ public class PlayerInitOptions {
     public PKRequestParams.Adapter licenseRequestAdapter;
     public LoadControlBuffers loadControlBuffers;
     public ABRSettings abrSettings;
+    public VRSettings vrSettings;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -253,6 +255,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setVrPlayerEnabled(Boolean vrPlayerEnabled) {
         if (vrPlayerEnabled != null) {
             this.vrPlayerEnabled = vrPlayerEnabled;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setVRSettings(VRSettings vrSettings) {
+        if (vrSettings != null) {
+            this.vrSettings = vrSettings;
         }
         return this;
     }

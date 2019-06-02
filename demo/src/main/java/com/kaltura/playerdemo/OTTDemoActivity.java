@@ -81,6 +81,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
         updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
         updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
+        updatedInitOptions.setVRSettings(initOptions.vrSettings);
         updatedInitOptions.setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
         updatedInitOptions.setSubtitleStyle(initOptions.setSubtitleStyle);
         updatedInitOptions.setLoadControlBuffers(initOptions.loadControlBuffers);

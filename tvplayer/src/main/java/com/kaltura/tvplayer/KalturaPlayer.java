@@ -26,9 +26,7 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.player.vr.VRInteractionMode;
-import com.kaltura.playkit.player.vr.VRPKMediaEntry;
-import com.kaltura.playkit.player.vr.VRSettings;
+
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
@@ -39,7 +37,6 @@ import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.tvplayer.utils.KalturaPlayerVRUtils;
 import com.kaltura.tvplayer.utils.TokenResolver;
 
 import java.util.HashMap;
@@ -88,8 +85,6 @@ public class KalturaPlayer  {
     private PrepareState prepareState = PrepareState.not_prepared;
     private Resolver tokenResolver = new Resolver();
     private PlayerInitOptions initOptions;
-    private boolean isVRLibEnabled = KalturaPlayerVRUtils.isVRLibAvailable();
-
 
     public static KalturaPlayer createOVPPlayer(Context context, PlayerInitOptions initOptions) {
         kalturaPlayerType = KalturaPlayerType.ovp;
@@ -325,10 +320,6 @@ public class KalturaPlayer  {
             pkPlayer.getSettings().setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
         }
 
-        if (initOptions.vrPlayerEnabled != null) {
-            pkPlayer.getSettings().setVRPlayerEnabled(initOptions.vrPlayerEnabled);
-        }
-
         if (initOptions.isVideoViewHidden != null) {
             pkPlayer.getSettings().setHideVideoViews(initOptions.isVideoViewHidden);
         }
@@ -353,6 +344,14 @@ public class KalturaPlayer  {
 
         if (initOptions.abrSettings != null) {
             pkPlayer.getSettings().setABRSettings(initOptions.abrSettings);//(new ABRSettings());
+        }
+
+        if (initOptions.vrPlayerEnabled != null) {
+            pkPlayer.getSettings().setVRPlayerEnabled(initOptions.vrPlayerEnabled);
+        }
+
+        if (initOptions.vrSettings != null) {
+            pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
     }
 
@@ -412,9 +411,6 @@ public class KalturaPlayer  {
         if (startPosition != null) {
             setStartPosition(startPosition);
         }
-        if (isVRLibEnabled && entry instanceof VRPKMediaEntry) {
-            updateVRSettings((VRPKMediaEntry) entry);
-        }
         setMedia(entry);
     }
 
@@ -438,9 +434,9 @@ public class KalturaPlayer  {
 
         pkPlayer.prepare(config);
         prepareState = PrepareState.preparing;
-        pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent.DurationChanged>() {
+        pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent>() {
             @Override
-            public void onEvent(PlayerEvent.DurationChanged event) {
+            public void onEvent(PlayerEvent event) {
                 prepareState = PrepareState.prepared;
                 pkPlayer.removeListener(this);
             }
@@ -600,9 +596,6 @@ public class KalturaPlayer  {
     // Called by implementation of loadMedia().
     private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
         PKMediaEntry responseEntry = response.getResponse();
-        if (isVRLibEnabled && response.getResponse() instanceof VRPKMediaEntry) {
-            updateVRSettings((VRPKMediaEntry) responseEntry);
-        }
         final PKMediaEntry entry = responseEntry;
         mainHandler.post(new Runnable() {
             @Override
@@ -613,19 +606,6 @@ public class KalturaPlayer  {
                 onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
             }
         });
-    }
-
-    private void updateVRSettings(VRPKMediaEntry responseEntry) {
-        VRSettings mediaEntryVRSettings = responseEntry.getVrSettings();
-        mediaEntryVRSettings.setFlingEnabled(true);
-        mediaEntryVRSettings.setVrModeEnabled(false);
-        mediaEntryVRSettings.setInteractionMode(VRInteractionMode.MotionWithTouch);
-        mediaEntryVRSettings.setZoomWithPinchEnabled(true);
-        VRInteractionMode interactionMode = mediaEntryVRSettings.getInteractionMode();
-        if (!KalturaPlayerVRUtils.isVRModeSupported(context, interactionMode)) {
-            //In case when mode is not supported we switch to supported mode.
-            mediaEntryVRSettings.setInteractionMode(VRInteractionMode.Touch);
-        }
     }
 
     public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {

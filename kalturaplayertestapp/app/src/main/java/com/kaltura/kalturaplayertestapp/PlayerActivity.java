@@ -313,11 +313,12 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 .setAllowClearLead(appPlayerInitConfig.allowClearLead)
                 .setAdAutoPlayOnResume(appPlayerInitConfig.adAutoPlayOnResume)
                 .setVrPlayerEnabled(appPlayerInitConfig.vrPlayerEnabled)
+                .setVRSettings(appPlayerInitConfig.vrSettings)
                 .setIsVideoViewHidden(appPlayerInitConfig.isVideoViewHidden)
                 .setContentRequestAdapter(appPlayerInitConfig.contentRequestAdapter)
                 .setLicenseRequestAdapter(appPlayerInitConfig.licenseRequestAdapter)
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
-
+        
         if (appPlayerInitConfig.trackSelection != null) {
             if (appPlayerInitConfig.trackSelection.audioSelectionMode != null) {
                 initOptions.setAudioLanguage(appPlayerInitConfig.trackSelection.audioSelectionLanguage, PKTrackConfig.Mode.valueOf(appPlayerInitConfig.trackSelection.audioSelectionMode));
@@ -341,9 +342,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                     playbackControlsManager.showControls(View.VISIBLE);
                 } else {
                     log.d("OVPMedia onEntryLoadComplete entry =" + entry.getId());
-                    if (!initOptions.autoplay) {
-                        playbackControlsManager.showControls(View.VISIBLE);
-                    }
                 }
             });
         } else if ("ott".equals(playerType.toLowerCase())) {
@@ -358,9 +356,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                     playbackControlsManager.showControls(View.VISIBLE);
                 } else {
                     log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
-                    if (!initOptions.autoplay) {
-                        playbackControlsManager.showControls(View.VISIBLE);
-                    }
                 }
             });
         } else if ("basic".equals(playerType.toLowerCase())) {
@@ -376,6 +371,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         }
 
         playbackControlsManager = new PlaybackControlsManager(this, player, playbackControlsView);
+        if (!initOptions.autoplay) {
+            playbackControlsManager.showControls(View.VISIBLE);
+        }
+
         if (appPlayerInitConfig.mediaList != null) {
             if (appPlayerInitConfig.mediaList.size() > 1) {
                 playbackControlsManager.addChangeMediaButtonsListener(appPlayerInitConfig.mediaList.size());

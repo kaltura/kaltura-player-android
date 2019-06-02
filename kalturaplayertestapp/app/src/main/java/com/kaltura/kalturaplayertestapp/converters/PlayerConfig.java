@@ -7,6 +7,7 @@ import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.vr.VRSettings;
 
 
 import java.util.List;
@@ -30,6 +31,7 @@ public class PlayerConfig {
     public Boolean secureSurface;
     public Boolean adAutoPlayOnResume;
     public Boolean vrPlayerEnabled;
+    public VRSettings vrSettings;
     public Boolean isVideoViewHidden;
     public SubtitleStyleSettings setSubtitleStyle;
     public PKAspectRatioResizeMode aspectRatioResizeMode;
