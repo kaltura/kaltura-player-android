@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <RelativeLayout
+        android:id="@+id/player_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/black"
+        android:keepScreenOn="true">
+
+        <LinearLayout
+            android:id="@+id/player_container_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:orientation="vertical"
+            />
+
+        <ProgressBar
+            android:id="@+id/videoProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:visibility="invisible"
+            style="@android:style/Widget.ProgressBar.Large" />
+
+        <com.kaltura.tvplayer.PlaybackControlsView
+            android:id="@+id/player_controls"
+            android:layout_marginBottom="8dp"
+            android:layout_alignBottom="@+id/player_container_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </com.kaltura.tvplayer.PlaybackControlsView>
+
+        <LinearLayout android:id="@+id/controls_root"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tracks_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:text="Video"
+                android:id="@+id/video_tracks"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+
+            <Button
+                android:text="Text"
+                android:id="@+id/text_tracks"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+
+            <Button
+                android:text="Audio"
+                android:id="@+id/audio_tracks"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+
+            <Button
+                android:text="Prev"
+                android:id="@+id/prev_btn"
+                android:clickable="false"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+
+            <Button
+                android:text="Next"
+                android:id="@+id/next_btn"
+                android:clickable="false"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:textColor="@android:color/white"
+                android:background="@color/cardview_dark_background"/>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <SearchView
+        android:id="@+id/search_events"
+        android:layout_below="@+id/player_container"
+        android:layout_width="match_parent"
+        android:queryHint="Search an event"
+        android:background="@drawable/search_view_background"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/events_list"
+        android:layout_below="@+id/search_events"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
+
+
+    <!--<ScrollView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:layout_alignParentLeft="true"-->
+    <!--android:layout_alignParentStart="true"-->
+    <!--android:layout_alignParentBottom="true"-->
+    <!--android:id="@+id/logScroll"-->
+    <!--android:background="#DDDDDD"-->
+    <!--android:padding="5dp"-->
+    <!--android:tooltipText="Events"-->
+    <!--android:layout_below="@+id/player_container">-->
+
+    <!--<TextView-->
+    <!--android:id="@+id/logText"-->
+    <!--android:text="Event"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content">-->
+    <!--</TextView>-->
+    <!--</ScrollView>-->
+
+</RelativeLayout>
