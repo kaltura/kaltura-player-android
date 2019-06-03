@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -57,6 +58,7 @@ import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
+import com.kaltura.playkitvr.VRController;
 import com.kaltura.tvplayer.KalturaPlayer;
 
 import com.kaltura.tvplayer.PlaybackControlsView;
@@ -89,6 +91,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
     public static final String PLAYER_CONFIG_JSON_KEY = "player_config_json_key";
     public static final String PLAYER_CONFIG_TITLE_KEY = "player_config_title_key";
     private DateFormat dateFormat = new SimpleDateFormat("HH:mm:ss.SSS");
+    private boolean backButtonPressed;
     private Gson gson = new Gson();
     private KalturaPlayer player;
     private JsonObject playerConfig;
@@ -177,14 +180,28 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         updatePluginsConfig(mediaList.get(currentPlayedMediaIndex));
         if ("ovp".equals(appPlayerInitConfig.playerType.toLowerCase())) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, currentPlayedMediaIndex);
+            if (ovpMediaOptions == null) {
+                return;
+            }
             player.loadMedia(ovpMediaOptions, (entry, error) -> {
-                log.d("OVPMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
+                String entryId = "";
+                if (entry != null) {
+                    entryId = entry.getId();
+                }
+                log.d("OVPMedia onEntryLoadComplete; " + entryId + "; " + error);
                 handleOnEntryLoadComplete(error);
             });
         } else if ("ott".equals(appPlayerInitConfig.playerType.toLowerCase())){
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, currentPlayedMediaIndex);
+            if (ottMediaOptions == null) {
+                return;
+            }
             player.loadMedia(ottMediaOptions, (entry, error) -> {
-                log.d("OTTMedia onEntryLoadComplete; " + entry.getId() + "; " + error);
+                String entryId = "";
+                if (entry != null) {
+                    entryId = entry.getId();
+                }
+                log.d("OTTMedia onEntryLoadComplete; " + entryId + " ; " + error);
                 handleOnEntryLoadComplete(error);
             });
         } else if ("basic".equals(appPlayerInitConfig.playerType.toLowerCase())) {
@@ -313,6 +330,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 .setAllowClearLead(appPlayerInitConfig.allowClearLead)
                 .setAdAutoPlayOnResume(appPlayerInitConfig.adAutoPlayOnResume)
                 .setVrPlayerEnabled(appPlayerInitConfig.vrPlayerEnabled)
+                .setVRSettings(appPlayerInitConfig.vrSettings)
                 .setIsVideoViewHidden(appPlayerInitConfig.isVideoViewHidden)
                 .setContentRequestAdapter(appPlayerInitConfig.contentRequestAdapter)
                 .setLicenseRequestAdapter(appPlayerInitConfig.licenseRequestAdapter)
@@ -327,7 +345,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             }
         }
 
-
         if ("ovp".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
@@ -338,12 +355,11 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                     log.d("OVPMedia Error Extra = " + error.getExtra());
                     Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
                     playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
-                    playbackControlsManager.showControls(View.VISIBLE);
-                } else {
-                    log.d("OVPMedia onEntryLoadComplete entry =" + entry.getId());
-                    if (!initOptions.autoplay) {
+                    if (playbackControlsView != null) {
                         playbackControlsManager.showControls(View.VISIBLE);
                     }
+                } else {
+                    log.d("OVPMedia onEntryLoadComplete entry =" + entry.getId());
                 }
             });
         } else if ("ott".equals(playerType.toLowerCase())) {
@@ -355,12 +371,11 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                     log.d("OTTMedia Error Extra = " + error.getExtra());
                     Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
                     playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
-                    playbackControlsManager.showControls(View.VISIBLE);
-                } else {
-                    log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
-                    if (!initOptions.autoplay) {
+                    if (playbackControlsView != null) {
                         playbackControlsManager.showControls(View.VISIBLE);
                     }
+                } else {
+                    log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
                 }
             });
         } else if ("basic".equals(playerType.toLowerCase())) {
@@ -376,18 +391,24 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         }
 
         playbackControlsManager = new PlaybackControlsManager(this, player, playbackControlsView);
+        if (!initOptions.autoplay) {
+            playbackControlsManager.showControls(View.VISIBLE);
+        }
+
         if (appPlayerInitConfig.mediaList != null) {
             if (appPlayerInitConfig.mediaList.size() > 1) {
                 playbackControlsManager.addChangeMediaButtonsListener(appPlayerInitConfig.mediaList.size());
             }
             playbackControlsManager.updatePrevNextBtnFunctionality(currentPlayedMediaIndex, appPlayerInitConfig.mediaList.size());
         }
-
     }
 
     @NonNull
     private OTTMediaOptions buildOttMediaOptions(int startPosition, int playListMediaIndex) {
         Media ottMedia = mediaList.get(playListMediaIndex);
+        if (ottMedia == null) {
+            return null;
+        }
         OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
         ottMediaOptions.assetId = ottMedia.assetId;
         ottMediaOptions.assetType = ottMedia.getAssetType();
@@ -638,6 +659,16 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         player.addListener(this, PlayerEvent.canPlay, event -> {
             log.d("PLAYER CAN PLAY");
+            VRController vrController = player.getController(VRController.class);
+            if (vrController != null) {
+                vrController.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //application code for handaling ui operations
+                        playbackControlsManager.showControls(View.VISIBLE);
+                    }
+                });
+            }
             updateEventsLogsList("player:\n" + event.eventType().name());
         });
 
@@ -764,6 +795,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
     @Override
     public boolean onSupportNavigateUp() {
+        backButtonPressed = true;
         onBackPressed();
         return true;
     }
@@ -922,9 +954,17 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         super.onPause();
         unregisterReceiver(networkChangeReceiver);
         NetworkChangeReceiver.getObservable().deleteObserver(this);
-        if (playbackControlsManager != null) {
+        if (!backButtonPressed && playbackControlsManager != null) {
             playbackControlsManager.showControls(View.VISIBLE);
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+            backButtonPressed = true;
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     @Override

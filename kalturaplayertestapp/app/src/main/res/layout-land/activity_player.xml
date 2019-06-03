@@ -114,12 +114,13 @@
         android:layout_width="match_parent"
         android:queryHint="Search an event"
         android:background="@drawable/search_view_background"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/events_list"
         android:layout_below="@+id/search_events"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-    
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 </RelativeLayout>

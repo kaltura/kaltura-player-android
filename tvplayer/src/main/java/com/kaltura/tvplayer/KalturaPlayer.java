@@ -26,6 +26,7 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
+
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
@@ -84,7 +85,6 @@ public class KalturaPlayer  {
     private PrepareState prepareState = PrepareState.not_prepared;
     private Resolver tokenResolver = new Resolver();
     private PlayerInitOptions initOptions;
-
 
     public static KalturaPlayer createOVPPlayer(Context context, PlayerInitOptions initOptions) {
         kalturaPlayerType = KalturaPlayerType.ovp;
@@ -320,10 +320,6 @@ public class KalturaPlayer  {
             pkPlayer.getSettings().setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
         }
 
-        if (initOptions.vrPlayerEnabled != null) {
-            pkPlayer.getSettings().setVRPlayerEnabled(initOptions.vrPlayerEnabled);
-        }
-
         if (initOptions.isVideoViewHidden != null) {
             pkPlayer.getSettings().setHideVideoViews(initOptions.isVideoViewHidden);
         }
@@ -348,6 +344,14 @@ public class KalturaPlayer  {
 
         if (initOptions.abrSettings != null) {
             pkPlayer.getSettings().setABRSettings(initOptions.abrSettings);//(new ABRSettings());
+        }
+
+        if (initOptions.vrPlayerEnabled != null) {
+            pkPlayer.getSettings().setVRPlayerEnabled(initOptions.vrPlayerEnabled);
+        }
+
+        if (initOptions.vrSettings != null) {
+            pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
     }
 
@@ -430,9 +434,9 @@ public class KalturaPlayer  {
 
         pkPlayer.prepare(config);
         prepareState = PrepareState.preparing;
-        pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent.DurationChanged>() {
+        pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent>() {
             @Override
-            public void onEvent(PlayerEvent.DurationChanged event) {
+            public void onEvent(PlayerEvent event) {
                 prepareState = PrepareState.prepared;
                 pkPlayer.removeListener(this);
             }
@@ -591,7 +595,8 @@ public class KalturaPlayer  {
 
     // Called by implementation of loadMedia().
     private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
-        final PKMediaEntry entry = response.getResponse();
+        PKMediaEntry responseEntry = response.getResponse();
+        final PKMediaEntry entry = responseEntry;
         mainHandler.post(new Runnable() {
             @Override
             public void run() {
