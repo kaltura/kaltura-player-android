@@ -762,7 +762,7 @@ public class KalturaPlayer  {
         if (getInitOptions().pluginConfigs.hasConfig(name)) {
             phoenixAnalyticObject = (JsonObject) getInitOptions().pluginConfigs.getPluginConfig(name);
         } else {
-            phoenixAnalyticObject = phoenixAnalyticDefaults(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH);
+            phoenixAnalyticObject = phoenixAnalyticDefaults(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
         }
         return new Gson().fromJson(phoenixAnalyticObject, PhoenixAnalyticsConfig.class);
     }
