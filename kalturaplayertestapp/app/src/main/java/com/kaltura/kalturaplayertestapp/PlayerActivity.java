@@ -149,7 +149,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
         if (appPlayerInitConfig != null) {
 
-
             final String playerType = appPlayerInitConfig.playerType;
             buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
 
@@ -395,7 +394,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             playbackControlsManager.showControls(View.VISIBLE);
         } else {
             playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
-
         }
 
         if (appPlayerInitConfig.mediaList != null) {
