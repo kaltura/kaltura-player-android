@@ -393,6 +393,9 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         playbackControlsManager = new PlaybackControlsManager(this, player, playbackControlsView);
         if (!initOptions.autoplay) {
             playbackControlsManager.showControls(View.VISIBLE);
+        } else {
+            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
+
         }
 
         if (appPlayerInitConfig.mediaList != null) {
