@@ -503,7 +503,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             allAdsCompeted = false;
             AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
             playbackControlsManager.showControls(View.INVISIBLE);
-            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
             progressBar.setVisibility(View.INVISIBLE);
         });
 
@@ -511,6 +510,8 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             updateEventsLogsList("ad:\n" + event.eventType().name());
             log.d("AD PAUSED");
             playbackControlsManager.setAdPlayerState(AdEvent.Type.PAUSED);
+            playbackControlsManager.showControls(View.VISIBLE);
+            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
         });
 
         player.addListener(this, AdEvent.resumed, event -> {
@@ -595,7 +596,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             log.d("PLAYER textTrackChanged");
             if (tracksSelectionController != null && tracksSelectionController.getTracks() != null) {
                 for (int i = 0; i <= tracksSelectionController.getTracks().getTextTracks().size() - 1; i++) {
-                    log.d(tracksSelectionController.getTracks().getTextTracks().size() + "XXX PLAYER textTrackChanged " + tracksSelectionController.getTracks().getTextTracks().get(i).getUniqueId() + "/" + textTrackChanged.newTrack.getUniqueId());
+                    log.d(tracksSelectionController.getTracks().getTextTracks().size() + ", PLAYER textTrackChanged " + tracksSelectionController.getTracks().getTextTracks().get(i).getUniqueId() + "/" + event.newTrack.getUniqueId());
                     if (event.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getTextTracks().get(i).getUniqueId())) {
                         if (tracksSelectionController != null) {
                             tracksSelectionController.setTrackLastSelectionIndex(TRACK_TYPE_TEXT, i);
@@ -797,7 +798,8 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
     private void loadPlayerConfig() {
         PlayerConfigManager.initialize(this);
-        if (uiConfId == null) {
+        if (initOptions == null || uiConfId == null) {
+            log.e("initOptions or uiConfId are null");
             return;
         }
 
