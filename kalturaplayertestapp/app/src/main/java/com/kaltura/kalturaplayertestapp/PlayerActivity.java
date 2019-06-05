@@ -471,6 +471,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             if (isPlaybackEndedState()) {
                 progressBar.setVisibility(View.GONE);
                 playbackControlsManager.showControls(View.VISIBLE);
+                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
             }
         });
 
@@ -502,6 +503,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             allAdsCompeted = false;
             AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
             playbackControlsManager.showControls(View.INVISIBLE);
+            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
             progressBar.setVisibility(View.INVISIBLE);
         });
 
@@ -580,7 +582,9 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         player.addListener(this, PlayerEvent.ended, event -> {
             log.d("PLAYER ENDED");
-            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
+            if (!adCuePoints.hasPostRoll()) {
+                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
+            }
             progressBar.setVisibility(View.GONE);
             if (!isPostrollAvailableInAdCuePoint()) {
                 playbackControlsManager.showControls(View.VISIBLE);
