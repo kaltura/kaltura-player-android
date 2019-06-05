@@ -149,7 +149,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
         if (appPlayerInitConfig != null) {
 
-
             final String playerType = appPlayerInitConfig.playerType;
             buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
 
@@ -393,6 +392,8 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         playbackControlsManager = new PlaybackControlsManager(this, player, playbackControlsView);
         if (!initOptions.autoplay) {
             playbackControlsManager.showControls(View.VISIBLE);
+        } else {
+            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
         }
 
         if (appPlayerInitConfig.mediaList != null) {
@@ -452,7 +453,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         player.addListener(this, AdEvent.cuepointsChanged, event -> {
             log.d("AD CUEPOINTS CHANGERD");
             updateEventsLogsList("ad:\n" + event.eventType().name());
-            adCuePoints = ((AdEvent.AdCuePointsUpdateEvent) event).cuePoints;
+            adCuePoints = event.cuePoints;
         });
 
         player.addListener(this, AdEvent.completed, event -> {
@@ -468,6 +469,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             if (isPlaybackEndedState()) {
                 progressBar.setVisibility(View.GONE);
                 playbackControlsManager.showControls(View.VISIBLE);
+                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
             }
         });
 
@@ -506,6 +508,8 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             updateEventsLogsList("ad:\n" + event.eventType().name());
             log.d("AD PAUSED");
             playbackControlsManager.setAdPlayerState(AdEvent.Type.PAUSED);
+            playbackControlsManager.showControls(View.VISIBLE);
+            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
         });
 
         player.addListener(this, AdEvent.resumed, event -> {
@@ -577,7 +581,9 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         player.addListener(this, PlayerEvent.ended, event -> {
             log.d("PLAYER ENDED");
-            playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
+            if (adCuePoints == null || (adCuePoints != null && !adCuePoints.hasPostRoll())) {
+                playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
+            }
             progressBar.setVisibility(View.GONE);
             if (!isPostrollAvailableInAdCuePoint()) {
                 playbackControlsManager.showControls(View.VISIBLE);
@@ -586,11 +592,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         player.addListener(this, PlayerEvent.textTrackChanged, event -> {
             log.d("PLAYER textTrackChanged");
-            PlayerEvent.TextTrackChanged textTrackChanged = (PlayerEvent.TextTrackChanged) event;
             if (tracksSelectionController != null && tracksSelectionController.getTracks() != null) {
                 for (int i = 0; i <= tracksSelectionController.getTracks().getTextTracks().size() - 1; i++) {
-                    log.d(tracksSelectionController.getTracks().getTextTracks().size() + "XXX PLAYER textTrackChanged " + tracksSelectionController.getTracks().getTextTracks().get(i).getUniqueId() + "/" + textTrackChanged.newTrack.getUniqueId());
-                    if (textTrackChanged.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getTextTracks().get(i).getUniqueId())) {
+                    log.d(tracksSelectionController.getTracks().getTextTracks().size() + ", PLAYER textTrackChanged " + tracksSelectionController.getTracks().getTextTracks().get(i).getUniqueId() + "/" + event.newTrack.getUniqueId());
+                    if (event.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getTextTracks().get(i).getUniqueId())) {
                         if (tracksSelectionController != null) {
                             tracksSelectionController.setTrackLastSelectionIndex(TRACK_TYPE_TEXT, i);
                         }
@@ -602,10 +607,9 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         player.addListener(this, PlayerEvent.audioTrackChanged, event -> {
             log.d("PLAYER audioTrackChanged");
-            PlayerEvent.AudioTrackChanged audioTrackChanged = (PlayerEvent.AudioTrackChanged) event;
             if (tracksSelectionController != null && tracksSelectionController.getTracks() != null) {
                 for (int i = 0; i <= tracksSelectionController.getTracks().getAudioTracks().size() - 1; i++) {
-                    if (audioTrackChanged.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getAudioTracks().get(i).getUniqueId())) {
+                    if (event.newTrack.getUniqueId().equals(tracksSelectionController.getTracks().getAudioTracks().get(i).getUniqueId())) {
                         tracksSelectionController.setTrackLastSelectionIndex(TRACK_TYPE_AUDIO, i);
                         break;
                     }
@@ -628,9 +632,8 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         player.addListener(this, PlayerEvent.tracksAvailable, event -> {
             log.d("PLAYER tracksAvailable");
             updateEventsLogsList("player:\n" + event.eventType().name());
-            PlayerEvent.TracksAvailable tracksAvailable = (PlayerEvent.TracksAvailable) event;
             //Obtain the actual tracks info from it.
-            PKTracks tracks = tracksAvailable.tracksInfo;
+            PKTracks tracks = event.tracksInfo;
             tracksSelectionController = new TracksSelectionController(PlayerActivity.this, player, tracks);
             playbackControlsManager.setTracksSelectionController(tracksSelectionController);
             int defaultAudioTrackIndex = tracks.getDefaultAudioTrackIndex();
@@ -653,31 +656,26 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         player.addListener(this, PlayerEvent.sourceSelected, event -> {
             log.d("PLAYER SOURCE SELECTED");
             updateEventsLogsList("player:\n" + event.eventType().name());
-            PlayerEvent.SourceSelected sourceSelected = (PlayerEvent.SourceSelected) event;
-            log.d("Selected Source = " + sourceSelected.source.getUrl());
+            log.d("Selected Source = " + event.source.getUrl());
         });
 
         player.addListener(this, PlayerEvent.canPlay, event -> {
             log.d("PLAYER CAN PLAY");
             VRController vrController = player.getController(VRController.class);
             if (vrController != null) {
-                vrController.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //application code for handaling ui operations
-                        playbackControlsManager.showControls(View.VISIBLE);
-                    }
+                vrController.setOnClickListener(v -> {
+                    //application code for handaling ui operations
+                    playbackControlsManager.showControls(View.VISIBLE);
                 });
             }
             updateEventsLogsList("player:\n" + event.eventType().name());
         });
 
         player.addListener(this, PlayerEvent.stateChanged, event -> {
-            PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
-            log.d("PLAYER stateChangeEvent " + event.eventType().name() + " = " + stateChanged.newState);
-            updateEventsLogsList("player:\n" + event.eventType().name() + ":" + stateChanged.newState);
+            log.d("PLAYER stateChangeEvent " + event.eventType().name() + " = " + event.newState);
+            updateEventsLogsList("player:\n" + event.eventType().name() + ":" + event.newState);
 
-            switch (stateChanged.newState) {
+            switch (event.newState) {
                 case IDLE:
                     log.d("StateChange Idle");
                     break;
@@ -711,24 +709,21 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
 
         player.addListener(this, KalturaStatsEvent.reportSent, event -> {
-            KalturaStatsEvent.KalturaStatsReport reportEvent = (KalturaStatsEvent.KalturaStatsReport) event;
-            String reportedEventName = reportEvent.reportedEventName;
+            String reportedEventName = event.reportedEventName;
             if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
                 updateEventsLogsList("stats:\n" + reportedEventName);
             }
         });
 
         player.addListener(this, KavaAnalyticsEvent.reportSent, event -> {
-            KavaAnalyticsEvent.KavaAnalyticsReport reportEvent = (KavaAnalyticsEvent.KavaAnalyticsReport) event;
-            String reportedEventName = reportEvent.reportedEventName;
+            String reportedEventName = event.reportedEventName;
             if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
                 updateEventsLogsList("kava:\n" + reportedEventName);
             }
         });
 
         player.addListener(this, YouboraEvent.reportSent, event -> {
-            YouboraEvent.YouboraReport reportEvent = (YouboraEvent.YouboraReport) event;
-            String reportedEventName = reportEvent.reportedEventName;
+            String reportedEventName = event.reportedEventName;
             if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
                 updateEventsLogsList("youbora:\n" + reportedEventName);
             }
@@ -736,8 +731,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         });
 
         player.addListener(this, PhoenixAnalyticsEvent.reportSent, event -> {
-            PhoenixAnalyticsEvent.PhoenixAnalyticsReport reportEvent = (PhoenixAnalyticsEvent.PhoenixAnalyticsReport) event;
-            String reportedEventName = reportEvent.reportedEventName;
+            String reportedEventName = event.reportedEventName;
             if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
                 updateEventsLogsList("phoenix:\n" + reportedEventName);
             }
@@ -802,7 +796,8 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
     private void loadPlayerConfig() {
         PlayerConfigManager.initialize(this);
-        if (uiConfId == null) {
+        if (initOptions == null || uiConfId == null) {
+            log.e("initOptions or uiConfId are null");
             return;
         }
 

@@ -74,7 +74,7 @@ public class PlaybackControlsManager implements PlaybackControls {
 
     @Override
     public void handleContainerClick() {
-        log.d("CLICK handleContainerClick XXXXXXXXX playerState = " + playerState + " adPlayerState " + adPlayerState);
+        log.d("CLICK handleContainerClick playerState = " + playerState + " adPlayerState " + adPlayerState);
         if (playerState == null && adPlayerState == null) {
             return;
         }
