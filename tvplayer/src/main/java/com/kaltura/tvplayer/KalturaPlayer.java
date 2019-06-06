@@ -37,10 +37,7 @@ import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.utils.Consts;
-import com.kaltura.tvplayer.utils.TokenResolver;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 
@@ -83,7 +80,7 @@ public class KalturaPlayer  {
     private View view;
     private PKMediaEntry mediaEntry;
     private PrepareState prepareState = PrepareState.not_prepared;
-    private Resolver tokenResolver = new Resolver();
+    private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
 
     public static KalturaPlayer createOVPPlayer(Context context, PlayerInitOptions initOptions) {
@@ -154,103 +151,10 @@ public class KalturaPlayer  {
         return new Uri.Builder().scheme("app").authority(context.getPackageName()).toString();
     }
 
-    private static class Resolver implements TokenResolver {
-        final Map<String, String> map = new HashMap<>();
-        String[] sources;
-        String[] destinations;
-
-        Resolver() {
-            sources = new String[map.size()];
-            destinations = new String[map.size()];
-        }
-
-        void refresh(PKMediaEntry mediaEntry) {
-
-            if (mediaEntry != null) {
-                if (mediaEntry.getMetadata() != null) {
-                    for (Map.Entry<String, String> metadataEntry : mediaEntry.getMetadata().entrySet()) {
-                        map.put("{{" + metadataEntry.getKey() + "}}", metadataEntry.getValue());
-                    }
-                }
-
-                map.put("{{entryId}}", mediaEntry.getId());
-                map.put("{{entryName}}", mediaEntry.getName());
-                if (mediaEntry.getMediaType() != null) {
-                    map.put("{{entryType}}", mediaEntry.getMediaType().name());
-                }
-            }
-
-            sources = new String[map.size()];
-            destinations = new String[map.size()];
-
-            final Iterator<Map.Entry<String, String>> it = map.entrySet().iterator();
-            int i = 0;
-            while (it.hasNext()) {
-                final Map.Entry<String, String> entry = it.next();
-                sources[i] = entry.getKey();
-                destinations[i] = entry.getValue();
-                i++;
-            }
-        }
-
-        void refresh(PlayerInitOptions initOptions) {
-
-            if (initOptions != null) {
-                if (initOptions.uiConfId != null) {
-                    map.put("{{uiConfId}}", String.valueOf(initOptions.uiConfId));
-                }
-                if (initOptions.partnerId != null) {
-                    map.put("{{partnerId}}", String.valueOf(initOptions.partnerId));
-                }
-                map.put("{{ks}}", (initOptions.ks != null) ? initOptions.ks : "");
-                map.put("{{referrer}}", (initOptions.referrer != null) ? initOptions.referrer : "");
-            }
-
-            sources = new String[map.size()];
-            destinations = new String[map.size()];
-
-            final Iterator<Map.Entry<String, String>> it = map.entrySet().iterator();
-            int i = 0;
-            while (it.hasNext()) {
-                final Map.Entry<String, String> entry = it.next();
-                sources[i] = entry.getKey();
-                destinations[i] = entry.getValue();
-                i++;
-            }
-        }
-
-        void refresh(String key,  String value) {
-            if (!TextUtils.isEmpty(key)) {
-                map.put("{{" + key + "}}", value);
-            }
-
-            sources = new String[map.size()];
-            destinations = new String[map.size()];
-
-            final Iterator<Map.Entry<String, String>> it = map.entrySet().iterator();
-            int i = 0;
-            while (it.hasNext()) {
-                final Map.Entry<String, String> entry = it.next();
-                sources[i] = entry.getKey();
-                destinations[i] = entry.getValue();
-                i++;
-            }
-        }
-
-        @Override
-        public String resolve(String string) {
-            if (string == null || sources.length == 0 || destinations.length == 0) {
-                return string;
-            }
-            return TextUtils.replace(string, sources, destinations).toString();
-        }
-
-        @Override
-        public JsonObject resolve(JsonObject pluginJsonConfig) {
-            String configStr = pluginJsonConfig.getAsJsonObject().toString();
-            JsonParser parser = new JsonParser();
-            return parser.parse(resolve(configStr)).getAsJsonObject();
-        }
+    private JsonObject resolve(JsonObject pluginJsonConfig) {
+        String configStr = pluginJsonConfig.getAsJsonObject().toString();
+        JsonParser parser = new JsonParser();
+        return parser.parse(tokenResolver.resolve(configStr)).getAsJsonObject();
     }
 
     private JsonObject kavaDefaults(Integer partnerId, Integer uiconfId, String referrer) {
@@ -367,7 +271,7 @@ public class KalturaPlayer  {
                 if (entry.getValue() instanceof JsonObject) {
                     JsonObject appPluginConfig = (JsonObject) entry.getValue();
                     if (appPluginConfig != null) {
-                        combinedPluginConfigs.setPluginConfig(pluginName, tokenResolver.resolve(appPluginConfig));
+                        combinedPluginConfigs.setPluginConfig(pluginName, resolve(appPluginConfig));
                     }
                 }
             }
@@ -393,8 +297,8 @@ public class KalturaPlayer  {
     }
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
-        tokenResolver.refresh(mediaEntry);
-        tokenResolver.refresh(initOptions);
+        tokenResolver.update(mediaEntry);
+        tokenResolver.update(initOptions);
 
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         updateKalturaPluginConfigs(combinedPluginConfigs);
@@ -712,7 +616,7 @@ public class KalturaPlayer  {
     protected void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
         if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
             log.d("Adding Automatic Kava Plugin");
-            combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), tokenResolver.resolve(kavaDefaults(uiConfPartnerId, uiConfId, referrer)));
+            combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), resolve(kavaDefaults(uiConfPartnerId, uiConfId, referrer)));
         }
         if (isOTTPlayer() && !combinedPluginConfigs.hasConfig(PhoenixAnalyticsPlugin.factory.getName())) {
             addKalturaPluginConfigsOTT(combinedPluginConfigs);
