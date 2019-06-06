@@ -62,7 +62,7 @@ public class JsonDetailActivity extends BaseActivity implements TestCaseConfigur
                 snackbar.setAction("Approve", new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        mAdapter.removeItem(viewHolder.getAdapterPosition());
+                        //mAdapter.removeItem(viewHolder.getAdapterPosition());
 
                     }
                 });
