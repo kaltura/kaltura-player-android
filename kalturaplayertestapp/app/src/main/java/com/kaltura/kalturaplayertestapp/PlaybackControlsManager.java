@@ -5,12 +5,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkitvr.VRController;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlaybackControlsView;
 
@@ -25,6 +27,7 @@ public class PlaybackControlsManager implements PlaybackControls {
     private static final PKLog log = PKLog.get("PlaybackControlsManager");
     private static final int REMOVE_CONTROLS_TIMEOUT = 3000; //3250
 
+
     private PlayerActivity playerActivity;
     private KalturaPlayer player;
     private PlaybackControlsView playbackControlsView;
@@ -35,6 +38,7 @@ public class PlaybackControlsManager implements PlaybackControls {
     private Button textTracksBtn;
     private Button prevBtn;
     private Button nextBtn;
+    private ImageView vrToggle;
 
 
     private Enum playerState;
@@ -69,7 +73,32 @@ public class PlaybackControlsManager implements PlaybackControls {
         addTracksButtonsListener();
         this.prevBtn        = playerActivity.findViewById(R.id.prev_btn);
         this.nextBtn        = playerActivity.findViewById(R.id.next_btn);
+        this.vrToggle        = playerActivity.findViewById(R.id.vrtoggleButton);
+        vrToggle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                togglVRClick();
+            }
+        });
         showControls(View.INVISIBLE);
+    }
+
+    public void togglVRClick() {
+        if (player == null) {
+            return;
+        }
+        if(player != null) {
+            VRController vrController = player.getController(VRController.class);
+            if (vrController != null) {
+                boolean currentState = vrController.isVRModeEnabled();
+                vrController.enableVRMode(!currentState);
+                if (currentState) {
+                    vrToggle.setBackgroundResource(com.kaltura.tvplayer.R.drawable.ic_vr_active);
+                } else {
+                    vrToggle.setBackgroundResource(com.kaltura.tvplayer.R.drawable.ic_vr);
+                }
+            }
+        }
     }
 
     @Override
@@ -103,6 +132,7 @@ public class PlaybackControlsManager implements PlaybackControls {
             videoTracksBtn.setVisibility(View.INVISIBLE);
             audioTracksBtn.setVisibility(View.INVISIBLE);
             textTracksBtn.setVisibility(View.INVISIBLE);
+            vrToggle.setVisibility(View.INVISIBLE);
             return;
         }
 
@@ -115,6 +145,12 @@ public class PlaybackControlsManager implements PlaybackControls {
 
         if (tracksSelectionController.getTracks().getVideoTracks().size() > 1) {
             videoTracksBtn.setVisibility(visability);
+            if (player != null) {
+                VRController vrController = player.getController(VRController.class);
+                if (vrController != null) {
+                    vrToggle.setVisibility(visability);
+                }
+            }
         } else {
             videoTracksBtn.setVisibility(View.INVISIBLE);
         }
