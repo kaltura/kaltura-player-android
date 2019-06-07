@@ -87,18 +87,18 @@ public class PlaybackControlsManager implements PlaybackControls {
         if (player == null) {
             return;
         }
-        if(player != null) {
-            VRController vrController = player.getController(VRController.class);
-            if (vrController != null) {
-                boolean currentState = vrController.isVRModeEnabled();
-                vrController.enableVRMode(!currentState);
-                if (currentState) {
-                    vrToggle.setBackgroundResource(com.kaltura.tvplayer.R.drawable.ic_vr_active);
-                } else {
-                    vrToggle.setBackgroundResource(com.kaltura.tvplayer.R.drawable.ic_vr);
-                }
+
+        VRController vrController = player.getController(VRController.class);
+        if (vrController != null) {
+            boolean currentState = vrController.isVRModeEnabled();
+            vrController.enableVRMode(!currentState);
+            if (currentState) {
+                vrToggle.setBackgroundResource(R.drawable.ic_vr_active);
+            } else {
+                vrToggle.setBackgroundResource(R.drawable.ic_vr);
             }
         }
+
     }
 
     @Override
