@@ -487,7 +487,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             updateEventsLogsList("ad:\n" + event.eventType().name());
             log.d("AD CONTENT_PAUSE_REQUESTED");
             playbackControlsManager.setAdPlayerState(AdEvent.Type.CONTENT_PAUSE_REQUESTED);
-            playbackControlsManager.showControls(View.INVISIBLE);
+
+            if (!initOptions.autoplay && adCuePoints != null && !IMADAIPlugin.factory.getName().equals(adCuePoints.getAdPluginName())) {
+                playbackControlsManager.showControls(View.INVISIBLE);
+            }
             progressBar.setVisibility(View.VISIBLE);
         });
 
@@ -510,7 +513,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             playbackControlsManager.setAdPlayerState(AdEvent.Type.STARTED);
             allAdsCompeted = false;
             AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-            playbackControlsManager.showControls(View.INVISIBLE);
+            if (!initOptions.autoplay && adCuePoints != null && !IMADAIPlugin.factory.getName().equals(adCuePoints.getAdPluginName())) {
+                playbackControlsManager.showControls(View.INVISIBLE);
+            }
+
             progressBar.setVisibility(View.INVISIBLE);
         });
 
@@ -677,7 +683,16 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                     //application code for handaling ui operations
                     playbackControlsManager.showControls(View.VISIBLE);
                 });
+            } else {
+                if (adCuePoints != null && IMADAIPlugin.factory.getName().equals(adCuePoints.getAdPluginName())) {
+                    if (!initOptions.autoplay) {
+                        playbackControlsManager.showControls(View.VISIBLE);
+                    } else {
+                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
+                    }
+                }
             }
+
             updateEventsLogsList("player:\n" + event.eventType().name());
         });
 
