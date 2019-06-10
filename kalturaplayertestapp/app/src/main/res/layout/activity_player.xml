@@ -105,6 +105,16 @@
                 android:layout_marginLeft="8dp"
                 android:textColor="@android:color/white"
                 android:background="@color/cardview_dark_background"/>
+
+            <ImageButton
+                android:id="@+id/vrtoggleButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:layout_marginLeft="8dp"
+                android:background="#70000000"
+                android:src="@drawable/ic_vr"
+                android:visibility="invisible" />
         </LinearLayout>
     </RelativeLayout>
 
