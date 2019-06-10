@@ -591,7 +591,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         player.addListener(this, PlayerEvent.ended, event -> {
             log.d("PLAYER ENDED");
-            if (adCuePoints == null || (adCuePoints != null && !adCuePoints.hasPostRoll())) {
+            if (adCuePoints == null || (adCuePoints != null && !adCuePoints.hasPostRoll()) || IMADAIPlugin.factory.getName().equals(adCuePoints.getAdPluginName())) {
                 playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
             }
             progressBar.setVisibility(View.GONE);
