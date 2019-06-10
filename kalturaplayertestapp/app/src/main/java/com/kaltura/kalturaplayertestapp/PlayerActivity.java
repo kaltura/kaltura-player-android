@@ -33,12 +33,14 @@ import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKTracks;
+import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
@@ -204,8 +206,12 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 handleOnEntryLoadComplete(error);
             });
         } else if ("basic".equals(appPlayerInitConfig.playerType.toLowerCase())) {
+            PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;
             if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
-                player.setMedia(appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry, 0L);
+                if (appPlayerInitConfig.vrSettings != null) {
+                    mediaEntry = new VRPKMediaEntry(mediaEntry);
+                }
+                player.setMedia(mediaEntry, 0L);
             }
         }
         else {
@@ -380,8 +386,12 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         } else if ("basic".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createBasicPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
+            PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;
             if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
-                player.setMedia(appPlayerInitConfig.mediaList.get(playListMediaIndex).pkMediaEntry, 0L);
+                if (appPlayerInitConfig.vrSettings != null) {
+                    mediaEntry = new VRPKMediaEntry(mediaEntry);
+                }
+                player.setMedia(mediaEntry, Long.valueOf(appPlayerInitConfig.startPosition));
             }
         }
         else {
