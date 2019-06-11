@@ -281,6 +281,7 @@ public class KalturaPlayer  {
     }
 
     private void loadPlayer() {
+        tokenResolver.refresh(initOptions);
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
         updatePlayerSettings();
