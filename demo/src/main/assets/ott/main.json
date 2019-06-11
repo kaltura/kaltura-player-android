@@ -6,7 +6,7 @@
         "autoPlay": true,
         "ks": null,
         "allowCrossProtocolEnabled": true,
-        "serverUrl": "https://api-preprod.ott.kaltura.com/v5_1_0/api_v3/"
+        "serverUrl": "https://api-preprod.ott.kaltura.com/v4_7/api_v3/"
       },
       "uiConf": {
         "uiConfId": 41188731,
@@ -22,7 +22,7 @@
       {
         "name": "Sing",
         "assetId": "480989",
-        "protocol": "http"
+        "protocol": "https"
       },
       {
         "name": "Ice Age",
