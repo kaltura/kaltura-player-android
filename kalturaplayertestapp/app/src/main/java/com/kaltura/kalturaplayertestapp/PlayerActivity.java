@@ -13,7 +13,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
@@ -40,7 +39,6 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKTracks;
-import com.kaltura.playkit.player.vr.VRPKMediaEntry;
 import com.kaltura.playkit.plugins.ads.AdCuePoints;
 import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.ads.AdInfo;
@@ -209,7 +207,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;
             if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
                 if (appPlayerInitConfig.vrSettings != null) {
-                    mediaEntry = new VRPKMediaEntry(mediaEntry);
+                    mediaEntry.setIsVRMediaType(true);
                 }
                 player.setMedia(mediaEntry, 0L);
             }
@@ -389,7 +387,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;
             if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
                 if (appPlayerInitConfig.vrSettings != null) {
-                    mediaEntry = new VRPKMediaEntry(mediaEntry);
+                    mediaEntry.setIsVRMediaType(true);
                 }
                 player.setMedia(mediaEntry, Long.valueOf(appPlayerInitConfig.startPosition));
             }
