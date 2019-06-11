@@ -310,10 +310,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         KalturaPlayer player = null;
 
         JsonArray appPluginConfigJsonObject = appPlayerInitConfig.plugins;
-        int playerUiConfId = -1;
-        if (appPlayerInitConfig.uiConf != null) {
-            playerUiConfId = Integer.valueOf(appPlayerInitConfig.uiConf.id);
-        }
+//        int playerUiConfId = -1;
+//        if (appPlayerInitConfig.uiConf != null) {
+//            playerUiConfId = Integer.valueOf(appPlayerInitConfig.uiConf.id);
+//        }
         mediaList = appPlayerInitConfig.mediaList;
 
         Integer partnerId = (appPlayerInitConfig.partnerId != null) ? Integer.valueOf(appPlayerInitConfig.partnerId) : null;
@@ -389,7 +389,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 if (appPlayerInitConfig.vrSettings != null) {
                     mediaEntry.setIsVRMediaType(true);
                 }
-                player.setMedia(mediaEntry, Long.valueOf(appPlayerInitConfig.startPosition));
+                player.setMedia(mediaEntry, (long) appPlayerInitConfig.startPosition);
             }
         }
         else {
@@ -412,7 +412,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    @NonNull
     private OTTMediaOptions buildOttMediaOptions(int startPosition, int playListMediaIndex) {
         Media ottMedia = mediaList.get(playListMediaIndex);
         if (ottMedia == null) {
@@ -888,12 +887,9 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 } else {
                     player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
                 }
-                container.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (playbackControlsManager != null) {
-                            playbackControlsManager.handleContainerClick();
-                        }
+                container.setOnClickListener(view -> {
+                    if (playbackControlsManager != null) {
+                        playbackControlsManager.handleContainerClick();
                     }
                 });
                 container.addView(player.getPlayerView());
