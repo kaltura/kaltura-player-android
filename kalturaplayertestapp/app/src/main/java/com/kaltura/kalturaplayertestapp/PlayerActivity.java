@@ -13,7 +13,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
@@ -33,6 +32,7 @@ import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayerEvent;
@@ -204,8 +204,12 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 handleOnEntryLoadComplete(error);
             });
         } else if ("basic".equals(appPlayerInitConfig.playerType.toLowerCase())) {
+            PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;
             if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
-                player.setMedia(appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry, 0L);
+                if (appPlayerInitConfig.vrSettings != null) {
+                    mediaEntry.setIsVRMediaType(true);
+                }
+                player.setMedia(mediaEntry, 0L);
             }
         }
         else {
@@ -306,10 +310,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         KalturaPlayer player = null;
 
         JsonArray appPluginConfigJsonObject = appPlayerInitConfig.plugins;
-        int playerUiConfId = -1;
-        if (appPlayerInitConfig.uiConf != null) {
-            playerUiConfId = Integer.valueOf(appPlayerInitConfig.uiConf.id);
-        }
+//        int playerUiConfId = -1;
+//        if (appPlayerInitConfig.uiConf != null) {
+//            playerUiConfId = Integer.valueOf(appPlayerInitConfig.uiConf.id);
+//        }
         mediaList = appPlayerInitConfig.mediaList;
 
         Integer partnerId = (appPlayerInitConfig.partnerId != null) ? Integer.valueOf(appPlayerInitConfig.partnerId) : null;
@@ -380,8 +384,12 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         } else if ("basic".equals(playerType.toLowerCase())) {
             player = KalturaPlayer.createBasicPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
+            PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;
             if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
-                player.setMedia(appPlayerInitConfig.mediaList.get(playListMediaIndex).pkMediaEntry, 0L);
+                if (appPlayerInitConfig.vrSettings != null) {
+                    mediaEntry.setIsVRMediaType(true);
+                }
+                player.setMedia(mediaEntry, (long) appPlayerInitConfig.startPosition);
             }
         }
         else {
@@ -404,7 +412,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    @NonNull
     private OTTMediaOptions buildOttMediaOptions(int startPosition, int playListMediaIndex) {
         Media ottMedia = mediaList.get(playListMediaIndex);
         if (ottMedia == null) {
@@ -451,7 +458,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         });
 
         player.addListener(this, AdEvent.cuepointsChanged, event -> {
-            log.d("AD CUEPOINTS CHANGERD");
+            log.d("AD CUEPOINTS CHANGED");
             updateEventsLogsList("ad:\n" + event.eventType().name());
             adCuePoints = event.cuePoints;
         });
@@ -477,7 +484,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             updateEventsLogsList("ad:\n" + event.eventType().name());
             log.d("AD CONTENT_PAUSE_REQUESTED");
             playbackControlsManager.setAdPlayerState(AdEvent.Type.CONTENT_PAUSE_REQUESTED);
-            playbackControlsManager.showControls(View.INVISIBLE);
+
+            if (!initOptions.autoplay && adCuePoints != null && !IMADAIPlugin.factory.getName().equals(adCuePoints.getAdPluginName())) {
+                playbackControlsManager.showControls(View.INVISIBLE);
+            }
             progressBar.setVisibility(View.VISIBLE);
         });
 
@@ -500,7 +510,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             playbackControlsManager.setAdPlayerState(AdEvent.Type.STARTED);
             allAdsCompeted = false;
             AdInfo adInfo = ((AdEvent.AdStartedEvent) event).adInfo;
-            playbackControlsManager.showControls(View.INVISIBLE);
+            if (!initOptions.autoplay && adCuePoints != null && !IMADAIPlugin.factory.getName().equals(adCuePoints.getAdPluginName())) {
+                playbackControlsManager.showControls(View.INVISIBLE);
+            }
+
             progressBar.setVisibility(View.INVISIBLE);
         });
 
@@ -581,7 +594,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         player.addListener(this, PlayerEvent.ended, event -> {
             log.d("PLAYER ENDED");
-            if (adCuePoints == null || (adCuePoints != null && !adCuePoints.hasPostRoll())) {
+            if (adCuePoints == null || (adCuePoints != null && !adCuePoints.hasPostRoll()) || IMADAIPlugin.factory.getName().equals(adCuePoints.getAdPluginName())) {
                 playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.replay);
             }
             progressBar.setVisibility(View.GONE);
@@ -667,7 +680,16 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                     //application code for handaling ui operations
                     playbackControlsManager.showControls(View.VISIBLE);
                 });
+            } else {
+                if (adCuePoints != null && IMADAIPlugin.factory.getName().equals(adCuePoints.getAdPluginName())) {
+                    if (!initOptions.autoplay) {
+                        playbackControlsManager.showControls(View.VISIBLE);
+                    } else {
+                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.pause);
+                    }
+                }
             }
+
             updateEventsLogsList("player:\n" + event.eventType().name());
         });
 
@@ -865,12 +887,9 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 } else {
                     player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
                 }
-                container.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (playbackControlsManager != null) {
-                            playbackControlsManager.handleContainerClick();
-                        }
+                container.setOnClickListener(view -> {
+                    if (playbackControlsManager != null) {
+                        playbackControlsManager.handleContainerClick();
                     }
                 });
                 container.addView(player.getPlayerView());
