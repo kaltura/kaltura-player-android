@@ -459,7 +459,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         });
 
         player.addListener(this, AdEvent.cuepointsChanged, event -> {
-            log.d("AD CUEPOINTS CHANGERD");
+            log.d("AD CUEPOINTS CHANGED");
             updateEventsLogsList("ad:\n" + event.eventType().name());
             adCuePoints = event.cuePoints;
         });
