@@ -44,29 +44,6 @@ public class ConfigResolver {
         // Resolve by converting to string and back
         final String resolved = tokenResolver.resolve(config.toString());
         return (JsonObject) new JsonParser().parse(resolved);
-
-//        for (String key: config.keySet()) {
-//            log.d("key = " + key);
-//
-//            JsonElement sourceValue = config.get(key);
-//            if (sourceValue.isJsonNull()) {
-//                continue;
-//            }
-//
-//            if (sourceValue.isJsonPrimitive()) {
-//                final JsonPrimitive primitive = sourceValue.getAsJsonPrimitive();
-//                if (primitive.isString()) {
-//                    config.addProperty(key, resolveString(primitive.getAsString()));
-//                }
-//                continue;
-//            }
-//
-//            if (sourceValue.isJsonObject()) {
-//                resolveJsonObject(sourceValue.getAsJsonObject());
-//            }
-//        }
-
-//        return config;
     }
 
     private Object resolveObject(Object config) throws SecurityException, InstantiationException, IllegalAccessException {
