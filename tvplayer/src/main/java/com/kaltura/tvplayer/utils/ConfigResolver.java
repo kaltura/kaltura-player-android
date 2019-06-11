@@ -10,23 +10,17 @@ import java.lang.reflect.Modifier;
 public class ConfigResolver {
     private static PKLog log = PKLog.get("ConfigResolver");
 
-    private final TokenResolver tokenResolver;
-
-    public ConfigResolver(TokenResolver tokenResolver) {
-        this.tokenResolver = tokenResolver;
-    }
-
-    public <T> T resolve(T config) {
+    public static <T> T resolve(T config, TokenResolver tokenResolver) {
 
         if (config instanceof JsonObject) {
             //noinspection unchecked -- the compiler doesn't know that T==JsonObject
-            return (T) resolveJsonObject(((JsonObject) config).deepCopy());
+            return (T) resolveJsonObject(((JsonObject) config).deepCopy(), tokenResolver);
         }
 
         try {
             // We know for sure that the return type is T because of how resolveImp() works.
             //noinspection unchecked
-            return (T) resolveObject(config);
+            return (T) resolveObject(config, tokenResolver);
         } catch (InstantiationException e) {
             e.printStackTrace();
             return null;
@@ -39,14 +33,14 @@ public class ConfigResolver {
         }
     }
 
-    private JsonObject resolveJsonObject(JsonObject config) {
+    private static JsonObject resolveJsonObject(JsonObject config, TokenResolver tokenResolver) {
 
         // Resolve by converting to string and back
-        final String resolved = tokenResolver.resolve(config.toString());
+        final String resolved = resolveString(config.toString(), tokenResolver);
         return (JsonObject) new JsonParser().parse(resolved);
     }
 
-    private Object resolveObject(Object config) throws SecurityException, InstantiationException, IllegalAccessException {
+    private static Object resolveObject(Object config, TokenResolver tokenResolver) throws SecurityException, InstantiationException, IllegalAccessException {
 
         final Class<?> configClass = config.getClass();
 
@@ -62,7 +56,7 @@ public class ConfigResolver {
             final Object value = field.get(config);
 
             if (value instanceof String) {
-                field.set(out, resolveString((String) value));
+                field.set(out, resolveString((String) value, tokenResolver));
             } else if (value != null) {
                 field.set(out, value);
             }
@@ -73,7 +67,7 @@ public class ConfigResolver {
         return out;
     }
 
-    private String resolveString(String string) {
+    private static String resolveString(String string, TokenResolver tokenResolver) {
         return tokenResolver.resolve(string);
     }
 }

@@ -37,6 +37,7 @@ import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.tvplayer.utils.ConfigResolver;
 
 import java.util.Map;
 
@@ -151,10 +152,8 @@ public class KalturaPlayer  {
         return new Uri.Builder().scheme("app").authority(context.getPackageName()).toString();
     }
 
-    private JsonObject resolve(JsonObject pluginJsonConfig) {
-        String configStr = pluginJsonConfig.getAsJsonObject().toString();
-        JsonParser parser = new JsonParser();
-        return parser.parse(tokenResolver.resolve(configStr)).getAsJsonObject();
+    private Object resolve(Object config) {
+        return ConfigResolver.resolve(config, tokenResolver);
     }
 
     private JsonObject kavaDefaults(Integer partnerId, Integer uiconfId, String referrer) {
@@ -266,15 +265,9 @@ public class KalturaPlayer  {
         PKPluginConfigs combinedPluginConfigs = new PKPluginConfigs();
 
         if (pluginConfigs != null) {
-            Gson gson = new Gson();
             for (Map.Entry<String, Object> entry : pluginConfigs) {
                 String pluginName = entry.getKey();
-                if (entry.getValue() instanceof JsonObject) {
-                    JsonObject appPluginConfig = (JsonObject) entry.getValue();
-                    if (appPluginConfig != null) {
-                        combinedPluginConfigs.setPluginConfig(pluginName, resolve(appPluginConfig));
-                    }
-                }
+                combinedPluginConfigs.setPluginConfig(pluginName, resolve(entry.getValue()));
             }
 
         }
@@ -299,7 +292,6 @@ public class KalturaPlayer  {
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry);
-        tokenResolver.update(initOptions);
 
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         updateKalturaPluginConfigs(combinedPluginConfigs);
