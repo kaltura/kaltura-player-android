@@ -27,6 +27,8 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
@@ -155,26 +157,28 @@ public class KalturaPlayer  {
         return ConfigResolver.resolve(config, tokenResolver);
     }
 
-    private JsonObject kavaDefaults(Integer partnerId, Integer uiconfId, String referrer) {
-        JsonObject kavaAnalyticsConfigJson = new JsonObject();
-        kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.BASE_URL, KavaAnalyticsConfig.DEFAULT_BASE_URL);
-        kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.DVR_THRESHOLD, Consts.DISTANCE_FROM_LIVE_THRESHOLD);
-        kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.PARTNER_ID, partnerId);
-        if (uiconfId != null && uiconfId > 0) {
-            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.UICONF_ID, uiconfId);
+    private KavaAnalyticsConfig getKavaDefaultsConfig(Integer partnerId, Integer uiconfId, String referrer) {
+
+        KavaAnalyticsConfig kavaAnalyticsConfig = new KavaAnalyticsConfig();
+        kavaAnalyticsConfig.setBaseUrl(KavaAnalyticsConfig.DEFAULT_BASE_URL);
+        kavaAnalyticsConfig.setDvrThreshold(Consts.DISTANCE_FROM_LIVE_THRESHOLD);
+        kavaAnalyticsConfig.setPartnerId(partnerId);
+        if (partnerId != null && partnerId.equals(Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID))) {
+            kavaAnalyticsConfig.setEntryId(KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
+        } else if (mediaEntry != null && mediaEntry.getId() != null){
+            kavaAnalyticsConfig.setEntryId(mediaEntry.getId());
         }
-        if (partnerId == Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID)) {
-            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.ENTRY_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
-        } else if (mediaEntry != null && mediaEntry.getId() != null) {
-            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.ENTRY_ID, mediaEntry.getId());
+        if (uiconfId != null && uiconfId > 0) {
+            kavaAnalyticsConfig.setUiConfId(uiconfId);
         }
         if (!TextUtils.isEmpty(ks)) {
-            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.KS, ks);
+            kavaAnalyticsConfig.setKs(ks);
         }
         if (!TextUtils.isEmpty(referrer)) {
-            kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.REFERRER, referrer);
+            kavaAnalyticsConfig.setReferrer(referrer);
         }
-        return kavaAnalyticsConfigJson;
+
+        return kavaAnalyticsConfig;
     }
 
     private void loadPlayer() {
@@ -184,6 +188,7 @@ public class KalturaPlayer  {
         updatePlayerSettings();
 
         PlayManifestRequestAdapter.install(pkPlayer, referrer);
+        //KalturaUDRMLicenseRequestAdapter.install(player, referrer);
     }
 
     private void updatePlayerSettings() {
@@ -350,6 +355,16 @@ public class KalturaPlayer  {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
     }
 
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        if (pkPlayer != null) {
+            pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
+        }
+    }
+
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        pkPlayer.updateSurfaceAspectRatioResizeMode(resizeMode);
+    }
+    
     public void onApplicationPaused() {
         pkPlayer.onApplicationPaused();
     }
@@ -603,7 +618,7 @@ public class KalturaPlayer  {
     protected void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
         if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
             log.d("Adding Automatic Kava Plugin");
-            combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), resolve(kavaDefaults(uiConfPartnerId, uiConfId, referrer)));
+            combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), resolve(getKavaDefaultsConfig(uiConfPartnerId, uiConfId, referrer)));
         }
         if (isOTTPlayer() && !combinedPluginConfigs.hasConfig(PhoenixAnalyticsPlugin.factory.getName())) {
             addKalturaPluginConfigsOTT(combinedPluginConfigs);
