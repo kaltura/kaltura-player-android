@@ -27,6 +27,8 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 
+import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
@@ -186,6 +188,7 @@ public class KalturaPlayer  {
         updatePlayerSettings();
 
         PlayManifestRequestAdapter.install(pkPlayer, referrer);
+        //KalturaUDRMLicenseRequestAdapter.install(player, referrer);
     }
 
     private void updatePlayerSettings() {
@@ -352,6 +355,16 @@ public class KalturaPlayer  {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
     }
 
+    public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
+        if (pkPlayer != null) {
+            pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
+        }
+    }
+
+    public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
+        pkPlayer.updateSurfaceAspectRatioResizeMode(resizeMode);
+    }
+    
     public void onApplicationPaused() {
         pkPlayer.onApplicationPaused();
     }
