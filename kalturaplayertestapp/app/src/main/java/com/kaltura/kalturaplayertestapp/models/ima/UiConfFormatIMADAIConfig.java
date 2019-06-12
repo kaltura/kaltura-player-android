@@ -29,6 +29,7 @@ public class UiConfFormatIMADAIConfig {
     public static final String AD_COUNTDOWN_UIELEMENT   = "adCountDown";
     public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
     public static final String AD_ENABLE_DEBUG_MODE     = "enableDebugMode";
+    public static final String AD_ALWAYES_START_WITH_PREROLL = "alwaysStartWithPreroll";
 
     private String assetTitle;
     private String assetKey;  // null for VOD
@@ -37,6 +38,7 @@ public class UiConfFormatIMADAIConfig {
     private String videoId;         // null for Live
     private StreamRequest.StreamFormat streamFormat;
     private String licenseUrl;
+    private boolean alwaysStartWithPreroll;
 
     private AdsRenderingSettings adsRenderingSettings;
     private SdkSettings sdkSettings;
@@ -67,6 +69,10 @@ public class UiConfFormatIMADAIConfig {
 
     public String getLicenseUrl() {
         return licenseUrl;
+    }
+
+    public boolean isAlwaysStartWithPreroll() {
+        return alwaysStartWithPreroll;
     }
 
     public AdsRenderingSettings getAdsRenderingSettings() {
@@ -100,6 +106,7 @@ public class UiConfFormatIMADAIConfig {
         jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, getAdsRenderingSettings().getUiElements().isAdCountDown());
         jsonObject.addProperty(AD_LOAD_TIMEOUT, getAdsRenderingSettings().getLoadVideoTimeout());
         jsonObject.addProperty(AD_ENABLE_DEBUG_MODE, getSdkSettings().isDebugMode());
+        jsonObject.addProperty(AD_ALWAYES_START_WITH_PREROLL , alwaysStartWithPreroll);
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
