@@ -31,7 +31,6 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
-import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
@@ -176,11 +175,6 @@ public class KalturaPlayer  {
             kavaAnalyticsConfigJson.addProperty(KavaAnalyticsConfig.REFERRER, referrer);
         }
         return kavaAnalyticsConfigJson;
-    }
-
-    private JsonObject kalturaStatsDefaults(int partnerId, int uiConfId) {
-        return new KalturaStatsConfig(uiConfId, partnerId, "", "", 0, true).toJson();
-        // KalturaStatsConfig(int uiconfId, int partnerId, String entryId, String userId, int contextId, boolean hasKanalony)
     }
 
     private void loadPlayer() {

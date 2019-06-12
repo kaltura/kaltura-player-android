@@ -50,11 +50,6 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsEvent;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
-import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsConfig;
-import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsPlugin;
-import com.kaltura.playkit.plugins.ovp.KalturaStatsConfig;
-import com.kaltura.playkit.plugins.ovp.KalturaStatsEvent;
-import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 import com.kaltura.playkit.plugins.youbora.YouboraEvent;
 import com.kaltura.playkit.plugins.youbora.YouboraPlugin;
 import com.kaltura.playkit.plugins.youbora.pluginconfig.YouboraConfig;
@@ -729,14 +724,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             updateEventsLogsList("player:\n" + event.eventType().name());
         });
 
-
-        player.addListener(this, KalturaStatsEvent.reportSent, event -> {
-            String reportedEventName = event.reportedEventName;
-            if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
-                updateEventsLogsList("stats:\n" + reportedEventName);
-            }
-        });
-
         player.addListener(this, KavaAnalyticsEvent.reportSent, event -> {
             String reportedEventName = event.reportedEventName;
             if (!PlayerEvent.Type.PLAYHEAD_UPDATED.name().equals(reportedEventName)) {
@@ -797,12 +784,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 } else if (PhoenixAnalyticsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
                     PhoenixAnalyticsConfig phoenixAnalyticsConfig = gson.fromJson(pluginDescriptor.getParams(), PhoenixAnalyticsConfig.class);
                     pkPluginConfigs.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixAnalyticsConfig.toJson());
-                } else if (KalturaStatsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
-                    KalturaStatsConfig kalturaStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaStatsConfig.class);
-                    pkPluginConfigs.setPluginConfig(KalturaStatsPlugin.factory.getName(), kalturaStatsPluginConfig.toJson());
-                } else if (KalturaLiveStatsPlugin.factory.getName().equalsIgnoreCase(pluginName)) {
-                    KalturaLiveStatsConfig kalturaLiveStatsPluginConfig = gson.fromJson(pluginDescriptor.getParams(), KalturaLiveStatsConfig.class);
-                    pkPluginConfigs.setPluginConfig(KalturaLiveStatsPlugin.factory.getName(), kalturaLiveStatsPluginConfig.toJson());
                 }
             }
         }

@@ -6,8 +6,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
-import com.kaltura.playkit.plugins.ovp.KalturaLiveStatsPlugin;
-import com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -16,8 +14,6 @@ enum KnownPlugin {
 
     // Kaltura OVP Analytics
     kava("com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin", KavaAnalyticsPlugin.factory),
-    stats("com.kaltura.playkit.plugins.ovp.KalturaStatsPlugin", KalturaStatsPlugin.factory),
-    liveStats("com.kaltura.playkit.plugins.ovp.KalturaLiveStatsPlugin", KalturaLiveStatsPlugin.factory),
 
     // Kaltura Phoenix MediaHit/MediaMark
     phoenixBookmarks("com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin", KavaAnalyticsPlugin.factory),
