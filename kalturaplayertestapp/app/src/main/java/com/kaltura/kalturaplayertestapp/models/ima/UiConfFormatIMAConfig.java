@@ -21,11 +21,13 @@ public class UiConfFormatIMAConfig {
     public static final String AD_COUNTDOWN_UIELEMENT   = "adCountDown";
     public static final String AD_LOAD_TIMEOUT          = "adLoadTimeOut";
     public static final String AD_ENABLE_DEBUG_MODE     = "enableDebugMode";
+    public static final String AD_ALWAYES_START_WITH_PREROLL = "alwaysStartWithPreroll";
 
     private String adTagUrl;
     private AdTagType adTagType = AdTagType.VAST;
     private AdsRenderingSettings adsRenderingSettings;
     private SdkSettings sdkSettings;
+    private boolean alwaysStartWithPreroll;
 
     public String getAdTagUrl() {
         return adTagUrl;
@@ -33,6 +35,10 @@ public class UiConfFormatIMAConfig {
 
     public AdTagType getAdTagType() {
         return adTagType;
+    }
+
+    public boolean isAlwaysStartWithPreroll() {
+        return alwaysStartWithPreroll;
     }
 
     public AdsRenderingSettings getAdsRenderingSettings() {
@@ -59,6 +65,7 @@ public class UiConfFormatIMAConfig {
         jsonObject.addProperty(AD_COUNTDOWN_UIELEMENT, getAdsRenderingSettings().getUiElements().isAdCountDown());
         jsonObject.addProperty(AD_LOAD_TIMEOUT, getAdsRenderingSettings().getLoadVideoTimeout());
         jsonObject.addProperty(AD_ENABLE_DEBUG_MODE, getSdkSettings().isDebugMode());
+        jsonObject.addProperty(AD_ALWAYES_START_WITH_PREROLL , alwaysStartWithPreroll);
 
         Gson gson = new Gson();
         JsonArray jArray = new JsonArray();
