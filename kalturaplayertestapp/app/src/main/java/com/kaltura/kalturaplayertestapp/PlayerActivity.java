@@ -317,7 +317,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         mediaList = appPlayerInitConfig.mediaList;
 
         Integer partnerId = (appPlayerInitConfig.partnerId != null) ? Integer.valueOf(appPlayerInitConfig.partnerId) : null;
-        initOptions = new PlayerInitOptions(partnerId, new UiConf(appPlayerInitConfig.uiConf == null ? null : Integer.valueOf(appPlayerInitConfig.uiConf.id), appPlayerInitConfig.uiConf == null ? null : Integer.valueOf(appPlayerInitConfig.uiConf.partnerId)))
+        initOptions = new PlayerInitOptions(partnerId, new UiConf((appPlayerInitConfig.uiConf == null || appPlayerInitConfig.uiConf.id == null) ? null : Integer.valueOf(appPlayerInitConfig.uiConf.id), (appPlayerInitConfig.uiConf == null || appPlayerInitConfig.uiConf.partnerId == null) ? null : Integer.valueOf(appPlayerInitConfig.uiConf.partnerId)))
                 .setAutoPlay(appPlayerInitConfig.autoPlay)
                 .setKs(appPlayerInitConfig.ks)
                 .setPreload(appPlayerInitConfig.preload)
