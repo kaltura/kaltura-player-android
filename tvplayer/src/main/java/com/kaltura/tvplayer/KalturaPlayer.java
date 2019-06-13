@@ -28,6 +28,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
@@ -40,6 +41,7 @@ import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.utils.ConfigResolver;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -51,6 +53,7 @@ public class KalturaPlayer  {
             BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
 
     private static KalturaPlayerType kalturaPlayerType;
+
 
     private enum KalturaPlayerType {
         ovp,
@@ -79,6 +82,7 @@ public class KalturaPlayer  {
     private boolean autoPlay;
     private boolean preload;
     private double startPosition;
+    private List<PKExternalSubtitle> externalSubtitles;
     private View view;
     private PKMediaEntry mediaEntry;
     private PrepareState prepareState = PrepareState.not_prepared;
@@ -292,6 +296,14 @@ public class KalturaPlayer  {
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry);
 
+        if (externalSubtitles != null) {
+            if (mediaEntry.getExternalSubtitleList() == null) {
+                mediaEntry.setExternalSubtitleList(externalSubtitles);
+            } else {
+                mediaEntry.getExternalSubtitleList().addAll(externalSubtitles);
+            }
+        }
+
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         updateKalturaPluginConfigs(combinedPluginConfigs);
 
@@ -304,6 +316,7 @@ public class KalturaPlayer  {
     }
 
     public void setMedia(PKMediaEntry entry, Long startPosition) {
+        externalSubtitles = null;
         if (startPosition != null) {
             setStartPosition(startPosition);
         }
@@ -364,7 +377,7 @@ public class KalturaPlayer  {
     public void updateSurfaceAspectRatioResizeMode(PKAspectRatioResizeMode resizeMode) {
         pkPlayer.updateSurfaceAspectRatioResizeMode(resizeMode);
     }
-    
+
     public void onApplicationPaused() {
         pkPlayer.onApplicationPaused();
     }
@@ -465,6 +478,11 @@ public class KalturaPlayer  {
         return this;
     }
 
+    public KalturaPlayer setExternalSubtitles(List<PKExternalSubtitle> externalSubtitles) {
+        this.externalSubtitles = externalSubtitles;
+        return this;
+    }
+
     public boolean isPreload() {
         return preload;
     }
@@ -515,6 +533,8 @@ public class KalturaPlayer  {
     }
 
     public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+        ks = null;
+        externalSubtitles = null;
 
         if (kalturaPlayerType == KalturaPlayerType.basic) {
             log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
@@ -544,7 +564,8 @@ public class KalturaPlayer  {
     }
 
     public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
-
+        ks = null;
+        externalSubtitles = null;
         if (kalturaPlayerType == KalturaPlayerType.basic) {
             log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
             return;
