@@ -1,8 +1,11 @@
 package com.kaltura.kalturaplayertestapp.converters;
 
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.providers.api.phoenix.APIDefines;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
+
+import java.util.List;
 
 /**
  * Created by gilad.nadav on 1/24/18.
@@ -20,6 +23,7 @@ public class Media {
     public String protocol; // ott
     public PKMediaEntry pkMediaEntry; // player without provider
     public String mediaAdTag;
+    public List<PKExternalSubtitle> externalSubtitles;
 
     public Media() {}
 
