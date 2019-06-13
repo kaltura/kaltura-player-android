@@ -204,6 +204,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 if (appPlayerInitConfig.vrSettings != null) {
                     mediaEntry.setIsVRMediaType(true);
                 }
+                mediaEntry.setExternalSubtitleList(appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).externalSubtitles);
                 player.setMedia(mediaEntry, 0L);
             }
         }
@@ -420,6 +421,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         ottMediaOptions.protocol = ottMedia.getProtocol();
         ottMediaOptions.ks = ottMedia.ks;
         ottMediaOptions.startPosition = startPosition;
+        ottMediaOptions.externalSubtitles = ottMedia.externalSubtitles;
 
 
         if (!TextUtils.isEmpty(ottMedia.format)) {
@@ -439,6 +441,8 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         ovpMediaOptions.entryId = ovpMedia.entryId;
         ovpMediaOptions.ks = ovpMedia.ks;
         ovpMediaOptions.startPosition = startPosition;
+        ovpMediaOptions.externalSubtitles = ovpMedia.externalSubtitles;
+
         return ovpMediaOptions;
     }
 
