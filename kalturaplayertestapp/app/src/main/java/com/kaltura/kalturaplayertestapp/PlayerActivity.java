@@ -421,7 +421,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         ottMediaOptions.protocol = ottMedia.getProtocol();
         ottMediaOptions.ks = ottMedia.ks;
         ottMediaOptions.startPosition = startPosition;
-        ottMedia.externalSubtitles = ottMedia.externalSubtitles;
+        ottMediaOptions.externalSubtitles = ottMedia.externalSubtitles;
 
 
         if (!TextUtils.isEmpty(ottMedia.format)) {
