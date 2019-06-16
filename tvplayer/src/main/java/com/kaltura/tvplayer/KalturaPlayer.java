@@ -119,7 +119,7 @@ public class KalturaPlayer  {
             this.preload = true; // autoplay implies preload
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
-        if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && uiConfPartnerId == null)) {
+        if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && initOptions.uiConfPartnerId == null)) {
             if (kalturaPlayerType == KalturaPlayerType.basic) {
                 this.partnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
             } else {
@@ -295,6 +295,7 @@ public class KalturaPlayer  {
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry);
+        tokenResolver.update(initOptions);
 
         if (externalSubtitles != null) {
             if (mediaEntry.getExternalSubtitleList() == null) {
