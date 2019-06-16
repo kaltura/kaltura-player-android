@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKController;
