@@ -33,6 +33,7 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
+import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
@@ -189,12 +190,14 @@ public class KalturaPlayer  {
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
         updatePlayerSettings();
-
-        PlayManifestRequestAdapter.install(pkPlayer, referrer);
-        //KalturaUDRMLicenseRequestAdapter.install(player, referrer);
     }
 
     private void updatePlayerSettings() {
+        if (initOptions.referrer != null) {
+            PlayManifestRequestAdapter.install(pkPlayer, initOptions.referrer);
+            KalturaUDRMLicenseRequestAdapter.install(pkPlayer, initOptions.referrer);
+        }
+
         if (initOptions.audioLanguageMode != null && initOptions.audioLanguage != null) {
             pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(initOptions.audioLanguageMode).setTrackLanguage(initOptions.audioLanguage));
         }
@@ -555,15 +558,9 @@ public class KalturaPlayer  {
 
         setStartPosition(mediaOptions.startPosition);
 
-        MediaEntryProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
+        KalturaOvpMediaProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
                 .setEntryId(mediaOptions.entryId).setUseApiCaptions(mediaOptions.useApiCaptions).setReferrer(referrer);
-
-        provider.load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                mediaLoadCompleted(response, listener);
-            }
-        });
+        provider.load(response -> mediaLoadCompleted(response, listener));
     }
 
     public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
@@ -612,12 +609,7 @@ public class KalturaPlayer  {
             provider.setAssetReferenceType(mediaOptions.assetReferenceType);
         }
 
-        provider.load(new OnMediaLoadCompletion() {
-            @Override
-            public void onComplete(ResultElement<PKMediaEntry> response) {
-                mediaLoadCompleted(response, listener);
-            }
-        });
+        provider.load(response -> mediaLoadCompleted(response, listener));
     }
 
     protected void registerPlugins(Context context) {
