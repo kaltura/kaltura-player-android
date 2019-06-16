@@ -7,10 +7,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -58,6 +60,7 @@ public class MainActivity extends BaseActivity implements TestCaseConfigurationA
     private static final int RC_BARCODE_CAPTURE = 9001;
     private static final String ADD_DEFAULT_ITEMS = "ADD_DEFAULT_ITEMS";
     private static String DEFAULT_TESTS_DESCRIPTOR = "http://externaltests.dev.kaltura.com/player/library_SDK_Kaltura_Player/KalturaPlayerApp/default_bulk_import.json";
+    //private static String DEFAULT_TESTS_DESCRIPTOR = "http://externaltests.dev.kaltura.com/player/SdkKalturaPlayer/playkitApp/kalturaPlayerApp.json"; //"http://externaltests.dev.kaltura.com/player/sandBox/Kaltura/media_items.json";//"http://externaltests.dev.kaltura.com/player/library_SDK_Kaltura_Player/KalturaPlayerApp/default_bulk_import.json";
     public static final String KEY_NEW_CONFIGURATION_PATH = "key_new_configuration_path";
 
     public static final int LIMIT = 100;
@@ -255,7 +258,7 @@ public class MainActivity extends BaseActivity implements TestCaseConfigurationA
             currentUser = FirebaseAuth.getInstance().getCurrentUser().getEmail();
         }
         alertDialog.setMessage("Logged In: " + currentUser + "\n\n" +
-                    "App Version:" + BuildConfig.VERSION_NAME);
+                "App Version:" + BuildConfig.VERSION_NAME);
 
 
         alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -379,12 +382,17 @@ public class MainActivity extends BaseActivity implements TestCaseConfigurationA
         if (testUrl.contains("/Tests/")) { // single test
             List<TestDescriptor> testDescriptorArrayList = new ArrayList<>();
             TestDescriptor testDescriptor = new TestDescriptor();
-                String fileName = testUrl.substring(testUrl.lastIndexOf('/') + 1, testUrl.length());
-                String fileNameWithoutExtn = fileName.substring(0, fileName.lastIndexOf('.'));
-                testDescriptor.setTitle(fileNameWithoutExtn);
-                testDescriptor.setUrl(testUrl);
-                testDescriptorArrayList.add(testDescriptor);
-                loadTests(testDescriptorArrayList);
+            String fileName = testUrl.substring(testUrl.lastIndexOf('/') + 1, testUrl.length());
+            if (TextUtils.isEmpty(fileName) || !fileName.endsWith(".json")) {
+                Snackbar.make(mEmptyView, "Invalid json", BaseTransientBottomBar.LENGTH_SHORT).show();
+                hideProgressDialog();
+                return;
+            }
+            String fileNameWithoutExtn = fileName.substring(0, fileName.lastIndexOf('.'));
+            testDescriptor.setTitle(fileNameWithoutExtn);
+            testDescriptor.setUrl(testUrl);
+            testDescriptorArrayList.add(testDescriptor);
+            loadTests(testDescriptorArrayList);
         } else { // multiple tests
             Gson gson = new Gson();
             TestDescriptor[] testDescriptors = gson.fromJson(jsonTests, TestDescriptor[].class);
