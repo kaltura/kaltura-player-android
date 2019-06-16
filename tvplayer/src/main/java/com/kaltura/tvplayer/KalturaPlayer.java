@@ -259,6 +259,10 @@ public class KalturaPlayer  {
         if (initOptions.vrSettings != null) {
             pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
+
+        if (initOptions.useSinglePlayerInstance != null) {
+            pkPlayer.getSettings().useSinglePlayerInstance(initOptions.useSinglePlayerInstance);
+        }
     }
 
     @NonNull
