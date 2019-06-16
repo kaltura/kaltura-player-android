@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.BaseTransientBottomBar;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -384,7 +383,7 @@ public class MainActivity extends BaseActivity implements TestCaseConfigurationA
             TestDescriptor testDescriptor = new TestDescriptor();
             String fileName = testUrl.substring(testUrl.lastIndexOf('/') + 1, testUrl.length());
             if (TextUtils.isEmpty(fileName) || !fileName.endsWith(".json")) {
-                Snackbar.make(mEmptyView, "Invalid json", BaseTransientBottomBar.LENGTH_SHORT).show();
+                Snackbar.make(mEmptyView, "Invalid json", Snackbar.LENGTH_SHORT).show();
                 hideProgressDialog();
                 return;
             }
