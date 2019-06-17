@@ -261,8 +261,8 @@ public class KalturaPlayer  {
             pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
 
-        if (initOptions.useSinglePlayerInstance != null) {
-            pkPlayer.getSettings().useSinglePlayerInstance(initOptions.useSinglePlayerInstance);
+        if (initOptions.forceSinglePlayerEngine != null) {
+            pkPlayer.getSettings().forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
         }
     }
 

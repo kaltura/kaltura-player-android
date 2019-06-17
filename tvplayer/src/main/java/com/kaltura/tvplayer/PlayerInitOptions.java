@@ -55,7 +55,7 @@ public class PlayerInitOptions {
     public Boolean adAutoPlayOnResume;
     public Boolean vrPlayerEnabled;
     public Boolean isVideoViewHidden;
-    public Boolean useSinglePlayerInstance;
+    public Boolean forceSinglePlayerEngine;
     public SubtitleStyleSettings setSubtitleStyle;
     public PKAspectRatioResizeMode aspectRatioResizeMode;
     public PKRequestParams.Adapter contentRequestAdapter;
@@ -274,9 +274,9 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions useSinglePlayerInstance(Boolean useSinglePlayerInstance) {
-        if (useSinglePlayerInstance != null) {
-            this.useSinglePlayerInstance = useSinglePlayerInstance;
+    public PlayerInitOptions forceSinglePlayerEngine(Boolean forceSinglePlayerEngine) {
+        if (forceSinglePlayerEngine != null) {
+            this.forceSinglePlayerEngine = forceSinglePlayerEngine;
         }
         return this;
     }
