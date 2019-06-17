@@ -108,7 +108,7 @@ public class BasicDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setServerUrl(initOptions.serverUrl);
         updatedInitOptions.setAutoPlay(initOptions.autoplay);
         updatedInitOptions.setReferrer(initOptions.referrer);
-        updatedInitOptions.setUseSinglePlayerInstance(initOptions.useSinglePlayerInstance);
+        updatedInitOptions.useSinglePlayerInstance(initOptions.useSinglePlayerInstance);
         if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
             updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
         }

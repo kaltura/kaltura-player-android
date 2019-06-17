@@ -274,7 +274,7 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setUseSinglePlayerInstance(Boolean useSinglePlayerInstance) {
+    public PlayerInitOptions useSinglePlayerInstance(Boolean useSinglePlayerInstance) {
         if (useSinglePlayerInstance != null) {
             this.useSinglePlayerInstance = useSinglePlayerInstance;
         }
