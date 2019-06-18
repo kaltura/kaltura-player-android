@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 
 import com.google.gson.JsonObject;
 
@@ -111,7 +110,7 @@ public class OVPDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setServerUrl(initOptions.serverUrl);
         updatedInitOptions.setAutoPlay(initOptions.autoplay);
         updatedInitOptions.setReferrer(initOptions.referrer);
-        updatedInitOptions.setUseSinglePlayerInstance(initOptions.useSinglePlayerInstance);
+        updatedInitOptions.forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
         if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
             updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
         }

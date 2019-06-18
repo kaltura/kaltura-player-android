@@ -95,7 +95,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setServerUrl(initOptions.serverUrl);
         updatedInitOptions.setAutoPlay(initOptions.autoplay);
         updatedInitOptions.setReferrer(initOptions.referrer);
-        updatedInitOptions.setUseSinglePlayerInstance(initOptions.useSinglePlayerInstance);
+        updatedInitOptions.forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
         if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
             updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
         }

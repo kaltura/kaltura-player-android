@@ -34,8 +34,6 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
-import com.kaltura.playkit.providers.MediaEntryProvider;
-import com.kaltura.playkit.providers.base.OnMediaLoadCompletion;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.utils.Consts;
@@ -238,12 +236,10 @@ public class KalturaPlayer  {
         }
 
         if (initOptions.contentRequestAdapter != null) {
-            //PKRequestParams.Adapter contentAdapter = null;
             pkPlayer.getSettings().setContentRequestAdapter(initOptions.contentRequestAdapter);//(contentAdapter);
         }
 
         if (initOptions.licenseRequestAdapter != null) {
-            //PKRequestParams.Adapter licenseAdapter = null;
             pkPlayer.getSettings().setLicenseRequestAdapter(initOptions.licenseRequestAdapter);//(licenseAdapter);
         }
 
@@ -263,8 +259,8 @@ public class KalturaPlayer  {
             pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
 
-        if (initOptions.useSinglePlayerInstance != null) {
-            pkPlayer.getSettings().useSinglePlayerInstance(initOptions.useSinglePlayerInstance);
+        if (initOptions.forceSinglePlayerEngine != null) {
+            pkPlayer.getSettings().forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
         }
     }
 
