@@ -40,7 +40,7 @@ public class PlayerConfig {
     public LoadControlBuffers loadControlBuffers;
     public ABRSettings abrSettings;
     public String referrer;
-    public Boolean useSinglePlayerInstance;
+    public Boolean forceSinglePlayerEngine;
     public List<Media> mediaList;
     public TrackSelection trackSelection;
     public JsonArray plugins;

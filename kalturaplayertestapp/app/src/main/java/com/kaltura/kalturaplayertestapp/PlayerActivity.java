@@ -333,7 +333,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 .setIsVideoViewHidden(appPlayerInitConfig.isVideoViewHidden)
                 .setContentRequestAdapter(appPlayerInitConfig.contentRequestAdapter)
                 .setLicenseRequestAdapter(appPlayerInitConfig.licenseRequestAdapter)
-                .forceSinglePlayerEngine(appPlayerInitConfig.useSinglePlayerInstance)
+                .forceSinglePlayerEngine(appPlayerInitConfig.forceSinglePlayerEngine)
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
         if (appPlayerInitConfig.trackSelection != null) {
