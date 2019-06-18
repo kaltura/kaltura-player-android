@@ -168,7 +168,9 @@ public class KalturaPlayer  {
         if (partnerId != null && partnerId.equals(Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID))) {
             kavaAnalyticsConfig.setEntryId(KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
         } else if (mediaEntry != null && mediaEntry.getId() != null){
-            kavaAnalyticsConfig.setEntryId(mediaEntry.getId());
+            if (!isOTTPlayer()) {
+                kavaAnalyticsConfig.setEntryId(mediaEntry.getId());
+            }
         }
         if (uiconfId != null && uiconfId > 0) {
             kavaAnalyticsConfig.setUiConfId(uiconfId);
@@ -179,7 +181,6 @@ public class KalturaPlayer  {
         if (!TextUtils.isEmpty(referrer)) {
             kavaAnalyticsConfig.setReferrer(referrer);
         }
-
         return kavaAnalyticsConfig;
     }
 
@@ -638,13 +639,10 @@ public class KalturaPlayer  {
     }
 
     protected void addKalturaPluginConfigsOTT(PKPluginConfigs combined) {
-        //NOT ADDING PHOENIX IF KS IS NOT VALID
-        if (!TextUtils.isEmpty(getKS())) {
             PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
             if (phoenixConfig != null) {
                 combined.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
             }
-        }
     }
 
     protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
@@ -655,38 +653,26 @@ public class KalturaPlayer  {
                     PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
                     if (phoenixConfig != null) {
                         updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
+                        continue;
                     }
-                } else {
-                    updatePluginConfig(plugin.getKey(), plugin.getValue());
                 }
-            } else {
-                log.e("updateKalturaPluginConfigs " + plugin.getKey()  + " is not a JsonObject");
             }
+            updatePluginConfig(plugin.getKey(), plugin.getValue());
         }
-    }
-
-    private KavaAnalyticsConfig getKavaAnalyticsConfig() {
-        KavaAnalyticsConfig kavaAnalyticsConfig = new  KavaAnalyticsConfig().setPartnerId(getPartnerId()).setReferrer(referrer);
-        if (getUiConfId() != null) {
-            kavaAnalyticsConfig.setUiConfId(getUiConfId());
-        }
-        return kavaAnalyticsConfig;
     }
 
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
         // Special case: Phoenix plugin
         String name = PhoenixAnalyticsPlugin.factory.getName();
-        JsonObject phoenixAnalyticObject;
-        if (getInitOptions().pluginConfigs.hasConfig(name)) {
-            phoenixAnalyticObject = (JsonObject) getInitOptions().pluginConfigs.getPluginConfig(name);
-        } else {
-            phoenixAnalyticObject = phoenixAnalyticDefaults(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
+        if (getInitOptions().pluginConfigs != null && getInitOptions().pluginConfigs.hasConfig(name)) {
+            if (getInitOptions().pluginConfigs.getPluginConfig(name) instanceof JsonObject) {
+                JsonObject phoenixAnalyticObject = (JsonObject) getInitOptions().pluginConfigs.getPluginConfig(name);
+                return new Gson().fromJson(phoenixAnalyticObject, PhoenixAnalyticsConfig.class);
+            } else {
+                return (PhoenixAnalyticsConfig) getInitOptions().pluginConfigs.getPluginConfig(name);
+            }
         }
-        return new Gson().fromJson(phoenixAnalyticObject, PhoenixAnalyticsConfig.class);
-    }
-
-    private JsonObject phoenixAnalyticDefaults(int partnerId, String serverUrl, String ks, int timerInterval) {
-        return new PhoenixAnalyticsConfig(partnerId, serverUrl, ks, timerInterval).toJson();
+        return  new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
     }
 
     public interface OnEntryLoadListener {
