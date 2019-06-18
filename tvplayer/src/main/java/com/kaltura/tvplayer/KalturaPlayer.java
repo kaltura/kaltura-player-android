@@ -236,12 +236,10 @@ public class KalturaPlayer  {
         }
 
         if (initOptions.contentRequestAdapter != null) {
-            //PKRequestParams.Adapter contentAdapter = null;
             pkPlayer.getSettings().setContentRequestAdapter(initOptions.contentRequestAdapter);//(contentAdapter);
         }
 
         if (initOptions.licenseRequestAdapter != null) {
-            //PKRequestParams.Adapter licenseAdapter = null;
             pkPlayer.getSettings().setLicenseRequestAdapter(initOptions.licenseRequestAdapter);//(licenseAdapter);
         }
 
