@@ -551,6 +551,8 @@ public class KalturaPlayer  {
 
         if (mediaOptions.ks != null) {
             setKS(mediaOptions.ks);
+        } else if (initOptions.ks != null) {
+            setKS(initOptions.ks);
         }
 
         setStartPosition(mediaOptions.startPosition);
@@ -575,6 +577,8 @@ public class KalturaPlayer  {
 
         if (mediaOptions.ks != null) {
             setKS(mediaOptions.ks);
+        } else if (initOptions.ks != null) {
+            setKS(initOptions.ks);
         }
 
         setStartPosition(mediaOptions.startPosition);
@@ -649,7 +653,7 @@ public class KalturaPlayer  {
         log.d("updateKalturaPluginConfigs");
         for (Map.Entry<String, Object> plugin : combined) {
             if (plugin.getValue() instanceof JsonObject) {
-                if (isOTTPlayer() && PhoenixAnalyticsPlugin.factory.getName().equals(plugin.getKey()) && !TextUtils.isEmpty(getKS())) {
+                if (isOTTPlayer() && PhoenixAnalyticsPlugin.factory.getName().equals(plugin.getKey())) {
                     PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
                     if (phoenixConfig != null) {
                         updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
@@ -664,12 +668,13 @@ public class KalturaPlayer  {
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
         // Special case: Phoenix plugin
         String name = PhoenixAnalyticsPlugin.factory.getName();
-        if (getInitOptions().pluginConfigs != null && getInitOptions().pluginConfigs.hasConfig(name)) {
-            if (getInitOptions().pluginConfigs.getPluginConfig(name) instanceof JsonObject) {
-                JsonObject phoenixAnalyticObject = (JsonObject) getInitOptions().pluginConfigs.getPluginConfig(name);
+        PKPluginConfigs pkPluginConfigs = getInitOptions().pluginConfigs;
+        if (pkPluginConfigs != null && pkPluginConfigs.hasConfig(name)) {
+            if (pkPluginConfigs.getPluginConfig(name) instanceof JsonObject) {
+                JsonObject phoenixAnalyticObject = (JsonObject) pkPluginConfigs.getPluginConfig(name);
                 return new Gson().fromJson(phoenixAnalyticObject, PhoenixAnalyticsConfig.class);
             } else {
-                return (PhoenixAnalyticsConfig) getInitOptions().pluginConfigs.getPluginConfig(name);
+                return (PhoenixAnalyticsConfig) pkPluginConfigs.getPluginConfig(name);
             }
         }
         return  new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
