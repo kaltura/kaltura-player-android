@@ -652,15 +652,6 @@ public class KalturaPlayer  {
     protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
         log.d("updateKalturaPluginConfigs");
         for (Map.Entry<String, Object> plugin : combined) {
-            if (plugin.getValue() instanceof JsonObject) {
-                if (isOTTPlayer() && PhoenixAnalyticsPlugin.factory.getName().equals(plugin.getKey())) {
-                    PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
-                    if (phoenixConfig != null) {
-                        updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
-                        continue;
-                    }
-                }
-            }
             updatePluginConfig(plugin.getKey(), plugin.getValue());
         }
     }

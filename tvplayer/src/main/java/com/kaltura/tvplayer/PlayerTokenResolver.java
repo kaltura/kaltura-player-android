@@ -1,5 +1,7 @@
 package com.kaltura.tvplayer;
 
+import android.text.TextUtils;
+
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.tvplayer.utils.MapTokenResolver;
 
@@ -24,7 +26,12 @@ class PlayerTokenResolver extends MapTokenResolver {
                 }
             }
 
-            set("entryId", mediaEntry.getId());
+            if (TextUtils.isDigitsOnly(mediaEntry.getId())) /* OTT Media */ {
+                set("entryId", mediaEntry.getMetadata().containsKey("entryId") ? mediaEntry.getMetadata().get("entryId") : "unknown");
+                set("assetId", mediaEntry.getId());
+            } else {
+                set("entryId", mediaEntry.getId());
+            }
             set("entryName", mediaEntry.getName());
             if (mediaEntry.getMediaType() != null) {
                 set("entryType", mediaEntry.getMediaType().name());
@@ -49,11 +56,15 @@ class PlayerTokenResolver extends MapTokenResolver {
             if (initOptions.partnerId != null) {
                 set("partnerId", String.valueOf(initOptions.partnerId));
             }
+            if (initOptions.partnerId != null) {
+                set("kavaPartnerId", String.valueOf(initOptions.uiConfPartnerId));
+            }
             set("ks", (initOptions.ks != null) ? initOptions.ks : "");
             set("referrer", (initOptions.referrer != null) ? initOptions.referrer : "");
 
             globalKeys.add("uiConfId");
             globalKeys.add("partnerId");
+            globalKeys.add("kavaPartnerId");
             globalKeys.add("ks");
             globalKeys.add("referrer");
         }
