@@ -297,7 +297,7 @@ public class KalturaPlayer  {
     }
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
-        tokenResolver.update(mediaEntry);
+        tokenResolver.update(mediaEntry, getKS());
 
         if (externalSubtitles != null) {
             if (mediaEntry.getExternalSubtitleList() == null) {

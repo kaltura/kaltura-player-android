@@ -14,20 +14,29 @@ class PlayerTokenResolver extends MapTokenResolver {
     private List<String> entryKeys = new ArrayList<>();
     private List<String> globalKeys = new ArrayList<>();
 
-    void update(PKMediaEntry mediaEntry) {
+    void update(PKMediaEntry mediaEntry, String ks) {
 
         removeAll(entryKeys);
 
         if (mediaEntry != null) {
-            if (mediaEntry.getMetadata() != null) {
-                for (Map.Entry<String, String> metadataEntry : mediaEntry.getMetadata().entrySet()) {
+            Map<String, String> mediaEntryMetadata = mediaEntry.getMetadata();
+            if (mediaEntryMetadata != null) {
+                for (Map.Entry<String, String> metadataEntry : mediaEntryMetadata.entrySet()) {
                     set(metadataEntry.getKey(), metadataEntry.getValue());
                     entryKeys.add(metadataEntry.getKey());
                 }
             }
 
+            if (mediaEntry.getMediaType() != null) {
+                set("entryType", mediaEntry.getMediaType().name());
+            }
+
+            if (ks != null) {
+                set("ks", ks);
+            }
+
             if (TextUtils.isDigitsOnly(mediaEntry.getId())) /* OTT Media */ {
-                set("entryId", mediaEntry.getMetadata().containsKey("entryId") ? mediaEntry.getMetadata().get("entryId") : "unknown");
+                set("entryId", isVeaidEntryIdInMetadata(mediaEntryMetadata) ? mediaEntryMetadata.get("entryId") : "unknown");
                 set("assetId", mediaEntry.getId());
             } else {
                 set("entryId", mediaEntry.getId());
@@ -45,6 +54,10 @@ class PlayerTokenResolver extends MapTokenResolver {
         }
     }
 
+    private boolean isVeaidEntryIdInMetadata(Map<String, String> mediaEntryMetadata) {
+        return mediaEntryMetadata != null && mediaEntryMetadata.containsKey("entryId") && !TextUtils.isEmpty(mediaEntryMetadata.get("entryId"));
+    }
+
     void update(PlayerInitOptions initOptions) {
 
         removeAll(globalKeys);
@@ -56,9 +69,10 @@ class PlayerTokenResolver extends MapTokenResolver {
             if (initOptions.partnerId != null) {
                 set("partnerId", String.valueOf(initOptions.partnerId));
             }
-            if (initOptions.partnerId != null) {
+            if (initOptions.uiConfPartnerId != null) {
                 set("kavaPartnerId", String.valueOf(initOptions.uiConfPartnerId));
             }
+
             set("ks", (initOptions.ks != null) ? initOptions.ks : "");
             set("referrer", (initOptions.referrer != null) ? initOptions.referrer : "");
 
