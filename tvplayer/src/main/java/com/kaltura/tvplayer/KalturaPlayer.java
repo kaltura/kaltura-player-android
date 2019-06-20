@@ -480,12 +480,7 @@ public class KalturaPlayer  {
         this.startPosition = startPosition;
         return this;
     }
-
-    public KalturaPlayer setExternalSubtitles(List<PKExternalSubtitle> externalSubtitles) {
-        this.externalSubtitles = externalSubtitles;
-        return this;
-    }
-
+    
     public boolean isPreload() {
         return preload;
     }
@@ -536,8 +531,12 @@ public class KalturaPlayer  {
     }
 
     public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+
         ks = null;
         externalSubtitles = null;
+        if (mediaOptions.externalSubtitles != null) {
+            externalSubtitles = mediaOptions.externalSubtitles;
+        }
 
         if (kalturaPlayerType == KalturaPlayerType.basic) {
             log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
@@ -563,8 +562,12 @@ public class KalturaPlayer  {
     }
 
     public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+
         ks = null;
         externalSubtitles = null;
+        if (mediaOptions.externalSubtitles != null) {
+            externalSubtitles = mediaOptions.externalSubtitles;
+        }
         if (kalturaPlayerType == KalturaPlayerType.basic) {
             log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
             return;
