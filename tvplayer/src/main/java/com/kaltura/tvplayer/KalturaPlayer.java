@@ -641,7 +641,7 @@ public class KalturaPlayer  {
         provider.load(response -> mediaLoadCompleted(response, listener));
     }
 
-    protected void registerPlugins(Context context) {
+    private void registerPlugins(Context context) {
         // Plugin registration is static and only done once, but requires a Context.
         if (!pluginsRegistered) {
             registerCommonPlugins(context);
@@ -656,11 +656,11 @@ public class KalturaPlayer  {
         return KalturaPlayerType.ott.equals(kalturaPlayerType);
     }
 
-    protected void registerPluginsOTT(Context context) {
+    private void registerPluginsOTT(Context context) {
         PlayKitManager.registerPlugins(context, PhoenixAnalyticsPlugin.factory);
     }
 
-    protected void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
+    private void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
         if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
             log.d("Adding Automatic Kava Plugin");
             combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), resolve(getKavaDefaultsConfig(ovpPartnerId, referrer)));
@@ -670,14 +670,14 @@ public class KalturaPlayer  {
         }
     }
 
-    protected void addKalturaPluginConfigsOTT(PKPluginConfigs combined) {
+    private void addKalturaPluginConfigsOTT(PKPluginConfigs combined) {
             PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
             if (phoenixConfig != null) {
                 combined.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
             }
     }
 
-    protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
+    private void updateKalturaPluginConfigs(PKPluginConfigs combined) {
         log.d("updateKalturaPluginConfigs");
         for (Map.Entry<String, Object> plugin : combined) {
             updatePluginConfig(plugin.getKey(), plugin.getValue());

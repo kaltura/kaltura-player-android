@@ -243,6 +243,9 @@ public class PlayerInitOptions {
     public PlayerInitOptions setPhoenixTVPlayerDMSParams(PhoenixTVPlayerDMSParams phoenixTVPlayerDMSParams) {
         if (phoenixTVPlayerDMSParams != null) {
             this.phoenixTVPlayerDMSParams = phoenixTVPlayerDMSParams;
+        }
+        return this;
+    }
 
     public PlayerInitOptions setCea608CaptionsEnabled(Boolean cea608CaptionsEnabled) {
         if (cea608CaptionsEnabled != null) {
