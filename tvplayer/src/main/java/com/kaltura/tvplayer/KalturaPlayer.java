@@ -274,6 +274,19 @@ public class KalturaPlayer  {
         if (initOptions.forceSinglePlayerEngine != null) {
             pkPlayer.getSettings().forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
         }
+
+        if (initOptions.cea608CaptionsEnabled != null) {
+            pkPlayer.getSettings().setCea608CaptionsEnabled(initOptions.cea608CaptionsEnabled);
+        }
+
+        if (initOptions.mpgaAudioFormatEnabled != null) {
+            pkPlayer.getSettings().setMpgaAudioFormatEnabled(initOptions.mpgaAudioFormatEnabled);
+        }
+
+        if (initOptions.useTextureView != null) {
+            pkPlayer.getSettings().useTextureView(initOptions.useTextureView);
+        }
+
     }
 
     @NonNull
@@ -380,6 +393,12 @@ public class KalturaPlayer  {
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (pkPlayer != null) {
             pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
+        }
+    }
+
+    public void setPlaybackRate(float rate) {
+        if (pkPlayer != null) {
+            pkPlayer.setPlaybackRate(rate);
         }
     }
 

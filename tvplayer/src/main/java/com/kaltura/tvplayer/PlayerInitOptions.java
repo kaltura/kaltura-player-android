@@ -62,6 +62,9 @@ public class PlayerInitOptions {
     public LoadControlBuffers loadControlBuffers;
     public ABRSettings abrSettings;
     public VRSettings vrSettings;
+    public Boolean cea608CaptionsEnabled;
+    public Boolean mpgaAudioFormatEnabled;
+    public Boolean useTextureView;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -240,6 +243,24 @@ public class PlayerInitOptions {
     public PlayerInitOptions setPhoenixTVPlayerDMSParams(PhoenixTVPlayerDMSParams phoenixTVPlayerDMSParams) {
         if (phoenixTVPlayerDMSParams != null) {
             this.phoenixTVPlayerDMSParams = phoenixTVPlayerDMSParams;
+
+    public PlayerInitOptions setCea608CaptionsEnabled(Boolean cea608CaptionsEnabled) {
+        if (cea608CaptionsEnabled != null) {
+            this.cea608CaptionsEnabled = cea608CaptionsEnabled;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMpgaAudioFormatEnabled(Boolean mpgaAudioFormatEnabled) {
+        if (mpgaAudioFormatEnabled != null) {
+            this.mpgaAudioFormatEnabled = mpgaAudioFormatEnabled;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions useTextureView(Boolean useTextureView) {
+        if (useTextureView != null) {
+            this.useTextureView = useTextureView;
         }
         return this;
     }
