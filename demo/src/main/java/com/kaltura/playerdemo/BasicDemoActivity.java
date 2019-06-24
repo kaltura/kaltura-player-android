@@ -11,7 +11,6 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.config.player.UiConf;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -23,7 +22,6 @@ import java.net.URL;
 public class BasicDemoActivity extends BaseDemoActivity {
 
     private static final PKLog log = PKLog.get("BasicDemoActivity");
-
     private DemoItem currentItem;
 
     @Override
@@ -62,26 +60,6 @@ public class BasicDemoActivity extends BaseDemoActivity {
         return new DemoItem(object.get("name").getAsString(), object.get("entryId").getAsString());
     }
 
-//    @Override
-//    protected void loadPlayerConfig() {
-//
-//        if (uiConfId == null) {
-//            return;
-//        }
-//
-//        if (uiConfPartnerId == null) {
-//            uiConfPartnerId = partnerId();
-//        }
-//        PlayerConfigManager.initialize(this);
-//        PlayerConfigManager.retrieve(uiConfId, uiConfPartnerId, ks, uiConfServerUrl, new PlayerConfigManager.OnPlayerConfigLoaded() {
-//            @Override
-//            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-//                Toast.makeText(OVPDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-//                playerConfigUiConfJson = config;
-//            }
-//        });
-//    }
-
     @Override
     protected void loadItem(DemoItem item) {
         this.currentItem = item;
@@ -90,7 +68,7 @@ public class BasicDemoActivity extends BaseDemoActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
-        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId, new UiConf(initOptions.uiConfId == null ? null : Integer.valueOf(initOptions.uiConfId), uiConfPartnerId == null ? null : Integer.valueOf(uiConfPartnerId)));
+        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
         updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
         updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
         updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
@@ -125,7 +103,7 @@ public class BasicDemoActivity extends BaseDemoActivity {
 
     @Override
     protected String demoName() {
-        return "OVP Player Demo";
+        return "BASIC Player Demo";
     }
 
     @Override

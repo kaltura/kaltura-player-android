@@ -37,8 +37,8 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.config.player.UiConf;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -61,10 +61,8 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     protected final Context context = this;
     protected JsonObject playerConfigUiConfJson;
     protected PlayerInitOptions initOptions;
-    Integer uiConfId;
     String ks;
     DemoItem[] items;
-    Integer uiConfPartnerId;     // for player config
     private ViewGroup contentContainer;
     private NavigationView navigationView;
     private ListView itemListView;
@@ -78,6 +76,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        PlayerConfigManager.initialize(this);
         
         initDrm();
 
@@ -102,15 +101,9 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         if (partnerId == null) {
             throw new IllegalArgumentException("partnerId must not be null");
         }
-        final JsonObject uiConfJson = safeObject(json, UICONF);
-        if (uiConfJson != null) {
-            uiConfPartnerId = safeInteger(uiConfJson, PlayerInitOptions.PARTNER_ID);
-            uiConfId = safeInteger(uiConfJson, PlayerInitOptions.UICONF_ID);
-            uiConfServerUrl = safeString(uiConfJson, PlayerInitOptions.SERVER_URL);
-        }
         if (json.has(PLAYER_CONFIG)) {
             JsonObject playerConfigJasonObject = safeObject(json, PLAYER_CONFIG);
-            final PlayerInitOptions options = new PlayerInitOptions(partnerId, new UiConf(Integer.valueOf(uiConfId), Integer.valueOf(uiConfPartnerId)));
+            final PlayerInitOptions options = new PlayerInitOptions(partnerId);
             if (initOptions == null) {
                 options.setServerUrl(safeString(playerConfigJasonObject, PlayerInitOptions.SERVER_URL))
                         .setAutoPlay(safeBoolean(playerConfigJasonObject, PlayerInitOptions.AUTOPLAY))

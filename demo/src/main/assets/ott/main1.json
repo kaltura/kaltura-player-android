@@ -1,0 +1,29 @@
+{
+  "mode": "ott",
+  "initOptions": {
+    "partnerId": 198,
+    "playerConfig" : {
+      "autoPlay": true,
+      "ks": null,
+      "allowCrossProtocolEnabled": true,
+      "serverUrl": "https://api-preprod.ott.kaltura.com/v4_7/api_v3/"
+    }
+  },
+  "items": [
+    {
+      "name": "Nature",
+      "assetId": "259153",
+      "protocol": "http"
+    },
+    {
+      "name": "Sing",
+      "assetId": "480989",
+      "protocol": "https"
+    },
+    {
+      "name": "Ice Age",
+      "assetId": "258671",
+      "protocol": "http"
+    }
+  ]
+}

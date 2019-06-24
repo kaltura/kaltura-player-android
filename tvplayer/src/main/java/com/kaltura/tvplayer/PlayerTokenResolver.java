@@ -62,15 +62,15 @@ class PlayerTokenResolver extends MapTokenResolver {
 
         removeAll(globalKeys);
 
-        if (initOptions != null) {
-            if (initOptions.uiConfId != null) {
-                set("uiConfId", String.valueOf(initOptions.uiConfId));
+        if (initOptions != null && initOptions.phoenixTVPlayerDMSParams != null) {
+            if (initOptions.phoenixTVPlayerDMSParams.uiConfId != null) {
+                set("uiConfId", String.valueOf(initOptions.phoenixTVPlayerDMSParams.uiConfId));
             }
             if (initOptions.partnerId != null) {
                 set("partnerId", String.valueOf(initOptions.partnerId));
             }
-            if (initOptions.uiConfPartnerId != null) {
-                set("kavaPartnerId", String.valueOf(initOptions.uiConfPartnerId));
+            if (initOptions.phoenixTVPlayerDMSParams != null) {
+                set("kavaPartnerId", String.valueOf(initOptions.phoenixTVPlayerDMSParams));
             }
 
             set("ks", (initOptions.ks != null) ? initOptions.ks : "");

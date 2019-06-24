@@ -9,7 +9,8 @@ import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
-import com.kaltura.tvplayer.config.player.UiConf;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerDMSParams;
+
 
 public class PlayerInitOptions {
     public static final String PLAYER = "player";
@@ -33,10 +34,8 @@ public class PlayerInitOptions {
     public static final String STREAM_PRIORITY = "streamPriority";
 
     public final Integer partnerId;
-    public final Integer uiConfPartnerId;
-
     public String ks;
-    public Integer uiConfId;
+    PhoenixTVPlayerDMSParams phoenixTVPlayerDMSParams;
     public PKPluginConfigs pluginConfigs;
 
     public Boolean autoplay = true;
@@ -66,83 +65,11 @@ public class PlayerInitOptions {
 
     public PlayerInitOptions() {
         partnerId = null;
-        uiConfPartnerId = null;
     }
 
-    public PlayerInitOptions(Integer partnerId, UiConf uiConf) {
+    public PlayerInitOptions(Integer partnerId) {
         this.partnerId = partnerId;
-        this.uiConfPartnerId = uiConf.partnerId;
-        this.uiConfId  = uiConf.uiConfId;
     }
-
-
-
-//    @Deprecated
-//    public PlayerInitOptions(int partnerId, int uiConfId, JsonObject uiConfJsonObjet) {
-//        this.partnerId = partnerId;
-//        this.uiConfId  = uiConfId;
-//        // Fields not found in the UIConf: partnerId*, ks*, serverUrl, referrer
-//
-//        if (uiConfJsonObjet == null) {
-//            this.uiConfJsonObjet = null;
-//            return;
-//        }
-//        this.uiConfJsonObjet = uiConfJsonObjet;
-//        fillUiConfPlaybackData(uiConfJsonObjet);
-//    }
-//
-//    private void fillUiConfPlaybackData(JsonObject uiConfJson) {
-//
-//        GsonReader reader = GsonReader.withObject(uiConfJson);
-//        JsonObject playbackJson = (reader != null && reader.getObject(CONFIG) != null && reader.getObject(CONFIG).getAsJsonObject(PLAYER) != null) ? reader.getObject(CONFIG).getAsJsonObject(PLAYER).getAsJsonObject(PLAYBACK) : null;
-//        if (playbackJson != null && playbackJson.keySet().size() > 0) {
-//            Gson gson = new Gson();
-//            UiConfPlayer uiconfPlayer = gson.fromJson(playbackJson, UiConfPlayer.class);
-//            String audioLang = uiconfPlayer.getAudioLanguage();
-//            if (audioLang != null) {
-//                if (AUTO.equals(audioLang)) { // maybe "" is also considered as AUTO????
-//                    audioLanguageMode = PKTrackConfig.Mode.AUTO;
-//                    audioLanguage = "";
-//                } else if (!"".equals(audioLang)){
-//                    audioLanguageMode = PKTrackConfig.Mode.SELECTION;
-//                    audioLanguage = audioLang;
-//                }
-//            }
-//
-//            String textLang = uiconfPlayer.getTextLanguage();
-//            if (textLang != null) {
-//                if (OFF.equals(textLang)) {
-//                    textLanguageMode = PKTrackConfig.Mode.OFF;
-//                    textLanguage = "";
-//                } else if (AUTO.equals(textLang)) {
-//                    textLanguageMode = PKTrackConfig.Mode.AUTO;
-//                    textLanguage = "";
-//                } else {
-//                    textLanguageMode = PKTrackConfig.Mode.SELECTION;
-//                    textLanguage = textLang;
-//                }
-//            }
-//            if (uiconfPlayer.getAutoplay() != null) {
-//                autoplay = uiconfPlayer.getAutoplay();
-//            }
-//
-//            if (uiconfPlayer.getPreload() != null) {
-//                String playerConfigPreload = uiconfPlayer.getPreload();
-//                preload = AUTO.equals(playerConfigPreload);
-//            }
-//
-//            if (uiconfPlayer.getStartTime() != null) {
-//                startTime = uiconfPlayer.getStartTime();
-//            }
-//
-//            if (uiconfPlayer.getStreamPriority() != null) {
-//                List<StreamType> streamTypeList = uiconfPlayer.getStreamPriority();
-//                if (streamTypeList != null && streamTypeList.size() > 0) {
-//                    setPreferredMediaFormat(streamTypeList.get(0).getFormat());
-//                }
-//            }
-//        }
-//    }
 
     public PlayerInitOptions setKs(String ks) {
         this.ks = ks;
@@ -156,25 +83,12 @@ public class PlayerInitOptions {
         return this;
     }
 
-
-    public PlayerInitOptions setUiConfId(Integer uiConfId) {
-        if (uiConfId != null) {
-            this.uiConfId = uiConfId;
-        }
-        return this;
-    }
-
     public PlayerInitOptions setAutoPlay(Boolean autoplay) {
         if (autoplay != null) {
             this.autoplay = autoplay;
         }
         return this;
     }
-
-//    public PlayerInitOptions setStartTime(int startTime) {
-//        this.startTime = startTime;
-//        return this;
-//    }
 
     public PlayerInitOptions setPreload(Boolean preload) {
         if (preload != null) {
@@ -319,6 +233,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setAbrSettings(ABRSettings abrSettings) {
         if (abrSettings != null) {
             this.abrSettings = abrSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setPhoenixTVPlayerDMSParams(PhoenixTVPlayerDMSParams phoenixTVPlayerDMSParams) {
+        if (phoenixTVPlayerDMSParams != null) {
+            this.phoenixTVPlayerDMSParams = phoenixTVPlayerDMSParams;
         }
         return this;
     }

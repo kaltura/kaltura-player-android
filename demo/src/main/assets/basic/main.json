@@ -5,11 +5,6 @@
     "playerConfig" : {
       "autoPlay": true,
       "ks": null
-    },
-    "uiConf": {
-      "uiConfId": 43795681,
-      "partnerId": 2427592,
-      "serverUrl": "https://cdnapisec.kaltura.com/"
     }
   },
 

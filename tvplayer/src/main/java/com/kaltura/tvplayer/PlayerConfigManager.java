@@ -4,10 +4,12 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.GsonParser;
@@ -38,7 +40,7 @@ public class PlayerConfigManager {
         // Load from cache
         final CachedConfig cachedConfig = loadFromCache(partnerId);
         
-        if (serverUrl == null) {
+        if (TextUtils.isEmpty(serverUrl)) {
             serverUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
         } else if (!serverUrl.endsWith("/")) {
             serverUrl += "/";
@@ -95,25 +97,32 @@ public class PlayerConfigManager {
     }
 
     private static boolean isValidResponse(String responseString, StringBuffer errorMessage) {
-        JsonParser jsonParser = new JsonParser();
-        Object jsonResponseObject = jsonParser.parse(responseString);
-        if (jsonResponseObject instanceof JsonObject) {
-            JsonObject responseJson = (JsonObject) jsonResponseObject;
-            if (responseJson != null && responseJson.has("objectType")) {
-                String objectType = responseJson.getAsJsonPrimitive("objectType").getAsString();
-                if (objectType.equals("KalturaAPIException")) {
-                    errorMessage.append(responseJson.getAsJsonPrimitive("message").getAsString());
-                    return false;
+        if (TextUtils.isEmpty(responseString)) {
+            return false;
+        }
+        try {
+            JsonParser jsonParser = new JsonParser();
+            Object jsonResponseObject = jsonParser.parse(responseString);
+            if (jsonResponseObject instanceof JsonObject) {
+                JsonObject responseJson = (JsonObject) jsonResponseObject;
+                if (responseJson != null && responseJson.has("objectType")) {
+                    String objectType = responseJson.getAsJsonPrimitive("objectType").getAsString();
+                    if (objectType.equals("KalturaAPIException")) {
+                        errorMessage.append(responseJson.getAsJsonPrimitive("message").getAsString());
+                        return false;
+                    }
                 }
             }
+        } catch (JsonSyntaxException ex) {
+            return false;
         }
         return true;
     }
 
     private static void load(int partnerId, String serverUrl, final InternalCallback callback) {
         final APIOkRequestsExecutor requestsExecutor = APIOkRequestsExecutor.getSingleton();
-
-        final String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
+        //final String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
+        final String apiServerUrl = serverUrl;
 
         PhoenixRequestBuilder request = PhoenixConfigurations.configByPartnerId(apiServerUrl, partnerId).completion(response -> {
             mainHandler.post(() -> {

@@ -7,25 +7,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
 import com.kaltura.tvplayer.PlayerConfigManager;
-
-import org.json.JSONObject;
 
 public class SplashScreen extends Activity {
     private static final PKLog log = PKLog.get("SplashScreen");
+    private Gson gson = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,43 +26,18 @@ public class SplashScreen extends Activity {
         boolean isPlayServicesAvailable = isGooglePlayServicesAvailable();
 
         if (isPlayServicesAvailable) {
-            //PlayerConfigManager.retrieve(41188731, 2215841, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() );
 
             PlayerConfigManager.initialize(this);
+            //PlayerConfigManager.retrieve(41188731, 2215841, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() );
             //PlayerConfigManager.retrieve(41604521, 1734762, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
-            PlayerConfigManager.retrieve(41742801, 2222401, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
-
-                @Override
-                public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-                    if (error == null) {
-                        getAdTagFromUiConfJson(config);
-                    }
+            //PlayerConfigManager.retrieve(2222401, "https://cdnapisec.kaltura.com", (partnerId, asJsonObject, error, freshness) -> {
+             PlayerConfigManager.retrieve(3009, "https://rest-us.ott.kaltura.com/v4_5/api_v3/", (partnerId, asJsonObject, error, freshness) -> {
+                    //PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(asJsonObject, PhoenixConfigurationsResponse.class);
                     Intent i = new Intent(SplashScreen.this, SignInActivity.class);
                     startActivity(i);
                     finish();
-                }
             });
         }
-    }
-
-    private String getAdTagFromUiConfJson(JsonObject config) {
-        JsonElement configJson = config.get("config");
-        String configJsonStr = configJson.getAsString();
-        JsonParser parser = new JsonParser();
-        JsonObject pluginsJsonObject = parser.parse(configJsonStr).getAsJsonObject();
-        String adTagUrl = "";
-        if (pluginsJsonObject.has("plugins") && pluginsJsonObject.get("plugins").getAsJsonObject().has("doubleClick")) {
-            JsonElement doubleclickPluginElement = pluginsJsonObject.get("plugins").getAsJsonObject().get("doubleClick");
-            adTagUrl = doubleclickPluginElement.getAsJsonObject().get("adTagUrl").getAsString();
-        }
-        if (pluginsJsonObject.get("player").getAsJsonObject().has("doubleClick")) {
-            JsonElement doubleclickPluginElement = pluginsJsonObject.get("player").getAsJsonObject().get("plugins").getAsJsonObject().get("ima");
-            adTagUrl = doubleclickPluginElement.getAsJsonObject().get("adTagUrl").getAsString();
-        }
-
-
-        //String companions = doubleclickPluginElement.getAsJsonObject().get("htmlCompanions").getAsString();
-        return adTagUrl;
     }
 
     public boolean isGooglePlayServicesAvailable() {

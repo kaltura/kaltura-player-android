@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.widget.FrameLayout;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import com.kaltura.netkit.utils.GsonParser;
@@ -11,8 +12,9 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
+import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.config.player.UiConf;
+import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -23,7 +25,7 @@ import static com.kaltura.playkit.providers.ott.PhoenixMediaProvider.HttpProtoco
 public class OTTDemoActivity extends BaseDemoActivity {
 
     private static final PKLog log = PKLog.get("OTTDemoActivity");
-
+    private Gson gson = new Gson();
     private TVItem currentItem;
 
     @Override
@@ -50,22 +52,6 @@ public class OTTDemoActivity extends BaseDemoActivity {
         }
     }
 
-//    @Override
-//    protected void loadPlayerConfig() {
-//
-//        if (uiConfId == null || uiConfPartnerId == null) {
-//            return;
-//        }
-//        PlayerConfigManager.initialize(this);
-//        PlayerConfigManager.retrieve(uiConfId, uiConfPartnerId, ks, null, new PlayerConfigManager.OnPlayerConfigLoaded() {
-//            @Override
-//            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-//                Toast.makeText(OTTDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-//                playerConfigUiConfJson = config;
-//            }
-//        });
-//    }
-
     @Override
     protected void loadItem(DemoItem item) {
         this.currentItem = (TVItem) item;
@@ -75,43 +61,49 @@ public class OTTDemoActivity extends BaseDemoActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
 
+        PlayerConfigManager.retrieve(initOptions.partnerId, initOptions.serverUrl, (partnerId, asJsonObject, error, freshness) -> {
 
+            PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(asJsonObject, PhoenixConfigurationsResponse.class);
 
-        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId, new UiConf(Integer.valueOf(initOptions.uiConfId), Integer.valueOf(initOptions.uiConfPartnerId)));
-        updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
-        updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
-        updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
-        updatedInitOptions.setVRSettings(initOptions.vrSettings);
-        updatedInitOptions.setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
-        updatedInitOptions.setSubtitleStyle(initOptions.setSubtitleStyle);
-        updatedInitOptions.setLoadControlBuffers(initOptions.loadControlBuffers);
-        updatedInitOptions.setAbrSettings(initOptions.abrSettings);
-        updatedInitOptions.setAspectRatioResizeMode(initOptions.aspectRatioResizeMode);
-        updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ?initOptions.preferredMediaFormat.name() : null);
-        updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
-        updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
-        updatedInitOptions.setSecureSurface(initOptions.secureSurface);
-        updatedInitOptions.setKs(initOptions.ks);
-        updatedInitOptions.setServerUrl(initOptions.serverUrl);
-        updatedInitOptions.setAutoPlay(initOptions.autoplay);
-        updatedInitOptions.setReferrer(initOptions.referrer);
-        updatedInitOptions.forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
-        if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
-            updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
-        }
-        if (initOptions.textLanguage != null && initOptions.textLanguageMode != null) {
-            updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
-        }
+            PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
+            if (phoenixConfigurationsResponse != null) {
+                updatedInitOptions.setPhoenixTVPlayerDMSParams(phoenixConfigurationsResponse.params);
+            }
+            updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
+            updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
+            updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
+            updatedInitOptions.setVRSettings(initOptions.vrSettings);
+            updatedInitOptions.setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
+            updatedInitOptions.setSubtitleStyle(initOptions.setSubtitleStyle);
+            updatedInitOptions.setLoadControlBuffers(initOptions.loadControlBuffers);
+            updatedInitOptions.setAbrSettings(initOptions.abrSettings);
+            updatedInitOptions.setAspectRatioResizeMode(initOptions.aspectRatioResizeMode);
+            updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ? initOptions.preferredMediaFormat.name() : null);
+            updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
+            updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
+            updatedInitOptions.setSecureSurface(initOptions.secureSurface);
+            updatedInitOptions.setKs(initOptions.ks);
+            updatedInitOptions.setServerUrl(initOptions.serverUrl);
+            updatedInitOptions.setAutoPlay(initOptions.autoplay);
+            updatedInitOptions.setReferrer(initOptions.referrer);
+            updatedInitOptions.forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
+            if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
+                updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
+            }
+            if (initOptions.textLanguage != null && initOptions.textLanguageMode != null) {
+                updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
+            }
 
-        KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
+            KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
 
-        OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
-        ottMediaOptions.assetId = currentItem.id;
-        ottMediaOptions.protocol = currentItem.protocol;
-        player.loadMedia(ottMediaOptions, (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
-        player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
+            OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
+            ottMediaOptions.assetId = currentItem.id;
+            ottMediaOptions.protocol = currentItem.protocol;
+            player.loadMedia(ottMediaOptions, (entry, load_error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
+            player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 
-        playerActivity.setPlayer(player);
+            playerActivity.setPlayer(player);
+        });
     }
 
 
