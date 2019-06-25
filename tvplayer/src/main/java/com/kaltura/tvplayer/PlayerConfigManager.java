@@ -195,7 +195,7 @@ public class PlayerConfigManager {
     }
     
     public interface OnPlayerConfigLoaded {
-        void onConfigLoadComplete(int partnerId, JsonObject asJsonObject, ErrorElement error, int freshness);
+        void onConfigLoadComplete(int partnerId, JsonObject config, ErrorElement error, int freshness);
     }
     
     interface InternalCallback {

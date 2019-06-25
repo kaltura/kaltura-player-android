@@ -19,10 +19,10 @@ import java.util.Scanner;
 
 public class Utils {
 
-    public static PlayerInitOptions parseInitOptions(int partnerId, int uiconfPartnerId, int uiConfId, JsonObject json) {
+    public static PlayerInitOptions parseInitOptions(int partnerId, JsonObject config) {
 
         JsonObject uiconfJson = null;
-        String mediaProvider = safeString(json, "mediaProvider");
+        String mediaProvider = safeString(config, "mediaProvider");
         final PlayerInitOptions options = new PlayerInitOptions(partnerId);
 //
 //        {
@@ -64,12 +64,12 @@ public class Utils {
 //                throw new IllegalArgumentException("partnerId must not be null");
 //            }
             options
-                    .setServerUrl(safeString(json, "ovpBaseUrl"))
-                    .setAutoPlay(safeBoolean(json, "autoPlay"))
-                    .setPreload(safeBoolean(json, "preload"))
-                    .setKs(safeString(json, "ks"))
-                    .setPluginConfigs(parsePluginConfigs(json.get("plugins")))
-                    .setReferrer(safeString(json, "referrer"));
+                    .setServerUrl(safeString(config, "ovpBaseUrl"))
+                    .setAutoPlay(safeBoolean(config, "autoPlay"))
+                    .setPreload(safeBoolean(config, "preload"))
+                    .setKs(safeString(config, "ks"))
+                    .setPluginConfigs(parsePluginConfigs(config.get("plugins")))
+                    .setReferrer(safeString(config, "referrer"));
 
         } else if ("ott".equals(mediaProvider)) {
             //TODO
