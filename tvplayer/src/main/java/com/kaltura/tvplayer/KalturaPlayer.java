@@ -115,7 +115,7 @@ public class KalturaPlayer  {
             this.preload = true; // autoplay implies preload
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
-        if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && (initOptions.phoenixTVPlayerDMSParams == null || (initOptions.phoenixTVPlayerDMSParams != null && initOptions.phoenixTVPlayerDMSParams.ovpPartnerId == null)))) {
+        if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && kavaPartnerIdIsMissing(initOptions))) {
             if (kalturaPlayerType == KalturaPlayerType.basic) {
                 this.partnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
             } else {
@@ -136,6 +136,11 @@ public class KalturaPlayer  {
 
         registerPlugins(context);
         loadPlayer();
+    }
+
+    private boolean kavaPartnerIdIsMissing(PlayerInitOptions initOptions) {
+        return (initOptions.phoenixTVPlayerDMSParams == null ||
+                (initOptions.phoenixTVPlayerDMSParams != null && initOptions.phoenixTVPlayerDMSParams.ovpPartnerId == null));
     }
 
     protected static String safeServerUrl(String url, String defaultUrl) {
@@ -505,7 +510,7 @@ public class KalturaPlayer  {
         this.startPosition = startPosition;
         return this;
     }
-    
+
     public boolean isPreload() {
         return preload;
     }
@@ -557,59 +562,33 @@ public class KalturaPlayer  {
 
     public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
 
-        ks = null;
-        externalSubtitles = null;
-        if (mediaOptions.externalSubtitles != null) {
-            externalSubtitles = mediaOptions.externalSubtitles;
-        }
-
-        if (kalturaPlayerType == KalturaPlayerType.basic) {
-            log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
+        if (!isValidOVPPlayer())
             return;
-        }
 
-        if (kalturaPlayerType == KalturaPlayerType.ott) {
-            log.e("loadMedia with OVPMediaOptions for player type KalturaPlayerType.ott is not supported");
-            return;
-        }
+        prepareLoadMedia(mediaOptions);
 
-        if (mediaOptions.ks != null) {
-            setKS(mediaOptions.ks);
-        } else if (initOptions.ks != null) {
-            setKS(initOptions.ks);
-        }
-
-        setStartPosition(mediaOptions.startPosition);
-
-        KalturaOvpMediaProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
+        final KalturaOvpMediaProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
                 .setEntryId(mediaOptions.entryId).setUseApiCaptions(mediaOptions.useApiCaptions).setReferrer(referrer);
         provider.load(response -> mediaLoadCompleted(response, listener));
     }
 
-    public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
-
-        ks = null;
-        externalSubtitles = null;
-        if (mediaOptions.externalSubtitles != null) {
-            externalSubtitles = mediaOptions.externalSubtitles;
-        }
+    private boolean isValidOVPPlayer() {
         if (kalturaPlayerType == KalturaPlayerType.basic) {
             log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
+            return false;
+        } else if (kalturaPlayerType == KalturaPlayerType.ott) {
+            log.e("loadMedia with OVPMediaOptions for player type KalturaPlayerType.ott is not supported");
+            return false;
+        }
+        return true;
+    }
+
+    public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+
+        if (!isValidOTTPlayerType())
             return;
-        }
 
-        if (kalturaPlayerType == KalturaPlayerType.ovp) {
-            log.e("loadMedia with OTTMediaOptions for player type KalturaPlayerType.ovp is not supported");
-            return;
-        }
-
-        if (mediaOptions.ks != null) {
-            setKS(mediaOptions.ks);
-        } else if (initOptions.ks != null) {
-            setKS(initOptions.ks);
-        }
-
-        setStartPosition(mediaOptions.startPosition);
+        prepareLoadMedia(mediaOptions);
 
         final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
                 .setAssetId(mediaOptions.assetId).setReferrer(referrer);
@@ -639,6 +618,33 @@ public class KalturaPlayer  {
         }
 
         provider.load(response -> mediaLoadCompleted(response, listener));
+    }
+
+    private boolean isValidOTTPlayerType() {
+        if (kalturaPlayerType == KalturaPlayerType.basic) {
+            log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
+            return false;
+        } else if (kalturaPlayerType == KalturaPlayerType.ovp) {
+            log.e("loadMedia with OTTMediaOptions for player type KalturaPlayerType.ovp is not supported");
+            return false;
+        }
+        return true;
+    }
+
+    private void prepareLoadMedia(MediaOptions mediaOptions) {
+        externalSubtitles = null;
+        if (mediaOptions.externalSubtitles != null) {
+            externalSubtitles = mediaOptions.externalSubtitles;
+        }
+
+        ks = null;
+        if (!TextUtils.isEmpty(mediaOptions.ks)) {
+            setKS(mediaOptions.ks);
+        } else if (!TextUtils.isEmpty(initOptions.ks)) {
+            setKS(initOptions.ks);
+        }
+
+        setStartPosition(mediaOptions.startPosition);
     }
 
     private void registerPlugins(Context context) {
@@ -671,10 +677,10 @@ public class KalturaPlayer  {
     }
 
     private void addKalturaPluginConfigsOTT(PKPluginConfigs combined) {
-            PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
-            if (phoenixConfig != null) {
-                combined.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
-            }
+        PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
+        if (phoenixConfig != null) {
+            combined.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
+        }
     }
 
     private void updateKalturaPluginConfigs(PKPluginConfigs combined) {
@@ -685,14 +691,10 @@ public class KalturaPlayer  {
     }
 
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
-        // Special case: Phoenix plugin
         String name = PhoenixAnalyticsPlugin.factory.getName();
-        PKPluginConfigs pkPluginConfigs = getInitOptions().pluginConfigs;
-        if (pkPluginConfigs != null && pkPluginConfigs.hasConfig(name)) {
-            if (pkPluginConfigs.getPluginConfig(name) instanceof JsonObject) {
-                JsonObject phoenixAnalyticObject = (JsonObject) pkPluginConfigs.getPluginConfig(name);
-                return new Gson().fromJson(phoenixAnalyticObject, PhoenixAnalyticsConfig.class);
-            } else {
+        if (getInitOptions() != null ) {
+            PKPluginConfigs pkPluginConfigs = getInitOptions().pluginConfigs;
+            if (pkPluginConfigs != null && pkPluginConfigs.hasConfig(name)) {
                 return (PhoenixAnalyticsConfig) pkPluginConfigs.getPluginConfig(name);
             }
         }

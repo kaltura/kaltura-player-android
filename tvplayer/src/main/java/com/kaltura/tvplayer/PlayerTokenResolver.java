@@ -36,7 +36,7 @@ class PlayerTokenResolver extends MapTokenResolver {
             }
 
             if (TextUtils.isDigitsOnly(mediaEntry.getId())) /* OTT Media */ {
-                set("entryId", isVeaidEntryIdInMetadata(mediaEntryMetadata) ? mediaEntryMetadata.get("entryId") : "unknown");
+                set("entryId", (mediaEntryMetadata != null && !TextUtils.isEmpty(mediaEntryMetadata.get("entryId"))) ? mediaEntryMetadata.get("entryId") : "unknown");
                 set("assetId", mediaEntry.getId());
             } else {
                 set("entryId", mediaEntry.getId());
@@ -52,10 +52,6 @@ class PlayerTokenResolver extends MapTokenResolver {
 
             rebuild();
         }
-    }
-
-    private boolean isVeaidEntryIdInMetadata(Map<String, String> mediaEntryMetadata) {
-        return mediaEntryMetadata != null && mediaEntryMetadata.containsKey("entryId") && !TextUtils.isEmpty(mediaEntryMetadata.get("entryId"));
     }
 
     void update(PlayerInitOptions initOptions) {
