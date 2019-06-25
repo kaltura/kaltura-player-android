@@ -42,7 +42,6 @@ import com.kaltura.tvplayer.utils.ConfigResolver;
 import java.util.List;
 import java.util.Map;
 
-
 public class KalturaPlayer  {
 
     private static final PKLog log = PKLog.get("KalturaPlayer");
@@ -71,8 +70,7 @@ public class KalturaPlayer  {
 
     private String ks;
     private Integer partnerId;
-    private Integer uiConfPartnerId;
-    private final Integer uiConfId;
+    private Integer ovpPartnerId;
     protected final String referrer;
     private final Context context;
     private Player pkPlayer;
@@ -117,23 +115,32 @@ public class KalturaPlayer  {
             this.preload = true; // autoplay implies preload
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
-        if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && initOptions.uiConfPartnerId == null)) {
+        if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && kavaPartnerIdIsMissing(initOptions))) {
             if (kalturaPlayerType == KalturaPlayerType.basic) {
                 this.partnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
             } else {
                 this.partnerId = initOptions.partnerId;
             }
-            this.uiConfPartnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
+            this.ovpPartnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
         } else {
             this.partnerId = (initOptions.partnerId != null && initOptions.partnerId > 0) ? initOptions.partnerId : null;
-            this.uiConfPartnerId = (initOptions.uiConfPartnerId != null && initOptions.uiConfPartnerId > 0) ? initOptions.uiConfPartnerId : this.partnerId;
+            if (kalturaPlayerType == KalturaPlayerType.ott) {
+                this.ovpPartnerId = (initOptions.phoenixTVPlayerDMSParams != null && initOptions.phoenixTVPlayerDMSParams.ovpPartnerId != null &&
+                        initOptions.phoenixTVPlayerDMSParams.ovpPartnerId > 0) ? initOptions.phoenixTVPlayerDMSParams.ovpPartnerId : null;
+            } else {
+                this.ovpPartnerId =  this.partnerId;
+            }
         }
-        this.uiConfId = initOptions.uiConfId;
         this.serverUrl = initOptions.serverUrl;
         this.ks = initOptions.ks;
 
         registerPlugins(context);
         loadPlayer();
+    }
+
+    private boolean kavaPartnerIdIsMissing(PlayerInitOptions initOptions) {
+        return (initOptions.phoenixTVPlayerDMSParams == null ||
+                (initOptions.phoenixTVPlayerDMSParams != null && initOptions.phoenixTVPlayerDMSParams.ovpPartnerId == null));
     }
 
     protected static String safeServerUrl(String url, String defaultUrl) {
@@ -159,27 +166,37 @@ public class KalturaPlayer  {
         return ConfigResolver.resolve(config, tokenResolver);
     }
 
-    private KavaAnalyticsConfig getKavaDefaultsConfig(Integer partnerId, Integer uiconfId, String referrer) {
+    private KavaAnalyticsConfig getKavaDefaultsConfig(Integer partnerId, String referrer) {
 
         KavaAnalyticsConfig kavaAnalyticsConfig = new KavaAnalyticsConfig();
-        kavaAnalyticsConfig.setBaseUrl(KavaAnalyticsConfig.DEFAULT_BASE_URL);
+        if (initOptions.phoenixTVPlayerDMSParams != null) {
+            if (initOptions.phoenixTVPlayerDMSParams.analyticsUrl != null) {
+                kavaAnalyticsConfig.setBaseUrl(initOptions.phoenixTVPlayerDMSParams.analyticsUrl);
+            }
+            if (initOptions.phoenixTVPlayerDMSParams.uiConfId > 0) {
+                kavaAnalyticsConfig.setUiConfId(initOptions.phoenixTVPlayerDMSParams.uiConfId);
+            }
+        } else {
+            kavaAnalyticsConfig.setBaseUrl(KavaAnalyticsConfig.DEFAULT_BASE_URL);
+        }
+
         kavaAnalyticsConfig.setDvrThreshold(Consts.DISTANCE_FROM_LIVE_THRESHOLD);
         kavaAnalyticsConfig.setPartnerId(partnerId);
+
         if (partnerId != null && partnerId.equals(Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID))) {
             kavaAnalyticsConfig.setEntryId(KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
         } else if (mediaEntry != null && mediaEntry.getId() != null){
-            kavaAnalyticsConfig.setEntryId(mediaEntry.getId());
+            if (!isOTTPlayer()) {
+                kavaAnalyticsConfig.setEntryId(mediaEntry.getId());
+            }
         }
-        if (uiconfId != null && uiconfId > 0) {
-            kavaAnalyticsConfig.setUiConfId(uiconfId);
-        }
+
         if (!TextUtils.isEmpty(ks)) {
             kavaAnalyticsConfig.setKs(ks);
         }
         if (!TextUtils.isEmpty(referrer)) {
             kavaAnalyticsConfig.setReferrer(referrer);
         }
-
         return kavaAnalyticsConfig;
     }
 
@@ -309,7 +326,7 @@ public class KalturaPlayer  {
     }
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
-        tokenResolver.update(mediaEntry);
+        tokenResolver.update(mediaEntry, getKS());
 
         if (externalSubtitles != null) {
             if (mediaEntry.getExternalSubtitleList() == null) {
@@ -373,11 +390,6 @@ public class KalturaPlayer  {
     public PKMediaEntry getMediaEntry() {
         return mediaEntry;
     }
-
-    public Integer getUiConfId() {
-        return uiConfId;
-    }
-
 
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
@@ -499,11 +511,6 @@ public class KalturaPlayer  {
         return this;
     }
 
-    public KalturaPlayer setExternalSubtitles(List<PKExternalSubtitle> externalSubtitles) {
-        this.externalSubtitles = externalSubtitles;
-        return this;
-    }
-
     public boolean isPreload() {
         return preload;
     }
@@ -554,48 +561,34 @@ public class KalturaPlayer  {
     }
 
     public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
-        ks = null;
-        externalSubtitles = null;
 
-        if (kalturaPlayerType == KalturaPlayerType.basic) {
-            log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
+        if (!isValidOVPPlayer())
             return;
-        }
 
-        if (kalturaPlayerType == KalturaPlayerType.ott) {
-            log.e("loadMedia with OVPMediaOptions for player type KalturaPlayerType.ott is not supported");
-            return;
-        }
+        prepareLoadMedia(mediaOptions);
 
-        if (mediaOptions.ks != null) {
-            setKS(mediaOptions.ks);
-        }
-
-        setStartPosition(mediaOptions.startPosition);
-
-        KalturaOvpMediaProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
+        final KalturaOvpMediaProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
                 .setEntryId(mediaOptions.entryId).setUseApiCaptions(mediaOptions.useApiCaptions).setReferrer(referrer);
         provider.load(response -> mediaLoadCompleted(response, listener));
     }
 
-    public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
-        ks = null;
-        externalSubtitles = null;
+    private boolean isValidOVPPlayer() {
         if (kalturaPlayerType == KalturaPlayerType.basic) {
             log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
+            return false;
+        } else if (kalturaPlayerType == KalturaPlayerType.ott) {
+            log.e("loadMedia with OVPMediaOptions for player type KalturaPlayerType.ott is not supported");
+            return false;
+        }
+        return true;
+    }
+
+    public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+
+        if (!isValidOTTPlayerType())
             return;
-        }
 
-        if (kalturaPlayerType == KalturaPlayerType.ovp) {
-            log.e("loadMedia with OTTMediaOptions for player type KalturaPlayerType.ovp is not supported");
-            return;
-        }
-
-        if (mediaOptions.ks != null) {
-            setKS(mediaOptions.ks);
-        }
-
-        setStartPosition(mediaOptions.startPosition);
+        prepareLoadMedia(mediaOptions);
 
         final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
                 .setAssetId(mediaOptions.assetId).setReferrer(referrer);
@@ -627,7 +620,34 @@ public class KalturaPlayer  {
         provider.load(response -> mediaLoadCompleted(response, listener));
     }
 
-    protected void registerPlugins(Context context) {
+    private boolean isValidOTTPlayerType() {
+        if (kalturaPlayerType == KalturaPlayerType.basic) {
+            log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
+            return false;
+        } else if (kalturaPlayerType == KalturaPlayerType.ovp) {
+            log.e("loadMedia with OTTMediaOptions for player type KalturaPlayerType.ovp is not supported");
+            return false;
+        }
+        return true;
+    }
+
+    private void prepareLoadMedia(MediaOptions mediaOptions) {
+        externalSubtitles = null;
+        if (mediaOptions.externalSubtitles != null) {
+            externalSubtitles = mediaOptions.externalSubtitles;
+        }
+
+        ks = null;
+        if (!TextUtils.isEmpty(mediaOptions.ks)) {
+            setKS(mediaOptions.ks);
+        } else if (!TextUtils.isEmpty(initOptions.ks)) {
+            setKS(initOptions.ks);
+        }
+
+        setStartPosition(mediaOptions.startPosition);
+    }
+
+    private void registerPlugins(Context context) {
         // Plugin registration is static and only done once, but requires a Context.
         if (!pluginsRegistered) {
             registerCommonPlugins(context);
@@ -642,70 +662,43 @@ public class KalturaPlayer  {
         return KalturaPlayerType.ott.equals(kalturaPlayerType);
     }
 
-    protected void registerPluginsOTT(Context context) {
+    private void registerPluginsOTT(Context context) {
         PlayKitManager.registerPlugins(context, PhoenixAnalyticsPlugin.factory);
     }
 
-    protected void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
+    private void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
         if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
             log.d("Adding Automatic Kava Plugin");
-            combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), resolve(getKavaDefaultsConfig(uiConfPartnerId, uiConfId, referrer)));
+            combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), resolve(getKavaDefaultsConfig(ovpPartnerId, referrer)));
         }
         if (isOTTPlayer() && !combinedPluginConfigs.hasConfig(PhoenixAnalyticsPlugin.factory.getName())) {
             addKalturaPluginConfigsOTT(combinedPluginConfigs);
         }
     }
 
-    protected void addKalturaPluginConfigsOTT(PKPluginConfigs combined) {
-        //NOT ADDING PHOENIX IF KS IS NOT VALID
-        if (!TextUtils.isEmpty(getKS())) {
-            PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
-            if (phoenixConfig != null) {
-                combined.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
-            }
+    private void addKalturaPluginConfigsOTT(PKPluginConfigs combined) {
+        PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
+        if (phoenixConfig != null) {
+            combined.setPluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
         }
     }
 
-    protected void updateKalturaPluginConfigs(PKPluginConfigs combined) {
+    private void updateKalturaPluginConfigs(PKPluginConfigs combined) {
         log.d("updateKalturaPluginConfigs");
         for (Map.Entry<String, Object> plugin : combined) {
-            if (plugin.getValue() instanceof JsonObject) {
-                if (isOTTPlayer() && PhoenixAnalyticsPlugin.factory.getName().equals(plugin.getKey()) && !TextUtils.isEmpty(getKS())) {
-                    PhoenixAnalyticsConfig phoenixConfig = getPhoenixAnalyticsConfig();
-                    if (phoenixConfig != null) {
-                        updatePluginConfig(PhoenixAnalyticsPlugin.factory.getName(), phoenixConfig);
-                    }
-                } else {
-                    updatePluginConfig(plugin.getKey(), plugin.getValue());
-                }
-            } else {
-                log.e("updateKalturaPluginConfigs " + plugin.getKey()  + " is not a JsonObject");
-            }
+            updatePluginConfig(plugin.getKey(), plugin.getValue());
         }
-    }
-
-    private KavaAnalyticsConfig getKavaAnalyticsConfig() {
-        KavaAnalyticsConfig kavaAnalyticsConfig = new  KavaAnalyticsConfig().setPartnerId(getPartnerId()).setReferrer(referrer);
-        if (getUiConfId() != null) {
-            kavaAnalyticsConfig.setUiConfId(getUiConfId());
-        }
-        return kavaAnalyticsConfig;
     }
 
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
-        // Special case: Phoenix plugin
         String name = PhoenixAnalyticsPlugin.factory.getName();
-        JsonObject phoenixAnalyticObject;
-        if (getInitOptions().pluginConfigs.hasConfig(name)) {
-            phoenixAnalyticObject = (JsonObject) getInitOptions().pluginConfigs.getPluginConfig(name);
-        } else {
-            phoenixAnalyticObject = phoenixAnalyticDefaults(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
+        if (getInitOptions() != null ) {
+            PKPluginConfigs pkPluginConfigs = getInitOptions().pluginConfigs;
+            if (pkPluginConfigs != null && pkPluginConfigs.hasConfig(name)) {
+                return (PhoenixAnalyticsConfig) pkPluginConfigs.getPluginConfig(name);
+            }
         }
-        return new Gson().fromJson(phoenixAnalyticObject, PhoenixAnalyticsConfig.class);
-    }
-
-    private JsonObject phoenixAnalyticDefaults(int partnerId, String serverUrl, String ks, int timerInterval) {
-        return new PhoenixAnalyticsConfig(partnerId, serverUrl, ks, timerInterval).toJson();
+        return  new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
     }
 
     public interface OnEntryLoadListener {

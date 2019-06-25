@@ -13,7 +13,6 @@ import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OVPMediaOptions;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.config.player.UiConf;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -64,26 +63,6 @@ public class OVPDemoActivity extends BaseDemoActivity {
         return new DemoItem(object.get("name").getAsString(), object.get("entryId").getAsString());
     }
 
-//    @Override
-//    protected void loadPlayerConfig() {
-//
-//        if (uiConfId == null) {
-//            return;
-//        }
-//
-//        if (uiConfPartnerId == null) {
-//            uiConfPartnerId = partnerId();
-//        }
-//        PlayerConfigManager.initialize(this);
-//        PlayerConfigManager.retrieve(uiConfId, uiConfPartnerId, ks, uiConfServerUrl, new PlayerConfigManager.OnPlayerConfigLoaded() {
-//            @Override
-//            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-//                Toast.makeText(OVPDemoActivity.this, "Loaded config, freshness=" + freshness, Toast.LENGTH_LONG).show();
-//                playerConfigUiConfJson = config;
-//            }
-//        });
-//    }
-
     @Override
     protected void loadItem(DemoItem item) {
         this.currentItem = item;
@@ -92,7 +71,7 @@ public class OVPDemoActivity extends BaseDemoActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
-        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId, new UiConf(Integer.valueOf(initOptions.uiConfId), Integer.valueOf(initOptions.uiConfPartnerId)));
+        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
         updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
         updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
         updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);

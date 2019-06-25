@@ -4,18 +4,17 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
-import com.kaltura.netkit.connect.request.ExecutedRequest;
-import com.kaltura.netkit.connect.response.ResponseElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.netkit.utils.GsonParser;
-import com.kaltura.netkit.utils.OnRequestCompletion;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
-import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
+import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 
 
 import java.io.BufferedReader;
@@ -32,26 +31,23 @@ public class PlayerConfigManager {
     private static Handler mainHandler = new Handler(Looper.getMainLooper());
     private static File dataDir;
 
-    public static void initialize(Context context) {
-        dataDir = new File(context.getFilesDir(), "KalturaPlayer/PlayerConfigs");
-        dataDir.mkdirs();
-        
-        
-        
-    }
+    public static void retrieve(Context context, int partnerId, String serverUrl, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
+        if (dataDir == null) {
+            dataDir = new File(context.getFilesDir(), "KalturaPlayer/PlayerConfigs");
+            dataDir.mkdirs();
+        }
 
-    public static void retrieve(int id, int partnerId, String ks, String serverUrl, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
         // Load from cache
-        final CachedConfig cachedConfig = loadFromCache(id);
+        final CachedConfig cachedConfig = loadFromCache(partnerId);
         
-        if (serverUrl == null) {
+        if (TextUtils.isEmpty(serverUrl)) {
             serverUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
         } else if (!serverUrl.endsWith("/")) {
             serverUrl += "/";
         }
         
         if (cachedConfig == null) {
-            refreshCache(id, partnerId, ks, serverUrl, null, onPlayerConfigLoaded);
+            refreshCache(partnerId, serverUrl, null, onPlayerConfigLoaded);
             return;
         }
 
@@ -59,41 +55,41 @@ public class PlayerConfigManager {
 
         if (freshness < SOFT_EXPIRATION_SEC) {
             // Just return the cache
-            configLoaded(onPlayerConfigLoaded, id, cachedConfig);
+            configLoaded(onPlayerConfigLoaded, partnerId, cachedConfig);
             return;
         }
 
         if (freshness < HARD_EXPIRATION_SEC) {
             // Refresh the cache, but return the cache immediately
-            refreshCache(id, partnerId, ks, serverUrl, cachedConfig, null);
-            configLoaded(onPlayerConfigLoaded, id, cachedConfig);
+            refreshCache(partnerId, serverUrl, cachedConfig, null);
+            configLoaded(onPlayerConfigLoaded, partnerId, cachedConfig);
             return;
         }
         
-        refreshCache(id, partnerId, ks, serverUrl, cachedConfig, onPlayerConfigLoaded);
+        refreshCache(partnerId, serverUrl, cachedConfig, onPlayerConfigLoaded);
     }
 
-    private static void configLoaded(@Nullable OnPlayerConfigLoaded onPlayerConfigLoaded, int id, CachedConfig cachedConfig) {
+    private static void configLoaded(@Nullable OnPlayerConfigLoaded onPlayerConfigLoaded, int partnerId, CachedConfig cachedConfig) {
         if (onPlayerConfigLoaded != null) {
-            onPlayerConfigLoaded.onConfigLoadComplete(id, GsonParser.toJson(cachedConfig.json).getAsJsonObject(), null, cachedConfig.freshness);
+            onPlayerConfigLoaded.onConfigLoadComplete(partnerId, GsonParser.toJson(cachedConfig.json).getAsJsonObject(), null, cachedConfig.freshness);
         }
     }
 
-    private static void refreshCache(final int id, int partnerId, String ks, String serverUrl, final CachedConfig cachedConfig, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
-        load(partnerId, id, ks, serverUrl, new InternalCallback() {
+    private static void refreshCache(int partnerId, String serverUrl, final CachedConfig cachedConfig, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
+        load(partnerId, serverUrl, new InternalCallback() {
             @Override
             public void finished(String json, ErrorElement error) {
                 if (error == null) {
                     // No error 
-                    saveToCache(id, json);
-                    configLoaded(onPlayerConfigLoaded, id, new CachedConfig(0, json));
+                    saveToCache(partnerId, json);
+                    configLoaded(onPlayerConfigLoaded, partnerId, new CachedConfig(0, json));
                 } else {
                     if (cachedConfig != null) {
                         Log.e(TAG, "Failed to load new config from network -- returning old cache");
-                        configLoaded(onPlayerConfigLoaded, id, cachedConfig);
+                        configLoaded(onPlayerConfigLoaded, partnerId, cachedConfig);
                     } else {
                         Log.e(TAG, "Failed to load config from network, no cache");
-                        onPlayerConfigLoaded.onConfigLoadComplete(id, null, error, -1);
+                        onPlayerConfigLoaded.onConfigLoadComplete(partnerId, null, error, -1);
                     }
                 }
             }
@@ -101,44 +97,45 @@ public class PlayerConfigManager {
     }
 
     private static boolean isValidResponse(String responseString, StringBuffer errorMessage) {
-        JsonParser jsonParser = new JsonParser();
-        Object jsonResponseObject = jsonParser.parse(responseString);
-        if (jsonResponseObject instanceof JsonObject) {
-            JsonObject responseJson = (JsonObject) jsonResponseObject;
-            if (responseJson != null && responseJson.has("objectType")) {
-                String objectType = responseJson.getAsJsonPrimitive("objectType").getAsString();
-                if (objectType.equals("KalturaAPIException")) {
-                    errorMessage.append(responseJson.getAsJsonPrimitive("message").getAsString());
-                    return false;
+        if (TextUtils.isEmpty(responseString)) {
+            return false;
+        }
+        try {
+            JsonParser jsonParser = new JsonParser();
+            Object jsonResponseObject = jsonParser.parse(responseString);
+            if (jsonResponseObject instanceof JsonObject) {
+                JsonObject responseJson = (JsonObject) jsonResponseObject;
+                if (responseJson != null && responseJson.has("objectType")) {
+                    String objectType = responseJson.getAsJsonPrimitive("objectType").getAsString();
+                    if (objectType.equals("KalturaAPIException")) {
+                        errorMessage.append(responseJson.getAsJsonPrimitive("message").getAsString());
+                        return false;
+                    }
                 }
             }
+        } catch (JsonSyntaxException ex) {
+            return false;
         }
         return true;
     }
 
-    private static void load(int partnerId, final int configId, String ks, String serverUrl, final InternalCallback callback) {
+    private static void load(int partnerId, String serverUrl, final InternalCallback callback) {
         final APIOkRequestsExecutor requestsExecutor = APIOkRequestsExecutor.getSingleton();
+        //final String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
+        final String apiServerUrl = serverUrl;
 
-        final String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
-
-        OvpRequestBuilder request = UIConfService.uiConfById(apiServerUrl, partnerId, configId, ks).completion(new OnRequestCompletion() {
-            @Override
-            public void onComplete(final ResponseElement response) {
-
-                mainHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        StringBuffer errorMessage = new StringBuffer();
-                        int errorCode = -1;
-                        ErrorElement errorElement = response.getError();
-                        if (!isValidResponse(response.getResponse(), errorMessage)){
-                            errorElement = ErrorElement.fromCode(errorCode, errorMessage.toString());
-                        }
-                        callback.finished(response.getResponse(), errorElement);
-                    }
-                });
-            }
+        PhoenixRequestBuilder request = PhoenixConfigurations.configByPartnerId(apiServerUrl, partnerId).completion(response -> {
+            mainHandler.post(() -> {
+                StringBuffer errorMessage = new StringBuffer();
+                int errorCode = -1;
+                ErrorElement errorElement = response.getError();
+                if (!isValidResponse(response.getResponse(), errorMessage)){
+                    errorElement = ErrorElement.fromCode(errorCode, errorMessage.toString());
+                }
+                callback.finished(response.getResponse(), errorElement);
+            });
         });
+
         requestsExecutor.queue(request.build());
     }
 
@@ -198,7 +195,7 @@ public class PlayerConfigManager {
     }
     
     public interface OnPlayerConfigLoaded {
-        void onConfigLoadComplete(int id, JsonObject uiConf, ErrorElement error, int freshness);
+        void onConfigLoadComplete(int partnerId, JsonObject config, ErrorElement error, int freshness);
     }
     
     interface InternalCallback {

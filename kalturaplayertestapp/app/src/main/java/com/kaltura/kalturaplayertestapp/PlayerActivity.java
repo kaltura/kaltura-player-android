@@ -16,7 +16,6 @@ import android.view.ViewTreeObserver;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -61,8 +60,8 @@ import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
-import com.kaltura.tvplayer.config.player.UiConf;
-
+import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerDMSParams;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -89,7 +88,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
     private boolean backButtonPressed;
     private Gson gson = new Gson();
     private KalturaPlayer player;
-    private JsonObject playerConfig;
+    private PhoenixTVPlayerDMSParams phoenixTVPlayerDMSParams;
     private PlayerInitOptions initOptions;
     private String playerConfigTitle;
     private String playerInitOptionsJson;
@@ -97,7 +96,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
     private Integer uiConfId;
     private String ks;
     private List<Media> mediaList;
-    private Integer uiConfPartnerId;
     private EventsAdapter eventsListRecyclerAdapter;
     private RecyclerView eventsListView;
     private List<String> eventsList = new ArrayList<>();
@@ -143,23 +141,21 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
         if (appPlayerInitConfig != null) {
-
             final String playerType = appPlayerInitConfig.playerType;
-            buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
-
-//        if (appPlayerInitConfig.getUiConf() == null) {
-//            log.d("App config json is invalid");
-//            buildPlayer( appPlayerInitConfig, currentPlayedMediaIndex, playerType);
-//        } else {
-//            PlayerConfigManager.retrieve(Integer.valueOf(appPlayerInitConfig.getUiConf().getId()), Integer.valueOf(appPlayerInitConfig.getUiConf().getPartnerId()), appPlayerInitConfig.getKs(), appPlayerInitConfig.getUiConf().getBaseUrl(), new PlayerConfigManager.OnPlayerConfigLoaded() {
-//                @Override
-//                public void onConfigLoadComplete(int id, JsonObject studioUiConfJson, ErrorElement error, int freshness) {
-//                    appPlayerInitConfig.setPlayerConfig(studioUiConfJson);
-//                    buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
-//                }
-//            });
-//        }
-
+            if (!"ott".equals(playerType)) {
+                log.d("App config json is invalid");
+                buildPlayer( appPlayerInitConfig, currentPlayedMediaIndex, playerType);
+            } else {
+                PlayerConfigManager.retrieve(this, Integer.valueOf(appPlayerInitConfig.partnerId), appPlayerInitConfig.baseUrl, (partnerId, config, error, freshness) -> {
+                    if (config != null) {
+                        PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(config, PhoenixConfigurationsResponse.class);
+                        if (phoenixConfigurationsResponse != null && phoenixConfigurationsResponse.params != null) {
+                            this.phoenixTVPlayerDMSParams = phoenixConfigurationsResponse.params;
+                        }
+                    }
+                    buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
+                });
+            }
         } else {
             showMessage(R.string.error_empty_input);
         }
@@ -271,6 +267,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         this.currentPlayedMediaIndex = currentPlayedMediaIndex;
     }
 
+
     private void addSearchListener() {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 
@@ -313,7 +310,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         mediaList = appPlayerInitConfig.mediaList;
 
         Integer partnerId = (appPlayerInitConfig.partnerId != null) ? Integer.valueOf(appPlayerInitConfig.partnerId) : null;
-        initOptions = new PlayerInitOptions(partnerId, new UiConf((appPlayerInitConfig.uiConf == null || appPlayerInitConfig.uiConf.id == null) ? null : Integer.valueOf(appPlayerInitConfig.uiConf.id), (appPlayerInitConfig.uiConf == null || appPlayerInitConfig.uiConf.partnerId == null) ? null : Integer.valueOf(appPlayerInitConfig.uiConf.partnerId)))
+        initOptions = new PlayerInitOptions(partnerId)
                 .setAutoPlay(appPlayerInitConfig.autoPlay)
                 .setKs(appPlayerInitConfig.ks)
                 .setPreload(appPlayerInitConfig.preload)
@@ -335,6 +332,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 .setLicenseRequestAdapter(appPlayerInitConfig.licenseRequestAdapter)
                 .forceSinglePlayerEngine(appPlayerInitConfig.forceSinglePlayerEngine)
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
+
+        if (phoenixTVPlayerDMSParams != null) {
+            initOptions.setPhoenixTVPlayerDMSParams(phoenixTVPlayerDMSParams);
+        }
 
         if (appPlayerInitConfig.trackSelection != null) {
             if (appPlayerInitConfig.trackSelection.audioSelectionMode != null) {
@@ -800,25 +801,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         backButtonPressed = true;
         onBackPressed();
         return true;
-    }
-
-    private void loadPlayerConfig() {
-        PlayerConfigManager.initialize(this);
-        if (initOptions == null || uiConfId == null) {
-            log.e("initOptions or uiConfId are null");
-            return;
-        }
-
-        if (uiConfPartnerId == null) {
-            uiConfPartnerId = initOptions.partnerId;
-        }
-        PlayerConfigManager.retrieve(uiConfId, initOptions.partnerId, initOptions.ks, initOptions.serverUrl, new PlayerConfigManager.OnPlayerConfigLoaded() {
-            @Override
-            public void onConfigLoadComplete(int id, JsonObject config, ErrorElement error, int freshness) {
-                Toast.makeText(PlayerActivity.this, "Loaded config, freshness =" + freshness, Toast.LENGTH_LONG).show();
-                playerConfig = config;
-            }
-        });
     }
 
     void initDrm() {

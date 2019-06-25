@@ -21,7 +21,6 @@ public class PlayerConfig {
     public String baseUrl;
     public String partnerId;
     public String ks;
-    public UiConf uiConf;
     public int startPosition;
     public Boolean autoPlay;
     public Boolean preload;

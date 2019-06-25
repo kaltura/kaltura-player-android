@@ -2,9 +2,9 @@ package com.kaltura.kalturaplayertestapp;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.kaltura.kalturaplayertestapp.converters.UiConf;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.config.player.UiConf;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,11 +19,11 @@ import java.util.Scanner;
 
 public class Utils {
 
-    public static PlayerInitOptions parseInitOptions(int partnerId, int uiconfPartnerId, int uiConfId, JsonObject json) {
+    public static PlayerInitOptions parseInitOptions(int partnerId, JsonObject config) {
 
         JsonObject uiconfJson = null;
-        String mediaProvider = safeString(json, "mediaProvider");
-        final PlayerInitOptions options = new PlayerInitOptions(partnerId, new UiConf(Integer.valueOf(uiConfId), Integer.valueOf(uiconfPartnerId)));
+        String mediaProvider = safeString(config, "mediaProvider");
+        final PlayerInitOptions options = new PlayerInitOptions(partnerId);
 //
 //        {
 //           "mode": "ovp",
@@ -31,10 +31,7 @@ public class Utils {
 //           "partnerId": 2215841,
 //                    "autoPlay": true,
 //                    "ks": null
-//        },
-//           "uiConf": {
-//           "id": 41188731
-//        },
+//        }
 //        "items": [
 //            {
 //                  "name": "Sintel",
@@ -67,12 +64,12 @@ public class Utils {
 //                throw new IllegalArgumentException("partnerId must not be null");
 //            }
             options
-                    .setServerUrl(safeString(json, "ovpBaseUrl"))
-                    .setAutoPlay(safeBoolean(json, "autoPlay"))
-                    .setPreload(safeBoolean(json, "preload"))
-                    .setKs(safeString(json, "ks"))
-                    .setPluginConfigs(parsePluginConfigs(json.get("plugins")))
-                    .setReferrer(safeString(json, "referrer"));
+                    .setServerUrl(safeString(config, "ovpBaseUrl"))
+                    .setAutoPlay(safeBoolean(config, "autoPlay"))
+                    .setPreload(safeBoolean(config, "preload"))
+                    .setKs(safeString(config, "ks"))
+                    .setPluginConfigs(parsePluginConfigs(config.get("plugins")))
+                    .setReferrer(safeString(config, "referrer"));
 
         } else if ("ott".equals(mediaProvider)) {
             //TODO

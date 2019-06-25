@@ -1,33 +1,29 @@
 {
-    "mode": "ott",
-    "initOptions": {
-      "partnerId": 198,
-      "playerConfig" : {
-        "autoPlay": true,
-        "ks": null,
-        "allowCrossProtocolEnabled": true,
-        "serverUrl": "https://api-preprod.ott.kaltura.com/v4_7/api_v3/"
-      },
-      "uiConf": {
-        "uiConfId": 41188731,
-        "partnerId": 2215841
-      }
+  "mode": "ott",
+  "initOptions": {
+    "partnerId": 3009,
+    "playerConfig" : {
+      "autoPlay": true,
+      "ks": null,
+      "allowCrossProtocolEnabled": true,
+      "serverUrl": "https://rest-us.ott.kaltura.com/v4_5/api_v3/"
+    }
+  },
+  "items": [
+    {
+      "name": "Valerian",
+      "assetId": "548579",
+      "protocol": "http"
     },
-    "items": [
-      {
-        "name": "Nature",
-        "assetId": "259153",
-        "protocol": "http"
-      },
-      {
-        "name": "Sing",
-        "assetId": "480989",
-        "protocol": "https"
-      },
-      {
-        "name": "Ice Age",
-        "assetId": "258671",
-        "protocol": "http"
-      }
-    ]
+    {
+      "name": "Dead South",
+      "assetId": "548571",
+      "protocol": "http"
+    },
+    {
+      "name": "Alibi",
+      "assetId": "548577",
+      "protocol": "http"
+    }
+  ]
 }
