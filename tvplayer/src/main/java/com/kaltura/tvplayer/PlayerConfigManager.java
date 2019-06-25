@@ -31,12 +31,12 @@ public class PlayerConfigManager {
     private static Handler mainHandler = new Handler(Looper.getMainLooper());
     private static File dataDir;
 
-    public static void initialize(Context context) {
-        dataDir = new File(context.getFilesDir(), "KalturaPlayer/PlayerConfigs");
-        dataDir.mkdirs();
-    }
+    public static void retrieve(Context context, int partnerId, String serverUrl, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
+        if (dataDir == null) {
+            dataDir = new File(context.getFilesDir(), "KalturaPlayer/PlayerConfigs");
+            dataDir.mkdirs();
+        }
 
-    public static void retrieve(int partnerId, String serverUrl, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
         // Load from cache
         final CachedConfig cachedConfig = loadFromCache(partnerId);
         

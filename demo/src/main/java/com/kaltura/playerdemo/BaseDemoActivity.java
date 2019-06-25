@@ -76,8 +76,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        PlayerConfigManager.initialize(this);
-        
+
         initDrm();
 
         loadConfigFile();

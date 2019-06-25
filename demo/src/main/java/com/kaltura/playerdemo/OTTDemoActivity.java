@@ -61,9 +61,9 @@ public class OTTDemoActivity extends BaseDemoActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
 
-        PlayerConfigManager.retrieve(initOptions.partnerId, initOptions.serverUrl, (partnerId, asJsonObject, error, freshness) -> {
+        PlayerConfigManager.retrieve(this, initOptions.partnerId, initOptions.serverUrl, (partnerId, config, error, freshness) -> {
 
-            PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(asJsonObject, PhoenixConfigurationsResponse.class);
+            PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(config, PhoenixConfigurationsResponse.class);
 
             PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
             if (phoenixConfigurationsResponse != null) {

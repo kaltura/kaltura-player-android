@@ -146,9 +146,9 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 log.d("App config json is invalid");
                 buildPlayer( appPlayerInitConfig, currentPlayedMediaIndex, playerType);
             } else {
-                PlayerConfigManager.retrieve(Integer.valueOf(appPlayerInitConfig.partnerId), appPlayerInitConfig.baseUrl, (partnerId, asJsonObject, error, freshness) -> {
-                    if (asJsonObject != null) {
-                        PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(asJsonObject, PhoenixConfigurationsResponse.class);
+                PlayerConfigManager.retrieve(this, Integer.valueOf(appPlayerInitConfig.partnerId), appPlayerInitConfig.baseUrl, (partnerId, config, error, freshness) -> {
+                    if (config != null) {
+                        PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(config, PhoenixConfigurationsResponse.class);
                         if (phoenixConfigurationsResponse != null && phoenixConfigurationsResponse.params != null) {
                             this.phoenixTVPlayerDMSParams = phoenixConfigurationsResponse.params;
                         }

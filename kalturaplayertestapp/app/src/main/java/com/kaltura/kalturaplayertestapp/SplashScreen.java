@@ -27,11 +27,10 @@ public class SplashScreen extends Activity {
 
         if (isPlayServicesAvailable) {
 
-            PlayerConfigManager.initialize(this);
             //PlayerConfigManager.retrieve(41188731, 2215841, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() );
             //PlayerConfigManager.retrieve(41604521, 1734762, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
             //PlayerConfigManager.retrieve(2222401, "https://cdnapisec.kaltura.com", (partnerId, asJsonObject, error, freshness) -> {
-             PlayerConfigManager.retrieve(3009, "https://rest-us.ott.kaltura.com/v4_5/api_v3/", (partnerId, asJsonObject, error, freshness) -> {
+             PlayerConfigManager.retrieve(this, 3009, "https://rest-us.ott.kaltura.com/v4_5/api_v3/", (partnerId, config, error, freshness) -> {
                     //PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(asJsonObject, PhoenixConfigurationsResponse.class);
                     Intent i = new Intent(SplashScreen.this, SignInActivity.class);
                     startActivity(i);
