@@ -39,8 +39,18 @@ import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.utils.ConfigResolver;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+import static com.kaltura.playkit.Utils.toBase64;
 
 public class KalturaPlayer  {
 
@@ -202,6 +212,9 @@ public class KalturaPlayer  {
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs); //pluginConfigs
         updatePlayerSettings();
+        if (Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId)) {
+            sendKavaImpression();
+        }
     }
 
     private void updatePlayerSettings() {
@@ -301,10 +314,62 @@ public class KalturaPlayer  {
                 String pluginName = entry.getKey();
                 combinedPluginConfigs.setPluginConfig(pluginName, resolve(entry.getValue()));
             }
-
         }
         addKalturaPluginConfigs(combinedPluginConfigs);
         return combinedPluginConfigs;
+    }
+
+    private void sendKavaImpression() {
+        OkHttpClient client = new OkHttpClient();
+        String kavaImpressionUrl = buildKavaImpressionUrl();
+        try {
+            Request request = new Request.Builder()
+                    .url(kavaImpressionUrl)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    log.e("KavaImpression called failed url=" + kavaImpressionUrl + ", error=" + e.getMessage());
+                }
+
+                @Override
+                public void onResponse(Call call, final Response response) throws IOException {
+                    if (!response.isSuccessful()) {
+                        log.e("KavaImpression called failed url=" + kavaImpressionUrl);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            log.e("KavaImpression called failed url=" + kavaImpressionUrl + ", error=" + e.getMessage());
+        }
+    }
+
+    private String buildKavaImpressionUrl() {
+        Uri builtUri = Uri.parse(KavaAnalyticsConfig.DEFAULT_BASE_URL).buildUpon()
+                .appendQueryParameter("service", "analytics")
+                .appendQueryParameter("action", "trackEvent")
+                .appendQueryParameter("eventType", "1")
+                .appendQueryParameter("partnerId", String.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID))
+                .appendQueryParameter("entryId", KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID)
+                .appendQueryParameter("sessionId", generateSessionId())
+                .appendQueryParameter("eventIndex", "1")
+                .appendQueryParameter("referrer", toBase64(context.getPackageName().getBytes()))
+                .appendQueryParameter("deliveryType", "gilad")
+                .appendQueryParameter("playbackType", "vod")
+                .appendQueryParameter("clientVer", PlayKitManager.CLIENT_TAG)
+                .appendQueryParameter("position", "0")
+                .appendQueryParameter("application", context.getPackageName())
+                .build();
+        return builtUri.toString();
+    }
+
+    private String generateSessionId() {
+        String mediaSessionId = UUID.randomUUID().toString();
+        String newSessionId   = UUID.randomUUID().toString();
+        newSessionId += ":";
+        newSessionId += mediaSessionId;
+        return newSessionId;
     }
 
     public View getPlayerView() {
@@ -664,10 +729,11 @@ public class KalturaPlayer  {
     }
 
     private void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
-        if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
+        if (!Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId) && !combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
             log.d("Adding Automatic Kava Plugin");
             combinedPluginConfigs.setPluginConfig(KavaAnalyticsPlugin.factory.getName(), resolve(getKavaDefaultsConfig(ovpPartnerId, referrer)));
         }
+
         if (isOTTPlayer() && !combinedPluginConfigs.hasConfig(PhoenixAnalyticsPlugin.factory.getName())) {
             addKalturaPluginConfigsOTT(combinedPluginConfigs);
         }
