@@ -9,7 +9,8 @@ import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
-import com.kaltura.tvplayer.config.PhoenixTVPlayerDMSParams;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
+import com.kaltura.tvplayer.config.TVPlayerParams;
 
 
 public class PlayerInitOptions {
@@ -35,7 +36,7 @@ public class PlayerInitOptions {
 
     public final Integer partnerId;
     public String ks;
-    PhoenixTVPlayerDMSParams phoenixTVPlayerDMSParams;
+    TVPlayerParams tvPlayerParams;
     public PKPluginConfigs pluginConfigs;
 
     public Boolean autoplay = true;
@@ -240,9 +241,9 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setPhoenixTVPlayerDMSParams(PhoenixTVPlayerDMSParams phoenixTVPlayerDMSParams) {
-        if (phoenixTVPlayerDMSParams != null) {
-            this.phoenixTVPlayerDMSParams = phoenixTVPlayerDMSParams;
+    public PlayerInitOptions setTVPlayerParams(TVPlayerParams tvPlayerParams) {
+        if (tvPlayerParams != null) {
+            this.tvPlayerParams = tvPlayerParams;
         }
         return this;
     }

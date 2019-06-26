@@ -32,9 +32,11 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
+import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.utils.ConfigResolver;
 
 import java.util.List;
@@ -116,8 +118,8 @@ public class KalturaPlayer  {
         } else {
             this.partnerId = (initOptions.partnerId != null && initOptions.partnerId > 0) ? initOptions.partnerId : null;
             if (tvPlayerType == TVPlayerType.ott) {
-                this.ovpPartnerId = (initOptions.phoenixTVPlayerDMSParams != null && initOptions.phoenixTVPlayerDMSParams.ovpPartnerId != null &&
-                        initOptions.phoenixTVPlayerDMSParams.ovpPartnerId > 0) ? initOptions.phoenixTVPlayerDMSParams.ovpPartnerId : null;
+                this.ovpPartnerId = (initOptions.tvPlayerParams != null && ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId != null &&
+                        ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId > 0) ? ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId : null;
             } else {
                 this.ovpPartnerId =  this.partnerId;
             }
@@ -130,8 +132,8 @@ public class KalturaPlayer  {
     }
 
     private boolean kavaPartnerIdIsMissing(PlayerInitOptions initOptions) {
-        return (initOptions.phoenixTVPlayerDMSParams == null ||
-                (initOptions.phoenixTVPlayerDMSParams != null && initOptions.phoenixTVPlayerDMSParams.ovpPartnerId == null));
+        return (initOptions.tvPlayerParams == null ||
+                (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams && ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId == null));
     }
 
     protected static String safeServerUrl(String url, String defaultUrl) {
@@ -160,12 +162,16 @@ public class KalturaPlayer  {
     private KavaAnalyticsConfig getKavaDefaultsConfig(Integer partnerId, String referrer) {
 
         KavaAnalyticsConfig kavaAnalyticsConfig = new KavaAnalyticsConfig();
-        if (initOptions.phoenixTVPlayerDMSParams != null) {
-            if (initOptions.phoenixTVPlayerDMSParams.analyticsUrl != null) {
-                kavaAnalyticsConfig.setBaseUrl(initOptions.phoenixTVPlayerDMSParams.analyticsUrl);
+        if (initOptions.tvPlayerParams != null) {
+            if (initOptions.tvPlayerParams.analyticsUrl != null) {
+                String analyticsUrl = initOptions.tvPlayerParams.analyticsUrl;
+                if (!analyticsUrl.contains(OvpConfigs.ApiPrefix)) {
+                    analyticsUrl += "/api_v3/index.php";
+                }
+                kavaAnalyticsConfig.setBaseUrl(analyticsUrl);
             }
-            if (initOptions.phoenixTVPlayerDMSParams.uiConfId > 0) {
-                kavaAnalyticsConfig.setUiConfId(initOptions.phoenixTVPlayerDMSParams.uiConfId);
+            if (initOptions.tvPlayerParams.uiConfId != null && initOptions.tvPlayerParams.uiConfId > 0) {
+                kavaAnalyticsConfig.setUiConfId(initOptions.tvPlayerParams.uiConfId);
             }
         } else {
             kavaAnalyticsConfig.setBaseUrl(KavaAnalyticsConfig.DEFAULT_BASE_URL);

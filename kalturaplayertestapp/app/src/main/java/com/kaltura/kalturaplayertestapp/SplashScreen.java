@@ -12,6 +12,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.gson.Gson;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.tvplayer.TVPlayerType;
 import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
 import com.kaltura.tvplayer.PlayerConfigManager;
 
@@ -30,7 +31,7 @@ public class SplashScreen extends Activity {
             //PlayerConfigManager.retrieve(41188731, 2215841, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() );
             //PlayerConfigManager.retrieve(41604521, 1734762, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
             //PlayerConfigManager.retrieve(2222401, "https://cdnapisec.kaltura.com", (partnerId, asJsonObject, error, freshness) -> {
-             PlayerConfigManager.retrieve(this, 3009, "https://rest-us.ott.kaltura.com/v4_5/api_v3/", (partnerId, config, error, freshness) -> {
+             PlayerConfigManager.retrieve(this, TVPlayerType.ott, 3009, "https://rest-us.ott.kaltura.com/v4_5/api_v3/", (partnerId, config, error, freshness) -> {
                     //PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(asJsonObject, PhoenixConfigurationsResponse.class);
                     Intent i = new Intent(SplashScreen.this, SignInActivity.class);
                     startActivity(i);

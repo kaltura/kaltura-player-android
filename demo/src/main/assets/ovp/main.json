@@ -3,6 +3,7 @@
     "initOptions": {
       "partnerId": 2215841,
       "playerConfig" : {
+        "serverUrl": "https://cdnapisec.kaltura.com",
         "autoPlay": true,
         "ks": null
       }

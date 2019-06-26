@@ -14,6 +14,7 @@ import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
+import com.kaltura.tvplayer.TVPlayerType;
 import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
 
 import org.greenrobot.eventbus.EventBus;
@@ -61,13 +62,13 @@ public class OTTDemoActivity extends BaseDemoActivity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
 
-        PlayerConfigManager.retrieve(this, initOptions.partnerId, initOptions.serverUrl, (partnerId, config, error, freshness) -> {
+        PlayerConfigManager.retrieve(this, TVPlayerType.ott, initOptions.partnerId, initOptions.serverUrl, (partnerId, config, error, freshness) -> {
 
             PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(config, PhoenixConfigurationsResponse.class);
 
             PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
             if (phoenixConfigurationsResponse != null) {
-                updatedInitOptions.setPhoenixTVPlayerDMSParams(phoenixConfigurationsResponse.params);
+                updatedInitOptions.setTVPlayerParams(phoenixConfigurationsResponse.params);
             }
             updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
             updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
@@ -99,7 +100,7 @@ public class OTTDemoActivity extends BaseDemoActivity {
             OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
             ottMediaOptions.assetId = currentItem.id;
             ottMediaOptions.protocol = currentItem.protocol;
-            player.loadMedia(ottMediaOptions, (entry, load_error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
+            player.loadMedia(ottMediaOptions, (entry, loadError) -> log.d("onEntryLoadComplete; " + entry + "; " + loadError));
             player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 
             playerActivity.setPlayer(player);
