@@ -10,8 +10,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKController;
@@ -49,14 +47,7 @@ public class KalturaPlayer  {
     public static final String DEFAULT_OVP_SERVER_URL =
             BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
 
-    private static KalturaPlayerType kalturaPlayerType;
-
-
-    private enum KalturaPlayerType {
-        ovp,
-        ott,
-        basic
-    }
+    private static TVPlayerType tvPlayerType;
 
     private enum PrepareState {
         not_prepared,
@@ -86,21 +77,21 @@ public class KalturaPlayer  {
     private PlayerInitOptions initOptions;
 
     public static KalturaPlayer createOVPPlayer(Context context, PlayerInitOptions initOptions) {
-        kalturaPlayerType = KalturaPlayerType.ovp;
+        tvPlayerType = TVPlayerType.ovp;
         KalturaPlayer kalturaPlayer = new KalturaPlayer(context, initOptions);
         kalturaPlayer.serverUrl = KalturaPlayer.safeServerUrl(initOptions.serverUrl, KalturaPlayer.DEFAULT_OVP_SERVER_URL);
         return kalturaPlayer;
     }
 
     public static KalturaPlayer createOTTPlayer(Context context, PlayerInitOptions initOptions) {
-        kalturaPlayerType = KalturaPlayerType.ott;
+        tvPlayerType = TVPlayerType.ott;
         KalturaPlayer kalturaPlayer = new KalturaPlayer(context, initOptions);
         kalturaPlayer.serverUrl = KalturaPlayer.safeServerUrl(initOptions.serverUrl, null);
         return kalturaPlayer;
     }
 
     public static KalturaPlayer createBasicPlayer(Context context, PlayerInitOptions initOptions) {
-        kalturaPlayerType = KalturaPlayerType.basic;
+        tvPlayerType = TVPlayerType.basic;
         KalturaPlayer kalturaPlayer = new KalturaPlayer(context, initOptions);
         return kalturaPlayer;
     }
@@ -115,8 +106,8 @@ public class KalturaPlayer  {
             this.preload = true; // autoplay implies preload
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
-        if (kalturaPlayerType == KalturaPlayerType.basic || (kalturaPlayerType == KalturaPlayerType.ott && kavaPartnerIdIsMissing(initOptions))) {
-            if (kalturaPlayerType == KalturaPlayerType.basic) {
+        if (tvPlayerType == TVPlayerType.basic || (tvPlayerType == TVPlayerType.ott && kavaPartnerIdIsMissing(initOptions))) {
+            if (tvPlayerType == TVPlayerType.basic) {
                 this.partnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
             } else {
                 this.partnerId = initOptions.partnerId;
@@ -124,7 +115,7 @@ public class KalturaPlayer  {
             this.ovpPartnerId = KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID;
         } else {
             this.partnerId = (initOptions.partnerId != null && initOptions.partnerId > 0) ? initOptions.partnerId : null;
-            if (kalturaPlayerType == KalturaPlayerType.ott) {
+            if (tvPlayerType == TVPlayerType.ott) {
                 this.ovpPartnerId = (initOptions.phoenixTVPlayerDMSParams != null && initOptions.phoenixTVPlayerDMSParams.ovpPartnerId != null &&
                         initOptions.phoenixTVPlayerDMSParams.ovpPartnerId > 0) ? initOptions.phoenixTVPlayerDMSParams.ovpPartnerId : null;
             } else {
@@ -573,10 +564,10 @@ public class KalturaPlayer  {
     }
 
     private boolean isValidOVPPlayer() {
-        if (kalturaPlayerType == KalturaPlayerType.basic) {
+        if (tvPlayerType == TVPlayerType.basic) {
             log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
             return false;
-        } else if (kalturaPlayerType == KalturaPlayerType.ott) {
+        } else if (tvPlayerType == TVPlayerType.ott) {
             log.e("loadMedia with OVPMediaOptions for player type KalturaPlayerType.ott is not supported");
             return false;
         }
@@ -621,10 +612,10 @@ public class KalturaPlayer  {
     }
 
     private boolean isValidOTTPlayerType() {
-        if (kalturaPlayerType == KalturaPlayerType.basic) {
+        if (tvPlayerType == TVPlayerType.basic) {
             log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
             return false;
-        } else if (kalturaPlayerType == KalturaPlayerType.ovp) {
+        } else if (tvPlayerType == TVPlayerType.ovp) {
             log.e("loadMedia with OTTMediaOptions for player type KalturaPlayerType.ovp is not supported");
             return false;
         }
@@ -659,7 +650,7 @@ public class KalturaPlayer  {
     }
 
     private boolean isOTTPlayer() {
-        return KalturaPlayerType.ott.equals(kalturaPlayerType);
+        return TVPlayerType.ott.equals(tvPlayerType);
     }
 
     private void registerPluginsOTT(Context context) {
