@@ -77,10 +77,9 @@ public class OVPDemoActivity extends BaseDemoActivity {
     public void playerActivityLoaded(PlayerActivity playerActivity) {
 
         PlayerConfigManager.retrieve(this, TVPlayerType.ovp, initOptions.partnerId, initOptions.serverUrl, (partnerId, config, error, freshness) -> {
+            PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
 
             TVPlayerParams tvPlayerParams = gson.fromJson(config, TVPlayerParams.class);
-
-            PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
             if (tvPlayerParams != null) {
                 updatedInitOptions.setTVPlayerParams(tvPlayerParams);
             }

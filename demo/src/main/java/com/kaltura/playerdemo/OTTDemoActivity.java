@@ -63,13 +63,13 @@ public class OTTDemoActivity extends BaseDemoActivity {
     public void playerActivityLoaded(PlayerActivity playerActivity) {
 
         PlayerConfigManager.retrieve(this, TVPlayerType.ott, initOptions.partnerId, initOptions.serverUrl, (partnerId, config, error, freshness) -> {
+            PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
 
             PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(config, PhoenixConfigurationsResponse.class);
-
-            PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
             if (phoenixConfigurationsResponse != null) {
                 updatedInitOptions.setTVPlayerParams(phoenixConfigurationsResponse.params);
             }
+
             updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
             updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
             updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
