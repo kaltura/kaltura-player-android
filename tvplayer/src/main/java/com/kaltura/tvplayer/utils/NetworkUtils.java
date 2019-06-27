@@ -22,17 +22,18 @@ import okhttp3.Callback;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import static com.kaltura.playkit.Utils.toBase64;
 
 public class NetworkUtils {
     private static final PKLog log = PKLog.get("NetworkUtils");
-
+    private static OkHttpClient client = new OkHttpClient();
     public static final String KALTURA_PLAYER = "com.kaltura.player";
     public static final String UDID = "kaltura-player-android/4.0.0";
 
     public static void requestOvpConfigByPartnerId(Context context, String baseUrl, int partnerId, PlayerConfigManager.InternalCallback callback) {
-        OkHttpClient client = new OkHttpClient();
+
         Map<String, String> params = new LinkedHashMap<>();
         params.put("service", "partner");
         params.put("action", "getPublicInfo");
@@ -79,8 +80,8 @@ public class NetworkUtils {
     }
 
     public static String buildKavaImpressionUrl(Context context) {
-        Uri builtUri = Uri.parse(KavaAnalyticsConfig.DEFAULT_BASE_URL).buildUpon()
-                .appendQueryParameter("service", "analytics")
+        Uri.Builder builtUri = Uri.parse(KavaAnalyticsConfig.DEFAULT_BASE_URL).buildUpon();
+        builtUri.appendQueryParameter("service", "analytics")
                 .appendQueryParameter("action", "trackEvent")
                 .appendQueryParameter("eventType", "1")
                 .appendQueryParameter("partnerId", String.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID))
@@ -92,9 +93,8 @@ public class NetworkUtils {
                 .appendQueryParameter("playbackType", "vod")
                 .appendQueryParameter("clientVer", PlayKitManager.CLIENT_TAG)
                 .appendQueryParameter("position", "0")
-                .appendQueryParameter("application", context.getPackageName())
-                .build();
-        return builtUri.toString();
+                .appendQueryParameter("application", context.getPackageName());
+        return builtUri.build().toString();
     }
 
     public static String generateSessionId() {
@@ -122,14 +122,15 @@ public class NetworkUtils {
 
                 @Override
                 public void onResponse(Call call, final Response response) throws IOException {
-                    if (!response.isSuccessful()) {
+                    ResponseBody responseBody = response.body();
+                    if (response == null || !response.isSuccessful()) {
                         log.e(apiName + " called failed url=" + configByPartnerIdUrl);
                         if (callback != null) {
                             callback.finished(null, ErrorElement.GeneralError);
                         }
                     } else {
-                        if (response.body() != null) {
-                            String body = response.body().string();
+                        if (responseBody != null) {
+                            String body = responseBody.string();
                             if (!body.contains("KalturaAPIException")) {
                                 if (callback != null) {
                                     callback.finished(body, null);
@@ -141,7 +142,12 @@ public class NetworkUtils {
                             callback.finished(null, ErrorElement.GeneralError);
                         }
                     }
-                    response.close();
+                    if (response != null) {
+                        response.close();
+                    }
+                    if (call != null) {
+                        call.cancel();
+                    }
                 }
             });
         } catch (Exception e) {
