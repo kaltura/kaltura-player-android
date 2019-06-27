@@ -36,12 +36,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.player.MediaSupport;
-import com.kaltura.playkit.providers.api.ovp.OvpRequestBuilder;
-import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
 import com.kaltura.tvplayer.KalturaPlayer;
-import com.kaltura.tvplayer.OVPConfigurations;
-import com.kaltura.tvplayer.PhoenixConfigurations;
-import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
 
 import org.json.JSONArray;
