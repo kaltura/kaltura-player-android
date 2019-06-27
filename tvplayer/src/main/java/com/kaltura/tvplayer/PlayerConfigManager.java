@@ -119,7 +119,6 @@ public class PlayerConfigManager {
 
     private static void load(int partnerId, String serverUrl, final InternalCallback callback) {
         mainHandler.post(() -> {
-
             if (TVPlayerType.ott.equals(playerType)) {
                 NetworkUtils.requestOttConfigByPartnerId(retrieveContext, serverUrl, partnerId, callback);
             } else if (TVPlayerType.ovp.equals(playerType)) {

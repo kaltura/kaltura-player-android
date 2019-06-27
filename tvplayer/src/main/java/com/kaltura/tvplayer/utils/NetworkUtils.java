@@ -2,6 +2,8 @@ package com.kaltura.tvplayer.utils;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKLog;
@@ -41,11 +43,10 @@ public class NetworkUtils {
         params.put("format", "1");
 
         String configByPartnerIdUrl = buildConfigByPartnerIdUrl(context, baseUrl + OvpConfigs.ApiPrefix, params);
-        executeGETRequest(client, "requestOvpConfigByPartnerId", configByPartnerIdUrl, callback);
+        executeGETRequest(context, "requestOvpConfigByPartnerId", configByPartnerIdUrl, callback);
     }
 
     public static void requestOttConfigByPartnerId(Context context, String baseUrl, int partnerId, PlayerConfigManager.InternalCallback callback) {
-        OkHttpClient client = new OkHttpClient();
         Map<String, String> params = new LinkedHashMap<>();
         params.put("service", "Configurations");
         params.put("action", "serveByDevice");
@@ -57,7 +58,7 @@ public class NetworkUtils {
         params.put("udid", UDID);
 
         String configByPartnerIdUrl = buildConfigByPartnerIdUrl(context, baseUrl, params);
-        executeGETRequest(client, "requestOttConfigByPartnerId", configByPartnerIdUrl, callback);
+        executeGETRequest(context, "requestOttConfigByPartnerId", configByPartnerIdUrl, callback);
     }
 
     private static String buildConfigByPartnerIdUrl(Context context, String baseUrl, Map<String, String> params) {
@@ -76,7 +77,7 @@ public class NetworkUtils {
     public static void sendKavaImpression(Context context) {
         OkHttpClient client = new OkHttpClient();
         String kavaImpressionUrl = buildKavaImpressionUrl(context);
-        executeGETRequest(client, "sendKavaImpression", kavaImpressionUrl, null);
+        executeGETRequest(context, "sendKavaImpression", kavaImpressionUrl, null);
     }
 
     public static String buildKavaImpressionUrl(Context context) {
@@ -105,53 +106,65 @@ public class NetworkUtils {
         return newSessionId;
     }
 
-    private static void executeGETRequest(OkHttpClient client, String apiName, String configByPartnerIdUrl, PlayerConfigManager.InternalCallback callback) {
+    private static void executeGETRequest(Context context, String apiName, String configByPartnerIdUrl, PlayerConfigManager.InternalCallback callback) {
         try {
             Request request = new Request.Builder()
                     .url(configByPartnerIdUrl)
                     .build();
 
             client.newCall(request).enqueue(new Callback() {
+                Handler mainHandler = new Handler(context.getMainLooper());
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    log.e(apiName + " called failed url=" + configByPartnerIdUrl + ", error=" + e.getMessage());
-                    if (callback != null) {
-                        callback.finished(null, ErrorElement.GeneralError);
-                    }
+                    mainHandler.post(() -> {
+                        sendError(callback, apiName + " called failed url = " + configByPartnerIdUrl + ", error =" + e.getMessage());
+                    });
                 }
 
                 @Override
-                public void onResponse(Call call, final Response response) throws IOException {
-                    ResponseBody responseBody = response.body();
+                public void onResponse(Call call, final Response response) {
+
                     if (response == null || !response.isSuccessful()) {
-                        log.e(apiName + " called failed url=" + configByPartnerIdUrl);
-                        if (callback != null) {
-                            callback.finished(null, ErrorElement.GeneralError);
-                        }
+                        mainHandler.post(() -> {
+                            sendError(callback, apiName + " call failed url = " + configByPartnerIdUrl);
+                        });
+                        return;
                     } else {
-                        if (responseBody != null) {
-                            String body = responseBody.string();
-                            if (!body.contains("KalturaAPIException")) {
-                                if (callback != null) {
-                                    callback.finished(body, null);
+                        try {
+                            ResponseBody responseBody = response.body();
+                            if (responseBody != null) {
+                                String body = responseBody.string();
+                                if (body != null && !body.contains("KalturaAPIException")) {
+                                    mainHandler.post(() -> {
+                                        if (callback != null) {
+                                            callback.finished(body, null);
+                                        }
+                                    });
+                                    return;
                                 }
-                                return;
                             }
+                        } catch(IOException e){
+                            mainHandler.post(() -> {
+                                sendError(callback, apiName + " call failed url = " + configByPartnerIdUrl + ", error =" + e.getMessage());
+                            });
+                            return;
                         }
-                        if (callback != null) {
-                            callback.finished(null, ErrorElement.GeneralError);
-                        }
-                    }
-                    if (response != null) {
-                        response.close();
-                    }
-                    if (call != null) {
-                        call.cancel();
+
+                        mainHandler.post(() -> {
+                            sendError(callback, apiName + " called failed url = " + configByPartnerIdUrl);
+                        });
                     }
                 }
             });
         } catch (Exception e) {
-            log.e(apiName + " called failed url=" + configByPartnerIdUrl + ", error=" + e.getMessage());
+            sendError(callback, apiName + " call failed url = " + configByPartnerIdUrl + ", error =" + e.getMessage());
+        }
+    }
+
+    private static void sendError(PlayerConfigManager.InternalCallback callback, String errorMessage) {
+        log.e(errorMessage);
+        if (callback != null) {
+            callback.finished(null, ErrorElement.GeneralError);
         }
     }
 }

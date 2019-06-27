@@ -207,7 +207,10 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 if (appPlayerInitConfig.vrSettings != null) {
                     mediaEntry.setIsVRMediaType(true);
                 }
-                mediaEntry.setExternalSubtitleList(appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).externalSubtitles);
+
+                if (appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).externalSubtitles != null) {
+                    mediaEntry.setExternalSubtitleList(appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).externalSubtitles);
+                }
                 player.setMedia(mediaEntry, 0L);
             }
         }
