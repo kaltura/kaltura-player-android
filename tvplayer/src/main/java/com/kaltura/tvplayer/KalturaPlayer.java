@@ -40,6 +40,7 @@ import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.utils.ConfigResolver;
 import com.kaltura.tvplayer.utils.NetworkUtils;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -139,8 +140,22 @@ public class KalturaPlayer  {
     }
 
     protected static String safeServerUrl(String url, String defaultUrl) {
-        return url == null ? defaultUrl :
-                url.endsWith("/") ? url : url + "/";
+        String serviceURL = url;
+        if (serviceURL == null) {
+            serviceURL = defaultUrl;
+        } else if (tvPlayerType != null && TVPlayerType.ott.equals(tvPlayerType)) {
+            if (!serviceURL.endsWith(OvpConfigs.ApiPrefix) && !serviceURL.endsWith(OvpConfigs.ApiPrefix.substring(0, OvpConfigs.ApiPrefix.length() - 1))) {
+                if (!serviceURL.endsWith(File.separator)) {
+                    serviceURL += File.separator;
+                }
+                serviceURL += OvpConfigs.ApiPrefix;
+            }
+        }
+
+        if (serviceURL != null && !serviceURL.endsWith(File.separator)) {
+            serviceURL =  serviceURL + File.separator;
+        }
+        return serviceURL;
     }
 
     private static String buildReferrer(Context context, String referrer) {
