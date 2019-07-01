@@ -7,7 +7,6 @@ import android.view.View;
 
 import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.tvplayer.KalturaPlayer;
-import com.kaltura.tvplayer.TVPlayerType;
 
 public class LaunchActivity extends AppCompatActivity {
 

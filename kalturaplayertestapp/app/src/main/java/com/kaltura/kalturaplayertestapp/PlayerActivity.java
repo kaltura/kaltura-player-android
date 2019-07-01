@@ -61,7 +61,6 @@ import com.kaltura.tvplayer.PlaybackControlsView;
 import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
-import com.kaltura.tvplayer.TVPlayerType;
 import com.kaltura.tvplayer.config.KalturaPlayerNotInitializedException;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
@@ -144,12 +143,12 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
         if (appPlayerInitConfig != null) {
-            final TVPlayerType playerType = appPlayerInitConfig.playerType;
-            if (TVPlayerType.basic.equals(playerType)) {
+            final KalturaPlayer.Type playerType = appPlayerInitConfig.playerType;
+            if (KalturaPlayer.Type.basic.equals(playerType)) {
                 buildPlayer( appPlayerInitConfig, currentPlayedMediaIndex, playerType);
-            } else if (TVPlayerType.ovp.equals(playerType)) {
+            } else if (KalturaPlayer.Type.ovp.equals(playerType)) {
                 buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
-            } else if (TVPlayerType.ott.equals(playerType)) {
+            } else if (KalturaPlayer.Type.ott.equals(playerType)) {
                 buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
             }
         } else {
@@ -164,7 +163,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         }
 
         updatePluginsConfig(mediaList.get(currentPlayedMediaIndex));
-        if (TVPlayerType.ovp.equals(appPlayerInitConfig.playerType)) {
+        if (KalturaPlayer.Type.ovp.equals(appPlayerInitConfig.playerType)) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, currentPlayedMediaIndex);
             if (ovpMediaOptions == null) {
                 return;
@@ -177,7 +176,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 log.d("OVPMedia onEntryLoadComplete; " + entryId + "; " + error);
                 handleOnEntryLoadComplete(error);
             });
-        } else if (TVPlayerType.ott.equals(appPlayerInitConfig.playerType)){
+        } else if (KalturaPlayer.Type.ott.equals(appPlayerInitConfig.playerType)){
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, currentPlayedMediaIndex);
             if (ottMediaOptions == null) {
                 return;
@@ -190,7 +189,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 log.d("OTTMedia onEntryLoadComplete; " + entryId + " ; " + error);
                 handleOnEntryLoadComplete(error);
             });
-        } else if (TVPlayerType.basic.equals(appPlayerInitConfig.playerType)) {
+        } else if (KalturaPlayer.Type.basic.equals(appPlayerInitConfig.playerType)) {
             PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;
             if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
                 if (appPlayerInitConfig.vrSettings != null) {
@@ -298,7 +297,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         });
     }
 
-    private void buildPlayer(PlayerConfig appPlayerInitConfig, int playListMediaIndex, TVPlayerType playerType) {
+    private void buildPlayer(PlayerConfig appPlayerInitConfig, int playListMediaIndex, KalturaPlayer.Type playerType) {
         KalturaPlayer player = null;
 
         JsonArray appPluginConfigJsonObject = appPlayerInitConfig.plugins;
@@ -340,7 +339,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             }
         }
 
-        if (TVPlayerType.ovp.equals(playerType)) {
+        if (KalturaPlayer.Type.ovp.equals(playerType)) {
             try {
                 player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
                 setPlayer(player);
@@ -362,7 +361,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 e.printStackTrace();
                 return;
             }
-        } else if (TVPlayerType.ott.equals(playerType)) {
+        } else if (KalturaPlayer.Type.ott.equals(playerType)) {
             try {
                 player = KalturaPlayer.createOTTPlayer(PlayerActivity.this, initOptions);
                 setPlayer(player);
@@ -383,7 +382,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 e.printStackTrace();
                 return;
             }
-        } else if (TVPlayerType.basic.equals(playerType)) {
+        } else if (KalturaPlayer.Type.basic.equals(playerType)) {
             player = KalturaPlayer.createBasicPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
             PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;

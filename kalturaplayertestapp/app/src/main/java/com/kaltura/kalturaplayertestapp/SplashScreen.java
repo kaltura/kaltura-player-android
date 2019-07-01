@@ -13,7 +13,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.gson.Gson;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.tvplayer.KalturaPlayer;
-import com.kaltura.tvplayer.TVPlayerType;
 
 public class SplashScreen extends Activity {
     private static final PKLog log = PKLog.get("SplashScreen");
