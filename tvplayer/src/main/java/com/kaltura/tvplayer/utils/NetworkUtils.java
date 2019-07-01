@@ -43,6 +43,7 @@ public class NetworkUtils {
         params.put("format", "1");
 
         String configByPartnerIdUrl = buildConfigByPartnerIdUrl(context, baseUrl + OvpConfigs.ApiPrefix, params);
+        //log.d("ovp configByPartnerIdUrl = " + configByPartnerIdUrl);
         executeGETRequest(context, "requestOvpConfigByPartnerId", configByPartnerIdUrl, callback);
     }
 
@@ -58,6 +59,7 @@ public class NetworkUtils {
         params.put("udid", UDID);
 
         String configByPartnerIdUrl = buildConfigByPartnerIdUrl(context, baseUrl, params);
+        //log.d("ott configByPartnerIdUrl = " + configByPartnerIdUrl);
         executeGETRequest(context, "requestOttConfigByPartnerId", configByPartnerIdUrl, callback);
     }
 
@@ -66,8 +68,7 @@ public class NetworkUtils {
         Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
         Set<String> keys = params.keySet();
         Iterator<String> iterator = keys.iterator();
-        while (iterator.hasNext())
-        {
+        while (iterator.hasNext()) {
             String key = iterator.next();
             builder.appendQueryParameter(key, params.get(key));
         }

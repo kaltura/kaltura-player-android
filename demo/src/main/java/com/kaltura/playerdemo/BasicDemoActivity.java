@@ -68,7 +68,7 @@ public class BasicDemoActivity extends BaseDemoActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
-        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
+        PlayerInitOptions updatedInitOptions = new PlayerInitOptions();
         updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
         updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
         updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
@@ -83,7 +83,6 @@ public class BasicDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
         updatedInitOptions.setSecureSurface(initOptions.secureSurface);
         updatedInitOptions.setKs(initOptions.ks);
-        updatedInitOptions.setServerUrl(initOptions.serverUrl);
         updatedInitOptions.setAutoPlay(initOptions.autoplay);
         updatedInitOptions.setReferrer(initOptions.referrer);
         updatedInitOptions.forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);

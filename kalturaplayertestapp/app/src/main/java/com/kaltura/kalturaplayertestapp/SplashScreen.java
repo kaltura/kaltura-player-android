@@ -12,9 +12,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.gson.Gson;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.TVPlayerType;
-import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
-import com.kaltura.tvplayer.PlayerConfigManager;
 
 public class SplashScreen extends Activity {
     private static final PKLog log = PKLog.get("SplashScreen");
@@ -27,16 +26,20 @@ public class SplashScreen extends Activity {
         boolean isPlayServicesAvailable = isGooglePlayServicesAvailable();
 
         if (isPlayServicesAvailable) {
+            KalturaPlayer.initialize(this, TVPlayerType.ovp, 243342, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initialize(this, TVPlayerType.ovp, 2267831, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initialize(this, TVPlayerType.ott, 3009, "https://rest-us.ott.kaltura.com/v4_5/");
+            KalturaPlayer.initialize(this, TVPlayerType.ovp, 2215841, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initialize(this, TVPlayerType.ovp, 2222401, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initialize(this, TVPlayerType.ovp, 1091, "http://qa-apache-php7.dev.kaltura.com/");
+            KalturaPlayer.initialize(this, TVPlayerType.ovp, 1740481, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initialize(this, TVPlayerType.ovp, 2093031, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initialize(this, TVPlayerType.ovp, 1068292, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initialize(this, TVPlayerType.ovp, 1281471, "https://cdnapisec.kaltura.com/");
 
-            //PlayerConfigManager.retrieve(41188731, 2215841, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() );
-            //PlayerConfigManager.retrieve(41604521, 1734762, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
-            //PlayerConfigManager.retrieve(2222401, "https://cdnapisec.kaltura.com", (partnerId, asJsonObject, error, freshness) -> {
-             PlayerConfigManager.retrieve(this, TVPlayerType.ott, 3009, "https://rest-us.ott.kaltura.com/v4_5/api_v3/", (partnerId, config, error, freshness) -> {
-                    //PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(asJsonObject, PhoenixConfigurationsResponse.class);
-                    Intent i = new Intent(SplashScreen.this, SignInActivity.class);
-                    startActivity(i);
-                    finish();
-            });
+            Intent i = new Intent(SplashScreen.this, SignInActivity.class);
+            startActivity(i);
+            finish();
         }
     }
 

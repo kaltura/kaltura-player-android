@@ -63,8 +63,8 @@ class PlayerTokenResolver extends MapTokenResolver {
             if (initOptions.tvPlayerParams.uiConfId != null) {
                 set("uiConfId", String.valueOf(initOptions.tvPlayerParams.uiConfId));
             }
-            if (initOptions.partnerId != null) {
-                set("partnerId", String.valueOf(initOptions.partnerId));
+            if (initOptions.tvPlayerParams.partnerId != null) {
+                set("partnerId", String.valueOf(initOptions.tvPlayerParams.partnerId));
             }
             if (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams) {
                 Integer kavaPartnerId = ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId;

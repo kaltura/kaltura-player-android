@@ -9,40 +9,17 @@ import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
-import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
-
 public class PlayerInitOptions {
-    public static final String PLAYER = "player";
-    public static final String AUDIO_LANG = "audioLanguage";
-    public static final String TEXT_LANG = "textLanguage";
-    public static final String PLAYBACK = "playback";
-    public static final String OFF = "off";
-    public static final String AUTOPLAY = "autoplay";
-    public static final String PRELOAD = "preload";
-    //public static final String START_TIME = "startTime";
-    public static final String CONFIG = "config";
-    public static final String PLUGINS = "plugins";
-    public static final String AUTO = "auto";
-    public static final String OPTIONS = "options";
-    public static final String UICONF_ID ="uiConfId";
-    public static final String PARTNER_ID = "partnerId";
-    public static final String REFERRER = "referrer";
-    public static final String KS = "ks";
-    public static final String SERVER_URL = "serverUrl";
-    public static final String ALLOW_CROSS_PROTOCOL_ENABLED = "allowCrossProtocolEnabled";
-    public static final String STREAM_PRIORITY = "streamPriority";
 
     public final Integer partnerId;
     public String ks;
-    TVPlayerParams tvPlayerParams;
+    public TVPlayerParams tvPlayerParams;
     public PKPluginConfigs pluginConfigs;
 
     public Boolean autoplay = true;
     public Boolean preload = true;
-    //public int startTime;
-    public String serverUrl;
     public String referrer;
     public PKTrackConfig.Mode audioLanguageMode;
     public String audioLanguage;
@@ -97,13 +74,6 @@ public class PlayerInitOptions {
     public PlayerInitOptions setPreload(Boolean preload) {
         if (preload != null) {
             this.preload = preload;
-        }
-        return this;
-    }
-
-    public PlayerInitOptions setServerUrl(String serverUrl) {
-        if (serverUrl != null) {
-            this.serverUrl = serverUrl;
         }
         return this;
     }

@@ -53,12 +53,34 @@ import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Unknown;
 public abstract class BaseDemoActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, KalturaPlayer.OnEntryLoadListener {
 
+    public static final String PLAYER = "player";
+    public static final String AUDIO_LANG = "audioLanguage";
+    public static final String TEXT_LANG = "textLanguage";
+    public static final String PLAYBACK = "playback";
+    public static final String OFF = "off";
+    public static final String AUTOPLAY = "autoPlay";
+    public static final String PRELOAD = "preload";
+    //public static final String START_TIME = "startTime";
+    public static final String CONFIG = "config";
+    public static final String PLUGINS = "plugins";
+    public static final String AUTO = "auto";
+    public static final String OPTIONS = "options";
+    public static final String UICONF_ID ="uiConfId";
+    public static final String PARTNER_ID = "partnerId";
+    public static final String REFERRER = "referrer";
+    public static final String KS = "ks";
+    public static final String SERVER_URL = "serverUrl";
+    public static final String ALLOW_CROSS_PROTOCOL_ENABLED = "allowCrossProtocolEnabled";
+    public static final String STREAM_PRIORITY = "streamPriority";
+
+
     private static final PKLog log = PKLog.get("BaseDemoActivity");
     public static final String PLAYER_CONFIG = "playerConfig";
     public static final String UICONF ="uiConf";
 
     protected final Context context = this;
     protected JsonObject playerConfigUiConfJson;
+
     protected PlayerInitOptions initOptions;
     String ks;
     DemoItem[] items;
@@ -94,7 +116,7 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     }
 
     protected void parseInitOptions(JsonObject json) {
-        final Integer partnerId = safeInteger(json, PlayerInitOptions.PARTNER_ID);
+        final Integer partnerId = safeInteger(json, PARTNER_ID);
         if (partnerId == null) {
             throw new IllegalArgumentException("partnerId must not be null");
         }
@@ -102,13 +124,12 @@ public abstract class BaseDemoActivity extends AppCompatActivity
             JsonObject playerConfigJasonObject = safeObject(json, PLAYER_CONFIG);
             final PlayerInitOptions options = new PlayerInitOptions(partnerId);
             if (initOptions == null) {
-                options.setServerUrl(safeString(playerConfigJasonObject, PlayerInitOptions.SERVER_URL))
-                        .setAutoPlay(safeBoolean(playerConfigJasonObject, PlayerInitOptions.AUTOPLAY))
-                        .setPreload(safeBoolean(playerConfigJasonObject, PlayerInitOptions.PRELOAD))
-                        .setKs(safeString(playerConfigJasonObject, PlayerInitOptions.KS))
-                        .setPluginConfigs(parsePluginConfigs(json.get(PlayerInitOptions.PLUGINS)))
-                        .setAllowCrossProtocolEnabled(safeBoolean(playerConfigJasonObject, PlayerInitOptions.ALLOW_CROSS_PROTOCOL_ENABLED))
-                        .setReferrer(safeString(playerConfigJasonObject, PlayerInitOptions.REFERRER));
+                options.setAutoPlay(safeBoolean(playerConfigJasonObject, AUTOPLAY))
+                        .setPreload(safeBoolean(playerConfigJasonObject, PRELOAD))
+                        .setKs(safeString(playerConfigJasonObject, KS))
+                        .setPluginConfigs(parsePluginConfigs(json.get(PLUGINS)))
+                        .setAllowCrossProtocolEnabled(safeBoolean(playerConfigJasonObject, ALLOW_CROSS_PROTOCOL_ENABLED))
+                        .setReferrer(safeString(playerConfigJasonObject, REFERRER));
 
             }
             initOptions = options;
@@ -268,10 +289,10 @@ public abstract class BaseDemoActivity extends AppCompatActivity
     protected abstract DemoItem parseItem(JsonObject object);
 
     protected int partnerId() {
-        if (initOptions == null) {
+        if (initOptions == null || initOptions.tvPlayerParams == null) {
             return 0;
         }
-        return initOptions.partnerId;
+        return initOptions.tvPlayerParams.partnerId;
     }
 
     protected abstract void loadItem(DemoItem item);

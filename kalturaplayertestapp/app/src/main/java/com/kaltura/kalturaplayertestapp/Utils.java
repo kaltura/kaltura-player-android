@@ -64,7 +64,6 @@ public class Utils {
 //                throw new IllegalArgumentException("partnerId must not be null");
 //            }
             options
-                    .setServerUrl(safeString(config, "ovpBaseUrl"))
                     .setAutoPlay(safeBoolean(config, "autoPlay"))
                     .setPreload(safeBoolean(config, "preload"))
                     .setKs(safeString(config, "ks"))
