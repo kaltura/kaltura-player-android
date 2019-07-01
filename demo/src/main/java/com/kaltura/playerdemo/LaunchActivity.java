@@ -15,10 +15,10 @@ public class LaunchActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_launch);
-        KalturaPlayer.initialize(this, TVPlayerType.ott, 3009, "https://rest-us.ott.kaltura.com/v4_5/");
-        KalturaPlayer.initialize(this, TVPlayerType.ovp, 2215841, "https://cdnapisec.kaltura.com/");
-        KalturaPlayer.initialize(this, TVPlayerType.ovp, 2222401, "https://cdnapisec.kaltura.com/");
-        KalturaPlayer.initialize(this, TVPlayerType.ovp, 1091, "http://qa-apache-php7.dev.kaltura.com/");
+        KalturaPlayer.initializeOTT(this, 3009, "https://rest-us.ott.kaltura.com/v4_5/");
+        KalturaPlayer.initializeOVP(this, 2215841, "https://cdnapisec.kaltura.com/");
+        KalturaPlayer.initializeOVP(this, 2222401, "https://cdnapisec.kaltura.com/");
+        KalturaPlayer.initializeOVP(this, 1091, "http://qa-apache-php7.dev.kaltura.com/");
         doConnectionsWarmup();
 
         findViewById(R.id.btn_basic).setOnClickListener(new View.OnClickListener() {

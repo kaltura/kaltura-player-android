@@ -67,8 +67,8 @@ public class PlayerConfigManager {
         refreshCache(context, playerType, partnerId, serverUrl, cachedConfig, onPlayerConfigLoaded);
     }
 
-    public static TVPlayerParams retrieve(TVPlayerType tvPlayerType, int apiPartnerId) {
-        final CachedConfig cachedConfig = loadFromCache(apiPartnerId);
+    public static TVPlayerParams retrieve(TVPlayerType tvPlayerType, int partnerId) {
+        final CachedConfig cachedConfig = loadFromCache(partnerId);
         if (cachedConfig != null) {
             if (TVPlayerType.ovp.equals(tvPlayerType)) {
                 return gson.fromJson(cachedConfig.json, TVPlayerParams.class);

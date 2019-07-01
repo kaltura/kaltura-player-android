@@ -82,14 +82,25 @@ public class KalturaPlayer  {
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
 
-    public static void initialize(Context context, TVPlayerType tvPlayerType, int apiPartnerId, String serverUrl) {
+    public static void initializeOVP(Context context, int partnerId, @Nullable String serverUrl) {
 
-        PlayerConfigManager.retrieve(context, tvPlayerType, apiPartnerId, serverUrl, (config, error, freshness) -> {
+        PlayerConfigManager.retrieve(context, TVPlayerType.ovp, partnerId, serverUrl, (config, error, freshness) -> {
            if (error != null) {
                log.e("initialize KalturaPlayerType failed");
            } else {
                playerConfigRetreived = true;
            }
+        });
+    }
+
+    public static void initializeOTT(Context context, int partnerId, @NonNull String serverUrl) {
+
+        PlayerConfigManager.retrieve(context, TVPlayerType.ott, partnerId, serverUrl, (config, error, freshness) -> {
+            if (error != null) {
+                log.e("initialize KalturaPlayerType failed");
+            } else {
+                playerConfigRetreived = true;
+            }
         });
     }
 
