@@ -62,6 +62,7 @@ import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
 import com.kaltura.tvplayer.config.KalturaPlayerNotInitializedException;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
 import java.net.UnknownHostException;
@@ -363,6 +364,15 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             }
         } else if (KalturaPlayer.Type.ott.equals(playerType)) {
             try {
+                if (partnerId == 198) {
+                    PhoenixTVPlayerParams phoenixTVPlayerParams = new PhoenixTVPlayerParams();
+                    phoenixTVPlayerParams.analyticsUrl = "https://analytics.kaltura.com";
+                    phoenixTVPlayerParams.ovpPartnerId = 1774581;
+                    phoenixTVPlayerParams.partnerId = 198;
+                    phoenixTVPlayerParams.serviceUrl = "https://api-preprod.ott.kaltura.com/v5_1_0/";
+                    phoenixTVPlayerParams.ovpServiceUrl = "http://cdnapi.kaltura.com/";
+                    initOptions.tvPlayerParams = phoenixTVPlayerParams;
+                }
                 player = KalturaPlayer.createOTTPlayer(PlayerActivity.this, initOptions);
                 setPlayer(player);
                 OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.startPosition, playListMediaIndex);
@@ -771,22 +781,23 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             if (playerErrorException != null && playerErrorException.getCause() != null && playerErrorException.getCause().getClass() != null) {
                 exceptionClass = playerErrorException.getCause().getClass().getName();
                 errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : errorMetadata;
+
+                if (playerErrorException.getCause() instanceof HttpDataSource.InvalidResponseCodeException) {
+                    log.e("InvalidResponseCodeException " + ((HttpDataSource.InvalidResponseCodeException) playerErrorException.getCause()).responseCode);
+                }
+
+                if (playerErrorException != null && playerErrorException.getCause() instanceof UnknownHostException) {
+                    log.e("UnknownHostException");
+                }
             } else {
                 exceptionCause = exceptionInfo.error.errorType.name() + " - " + exceptionInfo.error.message;
             }
 
-            if (playerErrorException.getCause() instanceof HttpDataSource.InvalidResponseCodeException) {
-                log.e("InvalidResponseCodeException " + ((HttpDataSource.InvalidResponseCodeException)playerErrorException.getCause()).responseCode);
-            }
-
-            if (playerErrorException.getCause() instanceof UnknownHostException) {
-                log.e("UnknownHostException");
-            }
             String msg = exceptionCause;
             if (!TextUtils.isEmpty(msg)) {
                 msg += "-";
             }
-            return msg + errorMetadata;
+            return msg + errorMetadata + " " + exceptionClass;
         } catch (Exception e) {
             e.printStackTrace();
         }

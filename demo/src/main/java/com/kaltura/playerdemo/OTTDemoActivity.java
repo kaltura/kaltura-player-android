@@ -14,6 +14,7 @@ import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.config.KalturaPlayerNotInitializedException;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -84,6 +85,15 @@ public class OTTDemoActivity extends BaseDemoActivity {
             updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
         }
 
+        if (initOptions.partnerId == 198) {
+            PhoenixTVPlayerParams phoenixTVPlayerParams = new PhoenixTVPlayerParams();
+            phoenixTVPlayerParams.analyticsUrl = "https://analytics.kaltura.com";
+            phoenixTVPlayerParams.ovpPartnerId = 1774581;
+            phoenixTVPlayerParams.partnerId = 198;
+            phoenixTVPlayerParams.serviceUrl = "https://api-preprod.ott.kaltura.com/v5_1_0/";
+            phoenixTVPlayerParams.ovpServiceUrl = "http://cdnapi.kaltura.com/";
+            updatedInitOptions.tvPlayerParams = phoenixTVPlayerParams;
+        }
         try {
             KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
 

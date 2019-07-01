@@ -35,8 +35,6 @@ public class SplashScreen extends Activity {
             KalturaPlayer.initializeOVP(this, 1068292, "https://cdnapisec.kaltura.com/");
             KalturaPlayer.initializeOVP(this, 1281471, "https://cdnapisec.kaltura.com/");
             KalturaPlayer.initializeOTT(this, 3009, "https://rest-us.ott.kaltura.com/v4_5/");
-            KalturaPlayer.initializeOTT(this, 198, "https://api-preprod.ott.kaltura.com/v4_7/api_v3/");
-
 
             Intent i = new Intent(SplashScreen.this, SignInActivity.class);
             startActivity(i);
