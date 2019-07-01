@@ -52,7 +52,7 @@ public class KalturaPlayer  {
     public static final String DEFAULT_OVP_SERVER_URL =
             BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
 
-    private static Boolean playerConfigRetreived;
+    private static boolean playerConfigRetreived;
 
     private enum PrepareState {
         not_prepared,
@@ -66,9 +66,7 @@ public class KalturaPlayer  {
         basic
     }
 
-
     private boolean pluginsRegistered;
-
     private Type tvPlayerType;
     private Integer partnerId;
 //    protected String serverUrl;
@@ -112,7 +110,7 @@ public class KalturaPlayer  {
     }
 
     public static KalturaPlayer createOVPPlayer(Context context, PlayerInitOptions initOptions) throws KalturaPlayerNotInitializedException{
-        if ((playerConfigRetreived != null && playerConfigRetreived) || (initOptions != null && initOptions.tvPlayerParams != null)) {
+        if (playerConfigRetreived || (initOptions != null && initOptions.tvPlayerParams != null)) {
             if (playerConfigRetreived) {
                 initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
             }
@@ -124,7 +122,7 @@ public class KalturaPlayer  {
     }
 
     public static KalturaPlayer createOTTPlayer(Context context, PlayerInitOptions initOptions) throws KalturaPlayerNotInitializedException {
-        if ((playerConfigRetreived != null && playerConfigRetreived) || (initOptions != null && initOptions.tvPlayerParams != null)) {
+        if (playerConfigRetreived || (initOptions != null && initOptions.tvPlayerParams != null)) {
             if (playerConfigRetreived) {
                 initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
             }
