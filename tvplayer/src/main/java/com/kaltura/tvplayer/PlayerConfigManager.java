@@ -67,7 +67,7 @@ public class PlayerConfigManager {
         refreshCache(context, playerType, partnerId, serverUrl, cachedConfig, onPlayerConfigLoaded);
     }
 
-    public static TVPlayerParams retrieve(TVPlayerType tvPlayerType, int partnerId) {
+    protected static TVPlayerParams retrieve(TVPlayerType tvPlayerType, int partnerId) {
         final CachedConfig cachedConfig = loadFromCache(partnerId);
         if (cachedConfig != null) {
             if (TVPlayerType.ovp.equals(tvPlayerType)) {

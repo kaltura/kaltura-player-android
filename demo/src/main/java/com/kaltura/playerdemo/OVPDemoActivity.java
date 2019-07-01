@@ -111,7 +111,6 @@ public class OVPDemoActivity extends BaseDemoActivity {
             playerActivity.setPlayer(player);
         } catch (KalturaPlayerNotInitializedException ex) {
             log.e("KalturaPlayerNotInitializedException " + ex.getMessage());
-
         }
     }
 
