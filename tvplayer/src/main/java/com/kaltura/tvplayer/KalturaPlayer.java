@@ -599,7 +599,7 @@ public class KalturaPlayer  {
 
     public String getServerUrl() {
         if (initOptions.tvPlayerParams.serviceUrl != null) {
-            return initOptions.tvPlayerParams.serviceUrl;
+            return safeServerUrl(tvPlayerType, initOptions.tvPlayerParams.serviceUrl, Type.ovp.equals(tvPlayerType) ? KalturaPlayer.DEFAULT_OVP_SERVER_URL : null);
         }
         return null;
     }
