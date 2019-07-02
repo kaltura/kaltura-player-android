@@ -19,63 +19,6 @@ import java.util.Scanner;
 
 public class Utils {
 
-    public static PlayerInitOptions parseInitOptions(int partnerId, JsonObject config) {
-
-        JsonObject uiconfJson = null;
-        String mediaProvider = safeString(config, "mediaProvider");
-        final PlayerInitOptions options = new PlayerInitOptions(partnerId);
-//
-//        {
-//           "mode": "ovp",
-//                "initOptions": {
-//           "partnerId": 2215841,
-//                    "autoPlay": true,
-//                    "ks": null
-//        }
-//        "items": [
-//            {
-//                  "name": "Sintel",
-//                    "entryId": "1_w9zx2eti"
-//            },
-//            {
-//                  "name": "Sintel - snippet",
-//                      "entryId": "1_9bwuo813"
-//            }
-//          ]
-//        }
-
-
-
-//        {
-//  "mediaProvider": "ovp",
-//  "ovpBaseUrl": "https://cdnapisec.kaltura.com",
-//  "ovpPartnerId": 243342,
-//  "uiConfId": 21099702,
-//  "startPosition": 0,
-//  "ovpEntriesList": [
-//    "0_uka1msg4"
-//  ]
-//        }
-
-
-        if ("ovp".equals(mediaProvider)) {
-//            final Integer partnerId = safeInteger(json, "partnerId");
-//            if (partnerId == null) {
-//                throw new IllegalArgumentException("partnerId must not be null");
-//            }
-            options
-                    .setAutoPlay(safeBoolean(config, "autoPlay"))
-                    .setPreload(safeBoolean(config, "preload"))
-                    .setKs(safeString(config, "ks"))
-                    .setPluginConfigs(parsePluginConfigs(config.get("plugins")))
-                    .setReferrer(safeString(config, "referrer"));
-
-        } else if ("ott".equals(mediaProvider)) {
-            //TODO
-        }
-        return options;
-    }
-
     public static PKPluginConfigs parsePluginConfigs(JsonElement json) {
         PKPluginConfigs configs = new PKPluginConfigs();
         if (json != null && json.isJsonObject()) {

@@ -61,7 +61,6 @@ import com.kaltura.tvplayer.PlaybackControlsView;
 import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
-import com.kaltura.tvplayer.config.KalturaPlayerNotInitializedException;
 import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
@@ -341,7 +340,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         }
 
         if (KalturaPlayer.Type.ovp.equals(playerType)) {
-            try {
                 player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
                 setPlayer(player);
 
@@ -358,12 +356,8 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                         log.d("OVPMedia onEntryLoadComplete entry =" + entry.getId());
                     }
                 });
-            } catch (KalturaPlayerNotInitializedException e) {
-                e.printStackTrace();
-                return;
-            }
+
         } else if (KalturaPlayer.Type.ott.equals(playerType)) {
-            try {
                 if (partnerId == 198) {
                     PhoenixTVPlayerParams phoenixTVPlayerParams = new PhoenixTVPlayerParams();
                     phoenixTVPlayerParams.analyticsUrl = "https://analytics.kaltura.com";
@@ -388,10 +382,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                         log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
                     }
                 });
-            } catch (KalturaPlayerNotInitializedException e) {
-                e.printStackTrace();
-                return;
-            }
         } else if (KalturaPlayer.Type.basic.equals(playerType)) {
             player = KalturaPlayer.createBasicPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);

@@ -13,7 +13,6 @@ import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.config.KalturaPlayerNotInitializedException;
 import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 
 import org.greenrobot.eventbus.EventBus;
@@ -94,19 +93,16 @@ public class OTTDemoActivity extends BaseDemoActivity {
             phoenixTVPlayerParams.ovpServiceUrl = "http://cdnapi.kaltura.com/";
             updatedInitOptions.tvPlayerParams = phoenixTVPlayerParams;
         }
-        try {
-            KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
 
-            OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
-            ottMediaOptions.assetId = currentItem.id;
-            ottMediaOptions.protocol = currentItem.protocol;
-            player.loadMedia(ottMediaOptions, (entry, loadError) -> log.d("onEntryLoadComplete; " + entry + "; " + loadError));
-            player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
+        KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
 
-            playerActivity.setPlayer(player);
-        } catch (KalturaPlayerNotInitializedException ex) {
-            log.e("KalturaPlayerNotInitializedException " + ex.getMessage());
-        }
+        OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
+        ottMediaOptions.assetId = currentItem.id;
+        ottMediaOptions.protocol = currentItem.protocol;
+        player.loadMedia(ottMediaOptions, (entry, loadError) -> log.d("onEntryLoadComplete; " + entry + "; " + loadError));
+        player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
+
+        playerActivity.setPlayer(player);
     }
 
 
