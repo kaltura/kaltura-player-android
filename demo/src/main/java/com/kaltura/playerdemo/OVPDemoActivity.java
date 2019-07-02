@@ -14,7 +14,6 @@ import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OVPMediaOptions;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.config.KalturaPlayerNotInitializedException;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -99,16 +98,12 @@ public class OVPDemoActivity extends BaseDemoActivity {
             updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
         }
 
-        try {
-            KalturaPlayer player = KalturaPlayer.createOVPPlayer(playerActivity, updatedInitOptions);
-            OVPMediaOptions ovpMediaOptions = new OVPMediaOptions();
-            ovpMediaOptions.entryId = currentItem.id;
-            player.loadMedia(ovpMediaOptions, (entry, loadError) -> log.d("onEntryLoadComplete; " + entry + "; " + loadError));
-            player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
-            playerActivity.setPlayer(player);
-        } catch (KalturaPlayerNotInitializedException ex) {
-            log.e("KalturaPlayerNotInitializedException " + ex.getMessage());
-        }
+        KalturaPlayer player = KalturaPlayer.createOVPPlayer(playerActivity, updatedInitOptions);
+        OVPMediaOptions ovpMediaOptions = new OVPMediaOptions();
+        ovpMediaOptions.entryId = currentItem.id;
+        player.loadMedia(ovpMediaOptions, (entry, loadError) -> log.d("onEntryLoadComplete; " + entry + "; " + loadError));
+        player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
+        playerActivity.setPlayer(player);
     }
 
 
