@@ -626,7 +626,7 @@ public class KalturaPlayer {
             public void onTick(long millisUntilFinished) {
                 if (playerConfigRetrieved || (initOptions != null && initOptions.tvPlayerParams != null)) {
                     cancel();
-                    log.e("OVP loadMedia Done");
+                    log.d("OVP loadMedia Done");
                     if (playerConfigRetrieved) {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
                     }
@@ -668,7 +668,7 @@ public class KalturaPlayer {
             public void onTick(long millisUntilFinished) {
                 if (playerConfigRetrieved || (initOptions != null && initOptions.tvPlayerParams != null)) {
                     cancel();
-                    log.e("OTT loadMedia Done");
+                    log.d("OTT loadMedia Done");
                     if (playerConfigRetrieved) {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
                     }

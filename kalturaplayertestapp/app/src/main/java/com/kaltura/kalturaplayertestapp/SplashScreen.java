@@ -12,6 +12,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.gson.Gson;
 import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.tvplayer.KalturaPlayer;
 
 public class SplashScreen extends Activity {
@@ -35,11 +36,22 @@ public class SplashScreen extends Activity {
             KalturaPlayer.initializeOVP(this, 1068292, "https://cdnapisec.kaltura.com/");
             KalturaPlayer.initializeOVP(this, 1281471, "https://cdnapisec.kaltura.com/");
             KalturaPlayer.initializeOTT(this, 3009, "https://rest-us.ott.kaltura.com/v4_5/");
-
+            doConnectionsWarmup();
             Intent i = new Intent(SplashScreen.this, SignInActivity.class);
             startActivity(i);
             finish();
         }
+    }
+
+    private void doConnectionsWarmup() {
+        PKHttpClientManager.setHttpProvider("okhttp");
+        PKHttpClientManager.warmUp(
+                "https://https://rest-us.ott.kaltura.com/crossdomain.xml",
+                "https://rest-as.ott.kaltura.com/crossdomain.xml",
+                "https://api-preprod.ott.kaltura.com/crossdomain.xml",
+                "https://cdnapisec.kaltura.com/alive.html",
+                "https://cfvod.kaltura.com/alive.html"
+        );
     }
 
     public boolean isGooglePlayServicesAvailable() {

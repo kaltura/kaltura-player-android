@@ -20,34 +20,19 @@ public class LaunchActivity extends AppCompatActivity {
         KalturaPlayer.initializeOVP(this, 1091, "http://qa-apache-php7.dev.kaltura.com/");
         doConnectionsWarmup();
 
-        findViewById(R.id.btn_basic).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LaunchActivity.this, BasicDemoActivity.class));
-            }
-        });
+        findViewById(R.id.btn_basic).setOnClickListener(v -> startActivity(new Intent(LaunchActivity.this, BasicDemoActivity.class)));
 
-        findViewById(R.id.btn_ovp).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LaunchActivity.this, OVPDemoActivity.class));
-            }
-        });
+        findViewById(R.id.btn_ovp).setOnClickListener(v -> startActivity(new Intent(LaunchActivity.this, OVPDemoActivity.class)));
 
-        findViewById(R.id.btn_ott).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LaunchActivity.this, OTTDemoActivity.class));
-            }
-        });
+        findViewById(R.id.btn_ott).setOnClickListener(v -> startActivity(new Intent(LaunchActivity.this, OTTDemoActivity.class)));
     }
 
     private void doConnectionsWarmup() {
         PKHttpClientManager.setHttpProvider("okhttp");
         PKHttpClientManager.warmUp(
+                 "https://https://rest-us.ott.kaltura.com/crossdomain.xml",
                 "https://rest-as.ott.kaltura.com/crossdomain.xml",
                 "https://api-preprod.ott.kaltura.com/crossdomain.xml",
-                "https://vootvideo.akamaized.net/favicon.ico",
                 "https://cdnapisec.kaltura.com/alive.html",
                 "https://cfvod.kaltura.com/alive.html"
         );
