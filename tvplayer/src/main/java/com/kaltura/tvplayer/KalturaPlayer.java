@@ -214,10 +214,6 @@ public class KalturaPlayer {
 
         if (partnerId != null && partnerId.equals(Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID))) {
             kavaAnalyticsConfig.setEntryId(KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
-        } else if (mediaEntry != null && mediaEntry.getId() != null){
-            if (!isOTTPlayer()) {
-                kavaAnalyticsConfig.setEntryId(mediaEntry.getId());
-            }
         }
 
         if (!TextUtils.isEmpty(ks)) {
@@ -367,10 +363,10 @@ public class KalturaPlayer {
             }
         }
 
+        this.mediaEntry = mediaEntry;
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         updateKalturaPluginConfigs(combinedPluginConfigs);
 
-        this.mediaEntry = mediaEntry;
         prepareState = PrepareState.not_prepared;
 
         if (preload) {
