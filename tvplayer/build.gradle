@@ -30,7 +30,7 @@ print gradle.startParameter.taskNames
 dependencies {
     implementation 'com.kaltura:playkit-android:dev-SNAPSHOT'
     implementation 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
-    implementation 'com.kaltura:playkit-android-ima:develop-SNAPSHOT'
+    implementation 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
     
 //    api project(":playkit");
 //    api project(":providers");
