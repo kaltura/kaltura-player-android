@@ -12,8 +12,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.gson.Gson;
 import com.kaltura.playkit.PKLog;
-import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
-import com.kaltura.tvplayer.PlayerConfigManager;
+import com.kaltura.playkit.player.PKHttpClientManager;
+import com.kaltura.tvplayer.KalturaPlayer;
 
 public class SplashScreen extends Activity {
     private static final PKLog log = PKLog.get("SplashScreen");
@@ -26,17 +26,32 @@ public class SplashScreen extends Activity {
         boolean isPlayServicesAvailable = isGooglePlayServicesAvailable();
 
         if (isPlayServicesAvailable) {
-
-            //PlayerConfigManager.retrieve(41188731, 2215841, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() );
-            //PlayerConfigManager.retrieve(41604521, 1734762, null, "https://cdnapisec.kaltura.com", new PlayerConfigManager.OnPlayerConfigLoaded() {
-            //PlayerConfigManager.retrieve(2222401, "https://cdnapisec.kaltura.com", (partnerId, asJsonObject, error, freshness) -> {
-             PlayerConfigManager.retrieve(this, 3009, "https://rest-us.ott.kaltura.com/v4_5/api_v3/", (partnerId, config, error, freshness) -> {
-                    //PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(asJsonObject, PhoenixConfigurationsResponse.class);
-                    Intent i = new Intent(SplashScreen.this, SignInActivity.class);
-                    startActivity(i);
-                    finish();
-            });
+            KalturaPlayer.initializeOVP(this, 243342, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initializeOVP(this, 2267831, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initializeOVP(this, 2215841, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initializeOVP(this, 2222401, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initializeOVP(this, 1091, "http://qa-apache-php7.dev.kaltura.com/");
+            KalturaPlayer.initializeOVP(this, 1740481, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initializeOVP(this, 2093031, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initializeOVP(this, 1068292, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initializeOVP(this, 1281471, "https://cdnapisec.kaltura.com/");
+            KalturaPlayer.initializeOTT(this, 3009, "https://rest-us.ott.kaltura.com/v4_5/");
+            doConnectionsWarmup();
+            Intent i = new Intent(SplashScreen.this, SignInActivity.class);
+            startActivity(i);
+            finish();
         }
+    }
+
+    private void doConnectionsWarmup() {
+        PKHttpClientManager.setHttpProvider("okhttp");
+        PKHttpClientManager.warmUp(
+                "https://https://rest-us.ott.kaltura.com/crossdomain.xml",
+                "https://rest-as.ott.kaltura.com/crossdomain.xml",
+                "https://api-preprod.ott.kaltura.com/crossdomain.xml",
+                "https://cdnapisec.kaltura.com/alive.html",
+                "https://cfvod.kaltura.com/alive.html"
+        );
     }
 
     public boolean isGooglePlayServicesAvailable() {

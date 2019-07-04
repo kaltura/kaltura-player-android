@@ -8,6 +8,7 @@ import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
+import com.kaltura.tvplayer.KalturaPlayer;
 
 
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 
 public class PlayerConfig {
-    public String playerType;
+    public KalturaPlayer.Type playerType;
     public String baseUrl;
     public String partnerId;
     public String ks;

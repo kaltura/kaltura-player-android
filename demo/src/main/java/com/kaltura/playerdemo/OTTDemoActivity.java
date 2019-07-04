@@ -12,9 +12,8 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.Utils;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
-import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
-import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -60,50 +59,50 @@ public class OTTDemoActivity extends BaseDemoActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
+        PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
+        updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
+        updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
+        updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
+        updatedInitOptions.setVRSettings(initOptions.vrSettings);
+        updatedInitOptions.setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
+        updatedInitOptions.setSubtitleStyle(initOptions.setSubtitleStyle);
+        updatedInitOptions.setLoadControlBuffers(initOptions.loadControlBuffers);
+        updatedInitOptions.setAbrSettings(initOptions.abrSettings);
+        updatedInitOptions.setAspectRatioResizeMode(initOptions.aspectRatioResizeMode);
+        updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ? initOptions.preferredMediaFormat.name() : null);
+        updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
+        updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
+        updatedInitOptions.setSecureSurface(initOptions.secureSurface);
+        updatedInitOptions.setKs(initOptions.ks);
+        updatedInitOptions.setAutoPlay(initOptions.autoplay);
+        updatedInitOptions.setReferrer(initOptions.referrer);
+        updatedInitOptions.forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
+        if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
+            updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
+        }
+        if (initOptions.textLanguage != null && initOptions.textLanguageMode != null) {
+            updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
+        }
 
-        PlayerConfigManager.retrieve(this, initOptions.partnerId, initOptions.serverUrl, (partnerId, config, error, freshness) -> {
+        if (initOptions.partnerId == 198) {
+            PhoenixTVPlayerParams phoenixTVPlayerParams = new PhoenixTVPlayerParams();
+            phoenixTVPlayerParams.analyticsUrl = "https://analytics.kaltura.com";
+            phoenixTVPlayerParams.ovpPartnerId = 1774581;
+            phoenixTVPlayerParams.partnerId = 198;
+            phoenixTVPlayerParams.serviceUrl = "https://api-preprod.ott.kaltura.com/v5_1_0/";
+            phoenixTVPlayerParams.ovpServiceUrl = "http://cdnapi.kaltura.com/";
+            updatedInitOptions.tvPlayerParams = phoenixTVPlayerParams;
+        }
 
-            PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(config, PhoenixConfigurationsResponse.class);
+        KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
 
-            PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
-            if (phoenixConfigurationsResponse != null) {
-                updatedInitOptions.setPhoenixTVPlayerDMSParams(phoenixConfigurationsResponse.params);
-            }
-            updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
-            updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
-            updatedInitOptions.setVrPlayerEnabled(initOptions.vrPlayerEnabled);
-            updatedInitOptions.setVRSettings(initOptions.vrSettings);
-            updatedInitOptions.setAdAutoPlayOnResume(initOptions.adAutoPlayOnResume);
-            updatedInitOptions.setSubtitleStyle(initOptions.setSubtitleStyle);
-            updatedInitOptions.setLoadControlBuffers(initOptions.loadControlBuffers);
-            updatedInitOptions.setAbrSettings(initOptions.abrSettings);
-            updatedInitOptions.setAspectRatioResizeMode(initOptions.aspectRatioResizeMode);
-            updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ? initOptions.preferredMediaFormat.name() : null);
-            updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
-            updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
-            updatedInitOptions.setSecureSurface(initOptions.secureSurface);
-            updatedInitOptions.setKs(initOptions.ks);
-            updatedInitOptions.setServerUrl(initOptions.serverUrl);
-            updatedInitOptions.setAutoPlay(initOptions.autoplay);
-            updatedInitOptions.setReferrer(initOptions.referrer);
-            updatedInitOptions.forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
-            if (initOptions.audioLanguage != null && initOptions.audioLanguageMode != null) {
-                updatedInitOptions.setAudioLanguage(initOptions.audioLanguage, initOptions.audioLanguageMode);
-            }
-            if (initOptions.textLanguage != null && initOptions.textLanguageMode != null) {
-                updatedInitOptions.setTextLanguage(initOptions.textLanguage, initOptions.textLanguageMode);
-            }
+        OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
+        ottMediaOptions.assetId = currentItem.id;
+        ottMediaOptions.protocol = currentItem.protocol;
+        player.loadMedia(ottMediaOptions, (entry, loadError) -> log.d("onEntryLoadComplete; " + entry + "; " + loadError));
+        player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
 
-            KalturaPlayer player = KalturaPlayer.createOTTPlayer(playerActivity, updatedInitOptions);
-
-            OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
-            ottMediaOptions.assetId = currentItem.id;
-            ottMediaOptions.protocol = currentItem.protocol;
-            player.loadMedia(ottMediaOptions, (entry, load_error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
-            player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
-
-            playerActivity.setPlayer(player);
-        });
+        playerActivity.setPlayer(player);
     }
 
 

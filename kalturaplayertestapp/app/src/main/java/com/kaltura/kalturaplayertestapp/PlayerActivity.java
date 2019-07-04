@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
 
+import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -30,6 +31,7 @@ import com.kaltura.kalturaplayertestapp.models.ima.UiConfFormatIMADAIConfig;
 import com.kaltura.kalturaplayertestapp.tracks.TracksSelectionController;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPluginConfigs;
@@ -56,13 +58,13 @@ import com.kaltura.playkitvr.VRController;
 import com.kaltura.tvplayer.KalturaPlayer;
 
 import com.kaltura.tvplayer.PlaybackControlsView;
-import com.kaltura.tvplayer.PlayerConfigManager;
 import com.kaltura.tvplayer.PlayerInitOptions;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
-import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
-import com.kaltura.tvplayer.config.PhoenixTVPlayerDMSParams;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
+import com.kaltura.tvplayer.config.TVPlayerParams;
 
+import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -88,7 +90,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
     private boolean backButtonPressed;
     private Gson gson = new Gson();
     private KalturaPlayer player;
-    private PhoenixTVPlayerDMSParams phoenixTVPlayerDMSParams;
+    private TVPlayerParams tvPlayerParams;
     private PlayerInitOptions initOptions;
     private String playerConfigTitle;
     private String playerInitOptionsJson;
@@ -141,20 +143,13 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         appPlayerInitConfig = gson.fromJson(playerInitOptionsJson, PlayerConfig.class);
         if (appPlayerInitConfig != null) {
-            final String playerType = appPlayerInitConfig.playerType;
-            if (!"ott".equals(playerType)) {
-                log.d("App config json is invalid");
+            final KalturaPlayer.Type playerType = appPlayerInitConfig.playerType;
+            if (KalturaPlayer.Type.basic.equals(playerType)) {
                 buildPlayer( appPlayerInitConfig, currentPlayedMediaIndex, playerType);
-            } else {
-                PlayerConfigManager.retrieve(this, Integer.valueOf(appPlayerInitConfig.partnerId), appPlayerInitConfig.baseUrl, (partnerId, config, error, freshness) -> {
-                    if (config != null) {
-                        PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(config, PhoenixConfigurationsResponse.class);
-                        if (phoenixConfigurationsResponse != null && phoenixConfigurationsResponse.params != null) {
-                            this.phoenixTVPlayerDMSParams = phoenixConfigurationsResponse.params;
-                        }
-                    }
-                    buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
-                });
+            } else if (KalturaPlayer.Type.ovp.equals(playerType)) {
+                buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
+            } else if (KalturaPlayer.Type.ott.equals(playerType)) {
+                buildPlayer(appPlayerInitConfig, currentPlayedMediaIndex, playerType);
             }
         } else {
             showMessage(R.string.error_empty_input);
@@ -168,7 +163,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         }
 
         updatePluginsConfig(mediaList.get(currentPlayedMediaIndex));
-        if ("ovp".equals(appPlayerInitConfig.playerType.toLowerCase())) {
+        if (KalturaPlayer.Type.ovp.equals(appPlayerInitConfig.playerType)) {
             OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(0, currentPlayedMediaIndex);
             if (ovpMediaOptions == null) {
                 return;
@@ -181,7 +176,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 log.d("OVPMedia onEntryLoadComplete; " + entryId + "; " + error);
                 handleOnEntryLoadComplete(error);
             });
-        } else if ("ott".equals(appPlayerInitConfig.playerType.toLowerCase())){
+        } else if (KalturaPlayer.Type.ott.equals(appPlayerInitConfig.playerType)){
             OTTMediaOptions ottMediaOptions = buildOttMediaOptions(0, currentPlayedMediaIndex);
             if (ottMediaOptions == null) {
                 return;
@@ -194,13 +189,16 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 log.d("OTTMedia onEntryLoadComplete; " + entryId + " ; " + error);
                 handleOnEntryLoadComplete(error);
             });
-        } else if ("basic".equals(appPlayerInitConfig.playerType.toLowerCase())) {
+        } else if (KalturaPlayer.Type.basic.equals(appPlayerInitConfig.playerType)) {
             PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;
             if (appPlayerInitConfig.mediaList != null && appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex) != null) {
                 if (appPlayerInitConfig.vrSettings != null) {
                     mediaEntry.setIsVRMediaType(true);
                 }
-                mediaEntry.setExternalSubtitleList(appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).externalSubtitles);
+
+                if (appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).externalSubtitles != null) {
+                    mediaEntry.setExternalSubtitleList(appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).externalSubtitles);
+                }
                 player.setMedia(mediaEntry, 0L);
             }
         }
@@ -299,7 +297,7 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
         });
     }
 
-    private void buildPlayer(PlayerConfig appPlayerInitConfig, int playListMediaIndex, String playerType) {
+    private void buildPlayer(PlayerConfig appPlayerInitConfig, int playListMediaIndex, KalturaPlayer.Type playerType) {
         KalturaPlayer player = null;
 
         JsonArray appPluginConfigJsonObject = appPlayerInitConfig.plugins;
@@ -315,7 +313,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 .setKs(appPlayerInitConfig.ks)
                 .setPreload(appPlayerInitConfig.preload)
                 .setReferrer(appPlayerInitConfig.referrer)
-                .setServerUrl(appPlayerInitConfig.baseUrl)
                 .setAllowCrossProtocolEnabled(appPlayerInitConfig.allowCrossProtocolEnabled)
                 .setPreferredMediaFormat(appPlayerInitConfig.preferredFormat)
                 .setSecureSurface(appPlayerInitConfig.secureSurface)
@@ -333,10 +330,6 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
                 .forceSinglePlayerEngine(appPlayerInitConfig.forceSinglePlayerEngine)
                 .setPluginConfigs(convertPluginsJsonArrayToPKPlugins(appPluginConfigJsonObject));
 
-        if (phoenixTVPlayerDMSParams != null) {
-            initOptions.setPhoenixTVPlayerDMSParams(phoenixTVPlayerDMSParams);
-        }
-
         if (appPlayerInitConfig.trackSelection != null) {
             if (appPlayerInitConfig.trackSelection.audioSelectionMode != null) {
                 initOptions.setAudioLanguage(appPlayerInitConfig.trackSelection.audioSelectionLanguage, PKTrackConfig.Mode.valueOf(appPlayerInitConfig.trackSelection.audioSelectionMode));
@@ -346,40 +339,50 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             }
         }
 
-        if ("ovp".equals(playerType.toLowerCase())) {
-            player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
-            setPlayer(player);
+        if (KalturaPlayer.Type.ovp.equals(playerType)) {
+                player = KalturaPlayer.createOVPPlayer(PlayerActivity.this, initOptions);
+                setPlayer(player);
 
-            OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.startPosition, playListMediaIndex);
-            player.loadMedia(ovpMediaOptions, (entry, error) -> {
-                if (error != null) {
-                    log.d("OVPMedia Error Extra = " + error.getExtra());
-                    Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
-                    playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
-                    if (playbackControlsView != null) {
-                        playbackControlsManager.showControls(View.VISIBLE);
+                OVPMediaOptions ovpMediaOptions = buildOvpMediaOptions(appPlayerInitConfig.startPosition, playListMediaIndex);
+                player.loadMedia(ovpMediaOptions, (entry, error) -> {
+                    if (error != null) {
+                        log.d("OVPMedia Error Extra = " + error.getExtra());
+                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
+                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                        if (playbackControlsView != null) {
+                            playbackControlsManager.showControls(View.VISIBLE);
+                        }
+                    } else {
+                        log.d("OVPMedia onEntryLoadComplete entry =" + entry.getId());
                     }
-                } else {
-                    log.d("OVPMedia onEntryLoadComplete entry =" + entry.getId());
+                });
+
+        } else if (KalturaPlayer.Type.ott.equals(playerType)) {
+                if (partnerId == 198) {
+                    PhoenixTVPlayerParams phoenixTVPlayerParams = new PhoenixTVPlayerParams();
+                    phoenixTVPlayerParams.analyticsUrl = "https://analytics.kaltura.com";
+                    phoenixTVPlayerParams.ovpPartnerId = 1774581;
+                    phoenixTVPlayerParams.partnerId = 198;
+                    phoenixTVPlayerParams.serviceUrl = "https://api-preprod.ott.kaltura.com/v5_1_0/";
+                    phoenixTVPlayerParams.ovpServiceUrl = "http://cdnapi.kaltura.com/";
+                    initOptions.tvPlayerParams = phoenixTVPlayerParams;
                 }
-            });
-        } else if ("ott".equals(playerType.toLowerCase())) {
-            player = KalturaPlayer.createOTTPlayer(PlayerActivity.this, initOptions);
-            setPlayer(player);
-            OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.startPosition, playListMediaIndex);
-            player.loadMedia(ottMediaOptions, (entry, error) -> {
-                if (error != null) {
-                    log.d("OTTMedia Error Extra = " + error.getExtra());
-                    Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
-                    playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
-                    if (playbackControlsView != null) {
-                        playbackControlsManager.showControls(View.VISIBLE);
+                player = KalturaPlayer.createOTTPlayer(PlayerActivity.this, initOptions);
+                setPlayer(player);
+                OTTMediaOptions ottMediaOptions = buildOttMediaOptions(appPlayerInitConfig.startPosition, playListMediaIndex);
+                player.loadMedia(ottMediaOptions, (entry, error) -> {
+                    if (error != null) {
+                        log.d("OTTMedia Error Extra = " + error.getExtra());
+                        Snackbar.make(findViewById(android.R.id.content), error.getMessage(), Snackbar.LENGTH_LONG).show();
+                        playbackControlsView.getPlayPauseToggle().setBackgroundResource(R.drawable.play);
+                        if (playbackControlsView != null) {
+                            playbackControlsManager.showControls(View.VISIBLE);
+                        }
+                    } else {
+                        log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
                     }
-                } else {
-                    log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
-                }
-            });
-        } else if ("basic".equals(playerType.toLowerCase())) {
+                });
+        } else if (KalturaPlayer.Type.basic.equals(playerType)) {
             player = KalturaPlayer.createBasicPlayer(PlayerActivity.this, initOptions);
             setPlayer(player);
             PKMediaEntry mediaEntry = appPlayerInitConfig.mediaList.get(currentPlayedMediaIndex).pkMediaEntry;
@@ -665,6 +668,9 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
 
         player.addListener(this, PlayerEvent.error, event -> {
             log.d("PLAYER ERROR");
+            if (event.error.isFatal()) {
+                showMessage(getFullPlayerError(event));
+            }
         });
 
         player.addListener(this, PlayerEvent.sourceSelected, event -> {
@@ -752,6 +758,40 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
             }
 
         });
+    }
+
+    private String getFullPlayerError(PlayerEvent.Error event) {
+        try {
+            PlayerEvent.Error exceptionInfo =  event;
+            PKError playerError = exceptionInfo.error;
+            Exception playerErrorException = (Exception) playerError.exception;
+            String errorMetadata = "Player error occurred.";
+            String exceptionClass = "";
+            String exceptionCause = "";
+            if (playerErrorException != null && playerErrorException.getCause() != null && playerErrorException.getCause().getClass() != null) {
+                exceptionClass = playerErrorException.getCause().getClass().getName();
+                errorMetadata = (playerErrorException.getCause().toString() != null) ? playerErrorException.getCause().toString() : errorMetadata;
+
+                if (playerErrorException.getCause() instanceof HttpDataSource.InvalidResponseCodeException) {
+                    log.e("InvalidResponseCodeException " + ((HttpDataSource.InvalidResponseCodeException) playerErrorException.getCause()).responseCode);
+                }
+
+                if (playerErrorException != null && playerErrorException.getCause() instanceof UnknownHostException) {
+                    log.e("UnknownHostException");
+                }
+            } else {
+                exceptionCause = exceptionInfo.error.errorType.name() + " - " + exceptionInfo.error.message;
+            }
+
+            String msg = exceptionCause;
+            if (!TextUtils.isEmpty(msg)) {
+                msg += "-";
+            }
+            return msg + errorMetadata + " " + exceptionClass;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private void updateEventsLogsList(String eventMsg) {
@@ -975,6 +1015,12 @@ public class PlayerActivity extends AppCompatActivity implements Observer {
     }
 
     private void showMessage(int string) {
+        RelativeLayout itemView = findViewById(R.id.player_container);
+        Snackbar snackbar = Snackbar.make(itemView, string, Snackbar.LENGTH_LONG);
+        snackbar.show();
+    }
+
+    private void showMessage(String string) {
         RelativeLayout itemView = findViewById(R.id.player_container);
         Snackbar snackbar = Snackbar.make(itemView, string, Snackbar.LENGTH_LONG);
         snackbar.show();

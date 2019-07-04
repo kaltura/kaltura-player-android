@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.widget.FrameLayout;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
 import com.kaltura.netkit.utils.GsonParser;
@@ -24,7 +25,7 @@ import java.net.URL;
 public class OVPDemoActivity extends BaseDemoActivity {
 
     private static final PKLog log = PKLog.get("OVPDemoActivity");
-
+    private Gson gson = new Gson();
     private DemoItem currentItem;
 
     @Override
@@ -71,6 +72,7 @@ public class OVPDemoActivity extends BaseDemoActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void playerActivityLoaded(PlayerActivity playerActivity) {
+
         PlayerInitOptions updatedInitOptions = new PlayerInitOptions(initOptions.partnerId);
         updatedInitOptions.setLicenseRequestAdapter(initOptions.licenseRequestAdapter);
         updatedInitOptions.setContentRequestAdapter(initOptions.contentRequestAdapter);
@@ -81,12 +83,11 @@ public class OVPDemoActivity extends BaseDemoActivity {
         updatedInitOptions.setLoadControlBuffers(initOptions.loadControlBuffers);
         updatedInitOptions.setAbrSettings(initOptions.abrSettings);
         updatedInitOptions.setAspectRatioResizeMode(initOptions.aspectRatioResizeMode);
-        updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ?initOptions.preferredMediaFormat.name() : null);
+        updatedInitOptions.setPreferredMediaFormat(initOptions.preferredMediaFormat != null ? initOptions.preferredMediaFormat.name() : null);
         updatedInitOptions.setAllowClearLead(initOptions.allowClearLead);
         updatedInitOptions.setAllowCrossProtocolEnabled(initOptions.allowCrossProtocolEnabled);
         updatedInitOptions.setSecureSurface(initOptions.secureSurface);
         updatedInitOptions.setKs(initOptions.ks);
-        updatedInitOptions.setServerUrl(initOptions.serverUrl);
         updatedInitOptions.setAutoPlay(initOptions.autoplay);
         updatedInitOptions.setReferrer(initOptions.referrer);
         updatedInitOptions.forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
@@ -98,13 +99,13 @@ public class OVPDemoActivity extends BaseDemoActivity {
         }
 
         KalturaPlayer player = KalturaPlayer.createOVPPlayer(playerActivity, updatedInitOptions);
-       OVPMediaOptions ovpMediaOptions = new OVPMediaOptions();
+        OVPMediaOptions ovpMediaOptions = new OVPMediaOptions();
         ovpMediaOptions.entryId = currentItem.id;
-        player.loadMedia(ovpMediaOptions, (entry, error) -> log.d("onEntryLoadComplete; " + entry + "; " + error));
+        player.loadMedia(ovpMediaOptions, (entry, loadError) -> log.d("onEntryLoadComplete; " + entry + "; " + loadError));
         player.setPlayerView(FrameLayout.LayoutParams.WRAP_CONTENT, 600);
-
         playerActivity.setPlayer(player);
     }
+
 
     @Override
     protected String demoName() {

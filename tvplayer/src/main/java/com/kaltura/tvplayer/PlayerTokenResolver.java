@@ -3,6 +3,7 @@ package com.kaltura.tvplayer;
 import android.text.TextUtils;
 
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.utils.MapTokenResolver;
 
 import java.util.ArrayList;
@@ -58,15 +59,18 @@ class PlayerTokenResolver extends MapTokenResolver {
 
         removeAll(globalKeys);
 
-        if (initOptions != null && initOptions.phoenixTVPlayerDMSParams != null) {
-            if (initOptions.phoenixTVPlayerDMSParams.uiConfId != null) {
-                set("uiConfId", String.valueOf(initOptions.phoenixTVPlayerDMSParams.uiConfId));
+        if (initOptions != null && initOptions.tvPlayerParams != null) {
+            if (initOptions.tvPlayerParams.uiConfId != null) {
+                set("uiConfId", String.valueOf(initOptions.tvPlayerParams.uiConfId));
             }
-            if (initOptions.partnerId != null) {
-                set("partnerId", String.valueOf(initOptions.partnerId));
+            if (initOptions.tvPlayerParams.partnerId != null) {
+                set("partnerId", String.valueOf(initOptions.tvPlayerParams.partnerId));
             }
-            if (initOptions.phoenixTVPlayerDMSParams != null) {
-                set("kavaPartnerId", String.valueOf(initOptions.phoenixTVPlayerDMSParams));
+            if (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams) {
+                Integer kavaPartnerId = ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId;
+                if (kavaPartnerId != null) {
+                    set("kavaPartnerId", String.valueOf(kavaPartnerId));
+                }
             }
 
             set("ks", (initOptions.ks != null) ? initOptions.ks : "");

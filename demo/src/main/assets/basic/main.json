@@ -11,17 +11,17 @@
   "items": [
     {
       "duration": 102000,
-      "id": "0_hbhe2o9x",
-      "name": "pow_patrol",
+      "id": "1_f93tepsn",
+      "name": "sintel",
       "sources": [
         {
-          "id": "0_hbhe2o9x",
-          "url": "https://rest-as.ott.kaltura.com/api_v3/service/assetFile/action/playManifest/partnerId/225/assetId/610715/assetType/media/assetFileId/5565798/contextType/PLAYBACK/a.mpd",
+          "id": "1_f93tepsn",
+          "url": "https://cdnapisec.kaltura.com/p/2222401/sp/2222401/playManifest/entryId/1_f93tepsn/flavorIds/1_7cgwjy2a,1_xc3jlgr7,1_cn83nztu,1_pgoeohrs/deliveryProfileId/9902/protocol/https/format/mpegdash/manifest.mpd",
           "mimeType": "application/dash+xml",
           "drmData": [
             {
               "scheme": "WidevineCENC",
-              "licenseUri": "https://udrm.kaltura.com/cenc/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJodHRwczovL3Jlc3QtYXMub3R0LmthbHR1cmEuY29tL2FwaV92My9zZXJ2aWNlL2Fzc2V0RmlsZS9hY3Rpb24vZ2V0Q29udGV4dD9rcz1kako4TWpJMWZEZHVhQmROcU8tSGh6WGNhYS10U1QwRWNwQ0hITXJrelp0RDhnOEtHanhVYWsyaUNLV2tYTUR3TWZOdUdWeWJ1d09Bd2wxRWFhTVpXWml0TWd2cjU1ai00Q3lfTklwMDRDYzA5S2t4WjcwYm5KSVhDbjlaSHo3eXJLLTlNNnVLLWlEVjkyWFI5ZThLbThELTV1dFEtNms9JmNvbnRleHRUeXBlPW5vbmUmaWQ9NTU2NTc5OCIsImFjY291bnRfaWQiOjE5ODI1NTEsImNvbnRlbnRfaWQiOiIwX29nMWJlM3JmXzBfemVrM2N0ZGMsMF9vZzFiZTNyZl8wX285bWVtMjAxLDBfb2cxYmUzcmZfMF93ODkzamJjMiIsImZpbGVzIjoiIiwidXNlcl90b2tlbiI6ImRqSjhNakkxZkRkdWFCZE5xTy1IaHpYY2FhLXRTVDBFY3BDSEhNcmt6WnREOGc4S0dqeFVhazJpQ0tXa1hNRHdNZk51R1Z5YnV3T0F3bDFFYWFNWldaaXRNZ3ZyNTVqLTRDeV9OSXAwNENjMDlLa3haNzBibkpJWENuOVpIejd5ckstOU02dUstaURWOTJYUjllOEttOEQtNXV0US02az0iLCJ1ZGlkIjoiIiwiYWRkaXRpb25hbF9jYXNfc3lzdGVtIjoyMjV9&signature=v0OJHI65WxCNP%2fySM13Hr80bZpc%3d"
+              "licenseUri": "https://udrm.kaltura.com/cenc/widevine/license?custom_data=eyJjYV9zeXN0ZW0iOiJPVlAiLCJ1c2VyX3Rva2VuIjoiZGpKOE1qSXlNalF3TVh6b2V2VHpyZ0VrZktYSHN5LVZkTmhqSFZneTZaWktuRk5EOGdUSWsybkxTUDJqNlRrNnliRWtPTlBOVUNHUmdIVlZaZ0xwT2FBRzY0MGpjU2RWOWpDWHY2WV9LaTN2bUVnZ2UxTnBEVmlfM2c9PSIsImFjY291bnRfaWQiOjIyMjI0MDEsImNvbnRlbnRfaWQiOiIxX2Y5M3RlcHNuIiwiZmlsZXMiOiIxXzdjZ3dqeTJhLDFfeGMzamxncjcsMV9jbjgzbnp0dSwxX3Bnb2VvaHJzIn0%3D&signature=inAEnW1GSoznJzKz21vl3YBdG2g%3D"
             }
           ]
         }
@@ -29,13 +29,13 @@
     },
     {
       "duration": 102000,
-      "id": "0_rccv43zr",
-      "name": "MP4: Kaltura Video Solutions for Media Companies",
+      "id": "1_85xg1aem",
+      "name": "kaltura",
       "sources": [
         {
-          "id": "0_rccv43zr_mp4",
+          "id": "1_85xg1aem",
           "mimeType": "video/mp4",
-          "url": "http://qa-apache-php7.dev.kaltura.com/p/1091/sp/1091/playManifest/entryId/0_rccv43zr/flavorIds/0_qm8yk6bg,0_5artpfqc,0_ee3vdk7h,0_jkit9w6a,0_8qt13atw,0_rgajlpf4/deliveryProfileId/261/protocol/http/format/url/name/a.mp4"
+          "url": "https://cfvod.kaltura.com/pd/p/1734751/sp/173475100/serveFlavor/entryId/1_85xg1aem/v/11/flavorId/1_n070l9ib/name/a.mp4"
         }
       ]
     }

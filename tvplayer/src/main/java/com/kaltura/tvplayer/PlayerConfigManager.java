@@ -5,17 +5,17 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.util.Log;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.netkit.utils.GsonParser;
-import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
-import com.kaltura.playkit.providers.api.phoenix.PhoenixRequestBuilder;
-
+import com.kaltura.playkit.PKLog;
+import com.kaltura.tvplayer.config.PhoenixConfigurationsResponse;
+import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
+import com.kaltura.tvplayer.config.TVPlayerParams;
+import com.kaltura.tvplayer.utils.NetworkUtils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -25,13 +25,16 @@ import java.io.IOException;
 
 public class PlayerConfigManager {
 
-    private static final String TAG = "PlayerConfigManager";
-    private static final long SOFT_EXPIRATION_SEC = 24 * 60 * 60;
-    private static final long HARD_EXPIRATION_SEC = 72 * 60 * 60;
+    private static final PKLog log = PKLog.get("PlayerConfigManager");
+
+    private static Gson gson = new Gson();
+    private static final long SOFT_EXPIRATION_SEC = 72 * 60 * 60; // do not refresh till next 3rd day
+    private static final long HARD_EXPIRATION_SEC = 148 * 60 * 60; // between 72 and 148 hours get it from cache and refresh o/w get it from network
     private static Handler mainHandler = new Handler(Looper.getMainLooper());
     private static File dataDir;
 
-    public static void retrieve(Context context, int partnerId, String serverUrl, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
+    public static void retrieve(Context context, KalturaPlayer.Type playerType, int partnerId, String serverUrl, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
+        //playerType = tvPlayerType;
         if (dataDir == null) {
             dataDir = new File(context.getFilesDir(), "KalturaPlayer/PlayerConfigs");
             dataDir.mkdirs();
@@ -39,15 +42,10 @@ public class PlayerConfigManager {
 
         // Load from cache
         final CachedConfig cachedConfig = loadFromCache(partnerId);
-        
-        if (TextUtils.isEmpty(serverUrl)) {
-            serverUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
-        } else if (!serverUrl.endsWith("/")) {
-            serverUrl += "/";
-        }
-        
+        serverUrl = KalturaPlayer.safeServerUrl(playerType, serverUrl, KalturaPlayer.Type.ovp.equals(playerType) ? KalturaPlayer.DEFAULT_OVP_SERVER_URL : null);
+
         if (cachedConfig == null) {
-            refreshCache(partnerId, serverUrl, null, onPlayerConfigLoaded);
+            refreshCache(context, playerType, partnerId, serverUrl, null, onPlayerConfigLoaded);
             return;
         }
 
@@ -55,42 +53,71 @@ public class PlayerConfigManager {
 
         if (freshness < SOFT_EXPIRATION_SEC) {
             // Just return the cache
-            configLoaded(onPlayerConfigLoaded, partnerId, cachedConfig);
+            configLoaded(onPlayerConfigLoaded, playerType, partnerId, serverUrl, cachedConfig);
             return;
         }
 
         if (freshness < HARD_EXPIRATION_SEC) {
             // Refresh the cache, but return the cache immediately
-            refreshCache(partnerId, serverUrl, cachedConfig, null);
-            configLoaded(onPlayerConfigLoaded, partnerId, cachedConfig);
+            refreshCache(context, playerType, partnerId, serverUrl, cachedConfig, null);
+            configLoaded(onPlayerConfigLoaded, playerType, partnerId, serverUrl, cachedConfig);
             return;
         }
-        
-        refreshCache(partnerId, serverUrl, cachedConfig, onPlayerConfigLoaded);
+
+        refreshCache(context, playerType, partnerId, serverUrl, cachedConfig, onPlayerConfigLoaded);
     }
 
-    private static void configLoaded(@Nullable OnPlayerConfigLoaded onPlayerConfigLoaded, int partnerId, CachedConfig cachedConfig) {
+    protected static TVPlayerParams retrieve(KalturaPlayer.Type tvPlayerType, int partnerId) {
+        final CachedConfig cachedConfig = loadFromCache(partnerId);
+        if (cachedConfig != null) {
+            if (KalturaPlayer.Type.ovp.equals(tvPlayerType)) {
+                return gson.fromJson(cachedConfig.json, TVPlayerParams.class);
+            } else  if (KalturaPlayer.Type.ott.equals(tvPlayerType)) {
+                return gson.fromJson(cachedConfig.json, PhoenixTVPlayerParams.class);
+            }
+        }
+        return null;
+    }
+
+    private static void configLoaded(@Nullable OnPlayerConfigLoaded onPlayerConfigLoaded, KalturaPlayer.Type playerType, int partnerId, String serverUrl, CachedConfig cachedConfig) {
         if (onPlayerConfigLoaded != null) {
-            onPlayerConfigLoaded.onConfigLoadComplete(partnerId, GsonParser.toJson(cachedConfig.json).getAsJsonObject(), null, cachedConfig.freshness);
+
+            TVPlayerParams playerParams = null;
+            if (KalturaPlayer.Type.ovp.equals(playerType)) {
+                playerParams = gson.fromJson(cachedConfig.json, TVPlayerParams.class);
+            } else  if (KalturaPlayer.Type.ott.equals(playerType)) {
+                playerParams = gson.fromJson(cachedConfig.json, PhoenixTVPlayerParams.class);
+            }
+            onPlayerConfigLoaded.onConfigLoadComplete(playerParams, null, cachedConfig.freshness);
         }
     }
 
-    private static void refreshCache(int partnerId, String serverUrl, final CachedConfig cachedConfig, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
-        load(partnerId, serverUrl, new InternalCallback() {
-            @Override
-            public void finished(String json, ErrorElement error) {
-                if (error == null) {
-                    // No error 
-                    saveToCache(partnerId, json);
-                    configLoaded(onPlayerConfigLoaded, partnerId, new CachedConfig(0, json));
+    private static void refreshCache(Context context, KalturaPlayer.Type playerType, int partnerId, String serverUrl, final CachedConfig cachedConfig, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
+        load(context, playerType, partnerId, serverUrl, (json, error) -> {
+            if (error == null && json != null) {
+                TVPlayerParams playerParams = null;
+                if (KalturaPlayer.Type.ovp.equals(playerType)) {
+                    playerParams = gson.fromJson(json, TVPlayerParams.class);
+
+                } else  if (KalturaPlayer.Type.ott.equals(playerType)) {
+                    PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(json, PhoenixConfigurationsResponse.class);
+                    playerParams = phoenixConfigurationsResponse.params;
+                }
+                playerParams.serviceUrl = serverUrl;
+                playerParams.partnerId = partnerId;
+
+
+                String updatedConfig = gson.toJson(playerParams);
+                // No error
+                saveToCache(partnerId, updatedConfig);
+                configLoaded(onPlayerConfigLoaded, playerType, partnerId, serverUrl, new CachedConfig(0, updatedConfig));
+            } else {
+                if (cachedConfig != null) {
+                    log.e("Failed to load new config from network -- returning old cache partnerId = " + partnerId);
+                    configLoaded(onPlayerConfigLoaded, playerType, partnerId, serverUrl, cachedConfig);
                 } else {
-                    if (cachedConfig != null) {
-                        Log.e(TAG, "Failed to load new config from network -- returning old cache");
-                        configLoaded(onPlayerConfigLoaded, partnerId, cachedConfig);
-                    } else {
-                        Log.e(TAG, "Failed to load config from network, no cache");
-                        onPlayerConfigLoaded.onConfigLoadComplete(partnerId, null, error, -1);
-                    }
+                    log.e("Failed to load config from network, no cache partnerId = " + partnerId);
+                    onPlayerConfigLoaded.onConfigLoadComplete(null, error, -1);
                 }
             }
         });
@@ -119,35 +146,27 @@ public class PlayerConfigManager {
         return true;
     }
 
-    private static void load(int partnerId, String serverUrl, final InternalCallback callback) {
-        final APIOkRequestsExecutor requestsExecutor = APIOkRequestsExecutor.getSingleton();
-        //final String apiServerUrl = serverUrl + OvpConfigs.ApiPrefix;
-        final String apiServerUrl = serverUrl;
-
-        PhoenixRequestBuilder request = PhoenixConfigurations.configByPartnerId(apiServerUrl, partnerId).completion(response -> {
-            mainHandler.post(() -> {
-                StringBuffer errorMessage = new StringBuffer();
-                int errorCode = -1;
-                ErrorElement errorElement = response.getError();
-                if (!isValidResponse(response.getResponse(), errorMessage)){
-                    errorElement = ErrorElement.fromCode(errorCode, errorMessage.toString());
-                }
-                callback.finished(response.getResponse(), errorElement);
-            });
+    private static void load(Context context, KalturaPlayer.Type playerType, int partnerId, String serverUrl, final InternalCallback callback) {
+        mainHandler.post(() -> {
+            if (KalturaPlayer.Type.ott.equals(playerType)) {
+                NetworkUtils.requestOttConfigByPartnerId(context, serverUrl, partnerId, callback);
+            } else if (KalturaPlayer.Type.ovp.equals(playerType)) {
+                NetworkUtils.requestOvpConfigByPartnerId(context, serverUrl, partnerId, callback);
+            }
         });
-
-        requestsExecutor.queue(request.build());
     }
 
     private static void saveToCache(int id, String json) {
+        //log.d("saveToCache partnerId = " + id + "->" + json);
+
         final File file = new File(dataDir, id + ".json");
-        
+
         FileWriter writer = null;
         try {
             writer = new FileWriter(file);
             writer.write(json);
         } catch (IOException e) {
-            Log.e(TAG, "Failed to write config cache " + file, e);
+            log.e ("Failed to write config cache " + file, e);
         } finally {
             if (writer != null) {
                 try {
@@ -160,6 +179,9 @@ public class PlayerConfigManager {
     }
 
     private static CachedConfig loadFromCache(int id) {
+        if (dataDir == null) {
+            return null;
+        }
         final File file = new File(dataDir, id + ".json");
         if (!file.exists()) {
             return null;
@@ -179,7 +201,7 @@ public class PlayerConfigManager {
             }
 
         } catch (IOException e) {
-            Log.e(TAG, "Failed to open config " + id, e);
+            log.e("Failed to open config " + id, e);
             return null;
         } finally {
             if (reader != null) {
@@ -193,12 +215,12 @@ public class PlayerConfigManager {
 
         return new CachedConfig(timestamp, json.toString());
     }
-    
+
     public interface OnPlayerConfigLoaded {
-        void onConfigLoadComplete(int partnerId, JsonObject config, ErrorElement error, int freshness);
+        void onConfigLoadComplete(TVPlayerParams config, ErrorElement error, int freshness);
     }
-    
-    interface InternalCallback {
+
+    public interface InternalCallback {
         void finished(String json, ErrorElement error);
     }
 
@@ -212,7 +234,7 @@ public class PlayerConfigManager {
             } else {
                 this.freshness = (int) (System.currentTimeMillis() - timestamp) / 1000;
             }
-            
+
             this.json = json;
         }
     }
