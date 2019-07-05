@@ -28,13 +28,13 @@ android {
 print gradle.startParameter.taskNames
 
 dependencies {
-//    implementation 'com.kaltura:playkit-android:dev-SNAPSHOT'
-//    implementation 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
-//    implementation 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
+    implementation 'com.kaltura:playkit-android:dev-SNAPSHOT'
+    implementation 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
+    implementation 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
     
-    api project(":playkit");
-    api project(":providers");
-    api project(":kava");
+//    api project(":playkit");
+//    api project(":providers");
+//    api project(":kava");
 }
 
 repositories {
