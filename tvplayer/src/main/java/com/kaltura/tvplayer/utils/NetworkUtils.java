@@ -118,7 +118,7 @@ public class NetworkUtils {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     mainHandler.post(() -> {
-                        sendError(callback, apiName + " called failed url = " + configByPartnerIdUrl + ", error =" + e.getMessage());
+                        sendError(callback, apiName + " called failed url = " + configByPartnerIdUrl + ", error = " + e.getMessage());
                     });
                 }
 
@@ -146,7 +146,7 @@ public class NetworkUtils {
                             }
                         } catch(IOException e){
                             mainHandler.post(() -> {
-                                sendError(callback, apiName + " call failed url = " + configByPartnerIdUrl + ", error =" + e.getMessage());
+                                sendError(callback, apiName + " call failed url = " + configByPartnerIdUrl + ", error = " + e.getMessage());
                             });
                             return;
                         }
@@ -158,7 +158,7 @@ public class NetworkUtils {
                 }
             });
         } catch (Exception e) {
-            sendError(callback, apiName + " call failed url = " + configByPartnerIdUrl + ", error =" + e.getMessage());
+            sendError(callback, apiName + " call failed url = " + configByPartnerIdUrl + ", error = " + e.getMessage());
         }
     }
 
