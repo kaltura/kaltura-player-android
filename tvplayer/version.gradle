@@ -20,7 +20,7 @@ try {
         description = 'KalturaPlayerAndroid'
         repoName = 'android'
         userOrg = 'kaltura'
-        groupId = 'com.kaltura'
+        groupId = 'com.kaltura.player'
         version = libVersion
         autoPublish = true
         licences = ['AGPL-3.0']
