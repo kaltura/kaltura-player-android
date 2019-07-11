@@ -73,7 +73,6 @@ public class KalturaPlayer {
     private boolean pluginsRegistered;
     private Type tvPlayerType;
     private Integer partnerId;
-    //    protected String serverUrl;
     private Integer ovpPartnerId;
     private String ks;
 
@@ -419,6 +418,9 @@ public class KalturaPlayer {
     }
 
     public void updatePluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+        if (initOptions.pluginConfigs != null) {
+            initOptions.pluginConfigs.setPluginConfig(pluginName, pluginConfig);
+        }
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
     }
 
