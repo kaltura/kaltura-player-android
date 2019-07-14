@@ -16,6 +16,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Formatter;
@@ -164,8 +165,14 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     public void setPlayer(KalturaPlayer player) {
         this.player = player;
         this.player.addListener(this, PlayerEvent.stateChanged, event -> {
-            PlayerEvent.StateChanged stateChanged = (PlayerEvent.StateChanged) event;
+            PlayerEvent.StateChanged stateChanged = event;
             setPlayerState(stateChanged.newState);
+        });
+
+        this.player.addListener(this, AdEvent.cuepointsChanged, event -> {
+            if (playerState == null) {
+                setPlayerState(PlayerState.IDLE);
+            }
         });
     }
 
