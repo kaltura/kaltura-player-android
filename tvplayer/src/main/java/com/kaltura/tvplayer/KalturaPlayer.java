@@ -424,6 +424,10 @@ public class KalturaPlayer {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
     }
 
+    private void updateInternalPluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
+        pkPlayer.updatePluginConfig(pluginName, pluginConfig);
+    }
+
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (pkPlayer != null) {
             pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
@@ -776,7 +780,7 @@ public class KalturaPlayer {
     private void updateKalturaPluginConfigs(PKPluginConfigs combined) {
         log.d("updateKalturaPluginConfigs");
         for (Map.Entry<String, Object> plugin : combined) {
-            updatePluginConfig(plugin.getKey(), plugin.getValue());
+            updateInternalPluginConfig(plugin.getKey(), plugin.getValue());
         }
     }
 

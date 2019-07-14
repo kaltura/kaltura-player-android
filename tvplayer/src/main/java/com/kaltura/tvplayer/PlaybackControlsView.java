@@ -182,6 +182,14 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         return seekBar;
     }
 
+    private void setPlayImage() {
+        playPauseToggle.setBackgroundResource(R.drawable.play);
+    }
+
+    private void setPauseImage() {
+        playPauseToggle.setBackgroundResource(R.drawable.pause);
+    }
+
     public void togglePlayPauseClick() {
         if (player == null) {
             return;
@@ -191,15 +199,15 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
             if (adController != null && adController.isAdDisplayed()) {
                 if (adController.isAdPlaying()) {
                     adController.pause();
-                    playPauseToggle.setBackgroundResource(R.drawable.play);
+                    setPlayImage();
                 } else {
                     adController.play();
-                    playPauseToggle.setBackgroundResource(R.drawable.pause);
+                    setPauseImage();
                 }
             } else {
                 if (player.isPlaying()) {
                     player.pause();
-                    playPauseToggle.setBackgroundResource(R.drawable.play);
+                    setPlayImage();
 
                 } else {
                     if (player.getCurrentPosition() >= 0 && player.getCurrentPosition() >= player.getDuration()) {
@@ -207,7 +215,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                     } else {
                         player.play();
                     }
-                    playPauseToggle.setBackgroundResource(R.drawable.pause);
+                    setPauseImage();
                 }
             }
         }
