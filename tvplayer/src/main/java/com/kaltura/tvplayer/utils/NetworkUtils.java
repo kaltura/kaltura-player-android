@@ -3,7 +3,6 @@ package com.kaltura.tvplayer.utils;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.Looper;
 
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKLog;
@@ -67,10 +66,10 @@ public class NetworkUtils {
 
         Uri.Builder builder = Uri.parse(baseUrl).buildUpon();
         Set<String> keys = params.keySet();
-        Iterator<String> iterator = keys.iterator();
-        while (iterator.hasNext()) {
-            String key = iterator.next();
-            builder.appendQueryParameter(key, params.get(key));
+        if (keys != null) {
+            for (String key : keys) {
+                builder.appendQueryParameter(key, params.get(key));
+            }
         }
         return builder.build().toString();
     }

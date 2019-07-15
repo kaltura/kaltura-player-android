@@ -157,7 +157,7 @@ public class KalturaPlayer {
         String serviceURL = url;
         if (TextUtils.isEmpty(serviceURL)) {
             serviceURL = defaultUrl;
-        } else if (tvPlayerType != null && Type.ott.equals(tvPlayerType)) {
+        } else if (Type.ott.equals(tvPlayerType)) {
             if (!serviceURL.endsWith(OvpConfigs.ApiPrefix) && !serviceURL.endsWith(OvpConfigs.ApiPrefix.substring(0, OvpConfigs.ApiPrefix.length() - 1))) {
                 if (!serviceURL.endsWith(File.separator)) {
                     serviceURL += File.separator;
@@ -211,7 +211,7 @@ public class KalturaPlayer {
         kavaAnalyticsConfig.setDvrThreshold(Consts.DISTANCE_FROM_LIVE_THRESHOLD);
         kavaAnalyticsConfig.setPartnerId(partnerId);
 
-        if (partnerId != null && partnerId.equals(Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID))) {
+        if (partnerId != null && partnerId.equals(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID)) {
             kavaAnalyticsConfig.setEntryId(KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
         }
 
