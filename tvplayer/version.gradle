@@ -17,11 +17,11 @@ try {
 
     publish {
         artifactId = 'tvplayer'
-        description = 'KalturaPlayerAndroid'
+        desc = 'KalturaPlayerAndroid'
         repoName = 'android'
         userOrg = 'kaltura'
         groupId = 'com.kaltura.player'
-        version = libVersion
+        publishVersion = libVersion
         autoPublish = true
         licences = ['AGPL-3.0']
     }
