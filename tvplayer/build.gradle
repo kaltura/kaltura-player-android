@@ -15,7 +15,7 @@ android {
         versionCode 1
         versionName "1.0"
         multiDexEnabled  true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         //vectorDrawables.useSupportLibrary = true
     }
 
@@ -27,16 +27,17 @@ android {
     }
 
 }
-print gradle.startParameter.taskNames
 
 dependencies {
     api 'com.kaltura:playkit-android:dev-SNAPSHOT'
     api 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
     api 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
     
-//    api project(":playkit");
-//    api project(":providers");
-//    api project(":kava");
+//    api project(":playkit")
+//    api project(":providers")
+//    api project(":kava")
+
+    implementation 'androidx.annotation:annotation:1.0.2'
     implementation "androidx.core:core-ktx:+"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
