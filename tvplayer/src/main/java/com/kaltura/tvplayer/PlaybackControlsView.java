@@ -26,7 +26,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private static final int PROGRESS_BAR_MAX = 100;
     private static final int UPDATE_TIME_INTERVAL = 300; //1000
 
-    private KalturaPlayer player;
+    private KalturaPlayerBase player;
     private PlayerState playerState;
 
     private Formatter formatter;
@@ -159,7 +159,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 : formatter.format("%02d:%02d", minutes, seconds).toString();
     }
 
-    public void setPlayer(KalturaPlayer player) {
+    public void setPlayer(KalturaPlayerBase player) {
         this.player = player;
         this.player.addListener(this, PlayerEvent.stateChanged, event -> {
             PlayerEvent.StateChanged stateChanged = event;

@@ -45,7 +45,56 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-public class KalturaPlayer {
+class KalturaOvpPlayer extends KalturaPlayerBase {
+    private KalturaOvpPlayer(Context context, PlayerInitOptions initOptions) {
+        super(context, Type.ovp, initOptions);
+    }
+
+    public static void initialize(Context context, int partnerId) {
+        initializeOVP(context, partnerId, DEFAULT_OVP_SERVER_URL);
+    }
+
+    public static void initialize(Context context, int partnerId, String serverUrl) {
+        initializeOVP(context, partnerId, serverUrl);
+    }
+
+    public static KalturaOvpPlayer create(Context context, PlayerInitOptions initOptions) {
+        if (playerConfigRetrieved) {
+            initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
+        }
+        return new KalturaOvpPlayer(context, initOptions);
+    }
+}
+
+class KalturaOttPlayer extends KalturaPlayerBase {
+    private KalturaOttPlayer(Context context, PlayerInitOptions initOptions) {
+        super(context, Type.ott, initOptions);
+    }
+
+    static void initializeOTT(Context context, int partnerId, String serverUrl) {
+        initializeOTT(context, partnerId, serverUrl);
+    }
+
+    static KalturaOttPlayer create(Context context, PlayerInitOptions initOptions) {
+        if (playerConfigRetrieved) {
+            initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
+        }
+        return new KalturaOttPlayer(context, initOptions);
+    }
+}
+
+class KalturaBasicPlayer extends KalturaPlayerBase {
+
+    private KalturaBasicPlayer(Context context, PlayerInitOptions initOptions) {
+        super(context, Type.basic, initOptions);
+    }
+
+    static KalturaBasicPlayer create(Context context, PlayerInitOptions initOptions) {
+        return new KalturaBasicPlayer(context, initOptions);
+    }
+}
+
+public class KalturaPlayerBase {
 
     private static final PKLog log = PKLog.get("KalturaPlayer");
 
@@ -54,7 +103,7 @@ public class KalturaPlayer {
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
 
-    private static boolean playerConfigRetrieved;
+    static boolean playerConfigRetrieved;
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
     public static ErrorElement KalturaPlayerNotInitializedError = new ErrorElement("KalturaPlayerNotInitializedError", KALTURA_PLAYER_INIT_EXCEPTION, 777);
 
@@ -90,7 +139,7 @@ public class KalturaPlayer {
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
 
-    public static void initializeOVP(Context context, int partnerId, @Nullable String serverUrl) {
+    static void initializeOVP(Context context, int partnerId, @Nullable String serverUrl) {
 
         PlayerConfigManager.retrieve(context, Type.ovp, partnerId, serverUrl, (config, error, freshness) -> {
             if (error != null) {
@@ -101,7 +150,7 @@ public class KalturaPlayer {
         });
     }
 
-    public static void initializeOTT(Context context, int partnerId, @NonNull String serverUrl) {
+    static void initializeOTT(Context context, int partnerId, @NonNull String serverUrl) {
 
         PlayerConfigManager.retrieve(context, Type.ott, partnerId, serverUrl, (config, error, freshness) -> {
             if (error != null) {
@@ -112,25 +161,25 @@ public class KalturaPlayer {
         });
     }
 
-    public static KalturaPlayer createOVPPlayer(Context context, PlayerInitOptions initOptions) {
+    static KalturaPlayerBase createOVPPlayer(Context context, PlayerInitOptions initOptions) {
         if (playerConfigRetrieved) {
             initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
         }
-        return new KalturaPlayer(context, Type.ovp, initOptions);
+        return new KalturaPlayerBase(context, Type.ovp, initOptions);
     }
 
-    public static KalturaPlayer createOTTPlayer(Context context, PlayerInitOptions initOptions) {
+    static KalturaPlayerBase createOTTPlayer(Context context, PlayerInitOptions initOptions) {
         if (playerConfigRetrieved) {
             initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
         }
-        return new KalturaPlayer(context, Type.ott, initOptions);
+        return new KalturaPlayerBase(context, Type.ott, initOptions);
     }
 
-    public static KalturaPlayer createBasicPlayer(Context context, PlayerInitOptions initOptions) {
-        return new KalturaPlayer(context, Type.basic, initOptions);
+    static KalturaPlayerBase createBasicPlayer(Context context, PlayerInitOptions initOptions) {
+        return new KalturaPlayerBase(context, Type.basic, initOptions);
     }
 
-    protected KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
+    KalturaPlayerBase(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
         this.context = context;
         this.tvPlayerType = tvPlayerType;
@@ -539,7 +588,7 @@ public class KalturaPlayer {
         return startPosition;
     }
 
-    public KalturaPlayer setStartPosition(double startPosition) {
+    public KalturaPlayerBase setStartPosition(double startPosition) {
         this.startPosition = startPosition;
         return this;
     }
@@ -548,7 +597,7 @@ public class KalturaPlayer {
         return preload;
     }
 
-    public KalturaPlayer setPreload(boolean preload) {
+    public KalturaPlayerBase setPreload(boolean preload) {
         this.preload = preload;
         return this;
     }
@@ -557,7 +606,7 @@ public class KalturaPlayer {
         return autoPlay;
     }
 
-    public KalturaPlayer setAutoPlay(boolean autoPlay) {
+    public KalturaPlayerBase setAutoPlay(boolean autoPlay) {
         this.autoPlay = autoPlay;
         return this;
     }
@@ -576,7 +625,7 @@ public class KalturaPlayer {
 
     public String getServerUrl() {
         if (initOptions.tvPlayerParams != null && !TextUtils.isEmpty(initOptions.tvPlayerParams.serviceUrl)) {
-            return safeServerUrl(tvPlayerType, initOptions.tvPlayerParams.serviceUrl, Type.ovp.equals(tvPlayerType) ? KalturaPlayer.DEFAULT_OVP_SERVER_URL : null);
+            return safeServerUrl(tvPlayerType, initOptions.tvPlayerParams.serviceUrl, Type.ovp.equals(tvPlayerType) ? KalturaPlayerBase.DEFAULT_OVP_SERVER_URL : null);
         }
         return null;
     }

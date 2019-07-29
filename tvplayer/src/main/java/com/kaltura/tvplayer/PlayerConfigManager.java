@@ -33,7 +33,7 @@ public class PlayerConfigManager {
     private static Handler mainHandler = new Handler(Looper.getMainLooper());
     private static File dataDir;
 
-    public static void retrieve(Context context, KalturaPlayer.Type playerType, int partnerId, String serverUrl, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
+    public static void retrieve(Context context, KalturaPlayerBase.Type playerType, int partnerId, String serverUrl, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
         //playerType = tvPlayerType;
         if (dataDir == null) {
             dataDir = new File(context.getFilesDir(), "KalturaPlayer/PlayerConfigs");
@@ -42,7 +42,7 @@ public class PlayerConfigManager {
 
         // Load from cache
         final CachedConfig cachedConfig = loadFromCache(partnerId);
-        serverUrl = KalturaPlayer.safeServerUrl(playerType, serverUrl, KalturaPlayer.Type.ovp.equals(playerType) ? KalturaPlayer.DEFAULT_OVP_SERVER_URL : null);
+        serverUrl = KalturaPlayerBase.safeServerUrl(playerType, serverUrl, KalturaPlayerBase.Type.ovp.equals(playerType) ? KalturaPlayerBase.DEFAULT_OVP_SERVER_URL : null);
 
         if (cachedConfig == null) {
             refreshCache(context, playerType, partnerId, serverUrl, null, onPlayerConfigLoaded);
@@ -67,39 +67,39 @@ public class PlayerConfigManager {
         refreshCache(context, playerType, partnerId, serverUrl, cachedConfig, onPlayerConfigLoaded);
     }
 
-    protected static TVPlayerParams retrieve(KalturaPlayer.Type tvPlayerType, int partnerId) {
+    protected static TVPlayerParams retrieve(KalturaPlayerBase.Type tvPlayerType, int partnerId) {
         final CachedConfig cachedConfig = loadFromCache(partnerId);
         if (cachedConfig != null) {
-            if (KalturaPlayer.Type.ovp.equals(tvPlayerType)) {
+            if (KalturaPlayerBase.Type.ovp.equals(tvPlayerType)) {
                 return gson.fromJson(cachedConfig.json, TVPlayerParams.class);
-            } else  if (KalturaPlayer.Type.ott.equals(tvPlayerType)) {
+            } else  if (KalturaPlayerBase.Type.ott.equals(tvPlayerType)) {
                 return gson.fromJson(cachedConfig.json, PhoenixTVPlayerParams.class);
             }
         }
         return null;
     }
 
-    private static void configLoaded(@Nullable OnPlayerConfigLoaded onPlayerConfigLoaded, KalturaPlayer.Type playerType, int partnerId, String serverUrl, CachedConfig cachedConfig) {
+    private static void configLoaded(@Nullable OnPlayerConfigLoaded onPlayerConfigLoaded, KalturaPlayerBase.Type playerType, int partnerId, String serverUrl, CachedConfig cachedConfig) {
         if (onPlayerConfigLoaded != null) {
 
             TVPlayerParams playerParams = null;
-            if (KalturaPlayer.Type.ovp.equals(playerType)) {
+            if (KalturaPlayerBase.Type.ovp.equals(playerType)) {
                 playerParams = gson.fromJson(cachedConfig.json, TVPlayerParams.class);
-            } else  if (KalturaPlayer.Type.ott.equals(playerType)) {
+            } else  if (KalturaPlayerBase.Type.ott.equals(playerType)) {
                 playerParams = gson.fromJson(cachedConfig.json, PhoenixTVPlayerParams.class);
             }
             onPlayerConfigLoaded.onConfigLoadComplete(playerParams, null, cachedConfig.freshness);
         }
     }
 
-    private static void refreshCache(Context context, KalturaPlayer.Type playerType, int partnerId, String serverUrl, final CachedConfig cachedConfig, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
+    private static void refreshCache(Context context, KalturaPlayerBase.Type playerType, int partnerId, String serverUrl, final CachedConfig cachedConfig, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
         load(context, playerType, partnerId, serverUrl, (json, error) -> {
             if (error == null && json != null) {
                 TVPlayerParams playerParams = null;
-                if (KalturaPlayer.Type.ovp.equals(playerType)) {
+                if (KalturaPlayerBase.Type.ovp.equals(playerType)) {
                     playerParams = gson.fromJson(json, TVPlayerParams.class);
 
-                } else  if (KalturaPlayer.Type.ott.equals(playerType)) {
+                } else  if (KalturaPlayerBase.Type.ott.equals(playerType)) {
                     PhoenixConfigurationsResponse phoenixConfigurationsResponse = gson.fromJson(json, PhoenixConfigurationsResponse.class);
                     playerParams = phoenixConfigurationsResponse.params;
                 }
@@ -146,11 +146,11 @@ public class PlayerConfigManager {
         return true;
     }
 
-    private static void load(Context context, KalturaPlayer.Type playerType, int partnerId, String serverUrl, final InternalCallback callback) {
+    private static void load(Context context, KalturaPlayerBase.Type playerType, int partnerId, String serverUrl, final InternalCallback callback) {
         mainHandler.post(() -> {
-            if (KalturaPlayer.Type.ott.equals(playerType)) {
+            if (KalturaPlayerBase.Type.ott.equals(playerType)) {
                 NetworkUtils.requestOttConfigByPartnerId(context, serverUrl, partnerId, callback);
-            } else if (KalturaPlayer.Type.ovp.equals(playerType)) {
+            } else if (KalturaPlayerBase.Type.ovp.equals(playerType)) {
                 NetworkUtils.requestOvpConfigByPartnerId(context, serverUrl, partnerId, callback);
             }
         });
