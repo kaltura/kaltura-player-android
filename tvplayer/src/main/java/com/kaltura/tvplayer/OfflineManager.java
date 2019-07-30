@@ -1,11 +1,9 @@
 package com.kaltura.tvplayer;
 
 import android.content.Context;
-
-import androidx.annotation.Nullable;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.tvplayer.offline.OfflineManagerImp;
+import com.kaltura.tvplayer.offline.ExoOfflineManager;
 
 import java.util.List;
 import java.util.Map;
@@ -14,7 +12,7 @@ import java.util.Map;
 public abstract class OfflineManager {
 
     public static OfflineManager getInstance(Context context) {
-        return OfflineManagerImp.getInstance(context);
+        return ExoOfflineManager.getInstance(context);
     }
 
     /**
@@ -82,12 +80,14 @@ public abstract class OfflineManager {
      * Prepare an asset for download. Select the best source from the entry, load the source metadata, select tracks
      * based on the prefs, call the listener.
      * @param mediaEntry
-     * @param selection
+     * @param prefs
      * @param prepareListener
      */
-    public abstract void prepareAsset(PKMediaEntry mediaEntry, SelectionPrefs selection,
+    public abstract void prepareAsset(PKMediaEntry mediaEntry, SelectionPrefs prefs,
                                       PrepareListener prepareListener);
 
+    public abstract void prepareAsset(int partnerId, String serverUrl, MediaOptions mediaOptions, SelectionPrefs prefs,
+                                      PrepareListener prepareListener);
 
     /**
      * Add a prepared asset to the db.
@@ -119,13 +119,13 @@ public abstract class OfflineManager {
     /**
      * Check the license status of an asset.
      * @param assetId
-     * @return DRM license status - {@link AssetDrmInfo}.
+     * @return DRM license status - {@link DrmInfo}.
      */
-    public abstract AssetDrmInfo getDrmStatus(String assetId);
+    public abstract DrmInfo getDrmStatus(String assetId);
 
     /**
-     * Register or renew an asset's license. This method requires that the DRM params stored are fresh -- if they aren't,
-     * use {@link #registerDrmAsset(String, PKDrmParams, DrmRegisterListener)} instead.
+     * Register or renew an asset's license. This method requires that the DRM params stored are fresh --
+     * if they aren't, use {@link #registerDrmAsset(String, PKDrmParams, DrmRegisterListener)} instead.
      * @param assetId
      * @param listener
      * @return false if asset is not found, true otherwise.
@@ -151,7 +151,8 @@ public abstract class OfflineManager {
      * @see {@link SelectionPrefs} for higher-level track selection customization.
      */
     public interface PrepareListener {
-        void onAssetPrepared(AssetInfo assetInfo, Map<TrackType, List<Track>> selected, long estimatedSize);
+        void onPrepareComplete(AssetInfo assetInfo, Map<TrackType, List<Track>> selected, long estimatedSize);
+        void onPrepareFailed(Exception error);
     }
 
     /**
@@ -162,10 +163,11 @@ public abstract class OfflineManager {
     }
 
     public interface DrmRegisterListener {
-        void onLicenceInstall(String assetId, int totalTime, int timeToRenew, @Nullable Exception error);
+        void onRegisterComplete(String assetId, DrmInfo drmInfo);
+        void onRegisterFailed(String assetId, Exception error);
     }
 
-    public static class AssetDrmInfo {
+    public static class DrmInfo {
         public Status status;
         public int totalRemainingTime;
         public int currentRemainingTime;

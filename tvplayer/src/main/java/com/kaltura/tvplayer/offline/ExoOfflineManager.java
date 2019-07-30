@@ -4,21 +4,17 @@ import android.content.Context;
 import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.tvplayer.KalturaPlayer;
-import com.kaltura.tvplayer.OfflineManager;
 
 import java.util.List;
 
-// PlayKit entryId === DTG itemId
-
-public class OfflineManagerImp extends OfflineManager {
+public class ExoOfflineManager extends AbstractOfflineManager {
 
     private final Context appContext;
     private final LocalAssetsManager localAssetsManager;
 
     private DownloadProgressListener downloadProgressListener;
 
-    private OfflineManagerImp(Context context) {
+    private ExoOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
         this.localAssetsManager = new LocalAssetsManager(appContext);
     }
@@ -71,12 +67,7 @@ public class OfflineManagerImp extends OfflineManager {
     }
 
     @Override
-    public void sendAssetToPlayer(String assetId, KalturaPlayer player) {
-
-    }
-
-    @Override
-    public void prepareAsset(PKMediaEntry mediaEntry, SelectionPrefs selection, PrepareListener prepareListener) {
+    public void prepareAsset(PKMediaEntry mediaEntry, SelectionPrefs prefs, PrepareListener prepareListener) {
 
     }
 
@@ -104,7 +95,7 @@ public class OfflineManagerImp extends OfflineManager {
     }
 
     @Override
-    public AssetDrmInfo getDrmStatus(String assetId) {
+    public DrmInfo getDrmStatus(String assetId) {
         // TODO: 29/01/2018 LAM check status.
         return null;
     }
@@ -119,16 +110,17 @@ public class OfflineManagerImp extends OfflineManager {
         return false;
     }
 
-    private static OfflineManagerImp instance;
+    private static ExoOfflineManager instance;
 
-    public static OfflineManagerImp getInstance(Context context) {
+    public static ExoOfflineManager getInstance(Context context) {
         if (instance == null) {
-            synchronized (OfflineManagerImp.class) {
+            synchronized (ExoOfflineManager.class) {
                 if (instance == null) {
-                    instance = new OfflineManagerImp(context);
+                    instance = new ExoOfflineManager(context);
                 }
             }
         }
         return instance;
     }
+
 }
