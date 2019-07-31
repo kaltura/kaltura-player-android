@@ -34,6 +34,7 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
+import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
@@ -634,8 +635,7 @@ public class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final KalturaOvpMediaProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                            .setEntryId(mediaOptions.entryId).setUseApiCaptions(mediaOptions.useApiCaptions).setReferrer(referrer);
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
@@ -676,32 +676,7 @@ public class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                            .setAssetId(mediaOptions.assetId).setReferrer(referrer);
-
-                    if (mediaOptions.protocol != null) {
-                        provider.setProtocol(mediaOptions.protocol);
-                    }
-
-                    if (mediaOptions.fileIds != null) {
-                        provider.setFileIds(mediaOptions.fileIds);
-                    }
-
-                    if (mediaOptions.contextType != null) {
-                        provider.setContextType(mediaOptions.contextType);
-                    }
-
-                    if (mediaOptions.assetType != null) {
-                        provider.setAssetType(mediaOptions.assetType);
-                    }
-
-                    if (mediaOptions.formats != null) {
-                        provider.setFormats(mediaOptions.formats);
-                    }
-
-                    if (mediaOptions.assetReferenceType != null) {
-                        provider.setAssetReferenceType(mediaOptions.assetReferenceType);
-                    }
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
