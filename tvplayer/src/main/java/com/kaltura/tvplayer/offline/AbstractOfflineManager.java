@@ -1,6 +1,8 @@
 package com.kaltura.tvplayer.offline;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.KalturaPlayer;
@@ -12,11 +14,13 @@ import java.io.IOException;
 abstract class AbstractOfflineManager extends OfflineManager {
     final Context appContext;
     final LocalAssetsManager localAssetsManager;
-    private String kalturaServerUrl;
+    private String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
     private Integer kalturaPartnerId;
     private DownloadProgressListener downloadProgressListener;
     private AssetStateListener assetStateListener;
     private String ks;
+
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
@@ -35,7 +39,9 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
         mediaEntryProvider.load(response -> {
             if (response.isSuccess()) {
-                prepareAsset(response.getResponse(), prefs, prepareCallback);
+                mainHandler.post(() -> {
+                        prepareAsset(response.getResponse(), prefs, prepareCallback);
+                });
             } else {
                 prepareCallback.onPrepareError(new IOException(response.getError().getMessage()));
             }

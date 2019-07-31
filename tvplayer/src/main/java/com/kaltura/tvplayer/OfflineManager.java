@@ -277,11 +277,20 @@ public abstract class OfflineManager {
         }
     }
 
-    public static class AssetInfo {
-        String id;
-        AssetDownloadState state;
-        long estimatedSize;
-        long downloadedSize;
+    public static abstract class AssetInfo {
+        public final String id;
+        public final AssetDownloadState state;
+        public final long estimatedSize;
+        public final long downloadedSize;
+
+        protected AssetInfo(String id, AssetDownloadState state, long estimatedSize, long downloadedSize) {
+            this.id = id;
+            this.state = state;
+            this.estimatedSize = estimatedSize;
+            this.downloadedSize = downloadedSize;
+        }
+
+        public abstract void release();
     }
 
 }

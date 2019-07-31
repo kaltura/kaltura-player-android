@@ -28,19 +28,29 @@ import java.util.Map;
 
 class ExoAssetInfo extends OfflineManager.AssetInfo {
 
-    private final PKMediaSource source;
-    private final PKDrmParams drmData;
+    final PKMediaSource source;
+    final PKDrmParams drmData;
+    final DownloadHelper downloadHelper;
 
-    ExoAssetInfo(PKMediaSource source, PKDrmParams drmData) {
+    ExoAssetInfo(String assetId, OfflineManager.AssetDownloadState state, long estimatedSize, long downloadedSize, PKMediaSource source, PKDrmParams drmData, DownloadHelper downloadHelper) {
+        super(assetId, state, estimatedSize, downloadedSize);
         this.source = source;
         this.drmData = drmData;
+        this.downloadHelper = downloadHelper;
+    }
+
+    @Override
+    public void release() {
+        if (downloadHelper != null) {
+            downloadHelper.release();
+        }
     }
 }
 
 public class ExoOfflineManager extends AbstractOfflineManager {
 
     private static final PKLog log = PKLog.get("ExoOfflineManager");
-    private static String DOWNLOAD_CONTENT_DIRECTORY = "downloads";
+    private static final String DOWNLOAD_CONTENT_DIRECTORY = "downloads";
 
     private static ExoOfflineManager instance;
 
@@ -48,24 +58,16 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private final OkHttpDataSourceFactory httpDataSourceFactory = new OkHttpDataSourceFactory(new OkHttpClient(), userAgent);
 
-    private DatabaseProvider databaseProvider;
-    private File downloadDirectory;
-    private Cache downloadCache;
-    DownloadManager downloadManager;
-
-    private Map<String, ExoAssetInfo> newAssets = new HashMap<>();
-
-
-
-
+    private final DatabaseProvider databaseProvider;
+    private final File downloadDirectory;
+    final Cache downloadCache;
+    final DownloadManager downloadManager;
 
 
     private ExoOfflineManager(Context context) {
         super(context);
-        downloadDirectory = context.getExternalFilesDir(null);
-        if (downloadDirectory == null) {
-            downloadDirectory = context.getFilesDir();
-        }
+        final File externalFilesDir = context.getExternalFilesDir(null);
+        downloadDirectory = externalFilesDir != null ? externalFilesDir : context.getFilesDir();
 
         databaseProvider = new ExoDatabaseProvider(context);
 
@@ -87,7 +89,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     private CacheDataSourceFactory buildReadOnlyCacheDataSource(DataSource.Factory upstreamFactory, Cache cache) {
-
         return new CacheDataSourceFactory(
                 cache,
                 upstreamFactory,
@@ -103,6 +104,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         SourceSelector selector = new SourceSelector(mediaEntry, null);
 
+        final String assetId = mediaEntry.getId();
         final PKMediaSource source = selector.getSelectedSource();
         final PKDrmParams drmData = selector.getSelectedDrmParams();
         final PKMediaFormat mediaFormat = source.getMediaFormat();
@@ -119,13 +121,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         downloadHelper.prepare(new DownloadHelper.Callback() {
             @Override
             public void onPrepared(DownloadHelper helper) {
-                final DownloadRequest downloadRequest = helper.getDownloadRequest(null);
 
-                DownloadService.sendAddDownload(appContext, ExoDownloadService.class, downloadRequest, false);
-
-                helper.release();
-
-                prepareCallback.onPrepared(new ExoAssetInfo(source, drmData), null, -1);
+                final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.prepared, -1, 0, source, drmData, helper);
+                prepareCallback.onPrepared(assetInfo, null, -1);
             }
 
             @Override
@@ -145,7 +143,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         if (drmData.getScheme() != PKDrmParams.Scheme.WidevineCENC) {
-            throw new IllegalArgumentException("Only Widevine CENC");
+            throw new IllegalArgumentException("Only WidevineCENC");
         }
 
         String licenseUrl = drmData.getLicenseUri();
@@ -160,7 +158,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     private DefaultTrackSelector.Parameters buildExoParameters(SelectionPrefs prefs) {
-        return DefaultTrackSelector.Parameters.DEFAULT;// TODO: 2019-07-31
+        return new DefaultTrackSelector.ParametersBuilder().setMaxVideoSizeSd().build();
+//        return DefaultTrackSelector.Parameters.DEFAULT;// TODO: 2019-07-31
     }
 
     public static ExoOfflineManager getInstance(Context context) {
@@ -203,7 +202,20 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public boolean addAsset(AssetInfo assetInfo) {
+
+        if (assetInfo instanceof ExoAssetInfo) {
+            return addExoAsset(((ExoAssetInfo) assetInfo));
+        }
         return false;
+    }
+
+    private boolean addExoAsset(ExoAssetInfo assetInfo) {
+        final DownloadHelper helper = assetInfo.downloadHelper;
+        final DownloadRequest downloadRequest = helper.getDownloadRequest(assetInfo.id, null);
+
+        DownloadService.sendAddDownload(appContext, ExoDownloadService.class, downloadRequest, false);
+
+        return true;
     }
 
     @Override

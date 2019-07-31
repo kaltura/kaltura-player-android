@@ -25,7 +25,7 @@ public class ExoDownloadService extends DownloadService {
 
     private DownloadNotificationHelper notificationHelper;
 
-    protected ExoDownloadService() {
+    public ExoDownloadService() {
         super(FOREGROUND_NOTIFICATION_ID,
                 DEFAULT_FOREGROUND_NOTIFICATION_UPDATE_INTERVAL,
                 CHANNEL_ID,
