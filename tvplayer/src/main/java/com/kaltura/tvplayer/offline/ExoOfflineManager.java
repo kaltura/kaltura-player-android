@@ -20,16 +20,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void startService(ServiceStartListener listener) {
-        // TODO
-    }
-
-    @Override
-    public void stopService() {
-        // TODO
-    }
-
-    @Override
     public void setAssetStateListener(AssetStateListener listener) {
 
     }
@@ -122,5 +112,4 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
         return instance;
     }
-
 }

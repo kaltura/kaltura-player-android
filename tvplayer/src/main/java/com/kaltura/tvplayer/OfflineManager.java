@@ -15,13 +15,18 @@ public abstract class OfflineManager {
         return ExoOfflineManager.getInstance(context);
     }
 
-    /**
-     * Start the download service. Essential for using all other methods.
-     * @param listener
-     */
-    public abstract void startService(ServiceStartListener listener);
 
-    public abstract void stopService();
+    /**
+     * Sets the server URL used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareListener)}.
+     * @param url
+     */
+    public abstract void setKalturaServerUrl(String url);
+
+    /**
+     * Sets the partner id used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareListener)}.
+     * @param partnerId
+     */
+    public abstract void setKalturaPartnerId(int partnerId);
 
     /**
      * Set the global download state listener, to be notified about state changes.
@@ -35,18 +40,84 @@ public abstract class OfflineManager {
      */
     public abstract void setDownloadProgressListener(DownloadProgressListener listener);
 
+
+
+
+
+
+
+
+
+
     /**
      * Temporarily pause all downloads. Doesn't change assets' download state. Revert with {@link #resumeDownloads()}.
      */
     public abstract void pauseDownloads();
 
     /**
-     * Resume downloading assets. Should be called in two places:
-     * - After calling {@link #startService(ServiceStartListener)}, to resume the downloads that
-     * were in progress in the previous session
-     * - After calling {@link #pauseDownloads()}, to resume the paused downloads.
+     * Resume downloading assets.
      */
     public abstract void resumeDownloads();
+
+
+
+
+
+    /**
+     * Prepare an asset for download. Select the best source from the entry, load the source metadata, select tracks
+     * based on the prefs, call the listener.
+     * @param mediaEntry
+     * @param prefs
+     * @param prepareListener
+     */
+    public abstract void prepareAsset(PKMediaEntry mediaEntry,
+                                      SelectionPrefs prefs, PrepareListener prepareListener);
+
+    /**
+     * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
+     * the entry, load the source metadata, select tracks based on the prefs, call the listener. If the asset requires
+     * KS, make sure to set {@link MediaOptions#ks}.
+     * Before calling this method, the partner id and the server URL must be set by {@link #setKalturaPartnerId(int)}
+     * and {@link #setKalturaServerUrl(String)}, respectively.
+     * @param mediaOptions
+     * @param prefs
+     * @param prepareListener
+     * @throws IllegalStateException if partner id and/or server URL were not set.
+     */
+    public abstract void prepareAsset(MediaOptions mediaOptions,
+                                      SelectionPrefs prefs, PrepareListener prepareListener)
+            throws IllegalStateException;
+
+    /**
+     * Add a prepared asset to the db.
+     * @return true if the asset was added, false otherwise. Note: returns false if asset already exists.
+     */
+    public abstract boolean addAsset(AssetInfo assetInfo);
+
+    /**
+     * Start (or resume) downloading an asset.
+     * @param assetId
+     * @return false if asset is not found, true otherwise.
+     */
+    public abstract boolean startAssetDownload(String assetId);
+
+    /**
+     * Pause downloading an asset.
+     * @param assetId
+     * @return false if asset is not found, true otherwise.
+     */
+    public abstract boolean pauseAssetDownload(String assetId);
+
+    /**
+     * Remove asset with all its data.
+     * @param assetId
+     * @return false if asset is not found, true otherwise.
+     */
+    public abstract boolean removeAsset(String assetId);
+
+
+
+
 
     /**
      * Find asset by id.
@@ -76,45 +147,9 @@ public abstract class OfflineManager {
      */
     public abstract void sendAssetToPlayer(String assetId, KalturaPlayer player);
 
-    /**
-     * Prepare an asset for download. Select the best source from the entry, load the source metadata, select tracks
-     * based on the prefs, call the listener.
-     * @param mediaEntry
-     * @param prefs
-     * @param prepareListener
-     */
-    public abstract void prepareAsset(PKMediaEntry mediaEntry, SelectionPrefs prefs,
-                                      PrepareListener prepareListener);
 
-    public abstract void prepareAsset(int partnerId, String serverUrl, MediaOptions mediaOptions, SelectionPrefs prefs,
-                                      PrepareListener prepareListener);
 
-    /**
-     * Add a prepared asset to the db.
-     * @return true if the asset was added, false otherwise. Note: returns false if asset already exists.
-     */
-    public abstract boolean addAsset(AssetInfo assetInfo);
 
-    /**
-     * Start (or resume) downloading an asset.
-     * @param assetId
-     * @return false if asset is not found, true otherwise.
-     */
-    public abstract boolean startAssetDownload(String assetId);
-
-    /**
-     * Pause downloading an asset.
-     * @param assetId
-     * @return false if asset is not found, true otherwise.
-     */
-    public abstract boolean pauseAssetDownload(String assetId);
-
-    /**
-     * Remove asset with all its data.
-     * @param assetId
-     * @return false if asset is not found, true otherwise.
-     */
-    public abstract boolean removeAsset(String assetId);
 
     /**
      * Check the license status of an asset.
@@ -141,9 +176,9 @@ public abstract class OfflineManager {
      */
     public abstract boolean registerDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener);
 
-    public interface ServiceStartListener {
-        void onServiceStarted();
-    }
+
+
+
 
     /**
      * Invoked during asset info loading ({@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareListener)}).
