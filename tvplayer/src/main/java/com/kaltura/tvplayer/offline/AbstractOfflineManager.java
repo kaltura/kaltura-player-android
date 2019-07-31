@@ -1,53 +1,43 @@
 package com.kaltura.tvplayer.offline;
 
-import com.kaltura.playkit.PKMediaEntry;
+import android.content.Context;
+import com.kaltura.playkit.*;
 import com.kaltura.playkit.providers.MediaEntryProvider;
-import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
-import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
-import com.kaltura.tvplayer.*;
+import com.kaltura.tvplayer.KalturaPlayer;
+import com.kaltura.tvplayer.MediaOptions;
+import com.kaltura.tvplayer.OfflineManager;
 
 import java.io.IOException;
 
 abstract class AbstractOfflineManager extends OfflineManager {
+    final Context appContext;
+    final LocalAssetsManager localAssetsManager;
     private String kalturaServerUrl;
     private Integer kalturaPartnerId;
+    private DownloadProgressListener downloadProgressListener;
+    private AssetStateListener assetStateListener;
+    private String ks;
+
+    AbstractOfflineManager(Context context) {
+        this.appContext = context.getApplicationContext();
+        this.localAssetsManager = new LocalAssetsManager(appContext);
+    }
 
     @Override
     public final void prepareAsset(MediaOptions mediaOptions, SelectionPrefs prefs,
-                                   PrepareListener prepareListener) throws IllegalStateException {
+                                   PrepareCallback prepareCallback) throws IllegalStateException {
 
         if (kalturaPartnerId == null || kalturaServerUrl == null) {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
         }
 
-        final MediaEntryProvider mediaEntryProvider;
-        if (mediaOptions instanceof OVPMediaOptions) {
-
-            final OVPMediaOptions options = (OVPMediaOptions) mediaOptions;
-            mediaEntryProvider = new KalturaOvpMediaProvider(kalturaServerUrl, kalturaPartnerId, mediaOptions.ks)
-                    .setEntryId(options.entryId)
-                    .setUseApiCaptions(options.useApiCaptions);
-
-        } else if (mediaOptions instanceof OTTMediaOptions) {
-
-            final OTTMediaOptions options = (OTTMediaOptions) mediaOptions;
-            mediaEntryProvider = new PhoenixMediaProvider(kalturaServerUrl, kalturaPartnerId, mediaOptions.ks)
-                    .setAssetId(options.assetId)
-                    .setAssetReferenceType(options.assetReferenceType)
-                    .setAssetType(options.assetType)
-                    .setContextType(options.contextType)
-                    .setFileIds(options.fileIds)
-                    .setFormats(options.formats)
-                    .setProtocol(options.protocol);
-        } else {
-            throw new IllegalArgumentException("Invalid MediaOptions type");
-        }
+        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId, ks, null);
 
         mediaEntryProvider.load(response -> {
             if (response.isSuccess()) {
-                prepareAsset(response.getResponse(), prefs, prepareListener);
+                prepareAsset(response.getResponse(), prefs, prepareCallback);
             } else {
-                prepareListener.onPrepareFailed(new IOException(response.getError().getMessage()));
+                prepareCallback.onPrepareError(new IOException(response.getError().getMessage()));
             }
         });
     }
@@ -67,4 +57,20 @@ abstract class AbstractOfflineManager extends OfflineManager {
     public void setKalturaPartnerId(int partnerId) {
         this.kalturaPartnerId = partnerId;
     }
+
+    @Override
+    public void setAssetStateListener(AssetStateListener listener) {
+        this.assetStateListener = listener;
+    }
+
+    @Override
+    public void setDownloadProgressListener(DownloadProgressListener listener) {
+        this.downloadProgressListener = listener;
+    }
+
+    @Override
+    public void setKs(String ks) {
+        this.ks = ks;
+    }
+
 }

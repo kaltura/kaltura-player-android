@@ -8,6 +8,7 @@ import com.kaltura.tvplayer.offline.ExoOfflineManager;
 import java.util.List;
 import java.util.Map;
 
+
 @SuppressWarnings({"WeakerAccess", "unused", "JavaDoc"})
 public abstract class OfflineManager {
 
@@ -17,14 +18,14 @@ public abstract class OfflineManager {
 
 
     /**
-     * Sets the server URL used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareListener)}.
+     * Sets the server URL used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}.
      *
      * @param url
      */
     public abstract void setKalturaServerUrl(String url);
 
     /**
-     * Sets the partner id used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareListener)}.
+     * Sets the partner id used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}.
      *
      * @param partnerId
      */
@@ -62,10 +63,10 @@ public abstract class OfflineManager {
      *
      * @param mediaEntry
      * @param prefs
-     * @param prepareListener
+     * @param prepareCallback
      */
     public abstract void prepareAsset(PKMediaEntry mediaEntry,
-                                      SelectionPrefs prefs, PrepareListener prepareListener);
+                                      SelectionPrefs prefs, PrepareCallback prepareCallback);
 
     /**
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
@@ -76,11 +77,11 @@ public abstract class OfflineManager {
      *
      * @param mediaOptions
      * @param prefs
-     * @param prepareListener
+     * @param prepareCallback
      * @throws IllegalStateException if partner id and/or server URL were not set.
      */
     public abstract void prepareAsset(MediaOptions mediaOptions,
-                                      SelectionPrefs prefs, PrepareListener prepareListener)
+                                      SelectionPrefs prefs, PrepareCallback prepareCallback)
             throws IllegalStateException;
 
     /**
@@ -176,6 +177,8 @@ public abstract class OfflineManager {
      */
     public abstract boolean registerDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener);
 
+    public abstract void setKs(String ks);
+
 
     public enum AssetDownloadState {
         added, prepared, started, paused, completed, failed
@@ -190,15 +193,15 @@ public abstract class OfflineManager {
     }
 
     /**
-     * Invoked during asset info loading ({@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareListener)}).
+     * Invoked during asset info loading ({@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}).
      * Allows the app to inspect and change the track selection. If app returns non-null, it overrides the automatic selection.
      *
      * @see {@link SelectionPrefs} for higher-level track selection customization.
      */
-    public interface PrepareListener {
-        void onPrepareComplete(AssetInfo assetInfo, Map<TrackType, List<Track>> selected, long estimatedSize);
+    public interface PrepareCallback {
+        void onPrepared(AssetInfo assetInfo, Map<TrackType, List<Track>> selected, long estimatedSize);
 
-        void onPrepareFailed(Exception error);
+        void onPrepareError(Exception error);
     }
 
     /**
@@ -238,7 +241,7 @@ public abstract class OfflineManager {
     }
 
     /**
-     * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareListener)}.
+     * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
         public Long preferredVideoBitrate;
