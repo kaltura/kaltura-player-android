@@ -199,7 +199,7 @@ public abstract class OfflineManager {
      * @see {@link SelectionPrefs} for higher-level track selection customization.
      */
     public interface PrepareCallback {
-        void onPrepared(AssetInfo assetInfo, Map<TrackType, List<Track>> selected, long estimatedSize);
+        void onPrepared(AssetInfo assetInfo, Map<TrackType, List<Track>> selected);
 
         void onPrepareError(Exception error);
     }

@@ -123,7 +123,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             public void onPrepared(DownloadHelper helper) {
 
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.prepared, -1, 0, source, drmData, helper);
-                prepareCallback.onPrepared(assetInfo, null, -1);
+                prepareCallback.onPrepared(assetInfo, null);
             }
 
             @Override
