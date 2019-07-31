@@ -51,8 +51,7 @@ public class KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaPlayer");
 
-    public static final String DEFAULT_OVP_SERVER_URL =
-            BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
+    public static final String DEFAULT_OVP_SERVER_URL = "https://cdnapisec.kaltura.com/";
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
 
