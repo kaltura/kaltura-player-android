@@ -18,35 +18,31 @@ public abstract class OfflineManager {
 
     /**
      * Sets the server URL used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareListener)}.
+     *
      * @param url
      */
     public abstract void setKalturaServerUrl(String url);
 
     /**
      * Sets the partner id used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareListener)}.
+     *
      * @param partnerId
      */
     public abstract void setKalturaPartnerId(int partnerId);
 
     /**
      * Set the global download state listener, to be notified about state changes.
+     *
      * @param listener
      */
     public abstract void setAssetStateListener(AssetStateListener listener);
 
     /**
      * Set the global download progress listener
+     *
      * @param listener
      */
     public abstract void setDownloadProgressListener(DownloadProgressListener listener);
-
-
-
-
-
-
-
-
 
 
     /**
@@ -60,12 +56,10 @@ public abstract class OfflineManager {
     public abstract void resumeDownloads();
 
 
-
-
-
     /**
      * Prepare an asset for download. Select the best source from the entry, load the source metadata, select tracks
      * based on the prefs, call the listener.
+     *
      * @param mediaEntry
      * @param prefs
      * @param prepareListener
@@ -79,6 +73,7 @@ public abstract class OfflineManager {
      * KS, make sure to set {@link MediaOptions#ks}.
      * Before calling this method, the partner id and the server URL must be set by {@link #setKalturaPartnerId(int)}
      * and {@link #setKalturaServerUrl(String)}, respectively.
+     *
      * @param mediaOptions
      * @param prefs
      * @param prepareListener
@@ -90,12 +85,14 @@ public abstract class OfflineManager {
 
     /**
      * Add a prepared asset to the db.
+     *
      * @return true if the asset was added, false otherwise. Note: returns false if asset already exists.
      */
     public abstract boolean addAsset(AssetInfo assetInfo);
 
     /**
      * Start (or resume) downloading an asset.
+     *
      * @param assetId
      * @return false if asset is not found, true otherwise.
      */
@@ -103,6 +100,7 @@ public abstract class OfflineManager {
 
     /**
      * Pause downloading an asset.
+     *
      * @param assetId
      * @return false if asset is not found, true otherwise.
      */
@@ -110,17 +108,16 @@ public abstract class OfflineManager {
 
     /**
      * Remove asset with all its data.
+     *
      * @param assetId
      * @return false if asset is not found, true otherwise.
      */
     public abstract boolean removeAsset(String assetId);
 
 
-
-
-
     /**
      * Find asset by id.
+     *
      * @param assetId
      * @return asset info or null if not found.
      */
@@ -128,6 +125,7 @@ public abstract class OfflineManager {
 
     /**
      * Get list of {@link AssetInfo} objects for all assets in the given state.
+     *
      * @param state
      * @return
      */
@@ -135,6 +133,7 @@ public abstract class OfflineManager {
 
     /**
      * Get an offline-playable PKMediaEntry object.
+     *
      * @param assetId
      * @return
      */
@@ -142,17 +141,16 @@ public abstract class OfflineManager {
 
     /**
      * Send a downloaded asset to the player.
+     *
      * @param assetId
      * @param player
      */
     public abstract void sendAssetToPlayer(String assetId, KalturaPlayer player);
 
 
-
-
-
     /**
      * Check the license status of an asset.
+     *
      * @param assetId
      * @return DRM license status - {@link DrmInfo}.
      */
@@ -161,6 +159,7 @@ public abstract class OfflineManager {
     /**
      * Register or renew an asset's license. This method requires that the DRM params stored are fresh --
      * if they aren't, use {@link #registerDrmAsset(String, PKDrmParams, DrmRegisterListener)} instead.
+     *
      * @param assetId
      * @param listener
      * @return false if asset is not found, true otherwise.
@@ -169,6 +168,7 @@ public abstract class OfflineManager {
 
     /**
      * Register or renew an asset's license.
+     *
      * @param assetId
      * @param drmParams
      * @param listener
@@ -177,16 +177,27 @@ public abstract class OfflineManager {
     public abstract boolean registerDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener);
 
 
+    public enum AssetDownloadState {
+        added, prepared, started, paused, completed, failed
+    }
 
+    public enum TrackType {
+        video, audio, text
+    }
 
+    public enum CodecType {
+        avc, hevc, vp9
+    }
 
     /**
      * Invoked during asset info loading ({@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareListener)}).
      * Allows the app to inspect and change the track selection. If app returns non-null, it overrides the automatic selection.
+     *
      * @see {@link SelectionPrefs} for higher-level track selection customization.
      */
     public interface PrepareListener {
         void onPrepareComplete(AssetInfo assetInfo, Map<TrackType, List<Track>> selected, long estimatedSize);
+
         void onPrepareFailed(Exception error);
     }
 
@@ -199,7 +210,12 @@ public abstract class OfflineManager {
 
     public interface DrmRegisterListener {
         void onRegisterComplete(String assetId, DrmInfo drmInfo);
+
         void onRegisterFailed(String assetId, Exception error);
+    }
+
+    public interface AssetStateListener {
+        void onAssetStateChanged(String assetId, AssetInfo assetInfo);
     }
 
     public static class DrmInfo {
@@ -219,18 +235,6 @@ public abstract class OfflineManager {
         long bitrate;
         int width;
         int height;
-    }
-
-    public enum AssetDownloadState {
-        added, prepared, started, paused, completed, failed
-    }
-
-    public enum TrackType {
-        video, audio, text
-    }
-
-    public enum CodecType {
-        avc, hevc, vp9
     }
 
     /**
@@ -268,10 +272,6 @@ public abstract class OfflineManager {
             this.preferredTextLanguages = preferredTextLanguages;
             return this;
         }
-    }
-
-    public interface AssetStateListener {
-        void onAssetStateChanged(String assetId, AssetInfo assetInfo);
     }
 
     public static class AssetInfo {

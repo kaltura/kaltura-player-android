@@ -9,14 +9,25 @@ import java.util.List;
 
 public class ExoOfflineManager extends AbstractOfflineManager {
 
+    private static ExoOfflineManager instance;
     private final Context appContext;
     private final LocalAssetsManager localAssetsManager;
-
     private DownloadProgressListener downloadProgressListener;
 
     private ExoOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
         this.localAssetsManager = new LocalAssetsManager(appContext);
+    }
+
+    public static ExoOfflineManager getInstance(Context context) {
+        if (instance == null) {
+            synchronized (ExoOfflineManager.class) {
+                if (instance == null) {
+                    instance = new ExoOfflineManager(context);
+                }
+            }
+        }
+        return instance;
     }
 
     @Override
@@ -98,18 +109,5 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     @Override
     public boolean registerDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener) {
         return false;
-    }
-
-    private static ExoOfflineManager instance;
-
-    public static ExoOfflineManager getInstance(Context context) {
-        if (instance == null) {
-            synchronized (ExoOfflineManager.class) {
-                if (instance == null) {
-                    instance = new ExoOfflineManager(context);
-                }
-            }
-        }
-        return instance;
     }
 }
