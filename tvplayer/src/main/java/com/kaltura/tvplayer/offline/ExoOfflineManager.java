@@ -2,12 +2,16 @@ package com.kaltura.tvplayer.offline;
 
 import android.content.Context;
 import android.net.Uri;
+import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
 import com.kaltura.android.exoplayer2.database.ExoDatabaseProvider;
 import com.kaltura.android.exoplayer2.drm.*;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.offline.*;
+import com.kaltura.android.exoplayer2.source.MediaSource;
+import com.kaltura.android.exoplayer2.source.dash.DashUtil;
+import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
 import com.kaltura.android.exoplayer2.upstream.FileDataSourceFactory;
@@ -21,9 +25,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 
 class ExoAssetInfo extends OfflineManager.AssetInfo {
@@ -195,9 +198,19 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public PKMediaEntry getLocalPlaybackEntry(String assetId) {
-        // TODO: 28/01/2018 DTG local file and LocalAssetManager local source
-        return null;
+    public PKMediaEntry getLocalPlaybackEntry(String assetId) throws IOException {
+
+        final Download download = downloadManager.getDownloadIndex().getDownload(assetId);
+
+        if (download == null || download.state != Download.STATE_COMPLETED) {
+            return null;
+        }
+
+        final CacheDataSourceFactory dataSourceFactory = new CacheDataSourceFactory(downloadCache, httpDataSourceFactory);
+        final MediaSource mediaSource = DownloadHelper.createMediaSource(download.request, dataSourceFactory);
+
+        final PKMediaSource localMediaSource = localAssetsManager.getLocalMediaSource(assetId, mediaSource);
+        return new PKMediaEntry().setId(assetId).setSources(Collections.singletonList(localMediaSource));
     }
 
     @Override
@@ -243,12 +256,52 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public boolean registerDrmAsset(String assetId, DrmRegisterListener listener) {
+    public boolean registerDrmAsset(AssetInfo assetInfo, DrmRegisterListener listener) {
+
+        if (!(assetInfo instanceof ExoAssetInfo)) {
+            return false;
+        }
+
+        final ExoAssetInfo exoAssetInfo = (ExoAssetInfo) assetInfo;
+
+        final String sourceUrl = exoAssetInfo.source.getUrl();
+
+        final CacheDataSourceFactory cacheDataSourceFactory = new CacheDataSourceFactory(downloadCache, httpDataSourceFactory);
+        final byte[] drmInitData;
+        try {
+            drmInitData = getDrmInitData(cacheDataSourceFactory, sourceUrl);
+        } catch (IOException | InterruptedException e) {
+            listener.onRegisterError(exoAssetInfo.id, e);
+            return false;
+        }
+
+        localAssetsManager.registerDrmAsset(drmInitData, PKMediaFormat.dash.mimeType, exoAssetInfo.id, PKMediaFormat.dash, exoAssetInfo.drmData.getLicenseUri(), new LocalAssetsManager.AssetRegistrationListener() {
+            @Override
+            public void onRegistered(String localAssetPath) {
+                listener.onRegistered(exoAssetInfo.id, null);// TODO: 2019-08-01 get drm info
+            }
+
+            @Override
+            public void onFailed(String localAssetPath, Exception error) {
+                listener.onRegisterError(exoAssetInfo.id, error);
+            }
+        });
+
         return false;
     }
 
     @Override
-    public boolean registerDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener) {
+    public boolean renewDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener) {
         return false;
     }
+
+    private byte[] getDrmInitData(CacheDataSourceFactory dataSourceFactory, String contentUri) throws IOException, InterruptedException {
+        final CacheDataSource cacheDataSource = dataSourceFactory.createDataSource();
+        final DashManifest dashManifest = DashUtil.loadManifest(cacheDataSource, Uri.parse(contentUri));
+        final DrmInitData drmInitData = DashUtil.loadDrmInitData(cacheDataSource, dashManifest.getPeriod(0));
+
+        final DrmInitData.SchemeData schemeData = drmInitData.get(C.WIDEVINE_UUID);
+        return schemeData != null ? schemeData.data : null;
+    }
+
 }

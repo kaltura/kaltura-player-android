@@ -5,6 +5,7 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.tvplayer.offline.ExoOfflineManager;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -138,7 +139,7 @@ public abstract class OfflineManager {
      * @param assetId
      * @return
      */
-    public abstract PKMediaEntry getLocalPlaybackEntry(String assetId);
+    public abstract PKMediaEntry getLocalPlaybackEntry(String assetId) throws IOException;
 
     /**
      * Send a downloaded asset to the player.
@@ -146,7 +147,7 @@ public abstract class OfflineManager {
      * @param assetId
      * @param player
      */
-    public abstract void sendAssetToPlayer(String assetId, KalturaPlayer player);
+    public abstract void sendAssetToPlayer(String assetId, KalturaPlayer player) throws IOException;
 
 
     /**
@@ -159,13 +160,13 @@ public abstract class OfflineManager {
 
     /**
      * Register or renew an asset's license. This method requires that the DRM params stored are fresh --
-     * if they aren't, use {@link #registerDrmAsset(String, PKDrmParams, DrmRegisterListener)} instead.
+     * if they aren't, use {@link #renewDrmAsset(String, PKDrmParams, DrmRegisterListener)} instead.
      *
-     * @param assetId
+     * @param assetInfo
      * @param listener
      * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean registerDrmAsset(String assetId, DrmRegisterListener listener);
+    public abstract boolean registerDrmAsset(AssetInfo assetInfo, DrmRegisterListener listener);
 
     /**
      * Register or renew an asset's license.
@@ -175,7 +176,7 @@ public abstract class OfflineManager {
      * @param listener
      * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean registerDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener);
+    public abstract boolean renewDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener);
 
     public abstract void setKs(String ks);
 
@@ -212,9 +213,9 @@ public abstract class OfflineManager {
     }
 
     public interface DrmRegisterListener {
-        void onRegisterComplete(String assetId, DrmInfo drmInfo);
+        void onRegistered(String assetId, DrmInfo drmInfo);
 
-        void onRegisterFailed(String assetId, Exception error);
+        void onRegisterError(String assetId, Exception error);
     }
 
     public interface AssetStateListener {

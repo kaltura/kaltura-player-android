@@ -49,7 +49,7 @@ abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
-    public final void sendAssetToPlayer(String assetId, KalturaPlayer player) {
+    public final void sendAssetToPlayer(String assetId, KalturaPlayer player) throws IOException {
         final PKMediaEntry entry = getLocalPlaybackEntry(assetId);
         player.setMedia(entry);
     }
