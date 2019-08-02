@@ -28,6 +28,7 @@ public class PlayerInitOptions {
     public PKMediaFormat preferredMediaFormat;
     public Boolean allowCrossProtocolEnabled;
     public Boolean allowClearLead;
+    public Boolean enableDecoderFallback;
     public Boolean secureSurface;
     public Boolean adAutoPlayOnResume;
     public Boolean vrPlayerEnabled;
@@ -123,6 +124,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setAllowClearLead(Boolean allowClearLead) {
         if (allowClearLead != null) {
             this.allowClearLead = allowClearLead;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setEnableDecoderFallback(Boolean enableDecoderFallback) {
+        if (enableDecoderFallback != null) {
+            this.enableDecoderFallback = enableDecoderFallback;
         }
         return this;
     }
