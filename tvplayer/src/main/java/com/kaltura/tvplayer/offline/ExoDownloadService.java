@@ -49,7 +49,7 @@ public class ExoDownloadService extends DownloadService {
     @Nullable
     @Override
     protected Scheduler getScheduler() {
-        return (Util.SDK_INT >= 21) ? new PlatformScheduler(this, JOB_ID) : null;
+        return new WorkManagerScheduler("ExoDownloadService");
     }
 
     @Override

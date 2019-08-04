@@ -35,6 +35,7 @@ dependencies {
 //    api project(":providers")
 //    api project(":kava")
 
+    implementation "androidx.work:work-runtime:2.1.0"
     implementation 'androidx.annotation:annotation:1.1.0'
 }
 
