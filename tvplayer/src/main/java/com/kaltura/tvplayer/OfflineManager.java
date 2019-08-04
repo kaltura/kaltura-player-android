@@ -158,31 +158,22 @@ public abstract class OfflineManager {
      */
     public abstract DrmInfo getDrmStatus(String assetId);
 
-    /**
-     * Register or renew an asset's license. This method requires that the DRM params stored are fresh --
-     * if they aren't, use {@link #renewDrmAsset(String, PKDrmParams, DrmRegisterListener)} instead.
-     *
-     * @param assetInfo
-     * @param listener
-     * @return false if asset is not found, true otherwise.
-     */
-    public abstract boolean registerDrmAsset(AssetInfo assetInfo, DrmRegisterListener listener);
 
     /**
-     * Register or renew an asset's license.
+     * Renew an asset's license.
      *
      * @param assetId
      * @param drmParams
      * @param listener
      * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean renewDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener);
+    public abstract boolean renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener);
 
     public abstract void setKs(String ks);
 
 
     public enum AssetDownloadState {
-        added, prepared, started, paused, completed, failed
+        none, downloading, queued, completed, failed
     }
 
     public enum TrackType {
@@ -212,14 +203,21 @@ public abstract class OfflineManager {
         void onDownloadProgress(String assetId, long downloadedBytes, long totalEstimatedBytes);
     }
 
-    public interface DrmRegisterListener {
+    /**
+     * Listener for DRM register events.
+     */
+    public interface DrmListener {
         void onRegistered(String assetId, DrmInfo drmInfo);
-
         void onRegisterError(String assetId, Exception error);
     }
 
-    public interface AssetStateListener {
-        void onAssetStateChanged(String assetId, AssetInfo assetInfo);
+    public interface AssetStateListener extends DrmListener {
+        void onStateChanged(String assetId, AssetInfo assetInfo);
+        void onAssetRemoved(String assetId);
+        void onAssetDownloadFailed(String assetId, AssetDownloadException error);
+        void onAssetDownloadComplete(String assetId);
+        void onAssetDownloadPending(String assetId);
+        void onAssetDownloadPaused(String assetId);
     }
 
     public static class DrmInfo {
@@ -279,19 +277,22 @@ public abstract class OfflineManager {
     }
 
     public static abstract class AssetInfo {
-        public final String id;
-        public final AssetDownloadState state;
-        public final long estimatedSize;
-        public final long downloadedSize;
-
-        protected AssetInfo(String id, AssetDownloadState state, long estimatedSize, long downloadedSize) {
-            this.id = id;
-            this.state = state;
-            this.estimatedSize = estimatedSize;
-            this.downloadedSize = downloadedSize;
-        }
 
         public abstract void release();
+
+        public abstract String getAssetId();
+
+        public abstract AssetDownloadState getState();
+
+        public abstract long getEstimatedSize();
+
+        public abstract long getDownloadedSize();
+    }
+
+    public static class AssetDownloadException extends Exception {
+        public AssetDownloadException(String message) {
+            super(message);
+        }
     }
 
 }

@@ -16,8 +16,8 @@ abstract class AbstractOfflineManager extends OfflineManager {
     final LocalAssetsManager localAssetsManager;
     private String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
     private Integer kalturaPartnerId;
-    private DownloadProgressListener downloadProgressListener;
-    private AssetStateListener assetStateListener;
+    protected DownloadProgressListener downloadProgressListener;
+    protected AssetStateListener assetStateListener;
     private String ks;
 
     private Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -39,9 +39,7 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
         mediaEntryProvider.load(response -> {
             if (response.isSuccess()) {
-                mainHandler.post(() -> {
-                        prepareAsset(response.getResponse(), prefs, prepareCallback);
-                });
+                mainHandler.post(() -> prepareAsset(response.getResponse(), prefs, prepareCallback));
             } else {
                 prepareCallback.onPrepareError(new IOException(response.getError().getMessage()));
             }

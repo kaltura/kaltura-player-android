@@ -2,6 +2,10 @@ package com.kaltura.tvplayer.offline;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
+import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.C;
@@ -11,6 +15,7 @@ import com.kaltura.android.exoplayer2.database.ExoDatabaseProvider;
 import com.kaltura.android.exoplayer2.drm.*;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.offline.*;
+import com.kaltura.android.exoplayer2.scheduler.Requirements;
 import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
@@ -20,26 +25,33 @@ import com.kaltura.android.exoplayer2.upstream.FileDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.cache.*;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.*;
+import com.kaltura.playkit.drm.WidevineModularAdapter;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.OfflineManager;
+import com.kaltura.tvplayer.TODO;
 import okhttp3.OkHttpClient;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 class ExoAssetInfo extends OfflineManager.AssetInfo {
 
-    final PKMediaSource source;
-    final PKDrmParams drmData;
     final DownloadHelper downloadHelper;
+    private final String assetId;
+    private final OfflineManager.AssetDownloadState state;
+    private final long estimatedSize;
+    private final long downloadedSize;
 
-    ExoAssetInfo(String assetId, OfflineManager.AssetDownloadState state, long estimatedSize, long downloadedSize, PKMediaSource source, PKDrmParams drmData, DownloadHelper downloadHelper) {
-        super(assetId, state, estimatedSize, downloadedSize);
-        this.source = source;
-        this.drmData = drmData;
+    ExoAssetInfo(String assetId, OfflineManager.AssetDownloadState state, long estimatedSize, long downloadedSize, DownloadHelper downloadHelper) {
+        this.assetId = assetId;
+        this.state = state;
+        this.estimatedSize = estimatedSize;
+        this.downloadedSize = downloadedSize;
         this.downloadHelper = downloadHelper;
     }
 
@@ -47,6 +59,51 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
     public void release() {
         if (downloadHelper != null) {
             downloadHelper.release();
+        }
+    }
+
+    @Override
+    public String getAssetId() {
+        return assetId;
+    }
+
+    @Override
+    public OfflineManager.AssetDownloadState getState() {
+        return state;
+    }
+
+    @Override
+    public long getEstimatedSize() {
+        return estimatedSize;
+    }
+
+    @Override
+    public long getDownloadedSize() {
+        return downloadedSize;
+    }
+}
+
+enum StopReason {
+    none,       // 0 = Download.STOP_REASON_NONE
+    unknown,    // 10
+    pause;      // 11
+
+    static StopReason fromExoReason(int reason) {
+        switch (reason) {
+            case Download.STOP_REASON_NONE:
+                return unknown;
+            case 11:
+                return pause;
+            default:
+                return unknown;
+        }
+    }
+
+    int toExoCode() {
+        switch (this) {
+            case none: return Download.STOP_REASON_NONE;
+            case pause: return 11;
+            default: return 10;
         }
     }
 }
@@ -62,11 +119,92 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private final OkHttpDataSourceFactory httpDataSourceFactory = new OkHttpDataSourceFactory(new OkHttpClient(), userAgent);
 
+    private Handler bgHandler = createBgHandler();
+
     private final DatabaseProvider databaseProvider;
     private final File downloadDirectory;
     final Cache downloadCache;
     final DownloadManager downloadManager;
+    private final DownloadManager.Listener exoListener = new DownloadManager.Listener() {
+        @Override
+        public void onInitialized(DownloadManager downloadManager) {
 
+        }
+
+        @Override
+        public void onDownloadChanged(DownloadManager downloadManager, Download download) {
+            final String assetId = download.request.id;
+            final AssetStateListener listener = getListener();
+
+            switch (download.state) {
+                case Download.STATE_COMPLETED:
+                    log.d("STATE_COMPLETED: " + assetId);
+                    maybeRegisterDrmAsset(assetId, 0);
+                    listener.onAssetDownloadComplete(assetId);
+                    break;
+                case Download.STATE_DOWNLOADING:
+                    log.d("STATE_DOWNLOADING: " + assetId);
+                    maybeRegisterDrmAsset(assetId, 10000);
+                    break;
+                case Download.STATE_FAILED:
+                    log.d("STATE_FAILED: " + assetId);
+                    listener.onAssetDownloadFailed(assetId, new AssetDownloadException("Failed for unknown reason"));
+                    break;
+                case Download.STATE_QUEUED:
+                    log.d("STATE_QUEUED: " + assetId);
+                    listener.onAssetDownloadPending(assetId);
+                    break;
+                case Download.STATE_REMOVING:
+                    log.d("STATE_REMOVING: " + assetId);
+                    listener.onAssetRemoved(assetId);
+                    break;
+                case Download.STATE_RESTARTING:
+                    log.d("STATE_RESTARTING: " + assetId);
+                    throw new TODO();
+                case Download.STATE_STOPPED:
+                    log.d("STATE_STOPPED: " + assetId);
+                    if (StopReason.fromExoReason(download.stopReason) == StopReason.pause) {
+                        listener.onAssetDownloadPaused(assetId);
+                    }
+                    throw new TODO();
+            }
+        }
+
+        @Override
+        public void onDownloadRemoved(DownloadManager downloadManager, Download download) {
+            getListener().onAssetRemoved(download.request.id);
+        }
+
+        @Override
+        public void onIdle(DownloadManager downloadManager) {
+
+        }
+
+        @Override
+        public void onRequirementsStateChanged(DownloadManager downloadManager, Requirements requirements, int notMetRequirements) {
+
+        }
+    };
+
+    @NonNull
+    private Handler createBgHandler() {
+        final HandlerThread bgHandlerThread = new HandlerThread("bgHandlerThread");
+        bgHandlerThread.start();
+        return new Handler(bgHandlerThread.getLooper());
+    }
+
+    private final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
+
+    private static final AssetStateListener noopListener = new AssetStateListener() {
+        @Override public void onStateChanged(String assetId, AssetInfo assetInfo) {}
+        @Override public void onAssetRemoved(String assetId) {}
+        @Override public void onAssetDownloadFailed(String assetId, AssetDownloadException error) {}
+        @Override public void onAssetDownloadComplete(String assetId) {}
+        @Override public void onAssetDownloadPending(String assetId) {}
+        @Override public void onRegistered(String assetId, DrmInfo drmInfo) {}
+        @Override public void onRegisterError(String assetId, Exception error) {}
+        @Override public void onAssetDownloadPaused(String assetId) {}
+    };
 
     private ExoOfflineManager(Context context) {
         super(context);
@@ -89,7 +227,20 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         );
 
         downloadManager.setMaxParallelDownloads(4);
+        final Requirements requirements = new Requirements(Requirements.NETWORK);
+        downloadManager.setRequirements(requirements);
+        downloadManager.addListener(exoListener);
+    }
 
+    private AssetStateListener getListener() {
+        return assetStateListener != null ? assetStateListener : noopListener;
+    }
+
+    private void maybeRegisterDrmAsset(String assetId, int delayMillis) {
+        bgHandler.postDelayed(() -> {
+            log.d("Will now register " + delayMillis);
+            registerDrmAsset(assetId);
+        }, delayMillis);
     }
 
     private CacheDataSourceFactory buildReadOnlyCacheDataSource(DataSource.Factory upstreamFactory, Cache cache) {
@@ -115,7 +266,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final String url = source.getUrl();
 
         if (mediaFormat != PKMediaFormat.dash) {
-            throw new IllegalArgumentException("Only DASH, for now");
+            throw new TODO();
         }
 
         DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = buildDrmSessionManager(drmData);
@@ -126,7 +277,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             @Override
             public void onPrepared(DownloadHelper helper) {
 
-                final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.prepared, -1, 0, source, drmData, helper);
+                final Object manifest = helper.getManifest();
+
+                final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.none, -1, -1, helper);
+                pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
                 prepareCallback.onPrepared(assetInfo, null);
             }
 
@@ -179,23 +333,22 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void pauseDownloads() {
-        // TODO: 29/01/2018 DTG stop
+        throw new TODO();
     }
 
     @Override
     public void resumeDownloads() {
-        // TODO: 29/01/2018 DTG resume
+        throw new TODO();
     }
 
     @Override
     public AssetInfo getAssetInfo(String assetId) {
-        return null;
+        throw new TODO();
     }
 
     @Override
     public List<AssetInfo> getAssetsInState(AssetDownloadState state) {
-        // TODO: 15/02/2018 DTG get downloads
-        return null;
+        throw new TODO();
     }
 
     @Override
@@ -225,7 +378,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private boolean addExoAsset(ExoAssetInfo assetInfo) {
         final DownloadHelper helper = assetInfo.downloadHelper;
-        final DownloadRequest downloadRequest = helper.getDownloadRequest(assetInfo.id, null);
+        final DownloadRequest downloadRequest = helper.getDownloadRequest(assetInfo.getAssetId(), null);
 
         DownloadService.sendAddDownload(appContext, ExoDownloadService.class, downloadRequest, false);
 
@@ -234,66 +387,71 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public boolean startAssetDownload(String assetId) {
-        // TODO: 29/01/2018 DTG start item. IF ANOTHER ITEM IS IN PROGRESS, DON'T START yet.
-        return false;
+        throw new TODO();
     }
 
     @Override
     public boolean pauseAssetDownload(String assetId) {
-        // TODO: 29/01/2018 DTG pause item.
-        return false;
+        throw new TODO();
     }
 
     @Override
     public boolean removeAsset(String assetId) {
-        // TODO: 29/01/2018 DTG remove item. LAM unregister.
-        return false;
+        throw new TODO();
     }
 
     @Override
     public DrmInfo getDrmStatus(String assetId) {
-        // TODO: 29/01/2018 LAM check status.
-        return null;
+        throw new TODO();
     }
 
-    @Override
-    public boolean registerDrmAsset(AssetInfo assetInfo, DrmRegisterListener listener) {
 
-        if (!(assetInfo instanceof ExoAssetInfo)) {
-            return false;
+
+    private void registerDrmAsset(String assetId) {
+
+        if (bgHandler.getLooper() != Looper.myLooper()) {
+            throw new IllegalStateException();
         }
 
-        final ExoAssetInfo exoAssetInfo = (ExoAssetInfo) assetInfo;
+        // TODO: 2019-08-04 Force cached
 
-        final String sourceUrl = exoAssetInfo.source.getUrl();
+        if (assetId == null) {
+            return;
+        }
+
+        final Pair<PKMediaSource, PKDrmParams> pair = pendingDrmRegistration.get(assetId);
+        if (pair == null || pair.first == null || pair.second == null) {
+            return; // no DRM or already processed
+        }
+
+        final String sourceUrl = pair.first.getUrl();
+        final PKDrmParams drmData = pair.second;
+
+        final String licenseUri = drmData.getLicenseUri();
 
         final CacheDataSourceFactory cacheDataSourceFactory = new CacheDataSourceFactory(downloadCache, httpDataSourceFactory);
+
+        final AssetStateListener listener = getListener();
+
         final byte[] drmInitData;
         try {
             drmInitData = getDrmInitData(cacheDataSourceFactory, sourceUrl);
+            localAssetsManager.registerDrmAsset(drmInitData, PKMediaFormat.dash.mimeType, assetId, PKMediaFormat.dash, licenseUri);
+            listener.onRegistered(assetId, null); // TODO: 2019-08-01 drm info
+
+            pendingDrmRegistration.remove(assetId);
+
         } catch (IOException | InterruptedException e) {
-            listener.onRegisterError(exoAssetInfo.id, e);
-            return false;
+            listener.onRegisterError(assetId, e);
+
+        } catch (WidevineModularAdapter.RegisterException e) {
+            listener.onRegisterError(assetId, e);
         }
-
-        localAssetsManager.registerDrmAsset(drmInitData, PKMediaFormat.dash.mimeType, exoAssetInfo.id, PKMediaFormat.dash, exoAssetInfo.drmData.getLicenseUri(), new LocalAssetsManager.AssetRegistrationListener() {
-            @Override
-            public void onRegistered(String localAssetPath) {
-                listener.onRegistered(exoAssetInfo.id, null);// TODO: 2019-08-01 get drm info
-            }
-
-            @Override
-            public void onFailed(String localAssetPath, Exception error) {
-                listener.onRegisterError(exoAssetInfo.id, error);
-            }
-        });
-
-        return false;
     }
 
     @Override
-    public boolean renewDrmAsset(String assetId, PKDrmParams drmParams, DrmRegisterListener listener) {
-        return false;
+    public boolean renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener) {
+        throw new TODO();
     }
 
     private byte[] getDrmInitData(CacheDataSourceFactory dataSourceFactory, String contentUri) throws IOException, InterruptedException {
@@ -304,5 +462,4 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final DrmInitData.SchemeData schemeData = drmInitData.get(C.WIDEVINE_UUID);
         return schemeData != null ? schemeData.data : null;
     }
-
 }
