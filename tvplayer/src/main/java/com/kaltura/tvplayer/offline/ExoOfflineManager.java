@@ -2,6 +2,8 @@ package com.kaltura.tvplayer.offline;
 
 import android.content.Context;
 import android.net.Uri;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
@@ -21,7 +23,6 @@ import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.OfflineManager;
 import okhttp3.OkHttpClient;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;

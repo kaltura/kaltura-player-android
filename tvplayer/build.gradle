@@ -1,6 +1,4 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
-apply plugin: 'kotlin-android'
 apply from: 'version.gradle'
 
 android {
@@ -37,9 +35,7 @@ dependencies {
 //    api project(":providers")
 //    api project(":kava")
 
-    implementation 'androidx.annotation:annotation:1.0.2'
-    implementation "androidx.core:core-ktx:+"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'androidx.annotation:annotation:1.1.0'
 }
 
 repositories {
