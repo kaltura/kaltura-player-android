@@ -86,27 +86,23 @@ public abstract class OfflineManager {
             throws IllegalStateException;
 
     /**
-     * Add a prepared asset to the db.
-     *
-     * @return true if the asset was added, false otherwise. Note: returns false if asset already exists.
+     * Add a prepared asset to the db and start downloading it.
      */
-    public abstract boolean addAsset(AssetInfo assetInfo);
+    public abstract void startAssetDownload(AssetInfo assetInfo);
 
     /**
-     * Start (or resume) downloading an asset.
+     * Pause downloading an asset. Resume by calling {@link #resumeAssetDownload(String)}.
      *
      * @param assetId
-     * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean startAssetDownload(String assetId);
+    public abstract void pauseAssetDownload(String assetId);
 
     /**
-     * Pause downloading an asset.
+     * Resume a download that was paused by {@link #pauseAssetDownload(String)}.
      *
      * @param assetId
-     * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean pauseAssetDownload(String assetId);
+    public abstract void resumeAssetDownload(String assetId);
 
     /**
      * Remove asset with all its data.
@@ -114,7 +110,7 @@ public abstract class OfflineManager {
      * @param assetId
      * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean removeAsset(String assetId);
+    public abstract void removeAsset(String assetId);
 
 
     /**
@@ -167,13 +163,13 @@ public abstract class OfflineManager {
      * @param listener
      * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener);
+    public abstract void renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener);
 
     public abstract void setKs(String ks);
 
 
     public enum AssetDownloadState {
-        none, downloading, queued, completed, failed
+        none, downloading, queued, completed, failed, removing, stopped
     }
 
     public enum TrackType {
@@ -286,7 +282,7 @@ public abstract class OfflineManager {
 
         public abstract long getEstimatedSize();
 
-        public abstract long getDownloadedSize();
+        public abstract long getBytesDownloaded();
     }
 
     public static class AssetDownloadException extends Exception {

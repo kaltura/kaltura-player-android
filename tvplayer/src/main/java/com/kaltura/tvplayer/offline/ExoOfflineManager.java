@@ -28,31 +28,85 @@ import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.WidevineModularAdapter;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.OfflineManager;
+import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
 import com.kaltura.tvplayer.TODO;
 import okhttp3.OkHttpClient;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 class ExoAssetInfo extends OfflineManager.AssetInfo {
 
-    final DownloadHelper downloadHelper;
     private final String assetId;
-    private final OfflineManager.AssetDownloadState state;
+    private final AssetDownloadState state;
+    private final float percentDownloaded;
     private final long estimatedSize;
-    private final long downloadedSize;
+    private final long bytesDownloaded;
 
-    ExoAssetInfo(String assetId, OfflineManager.AssetDownloadState state, long estimatedSize, long downloadedSize, DownloadHelper downloadHelper) {
+    @Nullable final DownloadHelper downloadHelper;  // Only used during preparation
+
+    ExoAssetInfo(String assetId, AssetDownloadState state, long estimatedSize, long bytesDownloaded, @SuppressWarnings("NullableProblems") DownloadHelper downloadHelper) {
         this.assetId = assetId;
         this.state = state;
         this.estimatedSize = estimatedSize;
-        this.downloadedSize = downloadedSize;
+        this.bytesDownloaded = bytesDownloaded;
         this.downloadHelper = downloadHelper;
+        percentDownloaded = 0;
+    }
+
+    ExoAssetInfo(Download download) {
+        assetId = download.request.id;
+        downloadHelper = null;
+        percentDownloaded = download.getPercentDownloaded();
+        bytesDownloaded = download.getBytesDownloaded();
+        if (download.contentLength > 0) {
+            estimatedSize = download.contentLength;
+        } else {
+            estimatedSize = (long) (100 * bytesDownloaded / percentDownloaded);
+        }
+        state = toAssetState(download.state);
+    }
+
+    static int toExoState(AssetDownloadState state) {
+        switch (state) {
+            case none:
+                break;
+            case downloading:
+                return Download.STATE_DOWNLOADING;
+            case queued:
+                return Download.STATE_QUEUED;
+            case completed:
+                return Download.STATE_COMPLETED;
+            case failed:
+                return Download.STATE_FAILED;
+            case removing:
+                return Download.STATE_REMOVING;
+            case stopped:
+                return Download.STATE_STOPPED;
+        }
+        return -1;
+    }
+
+    static AssetDownloadState toAssetState(@Download.State int exoState) {
+        switch (exoState) {
+            case Download.STATE_COMPLETED:
+                return AssetDownloadState.completed;
+            case Download.STATE_DOWNLOADING:
+                return AssetDownloadState.downloading;
+            case Download.STATE_FAILED:
+                return AssetDownloadState.failed;
+            case Download.STATE_QUEUED:
+                return AssetDownloadState.queued;
+            case Download.STATE_REMOVING:
+                return AssetDownloadState.removing;
+            case Download.STATE_RESTARTING:
+                return AssetDownloadState.downloading;  // TODO: is this the same?
+            case Download.STATE_STOPPED:
+                return AssetDownloadState.stopped;
+        }
+        return null;
     }
 
     @Override
@@ -68,7 +122,7 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
     }
 
     @Override
-    public OfflineManager.AssetDownloadState getState() {
+    public AssetDownloadState getState() {
         return state;
     }
 
@@ -78,8 +132,8 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
     }
 
     @Override
-    public long getDownloadedSize() {
-        return downloadedSize;
+    public long getBytesDownloaded() {
+        return bytesDownloaded;
     }
 }
 
@@ -125,6 +179,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private final File downloadDirectory;
     final Cache downloadCache;
     final DownloadManager downloadManager;
+
+    @SuppressWarnings("FieldCanBeLocal")
     private final DownloadManager.Listener exoListener = new DownloadManager.Listener() {
         @Override
         public void onInitialized(DownloadManager downloadManager) {
@@ -333,22 +389,58 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void pauseDownloads() {
-        throw new TODO();
+        // Pause all downloads.
+        DownloadService.sendPauseDownloads(
+                appContext,
+                ExoDownloadService.class,
+                /* foreground= */ false);
+
     }
 
     @Override
     public void resumeDownloads() {
-        throw new TODO();
+        // Resume all downloads.
+        DownloadService.sendResumeDownloads(
+                appContext,
+                ExoDownloadService.class,
+                /* foreground= */ false);
     }
 
     @Override
     public AssetInfo getAssetInfo(String assetId) {
-        throw new TODO();
+        final Download download;
+        try {
+            download = downloadManager.getDownloadIndex().getDownload(assetId);
+            if (download != null) {
+                return new ExoAssetInfo(download);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
     public List<AssetInfo> getAssetsInState(AssetDownloadState state) {
-        throw new TODO();
+
+        final int exoState;
+        exoState = ExoAssetInfo.toExoState(state);
+        final DownloadCursor downloads;
+        try {
+            downloads = downloadManager.getDownloadIndex().getDownloads(exoState);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+
+        List<AssetInfo> assetInfoList = new ArrayList<>(downloads.getCount());
+
+        for (downloads.moveToFirst(); downloads.moveToNext();) {
+            final Download download = downloads.getDownload();
+            assetInfoList.add(new ExoAssetInfo(download));
+        }
+
+        return assetInfoList;
     }
 
     @Override
@@ -368,36 +460,47 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public boolean addAsset(AssetInfo assetInfo) {
+    public void startAssetDownload(AssetInfo assetInfo) {
 
-        if (assetInfo instanceof ExoAssetInfo) {
-            return addExoAsset(((ExoAssetInfo) assetInfo));
+        if (!(assetInfo instanceof ExoAssetInfo)) {
+            throw new IllegalArgumentException("Not an ExoAssetInfo object");
         }
-        return false;
-    }
 
-    private boolean addExoAsset(ExoAssetInfo assetInfo) {
-        final DownloadHelper helper = assetInfo.downloadHelper;
+        final DownloadHelper helper = ((ExoAssetInfo) assetInfo).downloadHelper;
+        if (helper == null) {
+            throw new IllegalArgumentException("Asset is not in prepare state");
+        }
         final DownloadRequest downloadRequest = helper.getDownloadRequest(assetInfo.getAssetId(), null);
 
         DownloadService.sendAddDownload(appContext, ExoDownloadService.class, downloadRequest, false);
-
-        return true;
     }
 
     @Override
-    public boolean startAssetDownload(String assetId) {
-        throw new TODO();
+    public void resumeAssetDownload(String assetId) {
+
+        // Clear the stop reason for a single download.
+        DownloadService.sendSetStopReason(
+                appContext,
+                ExoDownloadService.class,
+                assetId,
+                Download.STOP_REASON_NONE,
+                /* foreground= */ false);
     }
 
     @Override
-    public boolean pauseAssetDownload(String assetId) {
-        throw new TODO();
+    public void pauseAssetDownload(String assetId) {
+        // Set the stop reason for a single download.
+        DownloadService.sendSetStopReason(
+                appContext,
+                ExoDownloadService.class,
+                assetId,
+                StopReason.pause.toExoCode(),
+                /* foreground= */ false);
     }
 
     @Override
-    public boolean removeAsset(String assetId) {
-        throw new TODO();
+    public void removeAsset(String assetId) {
+        DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
     }
 
     @Override
@@ -450,7 +553,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public boolean renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener) {
+    public void renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener) {
         throw new TODO();
     }
 
