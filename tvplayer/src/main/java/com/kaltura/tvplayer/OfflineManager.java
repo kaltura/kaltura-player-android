@@ -3,6 +3,7 @@ package com.kaltura.tvplayer;
 import android.content.Context;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.tvplayer.offline.ExoOfflineManager;
 
 import java.io.IOException;
@@ -166,6 +167,8 @@ public abstract class OfflineManager {
     public abstract void renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener);
 
     public abstract void setKs(String ks);
+
+    public abstract void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
 
 
     public enum AssetDownloadState {

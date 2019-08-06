@@ -241,6 +241,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         }
     };
+    private PKMediaFormat preferredMediaFormat;
 
     @NonNull
     private Handler createBgHandler() {
@@ -313,30 +314,49 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     @Override
     public void prepareAsset(PKMediaEntry mediaEntry, SelectionPrefs prefs, PrepareCallback prepareCallback) {
 
-        SourceSelector selector = new SourceSelector(mediaEntry, null);
+        SourceSelector selector = new SourceSelector(mediaEntry, preferredMediaFormat);
 
         final String assetId = mediaEntry.getId();
         final PKMediaSource source = selector.getSelectedSource();
         final PKDrmParams drmData = selector.getSelectedDrmParams();
         final PKMediaFormat mediaFormat = source.getMediaFormat();
         final String url = source.getUrl();
+        final Uri uri = Uri.parse(url);
 
-        if (mediaFormat != PKMediaFormat.dash) {
-            throw new TODO();
+        final DownloadHelper downloadHelper;
+
+        switch (mediaFormat) {
+            // DASH: clear or with Widevine
+            case dash:
+                downloadHelper = DownloadHelper.forDash(uri, httpDataSourceFactory,
+                        new DefaultRenderersFactory(appContext), buildDrmSessionManager(drmData), buildExoParameters(prefs));
+                break;
+
+            // HLS: clear/aes only
+            case hls:
+                downloadHelper = DownloadHelper.forHls(uri, httpDataSourceFactory,
+                        new DefaultRenderersFactory(appContext), null, buildExoParameters(prefs));
+                break;
+
+            // Progressive
+            case mp4:
+            case mp3:
+                downloadHelper = DownloadHelper.forProgressive(uri);
+                break;
+
+            default:
+                prepareCallback.onPrepareError(new IllegalArgumentException("Unsupported media format"));
+                return;
         }
-
-        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = buildDrmSessionManager(drmData);
-        final DownloadHelper downloadHelper = DownloadHelper.forDash(Uri.parse(url), httpDataSourceFactory,
-                new DefaultRenderersFactory(appContext), drmSessionManager, buildExoParameters(prefs));
 
         downloadHelper.prepare(new DownloadHelper.Callback() {
             @Override
             public void onPrepared(DownloadHelper helper) {
 
-                final Object manifest = helper.getManifest();
-
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.none, -1, -1, helper);
-                pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
+                if (mediaFormat == PKMediaFormat.dash && drmData != null) {
+                    pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
+                }
                 prepareCallback.onPrepared(assetInfo, null);
             }
 
@@ -516,8 +536,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             throw new IllegalStateException();
         }
 
-        // TODO: 2019-08-04 Force cached
-
         if (assetId == null) {
             return;
         }
@@ -564,5 +582,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         final DrmInitData.SchemeData schemeData = drmInitData.get(C.WIDEVINE_UUID);
         return schemeData != null ? schemeData.data : null;
+    }
+
+    @Override
+    public void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+        this.preferredMediaFormat = preferredMediaFormat;
     }
 }
