@@ -13,7 +13,7 @@ import java.io.IOException;
 
 abstract class AbstractOfflineManager extends OfflineManager {
     final Context appContext;
-    final LocalAssetsManager localAssetsManager;
+    final LocalAssetsManagerImp localAssetsManager;
     private String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
     private Integer kalturaPartnerId;
     protected DownloadProgressListener downloadProgressListener;
@@ -24,7 +24,7 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
     AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
-        this.localAssetsManager = new LocalAssetsManager(appContext);
+        this.localAssetsManager = new LocalAssetsManagerImp(appContext);
     }
 
     @Override

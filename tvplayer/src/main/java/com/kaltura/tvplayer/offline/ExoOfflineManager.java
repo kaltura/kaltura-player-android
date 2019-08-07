@@ -25,7 +25,7 @@ import com.kaltura.android.exoplayer2.upstream.FileDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.cache.*;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.*;
-import com.kaltura.playkit.drm.WidevineModularAdapter;
+import com.kaltura.playkit.LocalAssetsManagerImp.RegisterException;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
@@ -557,7 +557,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final byte[] drmInitData;
         try {
             drmInitData = getDrmInitData(cacheDataSourceFactory, sourceUrl);
-            localAssetsManager.registerDrmAsset(drmInitData, PKMediaFormat.dash.mimeType, assetId, PKMediaFormat.dash, licenseUri);
+            localAssetsManager.registerWidevineDashAsset(assetId, licenseUri, drmInitData);
             listener.onRegistered(assetId, null); // TODO: 2019-08-01 drm info
 
             pendingDrmRegistration.remove(assetId);
@@ -565,7 +565,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         } catch (IOException | InterruptedException e) {
             listener.onRegisterError(assetId, e);
 
-        } catch (WidevineModularAdapter.RegisterException e) {
+        } catch (RegisterException e) {
             listener.onRegisterError(assetId, e);
         }
     }
