@@ -260,6 +260,10 @@ public class KalturaPlayer {
             pkPlayer.getSettings().allowClearLead(initOptions.allowClearLead);
         }
 
+        if (initOptions.enableDecoderFallback != null) {
+            pkPlayer.getSettings().enableDecoderFallback(initOptions.enableDecoderFallback);
+        }
+
         if (initOptions.secureSurface != null) {
             pkPlayer.getSettings().setSecureSurface(initOptions.secureSurface);
         }
