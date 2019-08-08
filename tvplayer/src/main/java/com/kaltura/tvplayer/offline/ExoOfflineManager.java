@@ -180,6 +180,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     final Cache downloadCache;
     final DownloadManager downloadManager;
 
+    private final LocalAssetsManagerExo localAssetsManager;
+
     @SuppressWarnings("FieldCanBeLocal")
     private final DownloadManager.Listener exoListener = new DownloadManager.Listener() {
         @Override
@@ -287,6 +289,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final Requirements requirements = new Requirements(Requirements.NETWORK);
         downloadManager.setRequirements(requirements);
         downloadManager.addListener(exoListener);
+        localAssetsManager = new LocalAssetsManagerExo(context);
     }
 
     private AssetStateListener getListener() {
@@ -400,7 +403,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         if (instance == null) {
             synchronized (ExoOfflineManager.class) {
                 if (instance == null) {
-                    instance = new ExoOfflineManager(context);
+                    instance = new ExoOfflineManager(context.getApplicationContext());
                 }
             }
         }
