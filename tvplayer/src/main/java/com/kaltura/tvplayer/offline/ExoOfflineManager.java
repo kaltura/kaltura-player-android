@@ -258,7 +258,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         @Override public void onAssetDownloadFailed(String assetId, AssetDownloadException error) {}
         @Override public void onAssetDownloadComplete(String assetId) {}
         @Override public void onAssetDownloadPending(String assetId) {}
-        @Override public void onRegistered(String assetId, DrmInfo drmInfo) {}
+        @Override public void onRegistered(String assetId, DrmStatus drmStatus) {}
         @Override public void onRegisterError(String assetId, Exception error) {}
         @Override public void onAssetDownloadPaused(String assetId) {}
     };
@@ -535,27 +535,27 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public DrmInfo getDrmStatus(String assetId) {
+    public DrmStatus getDrmStatus(String assetId) {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
             if (drmInitData == null) {
-                return DrmInfo.unknown;
+                return DrmStatus.unknown;
             }
             final LocalAssetsManager.AssetStatus assetStatus = localAssetsManager.getDrmStatus(assetId, drmInitData);
 
             if (assetStatus == null || !assetStatus.registered) {
-                return DrmInfo.unknown;
+                return DrmStatus.unknown;
             }
 
             if (!assetStatus.hasContentProtection) {
-                return DrmInfo.clear;
+                return DrmStatus.clear;
             }
 
-            return DrmInfo.withDrm(assetStatus.licenseDuration, assetStatus.totalDuration);
+            return DrmStatus.withDrm(assetStatus.licenseDuration, assetStatus.totalDuration);
 
         } catch (IOException | InterruptedException e) {
             log.e("getDrmStatus failed ", e);
-            return DrmInfo.unknown;
+            return DrmStatus.unknown;
         }
     }
 
@@ -609,7 +609,12 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener) {
-        throw new TODO();
+        try {
+            final byte[] drmInitData = getDrmInitData(assetId);
+            localAssetsManager.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData);
+        } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
+            listener.onRegisterError(assetId, e);
+        }
     }
 
     private byte[] getDrmInitData(CacheDataSourceFactory dataSourceFactory, String contentUri) throws IOException, InterruptedException {
@@ -617,12 +622,47 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final DashManifest dashManifest = DashUtil.loadManifest(cacheDataSource, Uri.parse(contentUri));
         final DrmInitData drmInitData = DashUtil.loadDrmInitData(cacheDataSource, dashManifest.getPeriod(0));
 
-        final DrmInitData.SchemeData schemeData = drmInitData.get(C.WIDEVINE_UUID);
+        final DrmInitData.SchemeData schemeData;
+        if (drmInitData == null) {
+            return null;
+        }
+
+        schemeData = findWidevineSchemaData(drmInitData);
         return schemeData != null ? schemeData.data : null;
+    }
+
+    private DrmInitData.SchemeData findWidevineSchemaData(DrmInitData drmInitData) {
+        for (int i = 0; i < drmInitData.schemeDataCount; i++) {
+            final DrmInitData.SchemeData schemeData = drmInitData.get(i);
+            if (schemeData != null && schemeData.matches(C.WIDEVINE_UUID)) {
+                return schemeData;
+            }
+        }
+        return null;
     }
 
     @Override
     public void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         this.preferredMediaFormat = preferredMediaFormat;
+    }
+
+    @Override
+    protected void renewDrmAsset(String assetId, PKMediaEntry mediaEntry, DrmListener listener) {
+        PKDrmParams drmParams = findDrmParams(assetId, mediaEntry);
+        renewDrmAsset(assetId, drmParams, listener);
+    }
+
+    private PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {
+        // TODO: 2019-08-11 this is a naive implementation, assuming the selected source is the original one.
+        final SourceSelector selector = new SourceSelector(mediaEntry, PKMediaFormat.dash);
+
+        final PKDrmParams selectedDrmParams = selector.getSelectedDrmParams();
+        final PKMediaSource selectedSource = selector.getSelectedSource();
+
+        if (selectedSource.getMediaFormat() != PKMediaFormat.dash) {
+            return null;
+        }
+
+        return selectedDrmParams;
     }
 }

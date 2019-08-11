@@ -115,6 +115,19 @@ public abstract class OfflineManager {
 
 
     /**
+     * Renew an asset's license.
+     *
+     * @param assetId
+     * @param drmParams
+     * @param listener
+     * @return false if asset is not found, true otherwise.
+     */
+    public abstract void renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener);
+
+    public abstract void renewDrmAsset(String assetId, MediaOptions mediaOptions, DrmListener listener);
+
+
+    /**
      * Find asset by id.
      *
      * @param assetId
@@ -151,20 +164,10 @@ public abstract class OfflineManager {
      * Check the license status of an asset.
      *
      * @param assetId
-     * @return DRM license status - {@link DrmInfo}.
+     * @return DRM license status - {@link DrmStatus}.
      */
-    public abstract DrmInfo getDrmStatus(String assetId);
+    public abstract DrmStatus getDrmStatus(String assetId);
 
-
-    /**
-     * Renew an asset's license.
-     *
-     * @param assetId
-     * @param drmParams
-     * @param listener
-     * @return false if asset is not found, true otherwise.
-     */
-    public abstract void renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener);
 
     public abstract void setKs(String ks);
 
@@ -206,7 +209,7 @@ public abstract class OfflineManager {
      * Listener for DRM register events.
      */
     public interface DrmListener {
-        void onRegistered(String assetId, DrmInfo drmInfo);
+        void onRegistered(String assetId, DrmStatus drmStatus);
         void onRegisterError(String assetId, Exception error);
     }
 
@@ -219,13 +222,13 @@ public abstract class OfflineManager {
         void onAssetDownloadPaused(String assetId);
     }
 
-    public static class DrmInfo {
+    public static class DrmStatus {
 
-        public static final DrmInfo clear = new DrmInfo(Status.clear, 0, 0);
-        public static final DrmInfo unknown = new DrmInfo(Status.unknown, 0, 0);
+        public static final DrmStatus clear = new DrmStatus(Status.clear, 0, 0);
+        public static final DrmStatus unknown = new DrmStatus(Status.unknown, 0, 0);
 
-        public static DrmInfo withDrm(long currentRemainingTime, long totalRemainingTime) {
-            return new DrmInfo(currentRemainingTime > 0 ? Status.valid : Status.expired, currentRemainingTime, totalRemainingTime);
+        public static DrmStatus withDrm(long currentRemainingTime, long totalRemainingTime) {
+            return new DrmStatus(currentRemainingTime > 0 ? Status.valid : Status.expired, currentRemainingTime, totalRemainingTime);
         }
 
         public final Status status;
@@ -240,7 +243,7 @@ public abstract class OfflineManager {
             valid, expired, clear, unknown
         }
 
-        private DrmInfo(Status status, long currentRemainingTime, long totalRemainingTime) {
+        private DrmStatus(Status status, long currentRemainingTime, long totalRemainingTime) {
             this.status = status;
             this.currentRemainingTime = currentRemainingTime;
             this.totalRemainingTime = totalRemainingTime;

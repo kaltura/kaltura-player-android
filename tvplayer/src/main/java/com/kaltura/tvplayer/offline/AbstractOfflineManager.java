@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import com.kaltura.playkit.*;
+import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.MediaOptions;
@@ -40,22 +41,33 @@ abstract class AbstractOfflineManager extends OfflineManager {
         mediaEntryProvider.load(response -> {
             if (response.isSuccess()) {
                 mainHandler.post(() -> {
-
-                    final PKMediaEntry mediaEntry = response.getResponse();
-                    for (PKMediaSource source : mediaEntry.getSources()) {
-                        if (source.hasDrmParams()) {
-                            for (PKDrmParams params : source.getDrmData()) {
-                                params.setLicenseUri(params.getLicenseUri() + "&rental_duration=100");
-                            }
-                        }
-                    }
-                    prepareAsset(mediaEntry, prefs, prepareCallback);
+                    prepareAsset(response.getResponse(), prefs, prepareCallback);
                 });
             } else {
                 prepareCallback.onPrepareError(new IOException(response.getError().getMessage()));
             }
         });
     }
+
+    @Override
+    public void renewDrmAsset(String assetId, MediaOptions mediaOptions, DrmListener listener) {
+
+        if (kalturaPartnerId == null || kalturaServerUrl == null) {
+            throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
+        }
+
+        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId, ks, null);
+
+        mediaEntryProvider.load(response -> {
+            if (response.isSuccess()) {
+                renewDrmAsset(assetId, response.getResponse(), listener);
+            } else {
+                listener.onRegisterError(assetId, new IOException(response.getError().getMessage()));
+            }
+        });
+    }
+
+    protected abstract void renewDrmAsset(String assetId, PKMediaEntry mediaEntry, DrmListener listener);
 
     @Override
     public final void sendAssetToPlayer(String assetId, KalturaPlayer player) throws IOException {
