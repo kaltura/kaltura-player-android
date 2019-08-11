@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.os.Looper;
 import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,7 +24,6 @@ import com.kaltura.android.exoplayer2.upstream.FileDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.cache.*;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.*;
-import com.kaltura.playkit.LocalAssetsManagerImp.RegisterException;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
@@ -298,7 +296,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private void maybeRegisterDrmAsset(String assetId, int delayMillis) {
         bgHandler.postDelayed(() -> {
-            log.d("Will now register " + delayMillis);
             registerDrmAsset(assetId);
         }, delayMillis);
     }
@@ -522,22 +519,59 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void removeAsset(String assetId) {
-        DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
+    public boolean removeAsset(String assetId) {
+        final byte[] drmInitData;
+        try {
+            drmInitData = getDrmInitData(assetId);
+            DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
+            localAssetsManager.unregisterAsset(assetId, drmInitData);
+
+        } catch (IOException | InterruptedException e) {
+            log.e("removeAsset failed ", e);
+            return false;
+        }
+
+        return true;
     }
 
     @Override
     public DrmInfo getDrmStatus(String assetId) {
-        throw new TODO();
+        try {
+            final byte[] drmInitData = getDrmInitData(assetId);
+            if (drmInitData == null) {
+                return DrmInfo.unknown;
+            }
+            final LocalAssetsManager.AssetStatus assetStatus = localAssetsManager.getDrmStatus(assetId, drmInitData);
+
+            if (assetStatus == null || !assetStatus.registered) {
+                return DrmInfo.unknown;
+            }
+
+            if (!assetStatus.hasContentProtection) {
+                return DrmInfo.clear;
+            }
+
+            return DrmInfo.withDrm(assetStatus.licenseDuration, assetStatus.totalDuration);
+
+        } catch (IOException | InterruptedException e) {
+            log.e("getDrmStatus failed ", e);
+            return DrmInfo.unknown;
+        }
+    }
+
+    private byte[] getDrmInitData(String assetId) throws IOException, InterruptedException {
+        final Download download = downloadManager.getDownloadIndex().getDownload(assetId);
+        if (download == null) {
+            return null;
+        }
+
+        final Uri uri = download.request.uri;
+        final CacheDataSourceFactory cacheDataSourceFactory = new CacheDataSourceFactory(downloadCache, httpDataSourceFactory);
+        return getDrmInitData(cacheDataSourceFactory, uri.toString());
     }
 
 
-
     private void registerDrmAsset(String assetId) {
-
-        if (bgHandler.getLooper() != Looper.myLooper()) {
-            throw new IllegalStateException();
-        }
 
         if (assetId == null) {
             return;
@@ -568,7 +602,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         } catch (IOException | InterruptedException e) {
             listener.onRegisterError(assetId, e);
 
-        } catch (RegisterException e) {
+        } catch (LocalAssetsManager.RegisterException e) {
             listener.onRegisterError(assetId, e);
         }
     }

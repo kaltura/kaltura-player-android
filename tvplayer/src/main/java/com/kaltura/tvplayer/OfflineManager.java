@@ -111,7 +111,7 @@ public abstract class OfflineManager {
      * @param assetId
      * @return false if asset is not found, true otherwise.
      */
-    public abstract void removeAsset(String assetId);
+    public abstract boolean removeAsset(String assetId);
 
 
     /**
@@ -220,12 +220,39 @@ public abstract class OfflineManager {
     }
 
     public static class DrmInfo {
-        public Status status;
-        public int totalRemainingTime;
-        public int currentRemainingTime;
+
+        public static final DrmInfo clear = new DrmInfo(Status.clear, 0, 0);
+        public static final DrmInfo unknown = new DrmInfo(Status.unknown, 0, 0);
+
+        public static DrmInfo withDrm(long currentRemainingTime, long totalRemainingTime) {
+            return new DrmInfo(currentRemainingTime > 0 ? Status.valid : Status.expired, currentRemainingTime, totalRemainingTime);
+        }
+
+        public final Status status;
+        public final long currentRemainingTime;
+        public final long totalRemainingTime;
+
+        public boolean isValid() {
+            return status == Status.valid || status == Status.clear;
+        }
 
         public enum Status {
-            valid, unknown, expired, clear
+            valid, expired, clear, unknown
+        }
+
+        private DrmInfo(Status status, long currentRemainingTime, long totalRemainingTime) {
+            this.status = status;
+            this.currentRemainingTime = currentRemainingTime;
+            this.totalRemainingTime = totalRemainingTime;
+        }
+
+        @Override
+        public String toString() {
+            return "DrmInfo{" +
+                    "status=" + status +
+                    ", currentRemainingTime=" + currentRemainingTime +
+                    ", totalRemainingTime=" + totalRemainingTime +
+                    '}';
         }
     }
 

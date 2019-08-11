@@ -13,18 +13,18 @@ import java.io.IOException;
 
 abstract class AbstractOfflineManager extends OfflineManager {
     final Context appContext;
-    final LocalAssetsManagerImp localAssetsManager;
+    private final LocalAssetsManagerExo localAssetsManager;
     private String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
     private Integer kalturaPartnerId;
-    protected DownloadProgressListener downloadProgressListener;
-    protected AssetStateListener assetStateListener;
+    private DownloadProgressListener downloadProgressListener;
+    AssetStateListener assetStateListener;
     private String ks;
 
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
-        this.localAssetsManager = new LocalAssetsManagerImp(appContext);
+        this.localAssetsManager = new LocalAssetsManagerExo(appContext);
     }
 
     @Override
@@ -39,7 +39,18 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
         mediaEntryProvider.load(response -> {
             if (response.isSuccess()) {
-                mainHandler.post(() -> prepareAsset(response.getResponse(), prefs, prepareCallback));
+                mainHandler.post(() -> {
+
+                    final PKMediaEntry mediaEntry = response.getResponse();
+                    for (PKMediaSource source : mediaEntry.getSources()) {
+                        if (source.hasDrmParams()) {
+                            for (PKDrmParams params : source.getDrmData()) {
+                                params.setLicenseUri(params.getLicenseUri() + "&rental_duration=100");
+                            }
+                        }
+                    }
+                    prepareAsset(mediaEntry, prefs, prepareCallback);
+                });
             } else {
                 prepareCallback.onPrepareError(new IOException(response.getError().getMessage()));
             }
