@@ -252,17 +252,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
 
-    private static final AssetStateListener noopListener = new AssetStateListener() {
-        @Override public void onStateChanged(String assetId, AssetInfo assetInfo) {}
-        @Override public void onAssetRemoved(String assetId) {}
-        @Override public void onAssetDownloadFailed(String assetId, AssetDownloadException error) {}
-        @Override public void onAssetDownloadComplete(String assetId) {}
-        @Override public void onAssetDownloadPending(String assetId) {}
-        @Override public void onRegistered(String assetId, DrmStatus drmStatus) {}
-        @Override public void onRegisterError(String assetId, Exception error) {}
-        @Override public void onAssetDownloadPaused(String assetId) {}
-    };
-
     private ExoOfflineManager(Context context) {
         super(context);
         final File externalFilesDir = context.getExternalFilesDir(null);
@@ -288,10 +277,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         downloadManager.setRequirements(requirements);
         downloadManager.addListener(exoListener);
         localAssetsManager = new LocalAssetsManagerExo(context);
-    }
-
-    private AssetStateListener getListener() {
-        return assetStateListener != null ? assetStateListener : noopListener;
     }
 
     private void maybeRegisterDrmAsset(String assetId, int delayMillis) {
@@ -608,12 +593,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener) {
+    public void renewDrmAsset(String assetId, PKDrmParams drmParams) {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
             localAssetsManager.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData);
+            getListener().onRegistered(assetId, null);// TODO: 2019-08-12 status
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
-            listener.onRegisterError(assetId, e);
+            getListener().onRegisterError(assetId, e);
         }
     }
 
@@ -647,9 +633,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    protected void renewDrmAsset(String assetId, PKMediaEntry mediaEntry, DrmListener listener) {
+    void renewDrmAsset(String assetId, PKMediaEntry mediaEntry) {
         PKDrmParams drmParams = findDrmParams(assetId, mediaEntry);
-        renewDrmAsset(assetId, drmParams, listener);
+        renewDrmAsset(assetId, drmParams);
     }
 
     private PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {

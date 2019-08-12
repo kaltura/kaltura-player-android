@@ -8,6 +8,7 @@ import com.kaltura.tvplayer.offline.ExoOfflineManager;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -119,12 +120,11 @@ public abstract class OfflineManager {
      *
      * @param assetId
      * @param drmParams
-     * @param listener
      * @return false if asset is not found, true otherwise.
      */
-    public abstract void renewDrmAsset(String assetId, PKDrmParams drmParams, DrmListener listener);
+    public abstract void renewDrmAsset(String assetId, PKDrmParams drmParams);
 
-    public abstract void renewDrmAsset(String assetId, MediaOptions mediaOptions, DrmListener listener);
+    public abstract void renewDrmAsset(String assetId, MediaOptions mediaOptions);
 
 
     /**
@@ -205,21 +205,15 @@ public abstract class OfflineManager {
         void onDownloadProgress(String assetId, long downloadedBytes, long totalEstimatedBytes);
     }
 
-    /**
-     * Listener for DRM register events.
-     */
-    public interface DrmListener {
-        void onRegistered(String assetId, DrmStatus drmStatus);
-        void onRegisterError(String assetId, Exception error);
-    }
-
-    public interface AssetStateListener extends DrmListener {
+    public interface AssetStateListener {
         void onStateChanged(String assetId, AssetInfo assetInfo);
         void onAssetRemoved(String assetId);
         void onAssetDownloadFailed(String assetId, AssetDownloadException error);
         void onAssetDownloadComplete(String assetId);
         void onAssetDownloadPending(String assetId);
         void onAssetDownloadPaused(String assetId);
+        void onRegistered(String assetId, DrmStatus drmStatus);
+        void onRegisterError(String assetId, Exception error);
     }
 
     public static class DrmStatus {
@@ -251,9 +245,21 @@ public abstract class OfflineManager {
 
         @Override
         public String toString() {
+
+            long value = currentRemainingTime;
+            long ss = value % 60;
+            value /= 60;
+            long mm = value % 60;
+            value /= 60;
+            long hh = value % 24;
+            value /= 24;
+            long dd = value;
+
+            final String format = String.format(Locale.ROOT, "%d+%02d:%02d:%02d", dd, hh, mm, ss);
+
             return "DrmInfo{" +
                     "status=" + status +
-                    ", currentRemainingTime=" + currentRemainingTime +
+                    ", rem. time=" + format +
                     ", totalRemainingTime=" + totalRemainingTime +
                     '}';
         }

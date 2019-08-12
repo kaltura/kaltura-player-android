@@ -14,7 +14,6 @@ import java.io.IOException;
 
 abstract class AbstractOfflineManager extends OfflineManager {
     final Context appContext;
-    private final LocalAssetsManagerExo localAssetsManager;
     private String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
     private Integer kalturaPartnerId;
     private DownloadProgressListener downloadProgressListener;
@@ -23,9 +22,19 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
     private Handler mainHandler = new Handler(Looper.getMainLooper());
 
+    private static final AssetStateListener noopListener = new AssetStateListener() {
+        @Override public void onStateChanged(String assetId, AssetInfo assetInfo) {}
+        @Override public void onAssetRemoved(String assetId) {}
+        @Override public void onAssetDownloadFailed(String assetId, AssetDownloadException error) {}
+        @Override public void onAssetDownloadComplete(String assetId) {}
+        @Override public void onAssetDownloadPending(String assetId) {}
+        @Override public void onAssetDownloadPaused(String assetId) {}
+        @Override public void onRegistered(String assetId, DrmStatus drmStatus) {}
+        @Override public void onRegisterError(String assetId, Exception error) {}
+    };
+
     AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
-        this.localAssetsManager = new LocalAssetsManagerExo(appContext);
     }
 
     @Override
@@ -41,7 +50,8 @@ abstract class AbstractOfflineManager extends OfflineManager {
         mediaEntryProvider.load(response -> {
             if (response.isSuccess()) {
                 mainHandler.post(() -> {
-                    prepareAsset(response.getResponse(), prefs, prepareCallback);
+                    final PKMediaEntry mediaEntry = response.getResponse();
+                    prepareAsset(mediaEntry, prefs, prepareCallback);
                 });
             } else {
                 prepareCallback.onPrepareError(new IOException(response.getError().getMessage()));
@@ -50,7 +60,7 @@ abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
-    public void renewDrmAsset(String assetId, MediaOptions mediaOptions, DrmListener listener) {
+    public void renewDrmAsset(String assetId, MediaOptions mediaOptions) {
 
         if (kalturaPartnerId == null || kalturaServerUrl == null) {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
@@ -58,16 +68,19 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
         final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId, ks, null);
 
+        final AssetStateListener listener = getListener();
         mediaEntryProvider.load(response -> {
             if (response.isSuccess()) {
-                renewDrmAsset(assetId, response.getResponse(), listener);
+                final PKMediaEntry mediaEntry = response.getResponse();
+                renewDrmAsset(assetId, mediaEntry);
+                listener.onRegistered(assetId, null);// TODO: 2019-08-11 status
             } else {
                 listener.onRegisterError(assetId, new IOException(response.getError().getMessage()));
             }
         });
     }
 
-    protected abstract void renewDrmAsset(String assetId, PKMediaEntry mediaEntry, DrmListener listener);
+    abstract void renewDrmAsset(String assetId, PKMediaEntry mediaEntry);
 
     @Override
     public final void sendAssetToPlayer(String assetId, KalturaPlayer player) throws IOException {
@@ -100,4 +113,8 @@ abstract class AbstractOfflineManager extends OfflineManager {
         this.ks = ks;
     }
 
+
+    AssetStateListener getListener() {
+        return assetStateListener != null ? assetStateListener : noopListener;
+    }
 }
