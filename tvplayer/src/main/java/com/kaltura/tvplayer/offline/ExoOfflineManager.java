@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.util.Base64;
 import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,8 +32,6 @@ import okhttp3.OkHttpClient;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-import static com.kaltura.playkit.Utils.toBase64;
 
 
 public class ExoOfflineManager extends AbstractOfflineManager {
@@ -427,25 +424,29 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     public DrmStatus getDrmStatus(String assetId) {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
-            if (drmInitData == null) {
-                return DrmStatus.unknown;
-            }
-            final LocalAssetsManager.AssetStatus assetStatus = localAssetsManager.getDrmStatus(assetId, drmInitData);
-
-            if (assetStatus == null || !assetStatus.registered) {
-                return DrmStatus.unknown;
-            }
-
-            if (!assetStatus.hasContentProtection) {
-                return DrmStatus.clear;
-            }
-
-            return DrmStatus.withDrm(assetStatus.licenseDuration, assetStatus.totalDuration);
+            return getDrmStatus(assetId, drmInitData);
 
         } catch (IOException | InterruptedException e) {
             log.e("getDrmStatus failed ", e);
             return DrmStatus.unknown;
         }
+    }
+
+    private DrmStatus getDrmStatus(String assetId, byte[] drmInitData) {
+        if (drmInitData == null) {
+            return DrmStatus.unknown;
+        }
+        final LocalAssetsManager.AssetStatus assetStatus = localAssetsManager.getDrmStatus(assetId, drmInitData);
+
+        if (assetStatus == null || !assetStatus.registered) {
+            return DrmStatus.unknown;
+        }
+
+        if (!assetStatus.hasContentProtection) {
+            return DrmStatus.clear;
+        }
+
+        return DrmStatus.withDrm(assetStatus.licenseDuration, assetStatus.totalDuration);
     }
 
     private byte[] getDrmInitData(String assetId) throws IOException, InterruptedException {
@@ -484,15 +485,15 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         try {
             drmInitData = getDrmInitData(cacheDataSourceFactory, sourceUrl);
             localAssetsManager.registerWidevineDashAsset(assetId, licenseUri, drmInitData);
-            listener.onRegistered(assetId, null); // TODO: 2019-08-01 drm info
+            postEvent(() -> listener.onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
 
             pendingDrmRegistration.remove(assetId);
 
         } catch (IOException | InterruptedException e) {
-            listener.onRegisterError(assetId, e);
+            postEvent(() -> listener.onRegisterError(assetId, e));
 
         } catch (LocalAssetsManager.RegisterException e) {
-            listener.onRegisterError(assetId, e);
+            postEvent(() -> listener.onRegisterError(assetId, e));
         }
     }
 
@@ -501,9 +502,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
             localAssetsManager.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData);
-            getListener().onRegistered(assetId, null);// TODO: 2019-08-12 status
+            postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
-            getListener().onRegisterError(assetId, e);
+            postEvent(() -> getListener().onRegisterError(assetId, e));
         }
     }
 

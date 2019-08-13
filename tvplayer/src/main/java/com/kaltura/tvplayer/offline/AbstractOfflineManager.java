@@ -3,6 +3,7 @@ package com.kaltura.tvplayer.offline;
 import android.content.Context;
 import android.os.Handler;
 import android.os.HandlerThread;
+import androidx.annotation.NonNull;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.KalturaPlayer;
@@ -26,14 +27,14 @@ abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     private static final AssetStateListener noopListener = new AssetStateListener() {
-        @Override public void onStateChanged(String assetId, AssetInfo assetInfo) {}
-        @Override public void onAssetRemoved(String assetId) {}
-        @Override public void onAssetDownloadFailed(String assetId, AssetDownloadException error) {}
-        @Override public void onAssetDownloadComplete(String assetId) {}
-        @Override public void onAssetDownloadPending(String assetId) {}
-        @Override public void onAssetDownloadPaused(String assetId) {}
-        @Override public void onRegistered(String assetId, DrmStatus drmStatus) {}
-        @Override public void onRegisterError(String assetId, Exception error) {}
+        @Override public void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo) {}
+        @Override public void onAssetRemoved(@NonNull String assetId) {}
+        @Override public void onAssetDownloadFailed(@NonNull String assetId, AssetDownloadException error) {}
+        @Override public void onAssetDownloadComplete(@NonNull String assetId) {}
+        @Override public void onAssetDownloadPending(@NonNull String assetId) {}
+        @Override public void onAssetDownloadPaused(@NonNull String assetId) {}
+        @Override public void onRegistered(@NonNull String assetId, DrmStatus drmStatus) {}
+        @Override public void onRegisterError(@NonNull String assetId, Exception error) {}
     };
 
     AbstractOfflineManager(Context context) {
@@ -77,16 +78,13 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
         final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId, ks, null);
 
-        final AssetStateListener listener = getListener();
         mediaEntryProvider.load(response -> {
-
             postEvent(() -> {
                 if (response.isSuccess()) {
                     final PKMediaEntry mediaEntry = response.getResponse();
                     mediaEntryCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
 
                     renewDrmAsset(assetId, mediaEntry);
-                    listener.onRegistered(assetId, null);// TODO: 2019-08-11 status
 
                 } else {
                     mediaEntryCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));

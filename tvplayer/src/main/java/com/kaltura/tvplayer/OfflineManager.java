@@ -254,14 +254,14 @@ public abstract class OfflineManager {
     }
 
     public interface AssetStateListener {
-        void onStateChanged(String assetId, AssetInfo assetInfo);
-        void onAssetRemoved(String assetId);
-        void onAssetDownloadFailed(String assetId, AssetDownloadException error);
-        void onAssetDownloadComplete(String assetId);
-        void onAssetDownloadPending(String assetId);
-        void onAssetDownloadPaused(String assetId);
-        void onRegistered(String assetId, DrmStatus drmStatus);
-        void onRegisterError(String assetId, Exception error);
+        void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo);
+        void onAssetRemoved(@NonNull String assetId);
+        void onAssetDownloadFailed(@NonNull String assetId, @Nullable AssetDownloadException error);
+        void onAssetDownloadComplete(@NonNull String assetId);
+        void onAssetDownloadPending(@NonNull String assetId);
+        void onAssetDownloadPaused(@NonNull String assetId);
+        void onRegistered(@NonNull String assetId, DrmStatus drmStatus);
+        void onRegisterError(@NonNull String assetId, @Nullable Exception error);
     }
 
     public static class DrmStatus {
