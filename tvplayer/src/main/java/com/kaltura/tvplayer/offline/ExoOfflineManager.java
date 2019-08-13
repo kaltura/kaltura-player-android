@@ -1,9 +1,11 @@
 package com.kaltura.tvplayer.offline;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Base64;
 import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,6 +33,8 @@ import okhttp3.OkHttpClient;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
+import static com.kaltura.playkit.Utils.toBase64;
 
 
 public class ExoOfflineManager extends AbstractOfflineManager {
@@ -218,6 +222,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
                 }
 
+                saveAssetSourceId(assetId, source.getId());
                 postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
             }
 
@@ -229,6 +234,28 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 helper.release();
             }
         });
+    }
+
+    private void saveAssetSourceId(String assetId, String sourceId) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        sharedPrefs.edit().putString(sharedPrefsKey(assetId), sourceId).apply();
+    }
+
+    private String sharedPrefsKey(String assetId) {
+        return "assetSourceId:" + assetId;
+    }
+
+    private String loadAssetSourceId(String assetId) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        return sharedPrefs.getString(sharedPrefsKey(assetId), null);
+    }
+
+    private SharedPreferences sharedPrefs() {
+        return appContext.getSharedPreferences("KalturaOfflineManager", Context.MODE_PRIVATE);
+    }
+
+    private void removeAssetSourceId(String assetId) {
+        sharedPrefs().edit().remove(sharedPrefsKey(assetId)).apply();
     }
 
     @Nullable
@@ -386,6 +413,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             drmInitData = getDrmInitData(assetId);
             DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
             localAssetsManager.unregisterAsset(assetId, drmInitData);
+            removeAssetSourceId(assetId);
 
         } catch (IOException | InterruptedException e) {
             log.e("removeAsset failed ", e);
@@ -515,13 +543,16 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     private PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {
-        // TODO: 2019-08-11 this is a naive implementation, assuming the selected source is the original one.
+
+        final String sourceId = loadAssetSourceId(assetId);
+
         final SourceSelector selector = new SourceSelector(mediaEntry, PKMediaFormat.dash);
+        selector.setPreferredSourceId(sourceId);
 
-        final PKDrmParams selectedDrmParams = selector.getSelectedDrmParams();
-        final PKMediaSource selectedSource = selector.getSelectedSource();
+        PKMediaSource selectedSource = selector.getSelectedSource();
+        PKDrmParams selectedDrmParams = selector.getSelectedDrmParams();
 
-        if (selectedSource.getMediaFormat() != PKMediaFormat.dash) {
+        if (selectedSource == null || selectedSource.getMediaFormat() != PKMediaFormat.dash) {
             return null;
         }
 
