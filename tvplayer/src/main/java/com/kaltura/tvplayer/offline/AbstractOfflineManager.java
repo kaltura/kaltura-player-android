@@ -2,9 +2,8 @@ package com.kaltura.tvplayer.offline;
 
 import android.content.Context;
 import android.os.Handler;
-import android.os.Looper;
+import android.os.HandlerThread;
 import com.kaltura.playkit.*;
-import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.MediaOptions;
@@ -20,7 +19,11 @@ abstract class AbstractOfflineManager extends OfflineManager {
     AssetStateListener assetStateListener;
     private String ks;
 
-    private Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final Handler eventHandler;
+
+    void postEvent(Runnable event) {
+        eventHandler.post(event);
+    }
 
     private static final AssetStateListener noopListener = new AssetStateListener() {
         @Override public void onStateChanged(String assetId, AssetInfo assetInfo) {}
@@ -35,6 +38,11 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
     AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
+
+
+        HandlerThread handlerThread = new HandlerThread("OfflineManagerEvents");
+        handlerThread.start();
+        eventHandler = new Handler(handlerThread.getLooper());
     }
 
     @Override
@@ -48,19 +56,20 @@ abstract class AbstractOfflineManager extends OfflineManager {
         final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId, ks, null);
 
         mediaEntryProvider.load(response -> {
-            if (response.isSuccess()) {
-                mainHandler.post(() -> {
+            postEvent(() -> {
+                if (response.isSuccess()) {
                     final PKMediaEntry mediaEntry = response.getResponse();
+                    prepareCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
                     prepareAsset(mediaEntry, prefs, prepareCallback);
-                });
-            } else {
-                prepareCallback.onPrepareError(new IOException(response.getError().getMessage()));
-            }
+                } else {
+                    prepareCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
+                }
+            });
         });
     }
 
     @Override
-    public void renewDrmAsset(String assetId, MediaOptions mediaOptions) {
+    public void renewDrmAsset(String assetId, MediaOptions mediaOptions, MediaEntryCallback mediaEntryCallback) {
 
         if (kalturaPartnerId == null || kalturaServerUrl == null) {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
@@ -70,13 +79,19 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
         final AssetStateListener listener = getListener();
         mediaEntryProvider.load(response -> {
-            if (response.isSuccess()) {
-                final PKMediaEntry mediaEntry = response.getResponse();
-                renewDrmAsset(assetId, mediaEntry);
-                listener.onRegistered(assetId, null);// TODO: 2019-08-11 status
-            } else {
-                listener.onRegisterError(assetId, new IOException(response.getError().getMessage()));
-            }
+
+            postEvent(() -> {
+                if (response.isSuccess()) {
+                    final PKMediaEntry mediaEntry = response.getResponse();
+                    mediaEntryCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
+
+                    renewDrmAsset(assetId, mediaEntry);
+                    listener.onRegistered(assetId, null);// TODO: 2019-08-11 status
+
+                } else {
+                    mediaEntryCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
+                }
+            });
         });
     }
 
@@ -112,7 +127,6 @@ abstract class AbstractOfflineManager extends OfflineManager {
     public void setKs(String ks) {
         this.ks = ks;
     }
-
 
     AssetStateListener getListener() {
         return assetStateListener != null ? assetStateListener : noopListener;

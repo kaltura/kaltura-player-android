@@ -25,8 +25,6 @@ import com.kaltura.android.exoplayer2.upstream.cache.*;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
-import com.kaltura.tvplayer.OfflineManager;
-import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
 import com.kaltura.tvplayer.TODO;
 import okhttp3.OkHttpClient;
 
@@ -34,131 +32,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-
-class ExoAssetInfo extends OfflineManager.AssetInfo {
-
-    private final String assetId;
-    private final AssetDownloadState state;
-    private final float percentDownloaded;
-    private final long estimatedSize;
-    private final long bytesDownloaded;
-
-    @Nullable final DownloadHelper downloadHelper;  // Only used during preparation
-
-    ExoAssetInfo(String assetId, AssetDownloadState state, long estimatedSize, long bytesDownloaded, @SuppressWarnings("NullableProblems") DownloadHelper downloadHelper) {
-        this.assetId = assetId;
-        this.state = state;
-        this.estimatedSize = estimatedSize;
-        this.bytesDownloaded = bytesDownloaded;
-        this.downloadHelper = downloadHelper;
-        percentDownloaded = 0;
-    }
-
-    ExoAssetInfo(Download download) {
-        assetId = download.request.id;
-        downloadHelper = null;
-        percentDownloaded = download.getPercentDownloaded();
-        bytesDownloaded = download.getBytesDownloaded();
-        if (download.contentLength > 0) {
-            estimatedSize = download.contentLength;
-        } else {
-            estimatedSize = (long) (100 * bytesDownloaded / percentDownloaded);
-        }
-        state = toAssetState(download.state);
-    }
-
-    static int toExoState(AssetDownloadState state) {
-        switch (state) {
-            case none:
-                break;
-            case downloading:
-                return Download.STATE_DOWNLOADING;
-            case queued:
-                return Download.STATE_QUEUED;
-            case completed:
-                return Download.STATE_COMPLETED;
-            case failed:
-                return Download.STATE_FAILED;
-            case removing:
-                return Download.STATE_REMOVING;
-            case stopped:
-                return Download.STATE_STOPPED;
-        }
-        return -1;
-    }
-
-    static AssetDownloadState toAssetState(@Download.State int exoState) {
-        switch (exoState) {
-            case Download.STATE_COMPLETED:
-                return AssetDownloadState.completed;
-            case Download.STATE_DOWNLOADING:
-                return AssetDownloadState.downloading;
-            case Download.STATE_FAILED:
-                return AssetDownloadState.failed;
-            case Download.STATE_QUEUED:
-                return AssetDownloadState.queued;
-            case Download.STATE_REMOVING:
-                return AssetDownloadState.removing;
-            case Download.STATE_RESTARTING:
-                return AssetDownloadState.downloading;  // TODO: is this the same?
-            case Download.STATE_STOPPED:
-                return AssetDownloadState.stopped;
-        }
-        return null;
-    }
-
-    @Override
-    public void release() {
-        if (downloadHelper != null) {
-            downloadHelper.release();
-        }
-    }
-
-    @Override
-    public String getAssetId() {
-        return assetId;
-    }
-
-    @Override
-    public AssetDownloadState getState() {
-        return state;
-    }
-
-    @Override
-    public long getEstimatedSize() {
-        return estimatedSize;
-    }
-
-    @Override
-    public long getBytesDownloaded() {
-        return bytesDownloaded;
-    }
-}
-
-enum StopReason {
-    none,       // 0 = Download.STOP_REASON_NONE
-    unknown,    // 10
-    pause;      // 11
-
-    static StopReason fromExoReason(int reason) {
-        switch (reason) {
-            case Download.STOP_REASON_NONE:
-                return unknown;
-            case 11:
-                return pause;
-            default:
-                return unknown;
-        }
-    }
-
-    int toExoCode() {
-        switch (this) {
-            case none: return Download.STOP_REASON_NONE;
-            case pause: return 11;
-            default: return 10;
-        }
-    }
-}
 
 public class ExoOfflineManager extends AbstractOfflineManager {
 
@@ -310,6 +183,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         final DownloadHelper downloadHelper;
 
+        postEvent(() -> prepareCallback.onSourceSelected(assetId, source, drmData));
+
         switch (mediaFormat) {
             // DASH: clear or with Widevine
             case dash:
@@ -330,7 +205,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 break;
 
             default:
-                prepareCallback.onPrepareError(new IllegalArgumentException("Unsupported media format"));
+                postEvent(() -> prepareCallback.onPrepareError(assetId, new IllegalArgumentException("Unsupported media format")));
                 return;
         }
 
@@ -342,7 +217,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
                 }
-                prepareCallback.onPrepared(assetInfo, null);
+
+                postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
             }
 
             @Override

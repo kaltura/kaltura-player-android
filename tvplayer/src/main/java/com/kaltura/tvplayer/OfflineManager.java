@@ -1,9 +1,12 @@
 package com.kaltura.tvplayer;
 
 import android.content.Context;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.tvplayer.offline.ExoOfflineManager;
 
 import java.io.IOException;
@@ -124,7 +127,7 @@ public abstract class OfflineManager {
      */
     public abstract void renewDrmAsset(String assetId, PKDrmParams drmParams);
 
-    public abstract void renewDrmAsset(String assetId, MediaOptions mediaOptions);
+    public abstract void renewDrmAsset(String assetId, MediaOptions mediaOptions, MediaEntryCallback mediaEntryCallback);
 
 
     /**
@@ -173,7 +176,6 @@ public abstract class OfflineManager {
 
     public abstract void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
 
-
     public enum AssetDownloadState {
         none, downloading, queued, completed, failed, removing, stopped
     }
@@ -187,15 +189,61 @@ public abstract class OfflineManager {
     }
 
     /**
-     * Invoked during asset info loading ({@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}).
-     * Allows the app to inspect and change the track selection. If app returns non-null, it overrides the automatic selection.
-     *
-     * @see {@link SelectionPrefs} for higher-level track selection customization.
+     * Event callbacks invoked during asset info loading ({@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)})
+     * or {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}).
+     * The app MUST handle at least {@link #onPrepared(String, AssetInfo, Map)} and {@link #onPrepareError(String, Exception)}. If the
+     * app has used {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}, it MUST also handle
+     * {@link #onMediaEntryLoadError(Exception)}.
      */
-    public interface PrepareCallback {
-        void onPrepared(AssetInfo assetInfo, Map<TrackType, List<Track>> selected);
+    public interface PrepareCallback extends MediaEntryCallback {
+        /**
+         * Called when the asset is ready to be downloaded. The app should either call {@link #startAssetDownload(AssetInfo)}
+         * to start the download or call {@link AssetInfo#release()} if it elected NOT to download the prepared asset.
+         * Must be handled by all applications.
+         * @param assetId
+         * @param assetInfo
+         * @param selected
+         */
+        void onPrepared(@NonNull String assetId, @NonNull AssetInfo assetInfo, @Nullable Map<TrackType, List<Track>> selected);
 
-        void onPrepareError(Exception error);
+        /**
+         * Called when asset preparation has failed for some reason.
+         * Must be handled by all applications.
+         * @param assetId
+         * @param error
+         */
+        void onPrepareError(@NonNull String assetId, Exception error);
+
+        /**
+         * Called when loading a {@link PKMediaEntry} object from the backend has succeeded. It allows the app to
+         * inspect and possibly modify the entry before it is actually prepared for download.
+         * This method is only called when using {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}
+         * and doesn't have to handled by apps that don't use this variant of prepareAsset().
+         * @param assetId
+         * @param mediaEntry
+         */
+        @Override
+        default void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry) {}
+
+        /**
+         * Called when loading a {@link PKMediaEntry} object from the backend has failed.
+         * This method is only called when using {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}
+         * and doesn't have to handled by apps that don't use this variant of prepareAsset(). Apps that DO use it,
+         * MUST handle it because the preparation process halts if it's called.
+         * @param error
+         */
+        @Override
+        default void onMediaEntryLoadError(Exception error) {}
+
+        /**
+         * Called when prepareAsset() has selected a specific {@link PKMediaSource} from the provided or loaded
+         * {@link PKMediaEntry}.
+         * If drmParams is not null, it contains the selected DRM parameters for the source.
+         * @param assetId
+         * @param source
+         * @param drmParams
+         */
+        default void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {}
     }
 
     /**
@@ -330,4 +378,9 @@ public abstract class OfflineManager {
         }
     }
 
+    public interface MediaEntryCallback {
+        void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry);
+
+        void onMediaEntryLoadError(Exception error);
+    }
 }
