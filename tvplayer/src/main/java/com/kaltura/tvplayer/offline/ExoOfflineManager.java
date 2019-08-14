@@ -21,6 +21,7 @@ import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
+import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.FileDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.cache.*;
 import com.kaltura.android.exoplayer2.util.Util;
@@ -53,6 +54,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     final DownloadManager downloadManager;
 
     private final LocalAssetsManagerExo localAssetsManager;
+
+    private PKMediaFormat preferredMediaFormat;
+
 
     @SuppressWarnings("FieldCanBeLocal")
     private final DownloadManager.Listener exoListener = new DownloadManager.Listener() {
@@ -115,7 +119,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         }
     };
-    private PKMediaFormat preferredMediaFormat;
 
     @NonNull
     private Handler createBgHandler() {
@@ -366,6 +369,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void startAssetDownload(AssetInfo assetInfo) {
+
+        if (assetInfo == null) {
+            log.e("assetInfo == null");
+            return;
+        }
 
         if (!(assetInfo instanceof ExoAssetInfo)) {
             throw new IllegalArgumentException("Not an ExoAssetInfo object");

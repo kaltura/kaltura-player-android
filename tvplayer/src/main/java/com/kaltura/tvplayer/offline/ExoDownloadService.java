@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadManager;
 import com.kaltura.android.exoplayer2.offline.DownloadService;
-import com.kaltura.android.exoplayer2.scheduler.PlatformScheduler;
 import com.kaltura.android.exoplayer2.scheduler.Scheduler;
 import com.kaltura.android.exoplayer2.ui.DownloadNotificationHelper;
 import com.kaltura.android.exoplayer2.util.NotificationUtil;
