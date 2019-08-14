@@ -49,18 +49,7 @@ public class ConfigResolver {
             } else if (value instanceof Bundle) {
                 Bundle resolvedInnerBundle = resolveBundle((Bundle) value, tokenResolver);
                 resolvedBundle.putBundle(key, resolvedInnerBundle);
-            } else {
-                if (value instanceof Boolean) {
-                    resolvedBundle.putBoolean(key, (Boolean) value);
-                } else if (value instanceof Integer) {
-                    resolvedBundle.putInt(key, (Integer) value);
-                } else if (value instanceof ArrayList) {
-                    ArrayList arrayBundleValue = (ArrayList) value;
-                    if ((arrayBundleValue).size() > 0 && (arrayBundleValue).get(0) instanceof String) {
-                        resolvedBundle.putStringArrayList(key, (ArrayList<String>) arrayBundleValue);
-                    }
-                }
-            }
+            } 
         }
         return resolvedBundle;
     }
