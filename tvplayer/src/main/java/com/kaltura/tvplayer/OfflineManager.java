@@ -250,7 +250,7 @@ public abstract class OfflineManager {
      * Invoked while downloading an asset; use with {@link #setDownloadProgressListener(DownloadProgressListener)}.
      */
     public interface DownloadProgressListener {
-        void onDownloadProgress(String assetId, long downloadedBytes, long totalEstimatedBytes);
+        void onDownloadProgress(String assetId, long bytesDownloaded, long totalBytesEstimated, float percentDownloaded);
     }
 
     public interface AssetStateListener {

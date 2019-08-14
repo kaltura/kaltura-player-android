@@ -21,7 +21,6 @@ import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
-import com.kaltura.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.FileDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.cache.*;
 import com.kaltura.android.exoplayer2.util.Util;
@@ -56,6 +55,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private final LocalAssetsManagerExo localAssetsManager;
 
     private PKMediaFormat preferredMediaFormat;
+
+    private DownloadProgressListener downloadProgressListener;
 
 
     @SuppressWarnings("FieldCanBeLocal")
@@ -100,7 +101,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     if (StopReason.fromExoReason(download.stopReason) == StopReason.pause) {
                         listener.onAssetDownloadPaused(assetId);
                     }
-                    throw new TODO();
             }
         }
 
@@ -154,6 +154,33 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         downloadManager.setRequirements(requirements);
         downloadManager.addListener(exoListener);
         localAssetsManager = new LocalAssetsManagerExo(context);
+
+
+        postEvent(new Runnable() {
+            @Override
+            public void run() {
+
+                final DownloadProgressListener listener = ExoOfflineManager.this.downloadProgressListener;
+
+                if (listener != null) {
+                    final List<Download> downloads = downloadManager.getCurrentDownloads();
+                    for (Download download : downloads) {
+                        if (download.state != Download.STATE_DOWNLOADING) continue;
+
+                        final float percentDownloaded = download.getPercentDownloaded();
+                        final long bytesDownloaded = download.getBytesDownloaded();
+                        final long totalSize = percentDownloaded > 0 ? (long) (100f * bytesDownloaded / percentDownloaded) : -1;
+
+                        final String assetId = download.request.id;
+
+                        listener.onDownloadProgress(assetId, bytesDownloaded, totalSize, percentDownloaded);
+                    }
+
+                }
+
+                postEventDelayed(this, 250);
+            }
+        });
     }
 
     private void maybeRegisterDrmAsset(String assetId, int delayMillis) {
@@ -430,6 +457,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public DrmStatus getDrmStatus(String assetId) {
+        if (assetId == null) {
+            return DrmStatus.unknown;
+        }
+
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
             return getDrmStatus(assetId, drmInitData);
@@ -566,5 +597,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         return selectedDrmParams;
+    }
+
+    @Override
+    public void setDownloadProgressListener(DownloadProgressListener listener) {
+        this.downloadProgressListener = listener;
     }
 }

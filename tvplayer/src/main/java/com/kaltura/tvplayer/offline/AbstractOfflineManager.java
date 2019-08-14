@@ -16,7 +16,6 @@ abstract class AbstractOfflineManager extends OfflineManager {
     final Context appContext;
     private String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
     private Integer kalturaPartnerId;
-    private DownloadProgressListener downloadProgressListener;
     AssetStateListener assetStateListener;
     private String ks;
 
@@ -24,6 +23,10 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
     void postEvent(Runnable event) {
         eventHandler.post(event);
+    }
+
+    void postEventDelayed(Runnable event, int delayMillis) {
+        eventHandler.postDelayed(event, delayMillis);
     }
 
     private static final AssetStateListener noopListener = new AssetStateListener() {
@@ -114,11 +117,6 @@ abstract class AbstractOfflineManager extends OfflineManager {
     @Override
     public void setAssetStateListener(AssetStateListener listener) {
         this.assetStateListener = listener;
-    }
-
-    @Override
-    public void setDownloadProgressListener(DownloadProgressListener listener) {
-        this.downloadProgressListener = listener;
     }
 
     @Override
