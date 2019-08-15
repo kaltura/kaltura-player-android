@@ -251,35 +251,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             @Override
             public void onPrepared(DownloadHelper helper) {
 
-                long selectedSize = 0;
+                long selectedSize = estimateTotalSize(helper);
 
-                final Object manifest = helper.getManifest();
-                // TODO: 2019-08-15 HLS
-
-                final long durationMs;
-                if (manifest instanceof DashManifest) {
-                    final DashManifest dashManifest = (DashManifest) manifest;
-                    durationMs = dashManifest.durationMs;
-                } else if (manifest instanceof HlsManifest) {
-                    final HlsManifest hlsManifest = (HlsManifest) manifest;
-                    durationMs = hlsManifest.mediaPlaylist.durationUs / 1000;
-                } else {
-                    durationMs = 0; // TODO: 2019-08-15
-                }
-
-                for (int pi = 0; pi < helper.getPeriodCount(); pi++) {
-                    final TrackGroupArray trackGroups = helper.getTrackGroups(pi);
-
-                    for (int i = 0; i < trackGroups.length; i++) {
-                        final List<TrackSelection> trackSelections = helper.getTrackSelections(pi, i);
-                        for (TrackSelection selection : trackSelections) {
-                            final int bitrate = selection.getSelectedFormat().bitrate;
-                            selectedSize += (bitrate * durationMs) / 1000 / 8;
-                        }
-                    }
-                }
-
-                final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.none, -1, -1, helper, selectedSize);
+                final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.none, selectedSize, -1, helper);
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
                 }
@@ -289,13 +263,46 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
 
             @Override
-            public void onPrepareError(DownloadHelper helper, IOException e) {
-                if (e != null) {
-                    log.e("onPrepareError", e);
+            public void onPrepareError(DownloadHelper helper, IOException error) {
+                if (error != null) {
+                    log.e("onPrepareError", error);
                 }
                 helper.release();
             }
         });
+    }
+
+    private static long estimateTotalSize(DownloadHelper helper) {
+        long selectedSize = 0;
+
+        final Object manifest = helper.getManifest();
+        // TODO: 2019-08-15 HLS
+
+        final long durationMs;
+        if (manifest instanceof DashManifest) {
+            final DashManifest dashManifest = (DashManifest) manifest;
+            durationMs = dashManifest.durationMs;
+        } else if (manifest instanceof HlsManifest) {
+            final HlsManifest hlsManifest = (HlsManifest) manifest;
+            durationMs = hlsManifest.mediaPlaylist.durationUs / 1000;
+        } else {
+            durationMs = 0; // TODO: 2019-08-15
+        }
+
+        for (int pi = 0; pi < helper.getPeriodCount(); pi++) {
+
+            final MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(pi);
+            final int rendererCount = mappedTrackInfo.getRendererCount();
+
+            for (int i = 0; i < rendererCount; i++) {
+                final List<TrackSelection> trackSelections = helper.getTrackSelections(pi, i);
+                for (TrackSelection selection : trackSelections) {
+                    final int bitrate = selection.getSelectedFormat().bitrate;
+                    selectedSize += (bitrate * durationMs) / 1000 / 8;
+                }
+            }
+        }
+        return selectedSize;
     }
 
     private void saveAssetSourceId(String assetId, String sourceId) {
@@ -445,7 +452,14 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         final DownloadHelper helper = exoAssetInfo.downloadHelper;
         if (helper == null) {
-            throw new IllegalArgumentException("Asset is not in prepare state");
+            try {
+                final Download download = downloadManager.getDownloadIndex().getDownload(exoAssetInfo.getAssetId());
+                DownloadService.sendSetStopReason(appContext, ExoDownloadService.class, exoAssetInfo.getAssetId(), 0, false);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new IllegalArgumentException("Asset is not in prepare state");
+            }
+            return;
         }
 
         JSONObject data = new JSONObject();
@@ -520,7 +534,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private DrmStatus getDrmStatus(String assetId, byte[] drmInitData) {
         if (drmInitData == null) {
-            return DrmStatus.unknown;
+            return DrmStatus.clear;
         }
         final LocalAssetsManager.AssetStatus assetStatus = localAssetsManager.getDrmStatus(assetId, drmInitData);
 
@@ -580,6 +594,18 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         } catch (LocalAssetsManager.RegisterException e) {
             postEvent(() -> listener.onRegisterError(assetId, e));
+        }
+    }
+
+    class RenewParams {
+        String licenseUri;
+        byte[] drmInitData;
+        String sourceId;
+
+        public RenewParams(String licenseUri, byte[] drmInitData, String sourceId) {
+            this.licenseUri = licenseUri;
+            this.drmInitData = drmInitData;
+            this.sourceId = sourceId;
         }
     }
 

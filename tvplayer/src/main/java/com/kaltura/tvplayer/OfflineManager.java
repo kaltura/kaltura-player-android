@@ -281,6 +281,10 @@ public abstract class OfflineManager {
             return status == Status.valid || status == Status.clear;
         }
 
+        public boolean isClear() {
+            return status == Status.clear;
+        }
+
         public enum Status {
             valid, expired, clear, unknown
         }

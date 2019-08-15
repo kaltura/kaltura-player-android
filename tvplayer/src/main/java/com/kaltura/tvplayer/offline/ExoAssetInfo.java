@@ -18,7 +18,7 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
     @Nullable
     final DownloadHelper downloadHelper;  // Only used during preparation
 
-    ExoAssetInfo(String assetId, OfflineManager.AssetDownloadState state, long estimatedSize, long bytesDownloaded, @SuppressWarnings("NullableProblems") DownloadHelper downloadHelper, long selectedSize) {
+    ExoAssetInfo(String assetId, OfflineManager.AssetDownloadState state, long estimatedSize, long bytesDownloaded, @SuppressWarnings("NullableProblems") DownloadHelper downloadHelper) {
         this.assetId = assetId;
         this.state = state;
         this.estimatedSize = estimatedSize;
