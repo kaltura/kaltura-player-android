@@ -3,6 +3,7 @@ package com.kaltura.tvplayer.offline;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Pair;
@@ -17,9 +18,14 @@ import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.offline.*;
 import com.kaltura.android.exoplayer2.scheduler.Requirements;
 import com.kaltura.android.exoplayer2.source.MediaSource;
+import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
+import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
+import com.kaltura.android.exoplayer2.source.hls.HlsManifest;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
 import com.kaltura.android.exoplayer2.upstream.FileDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.cache.*;
@@ -28,9 +34,10 @@ import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.TODO;
 import okhttp3.OkHttpClient;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 
@@ -244,7 +251,35 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             @Override
             public void onPrepared(DownloadHelper helper) {
 
-                final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.none, -1, -1, helper);
+                long selectedSize = 0;
+
+                final Object manifest = helper.getManifest();
+                // TODO: 2019-08-15 HLS
+
+                final long durationMs;
+                if (manifest instanceof DashManifest) {
+                    final DashManifest dashManifest = (DashManifest) manifest;
+                    durationMs = dashManifest.durationMs;
+                } else if (manifest instanceof HlsManifest) {
+                    final HlsManifest hlsManifest = (HlsManifest) manifest;
+                    durationMs = hlsManifest.mediaPlaylist.durationUs / 1000;
+                } else {
+                    durationMs = 0; // TODO: 2019-08-15
+                }
+
+                for (int pi = 0; pi < helper.getPeriodCount(); pi++) {
+                    final TrackGroupArray trackGroups = helper.getTrackGroups(pi);
+
+                    for (int i = 0; i < trackGroups.length; i++) {
+                        final List<TrackSelection> trackSelections = helper.getTrackSelections(pi, i);
+                        for (TrackSelection selection : trackSelections) {
+                            final int bitrate = selection.getSelectedFormat().bitrate;
+                            selectedSize += (bitrate * durationMs) / 1000 / 8;
+                        }
+                    }
+                }
+
+                final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.none, -1, -1, helper, selectedSize);
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
                 }
@@ -406,11 +441,23 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             throw new IllegalArgumentException("Not an ExoAssetInfo object");
         }
 
-        final DownloadHelper helper = ((ExoAssetInfo) assetInfo).downloadHelper;
+        final ExoAssetInfo exoAssetInfo = (ExoAssetInfo) assetInfo;
+
+        final DownloadHelper helper = exoAssetInfo.downloadHelper;
         if (helper == null) {
             throw new IllegalArgumentException("Asset is not in prepare state");
         }
-        final DownloadRequest downloadRequest = helper.getDownloadRequest(assetInfo.getAssetId(), null);
+
+        JSONObject data = new JSONObject();
+        byte[] bytes = null;
+        try {
+            data.put("estimatedSizeBytes", exoAssetInfo.getEstimatedSize());
+            bytes = data.toString().getBytes();
+        } catch (JSONException e) {
+
+        }
+
+        final DownloadRequest downloadRequest = helper.getDownloadRequest(assetInfo.getAssetId(), bytes);
 
         DownloadService.sendAddDownload(appContext, ExoDownloadService.class, downloadRequest, false);
     }

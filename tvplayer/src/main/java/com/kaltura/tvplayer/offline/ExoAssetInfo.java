@@ -4,6 +4,8 @@ import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadHelper;
 import com.kaltura.tvplayer.OfflineManager;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 class ExoAssetInfo extends OfflineManager.AssetInfo {
 
@@ -16,7 +18,7 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
     @Nullable
     final DownloadHelper downloadHelper;  // Only used during preparation
 
-    ExoAssetInfo(String assetId, OfflineManager.AssetDownloadState state, long estimatedSize, long bytesDownloaded, @SuppressWarnings("NullableProblems") DownloadHelper downloadHelper) {
+    ExoAssetInfo(String assetId, OfflineManager.AssetDownloadState state, long estimatedSize, long bytesDownloaded, @SuppressWarnings("NullableProblems") DownloadHelper downloadHelper, long selectedSize) {
         this.assetId = assetId;
         this.state = state;
         this.estimatedSize = estimatedSize;
@@ -30,10 +32,22 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
         downloadHelper = null;
         percentDownloaded = download.getPercentDownloaded();
         bytesDownloaded = download.getBytesDownloaded();
+
         if (download.contentLength > 0) {
             estimatedSize = download.contentLength;
+
         } else {
-            estimatedSize = (long) (100 * bytesDownloaded / percentDownloaded);
+            long estimatedSizeBytes;
+            byte[] data = download.request.data;
+            final JSONObject jsonObject;
+            try {
+                jsonObject = new JSONObject(new String(data));
+                estimatedSizeBytes = jsonObject.getLong("estimatedSizeBytes");
+            } catch (JSONException e) {
+                estimatedSizeBytes = (long) (100 * bytesDownloaded / percentDownloaded);
+                e.printStackTrace();
+            }
+            this.estimatedSize = estimatedSizeBytes;
         }
         state = toAssetState(download.state);
     }
