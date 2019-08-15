@@ -176,6 +176,8 @@ public abstract class OfflineManager {
 
     public abstract void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
 
+    public abstract void setEstimatedHlsAudioBitrate(int bitrate);
+
     public enum AssetDownloadState {
         none, downloading, queued, completed, failed, removing, stopped
     }

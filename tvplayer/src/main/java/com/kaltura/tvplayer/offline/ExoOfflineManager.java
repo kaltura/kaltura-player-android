@@ -3,7 +3,6 @@ package com.kaltura.tvplayer.offline;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Pair;
@@ -11,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
+import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
 import com.kaltura.android.exoplayer2.database.ExoDatabaseProvider;
 import com.kaltura.android.exoplayer2.drm.*;
@@ -18,8 +18,6 @@ import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.offline.*;
 import com.kaltura.android.exoplayer2.scheduler.Requirements;
 import com.kaltura.android.exoplayer2.source.MediaSource;
-import com.kaltura.android.exoplayer2.source.ProgressiveMediaSource;
-import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.hls.HlsManifest;
@@ -64,6 +62,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private PKMediaFormat preferredMediaFormat;
 
     private DownloadProgressListener downloadProgressListener;
+
+
+    private int estimatedHlsAudioBitrate;
 
 
     @SuppressWarnings("FieldCanBeLocal")
@@ -251,7 +252,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             @Override
             public void onPrepared(DownloadHelper helper) {
 
-                long selectedSize = estimateTotalSize(helper);
+                long selectedSize = estimateTotalSize(helper, estimatedHlsAudioBitrate);
 
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(assetId, AssetDownloadState.none, selectedSize, -1, helper);
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
@@ -272,11 +273,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         });
     }
 
-    private static long estimateTotalSize(DownloadHelper helper) {
+    private static long estimateTotalSize(DownloadHelper helper, int hlsAudioBitrate) {
         long selectedSize = 0;
 
         final Object manifest = helper.getManifest();
-        // TODO: 2019-08-15 HLS
 
         final long durationMs;
         if (manifest instanceof DashManifest) {
@@ -297,7 +297,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             for (int i = 0; i < rendererCount; i++) {
                 final List<TrackSelection> trackSelections = helper.getTrackSelections(pi, i);
                 for (TrackSelection selection : trackSelections) {
-                    final int bitrate = selection.getSelectedFormat().bitrate;
+                    final Format format = selection.getSelectedFormat();
+
+                    int bitrate = format.bitrate;
+                    if (bitrate <= 0)
+                        if (format.sampleMimeType != null && format.sampleMimeType.startsWith("audio/")) {
+                            bitrate = hlsAudioBitrate;
+                        }
                     selectedSize += (bitrate * durationMs) / 1000 / 8;
                 }
             }
@@ -647,6 +653,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     @Override
     public void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         this.preferredMediaFormat = preferredMediaFormat;
+    }
+
+    @Override
+    public void setEstimatedHlsAudioBitrate(int bitrate) {
+        estimatedHlsAudioBitrate = bitrate;
     }
 
     @Override
