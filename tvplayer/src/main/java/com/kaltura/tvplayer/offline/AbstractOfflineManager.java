@@ -16,6 +16,9 @@ import java.io.IOException;
 
 abstract class AbstractOfflineManager extends OfflineManager {
     final Context appContext;
+    protected PKMediaFormat preferredMediaFormat;
+    protected int estimatedHlsAudioBitrate;
+    protected DownloadProgressListener downloadProgressListener;
     private String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
     private Integer kalturaPartnerId;
     AssetStateListener assetStateListener;
@@ -161,5 +164,20 @@ abstract class AbstractOfflineManager extends OfflineManager {
         }
 
         return selectedDrmParams;
+    }
+
+    @Override
+    public void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
+        this.preferredMediaFormat = preferredMediaFormat;
+    }
+
+    @Override
+    public void setEstimatedHlsAudioBitrate(int bitrate) {
+        estimatedHlsAudioBitrate = bitrate;
+    }
+
+    @Override
+    public void setDownloadProgressListener(DownloadProgressListener listener) {
+        this.downloadProgressListener = listener;
     }
 }

@@ -59,14 +59,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private final LocalAssetsManagerExo localAssetsManager;
 
-    private PKMediaFormat preferredMediaFormat;
-
-    private DownloadProgressListener downloadProgressListener;
-
-
-    private int estimatedHlsAudioBitrate;
-
-
     @SuppressWarnings("FieldCanBeLocal")
     private final DownloadManager.Listener exoListener = new DownloadManager.Listener() {
         @Override
@@ -639,18 +631,4 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return null;
     }
 
-    @Override
-    public void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
-        this.preferredMediaFormat = preferredMediaFormat;
-    }
-
-    @Override
-    public void setEstimatedHlsAudioBitrate(int bitrate) {
-        estimatedHlsAudioBitrate = bitrate;
-    }
-
-    @Override
-    public void setDownloadProgressListener(DownloadProgressListener listener) {
-        this.downloadProgressListener = listener;
-    }
 }
