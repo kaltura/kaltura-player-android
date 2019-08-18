@@ -269,6 +269,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     log.e("onPrepareError", error);
                 }
                 helper.release();
+                postEvent(() -> prepareCallback.onPrepareError(assetId, error));
             }
         });
     }
@@ -300,10 +301,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     final Format format = selection.getSelectedFormat();
 
                     int bitrate = format.bitrate;
-                    if (bitrate <= 0)
+                    if (bitrate <= 0) {
                         if (format.sampleMimeType != null && format.sampleMimeType.startsWith("audio/")) {
                             bitrate = hlsAudioBitrate;
                         }
+                    }
                     selectedSize += (bitrate * durationMs) / 1000 / 8;
                 }
             }
