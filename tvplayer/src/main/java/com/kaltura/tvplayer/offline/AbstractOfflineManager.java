@@ -1,10 +1,12 @@
 package com.kaltura.tvplayer.offline;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
 import androidx.annotation.NonNull;
 import com.kaltura.playkit.*;
+import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.MediaOptions;
@@ -96,7 +98,23 @@ abstract class AbstractOfflineManager extends OfflineManager {
         });
     }
 
-    abstract void renewDrmAsset(String assetId, PKMediaEntry mediaEntry);
+    protected String sharedPrefsKey(String assetId) {
+        return "assetSourceId:" + assetId;
+    }
+
+    private String loadAssetSourceId(String assetId) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        return sharedPrefs.getString(sharedPrefsKey(assetId), null);
+    }
+
+    protected SharedPreferences sharedPrefs() {
+        return appContext.getSharedPreferences("KalturaOfflineManager", Context.MODE_PRIVATE);
+    }
+
+    void renewDrmAsset(String assetId, PKMediaEntry mediaEntry) {
+        PKDrmParams drmParams = findDrmParams(assetId, mediaEntry);
+        renewDrmAsset(assetId, drmParams);
+    }
 
     @Override
     public final void sendAssetToPlayer(String assetId, KalturaPlayer player) throws IOException {
@@ -126,5 +144,22 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
     AssetStateListener getListener() {
         return assetStateListener != null ? assetStateListener : noopListener;
+    }
+
+    protected PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {
+
+        final String sourceId = loadAssetSourceId(assetId);
+
+        final SourceSelector selector = new SourceSelector(mediaEntry, PKMediaFormat.dash);
+        selector.setPreferredSourceId(sourceId);
+
+        PKMediaSource selectedSource = selector.getSelectedSource();
+        PKDrmParams selectedDrmParams = selector.getSelectedDrmParams();
+
+        if (selectedSource == null || selectedSource.getMediaFormat() != PKMediaFormat.dash) {
+            return null;
+        }
+
+        return selectedDrmParams;
     }
 }

@@ -318,19 +318,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         sharedPrefs.edit().putString(sharedPrefsKey(assetId), sourceId).apply();
     }
 
-    private String sharedPrefsKey(String assetId) {
-        return "assetSourceId:" + assetId;
-    }
-
-    private String loadAssetSourceId(String assetId) {
-        final SharedPreferences sharedPrefs = sharedPrefs();
-        return sharedPrefs.getString(sharedPrefsKey(assetId), null);
-    }
-
-    private SharedPreferences sharedPrefs() {
-        return appContext.getSharedPreferences("KalturaOfflineManager", Context.MODE_PRIVATE);
-    }
-
     private void removeAssetSourceId(String assetId) {
         sharedPrefs().edit().remove(sharedPrefsKey(assetId)).apply();
     }
@@ -660,29 +647,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     @Override
     public void setEstimatedHlsAudioBitrate(int bitrate) {
         estimatedHlsAudioBitrate = bitrate;
-    }
-
-    @Override
-    void renewDrmAsset(String assetId, PKMediaEntry mediaEntry) {
-        PKDrmParams drmParams = findDrmParams(assetId, mediaEntry);
-        renewDrmAsset(assetId, drmParams);
-    }
-
-    private PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {
-
-        final String sourceId = loadAssetSourceId(assetId);
-
-        final SourceSelector selector = new SourceSelector(mediaEntry, PKMediaFormat.dash);
-        selector.setPreferredSourceId(sourceId);
-
-        PKMediaSource selectedSource = selector.getSelectedSource();
-        PKDrmParams selectedDrmParams = selector.getSelectedDrmParams();
-
-        if (selectedSource == null || selectedSource.getMediaFormat() != PKMediaFormat.dash) {
-            return null;
-        }
-
-        return selectedDrmParams;
     }
 
     @Override
