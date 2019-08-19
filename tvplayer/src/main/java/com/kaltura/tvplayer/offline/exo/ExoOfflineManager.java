@@ -1,4 +1,4 @@
-package com.kaltura.tvplayer.offline;
+package com.kaltura.tvplayer.offline.exo;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -31,6 +31,7 @@ import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.TODO;
+import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import okhttp3.OkHttpClient;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -349,6 +350,16 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
         }
         return instance;
+    }
+
+    @Override
+    public void start(ManagerStartCallback callback) throws IOException {
+
+    }
+
+    @Override
+    public void stop() {
+
     }
 
     @Override

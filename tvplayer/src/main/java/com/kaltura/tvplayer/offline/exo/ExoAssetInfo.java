@@ -1,4 +1,4 @@
-package com.kaltura.tvplayer.offline;
+package com.kaltura.tvplayer.offline.exo;
 
 import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.offline.Download;

@@ -14,8 +14,8 @@ import com.kaltura.tvplayer.OfflineManager;
 
 import java.io.IOException;
 
-abstract class AbstractOfflineManager extends OfflineManager {
-    final Context appContext;
+public abstract class AbstractOfflineManager extends OfflineManager {
+    protected final Context appContext;
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
     protected DownloadProgressListener downloadProgressListener;
@@ -26,18 +26,18 @@ abstract class AbstractOfflineManager extends OfflineManager {
 
     private final Handler eventHandler;
 
-    void postEvent(Runnable event) {
+    protected void postEvent(Runnable event) {
         eventHandler.post(event);
     }
 
-    void postEventDelayed(Runnable event, int delayMillis) {
+    protected void postEventDelayed(Runnable event, int delayMillis) {
         eventHandler.postDelayed(event, delayMillis);
     }
 
     private static final AssetStateListener noopListener = new AssetStateListener() {
         @Override public void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo) {}
         @Override public void onAssetRemoved(@NonNull String assetId) {}
-        @Override public void onAssetDownloadFailed(@NonNull String assetId, AssetDownloadException error) {}
+        @Override public void onAssetDownloadFailed(@NonNull String assetId, Exception error) {}
         @Override public void onAssetDownloadComplete(@NonNull String assetId) {}
         @Override public void onAssetDownloadPending(@NonNull String assetId) {}
         @Override public void onAssetDownloadPaused(@NonNull String assetId) {}
@@ -45,7 +45,7 @@ abstract class AbstractOfflineManager extends OfflineManager {
         @Override public void onRegisterError(@NonNull String assetId, Exception error) {}
     };
 
-    AbstractOfflineManager(Context context) {
+    public AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
 
 
@@ -145,7 +145,7 @@ abstract class AbstractOfflineManager extends OfflineManager {
         this.ks = ks;
     }
 
-    AssetStateListener getListener() {
+    protected AssetStateListener getListener() {
         return assetStateListener != null ? assetStateListener : noopListener;
     }
 

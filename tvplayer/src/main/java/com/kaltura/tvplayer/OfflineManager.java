@@ -7,7 +7,7 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.tvplayer.offline.ExoOfflineManager;
+import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -51,6 +51,10 @@ public abstract class OfflineManager {
      */
     public abstract void setDownloadProgressListener(DownloadProgressListener listener);
 
+
+    public abstract void start(ManagerStartCallback callback) throws IOException;
+
+    public abstract void stop();
 
     /**
      * Temporarily pause all downloads. Doesn't change assets' download state. Revert with {@link #resumeDownloads()}.
@@ -258,12 +262,16 @@ public abstract class OfflineManager {
     public interface AssetStateListener {
         void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo);
         void onAssetRemoved(@NonNull String assetId);
-        void onAssetDownloadFailed(@NonNull String assetId, @Nullable AssetDownloadException error);
+        void onAssetDownloadFailed(@NonNull String assetId, @Nullable Exception error);
         void onAssetDownloadComplete(@NonNull String assetId);
         void onAssetDownloadPending(@NonNull String assetId);
         void onAssetDownloadPaused(@NonNull String assetId);
         void onRegistered(@NonNull String assetId, DrmStatus drmStatus);
         void onRegisterError(@NonNull String assetId, @Nullable Exception error);
+    }
+
+    public interface ManagerStartCallback {
+        void onStarted();
     }
 
     public static class DrmStatus {
