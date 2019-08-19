@@ -7,6 +7,7 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 
 import java.io.IOException;
@@ -19,7 +20,7 @@ import java.util.Map;
 public abstract class OfflineManager {
 
     public static OfflineManager getInstance(Context context) {
-        return ExoOfflineManager.getInstance(context);
+        return DTGOfflineManager.getInstance(context);
     }
 
 
