@@ -305,15 +305,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return selectedSize;
     }
 
-    private void saveAssetSourceId(String assetId, String sourceId) {
-        final SharedPreferences sharedPrefs = sharedPrefs();
-        sharedPrefs.edit().putString(sharedPrefsKey(assetId), sourceId).apply();
-    }
-
-    private void removeAssetSourceId(String assetId) {
-        sharedPrefs().edit().remove(sharedPrefsKey(assetId)).apply();
-    }
-
     @Nullable
     private DrmSessionManager<FrameworkMediaCrypto> buildDrmSessionManager(PKDrmParams drmData) {
         if (drmData == null) {
@@ -498,9 +489,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public boolean removeAsset(String assetId) {
-        final byte[] drmInitData;
         try {
-            drmInitData = getDrmInitData(assetId);
+            final byte[] drmInitData = getDrmInitData(assetId);
             DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
             localAssetsManager.unregisterAsset(assetId, drmInitData);
             removeAssetSourceId(assetId);

@@ -25,7 +25,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected DownloadProgressListener downloadProgressListener;
     private String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
     private Integer kalturaPartnerId;
-    AssetStateListener assetStateListener;
+    private AssetStateListener assetStateListener;
     private String ks;
 
     private final Handler eventHandler;
@@ -105,20 +105,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         });
     }
 
-    protected String sharedPrefsKey(String assetId) {
-        return "assetSourceId:" + assetId;
-    }
-
-    private String loadAssetSourceId(String assetId) {
-        final SharedPreferences sharedPrefs = sharedPrefs();
-        return sharedPrefs.getString(sharedPrefsKey(assetId), null);
-    }
-
-    protected SharedPreferences sharedPrefs() {
-        return appContext.getSharedPreferences("KalturaOfflineManager", Context.MODE_PRIVATE);
-    }
-
-    void renewDrmAsset(String assetId, PKMediaEntry mediaEntry) {
+    private void renewDrmAsset(String assetId, PKMediaEntry mediaEntry) {
         PKDrmParams drmParams = findDrmParams(assetId, mediaEntry);
         renewDrmAsset(assetId, drmParams);
     }
@@ -153,7 +140,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         return assetStateListener != null ? assetStateListener : noopListener;
     }
 
-    protected PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {
+    private PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {
 
         final String sourceId = loadAssetSourceId(assetId);
 
@@ -183,5 +170,27 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     @Override
     public void setDownloadProgressListener(DownloadProgressListener listener) {
         this.downloadProgressListener = listener;
+    }
+
+    private String sharedPrefsKey(String assetId) {
+        return "assetSourceId:" + assetId;
+    }
+
+    private String loadAssetSourceId(String assetId) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        return sharedPrefs.getString(sharedPrefsKey(assetId), null);
+    }
+
+    private SharedPreferences sharedPrefs() {
+        return appContext.getSharedPreferences("KalturaOfflineManager", Context.MODE_PRIVATE);
+    }
+
+    protected void saveAssetSourceId(String assetId, String sourceId) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        sharedPrefs.edit().putString(sharedPrefsKey(assetId), sourceId).apply();
+    }
+
+    protected void removeAssetSourceId(String assetId) {
+        sharedPrefs().edit().remove(sharedPrefsKey(assetId)).apply();
     }
 }
