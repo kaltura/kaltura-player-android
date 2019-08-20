@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.util.Pair;
 import androidx.annotation.NonNull;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
@@ -13,9 +14,12 @@ import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.OfflineManager;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractOfflineManager extends OfflineManager {
     protected final Context appContext;
+    protected final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
     protected DownloadProgressListener downloadProgressListener;

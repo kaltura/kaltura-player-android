@@ -121,14 +121,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
     };
 
+
     @NonNull
     private Handler createBgHandler() {
         final HandlerThread bgHandlerThread = new HandlerThread("bgHandlerThread");
         bgHandlerThread.start();
         return new Handler(bgHandlerThread.getLooper());
     }
-
-    private final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
 
     private ExoOfflineManager(Context context) {
         super(context);
