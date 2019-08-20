@@ -1,14 +1,16 @@
 package com.kaltura.tvplayer.offline.dtg;
 
 import android.content.Context;
+import android.util.Pair;
 import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.dtg.DownloadState;
-import com.kaltura.dtg.DownloadStateListener;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +29,10 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     private final DTGListener dtgListener = new DTGListener() {
         @Override
         public void onDownloadComplete(DownloadItem item) {
-            postEvent(() -> getListener().onAssetDownloadComplete(item.getItemId()));
+            final String assetId = item.getItemId();
+            postEvent(() -> getListener().onAssetDownloadComplete(assetId));
+
+            registerDrmAsset(assetId, false);
         }
 
         @Override
@@ -44,7 +49,11 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         @Override
         public void onDownloadStart(DownloadItem item) {
-            postEvent(() -> getListener().onStateChanged(item.getItemId(), buildDtgAssetInfo(item, AssetDownloadState.queued)));
+            final String assetId = item.getItemId();
+
+            postEvent(() -> getListener().onStateChanged(assetId, buildDtgAssetInfo(item, AssetDownloadState.queued)));
+
+            postEventDelayed(() -> registerDrmAsset(assetId, true), 10000);
         }
 
         @Override
@@ -160,12 +169,55 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 postEvent(() -> prepareCallback.onPrepareError(assetId, errorOut[0]));
             } else {
                 postEvent(() -> prepareCallback.onPrepared(assetId, buildDtgAssetInfo(itemOut[0], AssetDownloadState.none), null));
+                pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
             }
         } catch (InterruptedException e) {
             postEvent(() -> prepareCallback.onPrepareError(assetId, e));
         } finally {
             cm.removeDownloadStateListener(listener);
         }
+    }
+
+    private void registerDrmAsset(String assetId, boolean allowFileNotFound) {
+        if (assetId == null) {
+            return;
+        }
+
+        final Pair<PKMediaSource, PKDrmParams> pair = pendingDrmRegistration.get(assetId);
+        if (pair == null || pair.first == null || pair.second == null) {
+            return; // no DRM or already processed
+        }
+
+        final String sourceUrl = pair.first.getUrl();
+        final PKDrmParams drmData = pair.second;
+
+        final String licenseUri = drmData.getLicenseUri();
+
+        final String playbackURL = cm.getPlaybackURL(assetId);
+
+        final File localFile = cm.getLocalFile(assetId);
+
+        if (!localFile.canRead()) {
+            if (!allowFileNotFound) {
+                postEvent(() -> getListener().onRegisterError(assetId, new FileNotFoundException(localFile.getAbsolutePath())));
+            }
+            return;
+        }
+
+        lam.registerAsset(pair.first, localFile.getAbsolutePath(), assetId, new LocalAssetsManager.AssetRegistrationListener() {
+            @Override
+            public void onRegistered(String localAssetPath) {
+                postEvent(() -> getListener().onRegistered(assetId, null));// TODO: 2019-08-20 drm status
+
+                pendingDrmRegistration.remove(assetId);
+
+            }
+
+            @Override
+            public void onFailed(String localAssetPath, Exception error) {
+                postEvent(() -> getListener().onRegisterError(assetId, error));
+            }
+        });
     }
 
     @Override
@@ -204,7 +256,11 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     @Override
     public void renewDrmAsset(String assetId, PKDrmParams drmParams) {
         final String playbackURL = cm.getPlaybackURL(assetId);
-        lam.refreshAsset(new PKMediaSource().setDrmData(Collections.singletonList(drmParams)), playbackURL, assetId, new LocalAssetsManager.AssetRegistrationListener() {
+        final PKMediaSource mediaSource = new PKMediaSource()
+                .setDrmData(Collections.singletonList(drmParams))
+                .setUrl("foo://bar");
+
+        lam.refreshAsset(mediaSource, playbackURL, assetId, new LocalAssetsManager.AssetRegistrationListener() {
             @Override
             public void onRegistered(String localAssetPath) {
                 getListener().onRegistered(assetId, null);// TODO: 2019-08-19 status
