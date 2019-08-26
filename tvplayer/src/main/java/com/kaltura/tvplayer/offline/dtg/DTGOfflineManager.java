@@ -135,10 +135,15 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             if (dtgItem == null) {
                 // this means the item already exists -- remove it.
                 cm.removeItem(assetId);
+                dtgItem = cm.createItem(assetId, url);
             }
-            dtgItem = cm.createItem(assetId, url);
         } catch (IOException e) {
             postEvent(() -> prepareCallback.onPrepareError(assetId, e));
+            return;
+        }
+
+        if (dtgItem == null) {
+            prepareCallback.onPrepareError(assetId, new Exception("Unknown failure adding asset"));
             return;
         }
 
@@ -256,6 +261,10 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     public boolean removeAsset(String assetId) {
         try {
             final File localFile = cm.getLocalFile(assetId);
+            if (localFile == null) {
+                log.e("removeAsset: asset not found");
+                return false;
+            }
             final byte[] drmInitData = getWidevineInitData(localFile);
             lam.unregisterAsset(assetId, drmInitData);
             cm.removeItem(assetId);
