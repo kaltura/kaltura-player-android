@@ -219,19 +219,19 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         if (prefs.videoBitrate != null) {
             videoTracks = filterTracks(videoTracks,
-                    (o1, o2) -> (int) (o1.getBitrate() - o2.getBitrate()),
+                    DownloadItem.Track.bitrateComparator,
                     input -> input.getBitrate() >= prefs.videoBitrate);
         }
 
         if (prefs.videoHeight != null) {
             videoTracks = filterTracks(videoTracks,
-                    (o1, o2) -> o1.getHeight() - o2.getHeight(),
+                    DownloadItem.Track.heightComparator,
                     input -> input.getHeight() >= prefs.videoHeight);
         }
 
         if (prefs.videoWidth != null) {
             videoTracks = filterTracks(videoTracks,
-                    (o1, o2) -> o1.getWidth() - o2.getWidth(),
+                    DownloadItem.Track.widthComparator,
                     input -> input.getWidth() >= prefs.videoWidth);
         }
 
