@@ -54,6 +54,7 @@ public class KalturaPlayer {
             BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
+    public static final String OKHTTP = "okhttp";
 
     private static boolean playerConfigRetrieved;
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
@@ -144,7 +145,9 @@ public class KalturaPlayer {
         this.referrer = buildReferrer(context, initOptions.referrer);
         populatePartnersValues();
         this.ks = initOptions.ks;
-
+        if (OKHTTP.equals(PKHttpClientManager.getHttpProvider())) {
+            APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder()); // share connection-pool with netkit
+        }
         registerPlugins(context);
         loadPlayer();
     }
