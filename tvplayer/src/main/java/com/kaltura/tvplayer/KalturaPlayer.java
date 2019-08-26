@@ -621,7 +621,7 @@ public class KalturaPlayer {
         }
     }
 
-    public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    public void loadMedia(@NonNull OVPMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
 
         if (!isValidOVPPlayer())
             return;
@@ -662,7 +662,7 @@ public class KalturaPlayer {
         return true;
     }
 
-    public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
 
         if (!isValidOTTPlayerType())
             return;
