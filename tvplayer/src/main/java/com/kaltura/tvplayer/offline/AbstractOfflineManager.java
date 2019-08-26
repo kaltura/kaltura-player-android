@@ -18,8 +18,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractOfflineManager extends OfflineManager {
+    private static final PKLog log = PKLog.get("AbstractOfflineManager");
+
     protected final Context appContext;
     protected final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
+    protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
     protected DownloadProgressListener downloadProgressListener;
@@ -56,6 +59,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         HandlerThread handlerThread = new HandlerThread("OfflineManagerEvents");
         handlerThread.start();
         eventHandler = new Handler(handlerThread.getLooper());
+        lam = new LocalAssetsManagerExo(context);
     }
 
     @Override
@@ -192,5 +196,51 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     protected void removeAssetSourceId(String assetId) {
         sharedPrefs().edit().remove(sharedPrefsKey(assetId)).apply();
+    }
+
+    protected DrmStatus getDrmStatus(String assetId, byte[] drmInitData) {
+        if (drmInitData == null) {
+            return DrmStatus.clear;
+        }
+        final LocalAssetsManager.AssetStatus assetStatus = lam.getDrmStatus(assetId, drmInitData);
+
+        if (assetStatus == null || !assetStatus.registered) {
+            return DrmStatus.unknown;
+        }
+
+        if (!assetStatus.hasContentProtection) {
+            return DrmStatus.clear;
+        }
+
+        return DrmStatus.withDrm(assetStatus.licenseDuration, assetStatus.totalDuration);
+    }
+
+    @Override
+    public DrmStatus getDrmStatus(String assetId) {
+        if (assetId == null) {
+            return DrmStatus.unknown;
+        }
+
+        try {
+            final byte[] drmInitData = getDrmInitData(assetId);
+            return getDrmStatus(assetId, drmInitData);
+
+        } catch (IOException | InterruptedException e) {
+            log.e("getDrmStatus failed ", e);
+            return DrmStatus.unknown;
+        }
+    }
+
+    protected abstract byte[] getDrmInitData(String assetId) throws IOException, InterruptedException;
+
+    @Override
+    public void renewDrmAsset(String assetId, PKDrmParams drmParams) {
+        try {
+            final byte[] drmInitData = getDrmInitData(assetId);
+            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData);
+            postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
+        } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
+            postEvent(() -> getListener().onRegisterError(assetId, e));
+        }
     }
 }

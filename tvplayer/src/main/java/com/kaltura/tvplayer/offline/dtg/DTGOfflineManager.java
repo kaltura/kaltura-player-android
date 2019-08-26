@@ -6,6 +6,7 @@ import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.dtg.DownloadState;
 import com.kaltura.playkit.*;
+import com.kaltura.playkit.drm.SimpleDashParser;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 
@@ -24,7 +25,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     private static DTGOfflineManager instance;
     private final ContentManager cm;
-    private final LocalAssetsManager lam;
 
     private final DTGListener dtgListener = new DTGListener() {
         @Override
@@ -51,7 +51,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         public void onDownloadStart(DownloadItem item) {
             final String assetId = item.getItemId();
 
-            postEvent(() -> getListener().onStateChanged(assetId, buildDtgAssetInfo(item, AssetDownloadState.queued)));
+            postEvent(() -> getListener().onStateChanged(assetId, new DTGAssetInfo(item, AssetDownloadState.started)));
 
             postEventDelayed(() -> registerDrmAsset(assetId, true), 10000);
         }
@@ -82,7 +82,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         super(context);
 
         cm = ContentManager.getInstance(context);
-        lam = new LocalAssetsManager(context);
     }
 
     @Override
@@ -90,9 +89,11 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         cm.addDownloadStateListener(dtgListener);
         cm.start(() -> {
             log.d("Started DTG");
-            if (callback != null) {
-                callback.onStarted();
-            }
+            postEvent(() -> {
+                if (callback != null) {
+                    callback.onStarted();
+                }
+            });
         });
     }
 
@@ -168,7 +169,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             if (errorOut[0] != null) {
                 postEvent(() -> prepareCallback.onPrepareError(assetId, errorOut[0]));
             } else {
-                postEvent(() -> prepareCallback.onPrepared(assetId, buildDtgAssetInfo(itemOut[0], AssetDownloadState.none), null));
+                postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(itemOut[0], AssetDownloadState.none), null));
                 pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
             }
         } catch (InterruptedException e) {
@@ -176,6 +177,12 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         } finally {
             cm.removeDownloadStateListener(listener);
         }
+    }
+
+    @Override
+    protected byte[] getDrmInitData(String assetId) throws IOException {
+        final File localFile = cm.getLocalFile(assetId);
+        return getWidevineInitData(localFile);
     }
 
     private void registerDrmAsset(String assetId, boolean allowFileNotFound) {
@@ -188,12 +195,9 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             return; // no DRM or already processed
         }
 
-        final String sourceUrl = pair.first.getUrl();
         final PKDrmParams drmData = pair.second;
 
         final String licenseUri = drmData.getLicenseUri();
-
-        final String playbackURL = cm.getPlaybackURL(assetId);
 
         final File localFile = cm.getLocalFile(assetId);
 
@@ -204,20 +208,22 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             return;
         }
 
-        lam.registerAsset(pair.first, localFile.getAbsolutePath(), assetId, new LocalAssetsManager.AssetRegistrationListener() {
-            @Override
-            public void onRegistered(String localAssetPath) {
-                postEvent(() -> getListener().onRegistered(assetId, null));// TODO: 2019-08-20 drm status
+        try {
+            final byte[] widevineInitData = getWidevineInitData(localFile);
 
-                pendingDrmRegistration.remove(assetId);
+            lam.registerWidevineDashAsset(assetId, licenseUri, widevineInitData);
+            postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, widevineInitData)));
 
-            }
+            pendingDrmRegistration.remove(assetId);
 
-            @Override
-            public void onFailed(String localAssetPath, Exception error) {
-                postEvent(() -> getListener().onRegisterError(assetId, error));
-            }
-        });
+        } catch (IOException | LocalAssetsManager.RegisterException e) {
+            postEvent(() -> getListener().onRegisterError(assetId, e));
+        }
+    }
+
+    private byte[] getWidevineInitData(File localFile) throws IOException {
+        SimpleDashParser dashParser = new SimpleDashParser().parse(localFile.getAbsolutePath());
+        return dashParser.getWidevineInitData();
     }
 
     @Override
@@ -248,29 +254,18 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     @Override
     public boolean removeAsset(String assetId) {
-        final String playbackURL = cm.getPlaybackURL(assetId);
-        lam.unregisterAsset(playbackURL, assetId, localAssetPath -> getListener().onAssetRemoved(assetId));
+        try {
+            final File localFile = cm.getLocalFile(assetId);
+            final byte[] drmInitData = getWidevineInitData(localFile);
+            lam.unregisterAsset(assetId, drmInitData);
+            cm.removeItem(assetId);
+            removeAssetSourceId(assetId);
+
+        } catch (IOException e) {
+            log.e("removeAsset failed ", e);
+            return false;
+        }
         return true;
-    }
-
-    @Override
-    public void renewDrmAsset(String assetId, PKDrmParams drmParams) {
-        final String playbackURL = cm.getPlaybackURL(assetId);
-        final PKMediaSource mediaSource = new PKMediaSource()
-                .setDrmData(Collections.singletonList(drmParams))
-                .setUrl("foo://bar");
-
-        lam.refreshAsset(mediaSource, playbackURL, assetId, new LocalAssetsManager.AssetRegistrationListener() {
-            @Override
-            public void onRegistered(String localAssetPath) {
-                getListener().onRegistered(assetId, null);// TODO: 2019-08-19 status
-            }
-
-            @Override
-            public void onFailed(String localAssetPath, Exception error) {
-                getListener().onRegisterError(assetId, error);
-            }
-        });
     }
 
     @Override
@@ -279,17 +274,17 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         if (item == null) {
             return null;
         }
-        return buildDtgAssetInfo(item, null);
+        return new DTGAssetInfo(item, null);
     }
 
     @Override
     public List<AssetInfo> getAssetsInState(AssetDownloadState state) {
         DownloadState dtgState;
         switch (state) {
-            case downloading:
+            case started:
                 dtgState = DownloadState.IN_PROGRESS;
                 break;
-            case queued:
+            case prepared:
                 dtgState = DownloadState.INFO_LOADED;
                 break;
             case completed:
@@ -298,7 +293,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             case failed:
                 dtgState = DownloadState.FAILED;
                 break;
-            case stopped:
+            case paused:
                 dtgState = DownloadState.PAUSED;
                 break;
 
@@ -313,44 +308,10 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         final ArrayList<AssetInfo> list = new ArrayList<>(downloads.size());
 
         for (DownloadItem item : downloads) {
-            list.add(buildDtgAssetInfo(item, state));
+            list.add(new DTGAssetInfo(item, state));
         }
 
         return list;
-    }
-
-    private DTGAssetInfo buildDtgAssetInfo(DownloadItem item, AssetDownloadState state) {
-        final String itemId = item.getItemId();
-        final long downloadedSizeBytes = item.getDownloadedSizeBytes();
-        final long estimatedSizeBytes = item.getEstimatedSizeBytes();
-
-        if (state == null) {
-            switch (item.getState()) {
-                case NEW:
-                    state = AssetDownloadState.queued;
-                    break;
-                case INFO_LOADED:
-                    state = AssetDownloadState.queued;
-                    break;
-                case IN_PROGRESS:
-                    state = AssetDownloadState.downloading;
-                    break;
-                case PAUSED:
-                    state = AssetDownloadState.stopped;
-                    break;
-                case COMPLETED:
-                    state = AssetDownloadState.completed;
-                    break;
-                case FAILED:
-                    state = AssetDownloadState.failed;
-                    break;
-            }
-        }
-
-        final DTGAssetInfo dtgAssetInfo = new DTGAssetInfo(itemId, state, estimatedSizeBytes, downloadedSizeBytes);
-
-        dtgAssetInfo.downloadItem = item;
-        return dtgAssetInfo;
     }
 
     @Override
@@ -359,27 +320,4 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         final PKMediaSource localMediaSource = lam.getLocalMediaSource(assetId, playbackURL);
         return new PKMediaEntry().setId(assetId).setSources(Collections.singletonList(localMediaSource));
     }
-
-    @Override
-    public DrmStatus getDrmStatus(String assetId) {
-        final String playbackURL = cm.getPlaybackURL(assetId);
-
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        DrmStatus[] status = {DrmStatus.unknown};
-
-        lam.checkAssetStatus(playbackURL, assetId, (localAssetPath, expiryTimeSeconds, availableTimeSeconds, isRegistered) -> {
-            status[0] = DrmStatus.withDrm(expiryTimeSeconds, availableTimeSeconds);
-            latch.countDown();
-        });
-
-        try {
-            latch.await(3, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return status[0];
-    }
 }
-

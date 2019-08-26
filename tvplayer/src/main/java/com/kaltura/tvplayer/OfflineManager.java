@@ -184,7 +184,7 @@ public abstract class OfflineManager {
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
 
     public enum AssetDownloadState {
-        none, downloading, queued, completed, failed, removing, stopped
+        none, prepared, started, completed, failed, removing, paused
     }
 
     public enum TrackType {

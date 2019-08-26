@@ -52,42 +52,22 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
         state = toAssetState(download.state);
     }
 
-    static int toExoState(OfflineManager.AssetDownloadState state) {
-        switch (state) {
-            case none:
-                break;
-            case downloading:
-                return Download.STATE_DOWNLOADING;
-            case queued:
-                return Download.STATE_QUEUED;
-            case completed:
-                return Download.STATE_COMPLETED;
-            case failed:
-                return Download.STATE_FAILED;
-            case removing:
-                return Download.STATE_REMOVING;
-            case stopped:
-                return Download.STATE_STOPPED;
-        }
-        return -1;
-    }
-
-    static OfflineManager.AssetDownloadState toAssetState(@Download.State int exoState) {
+    private static OfflineManager.AssetDownloadState toAssetState(@Download.State int exoState) {
         switch (exoState) {
             case Download.STATE_COMPLETED:
                 return OfflineManager.AssetDownloadState.completed;
             case Download.STATE_DOWNLOADING:
-                return OfflineManager.AssetDownloadState.downloading;
+                return OfflineManager.AssetDownloadState.started;
             case Download.STATE_FAILED:
                 return OfflineManager.AssetDownloadState.failed;
             case Download.STATE_QUEUED:
-                return OfflineManager.AssetDownloadState.queued;
+                return OfflineManager.AssetDownloadState.started;
             case Download.STATE_REMOVING:
                 return OfflineManager.AssetDownloadState.removing;
             case Download.STATE_RESTARTING:
-                return OfflineManager.AssetDownloadState.downloading;  // TODO: is this the same?
+                return OfflineManager.AssetDownloadState.started;  // TODO: is this the same?
             case Download.STATE_STOPPED:
-                return OfflineManager.AssetDownloadState.stopped;
+                return OfflineManager.AssetDownloadState.paused;
         }
         return null;
     }

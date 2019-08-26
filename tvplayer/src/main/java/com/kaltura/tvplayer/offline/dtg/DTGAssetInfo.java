@@ -2,25 +2,52 @@ package com.kaltura.tvplayer.offline.dtg;
 
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.tvplayer.OfflineManager;
+import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
 
 class DTGAssetInfo extends OfflineManager.AssetInfo {
 
     final private String itemId;
-    final private OfflineManager.AssetDownloadState state;
+    final private AssetDownloadState state;
     final private long estimatedSize;
     final private long bytesDownloaded;
-    DownloadItem downloadItem;
+    final DownloadItem downloadItem;
 
-    DTGAssetInfo(String itemId, OfflineManager.AssetDownloadState state, long estimatedSize, long bytesDownloaded) {
-        this.itemId = itemId;
+    DTGAssetInfo(DownloadItem item, AssetDownloadState state) {
+        this.itemId = item.getItemId();
+        this.bytesDownloaded = item.getDownloadedSizeBytes();
+        this.estimatedSize = item.getEstimatedSizeBytes();
+
+        this.downloadItem = item;
+
+        if (state == null) {
+            switch (item.getState()) {
+                case NEW:
+                    state = AssetDownloadState.none;
+                    break;
+                case INFO_LOADED:
+                    state = AssetDownloadState.prepared;
+                    break;
+                case IN_PROGRESS:
+                    state = AssetDownloadState.started;
+                    break;
+                case PAUSED:
+                    state = AssetDownloadState.paused;
+                    break;
+                case COMPLETED:
+                    state = AssetDownloadState.completed;
+                    break;
+                case FAILED:
+                    state = AssetDownloadState.failed;
+                    break;
+            }
+        }
+
         this.state = state;
-        this.estimatedSize = estimatedSize;
-        this.bytesDownloaded = bytesDownloaded;
     }
 
     @Override
     public void release() {
-
+//        ContentManager.getInstance(null).release(this);
     }
 
     @Override
@@ -29,7 +56,7 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
     }
 
     @Override
-    public OfflineManager.AssetDownloadState getState() {
+    public AssetDownloadState getState() {
         return state;
     }
 
