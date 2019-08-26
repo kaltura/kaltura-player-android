@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKController;
@@ -28,6 +29,7 @@ import com.kaltura.playkit.ads.AdController;
 
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
+import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
