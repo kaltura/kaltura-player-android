@@ -8,7 +8,6 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
-import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -341,37 +340,14 @@ public abstract class OfflineManager {
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
-        public Long preferredVideoBitrate;
-        public Long preferredVideoHeight;
-        public Long preferredVideoWidth;
+        public Integer videoBitrate;
+        public Integer videoHeight;
+        public Integer videoWidth;
 
-        public List<String> preferredAudioLanguages;
-        public List<String> preferredTextLanguages;
-
-        public SelectionPrefs setPreferredVideoBitrate(Long preferredVideoBitrate) {
-            this.preferredVideoBitrate = preferredVideoBitrate;
-            return this;
-        }
-
-        public SelectionPrefs setPreferredVideoHeight(Long preferredVideoHeight) {
-            this.preferredVideoHeight = preferredVideoHeight;
-            return this;
-        }
-
-        public SelectionPrefs setPreferredVideoWidth(Long preferredVideoWidth) {
-            this.preferredVideoWidth = preferredVideoWidth;
-            return this;
-        }
-
-        public SelectionPrefs setPreferredAudioLanguages(List<String> preferredAudioLanguages) {
-            this.preferredAudioLanguages = preferredAudioLanguages;
-            return this;
-        }
-
-        public SelectionPrefs setPreferredTextLanguages(List<String> preferredTextLanguages) {
-            this.preferredTextLanguages = preferredTextLanguages;
-            return this;
-        }
+        public List<String> audioLanguages;
+        public List<String> textLanguages;
+        public boolean allAudioLanguages;
+        public boolean allTextLanguages;
     }
 
     public static abstract class AssetInfo {

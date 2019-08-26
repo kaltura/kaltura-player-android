@@ -4,7 +4,9 @@ import android.content.Context;
 import android.util.Pair;
 import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadItem;
+import com.kaltura.dtg.DownloadItem.TrackSelector;
 import com.kaltura.dtg.DownloadState;
+import com.kaltura.dtg.exoparser.util.Predicate;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.drm.SimpleDashParser;
 import com.kaltura.playkit.player.SourceSelector;
@@ -15,6 +17,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -161,8 +164,8 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             }
 
             @Override
-            public void onTracksAvailable(DownloadItem item, DownloadItem.TrackSelector trackSelector) {
-                // TODO: 2019-08-19 select based on prefs
+            public void onTracksAvailable(DownloadItem item, TrackSelector trackSelector) {
+                applySelectionPrefs(trackSelector, prefs);
             }
         };
         cm.addDownloadStateListener(listener);
@@ -182,6 +185,92 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         } finally {
             cm.removeDownloadStateListener(listener);
         }
+    }
+
+    private List<DownloadItem.Track> filterTracks(List<DownloadItem.Track> tracks, Comparator<DownloadItem.Track> comparator, Predicate<DownloadItem.Track> filter) {
+        if (tracks.size() < 2) {
+            return tracks;
+        }
+
+        final ArrayList<DownloadItem.Track> sorted = new ArrayList<>(tracks);
+        Collections.sort(sorted, comparator);
+
+        final ArrayList<DownloadItem.Track> filtered = new ArrayList<>(tracks.size());
+        for (DownloadItem.Track track : sorted) {
+            if (filter.evaluate(track)) {
+                filtered.add(track);
+            }
+        }
+
+        if (filtered.isEmpty()) {
+            return Collections.singletonList(sorted.get(sorted.size() - 1));
+        }
+
+        return filtered;
+    }
+
+    private void applySelectionPrefs(TrackSelector trackSelector, SelectionPrefs prefs) {
+
+        // TODO: 2019-08-26 handle groups, audio bitrate, codecs
+
+        List<DownloadItem.Track> videoTracks = trackSelector.getAvailableTracks(DownloadItem.TrackType.VIDEO);
+        List<DownloadItem.Track> audioTracks = trackSelector.getAvailableTracks(DownloadItem.TrackType.AUDIO);
+        List<DownloadItem.Track> textTracks = trackSelector.getAvailableTracks(DownloadItem.TrackType.TEXT);
+
+        if (prefs.videoBitrate != null) {
+            videoTracks = filterTracks(videoTracks,
+                    (o1, o2) -> (int) (o1.getBitrate() - o2.getBitrate()),
+                    input -> input.getBitrate() >= prefs.videoBitrate);
+        }
+
+        if (prefs.videoHeight != null) {
+            videoTracks = filterTracks(videoTracks,
+                    (o1, o2) -> o1.getHeight() - o2.getHeight(),
+                    input -> input.getHeight() >= prefs.videoHeight);
+        }
+
+        if (prefs.videoWidth != null) {
+            videoTracks = filterTracks(videoTracks,
+                    (o1, o2) -> o1.getWidth() - o2.getWidth(),
+                    input -> input.getWidth() >= prefs.videoWidth);
+        }
+
+        trackSelector.setSelectedTracks(DownloadItem.TrackType.VIDEO, Collections.singletonList(videoTracks.get(0)));
+
+        audioTracks = filterTracks(audioTracks, prefs.audioLanguages, prefs.allAudioLanguages);
+        trackSelector.setSelectedTracks(DownloadItem.TrackType.AUDIO, audioTracks);
+
+        textTracks = filterTracks(textTracks, prefs.textLanguages, prefs.allTextLanguages);
+        trackSelector.setSelectedTracks(DownloadItem.TrackType.TEXT, textTracks);
+
+        trackSelector.apply(new DownloadItem.OnTrackSelectionListener() {
+            @Override
+            public void onTrackSelectionComplete(Exception e) {
+
+            }
+        });
+    }
+
+    private List<DownloadItem.Track> filterTracks(List<DownloadItem.Track> tracks, List<String> languages, boolean allLanguages) {
+        if (tracks.size() < 2 || allLanguages) {
+            return tracks;
+        }
+
+        if (languages == null || languages.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final ArrayList<DownloadItem.Track> filtered = new ArrayList<>(tracks.size());
+
+        for (DownloadItem.Track track : tracks) {
+            for (String language : languages) {
+                if (track.getLanguage().equalsIgnoreCase(language)) {
+                    filtered.add(track);
+                }
+            }
+        }
+
+        return filtered.isEmpty() ? Collections.singletonList(tracks.get(0)) : filtered;
     }
 
     @Override
