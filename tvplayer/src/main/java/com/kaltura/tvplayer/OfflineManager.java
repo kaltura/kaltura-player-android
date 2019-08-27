@@ -357,7 +357,8 @@ public abstract class OfflineManager {
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
-        public Map<TrackCodec, Integer> videoBitrates;
+        public Integer videoBitrate;
+        public Map<TrackCodec, Integer> codecVideoBitrates;
         public List<TrackCodec> videoCodecs;
         public List<TrackCodec> audioCodecs;
 

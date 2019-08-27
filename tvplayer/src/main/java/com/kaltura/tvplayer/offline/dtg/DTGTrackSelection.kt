@@ -23,8 +23,8 @@ class DTGTrackSelection
 
         var videoTracks = trackSelector.getAvailableTracks(VIDEO)
 
-        if (prefs.videoBitrates != null) {
-            videoTracks = filterTracks(videoTracks, Track.bitrateComparator) { it.bitrate >= 1}
+        if (prefs.videoBitrate != null) {
+            videoTracks = filterTracks(videoTracks, Track.bitrateComparator) { it.bitrate >= prefs.videoBitrate}
         }
         if (prefs.videoHeight != null) {
             videoTracks = filterTracks(videoTracks, Track.heightComparator) { it.height >= prefs.videoHeight }
