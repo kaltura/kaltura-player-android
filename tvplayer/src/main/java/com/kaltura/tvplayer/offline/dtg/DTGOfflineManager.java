@@ -1,7 +1,11 @@
 package com.kaltura.tvplayer.offline.dtg;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.util.Pair;
+
+import androidx.annotation.Nullable;
+
 import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.dtg.DownloadItem.TrackSelector;
@@ -146,25 +150,32 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         }
 
         if (dtgItem == null) {
-            prepareCallback.onPrepareError(assetId, new Exception("Unknown failure adding asset"));
+            postEvent(() -> prepareCallback.onPrepareError(assetId, new Exception("Unknown failure adding asset")));
             return;
         }
-
-        CountDownLatch latch = new CountDownLatch(1);
-
-        DownloadItem[] itemOut = {null};
-        Exception[] errorOut = {null};
 
         final DTGListener listener = new DTGListener() {
             @Override
             public void onDownloadMetadata(DownloadItem item, Exception error) {
-                itemOut[0] = item;
-                errorOut[0] = error;
-                latch.countDown();
+                if (!TextUtils.equals(item.getItemId(), assetId)) {
+                    return; // wrong item - could be a matter of timing
+                }
+
+                if (error != null) {
+                    postEvent(() -> prepareCallback.onPrepareError(assetId, error));
+                } else {
+                    postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(item, AssetDownloadState.prepared), null));
+                    pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
+                }
+                cm.removeDownloadStateListener(this);
             }
 
             @Override
             public void onTracksAvailable(DownloadItem item, TrackSelector trackSelector) {
+                if (!TextUtils.equals(item.getItemId(), assetId)) {
+                    return; // wrong item - could be a matter of timing
+                }
+
                 DTGTrackSelectionKt.selectTracks(trackSelector, prefs);
             }
         };
@@ -172,65 +183,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         cm.addDownloadStateListener(listener);
 
         dtgItem.loadMetadata();
-
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-            latch.await();
-            if (errorOut[0] != null) {
-                postEvent(() -> prepareCallback.onPrepareError(assetId, errorOut[0]));
-            } else {
-                postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(itemOut[0], AssetDownloadState.none), null));
-                pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
-            }
-        } catch (InterruptedException e) {
-            postEvent(() -> prepareCallback.onPrepareError(assetId, e));
-        } finally {
-            cm.removeDownloadStateListener(listener);
-        }
-    }
-
-    private List<DownloadItem.Track> filterTracks(List<DownloadItem.Track> tracks, Comparator<DownloadItem.Track> comparator, Predicate<DownloadItem.Track> filter) {
-        if (tracks.size() < 2) {
-            return tracks;
-        }
-
-        final ArrayList<DownloadItem.Track> sorted = new ArrayList<>(tracks);
-        Collections.sort(sorted, comparator);
-
-        final ArrayList<DownloadItem.Track> filtered = new ArrayList<>(tracks.size());
-        for (DownloadItem.Track track : sorted) {
-            if (filter.evaluate(track)) {
-                filtered.add(track);
-            }
-        }
-
-        if (filtered.isEmpty()) {
-            return Collections.singletonList(sorted.get(sorted.size() - 1));
-        }
-
-        return filtered;
-    }
-
-    private List<DownloadItem.Track> filterTracks(List<DownloadItem.Track> tracks, List<String> languages, boolean allLanguages) {
-        if (tracks.size() < 2 || allLanguages) {
-            return tracks;
-        }
-
-        if (languages == null || languages.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        final ArrayList<DownloadItem.Track> filtered = new ArrayList<>(tracks.size());
-
-        for (DownloadItem.Track track : tracks) {
-            for (String language : languages) {
-                if (track.getLanguage().equalsIgnoreCase(language)) {
-                    filtered.add(track);
-                }
-            }
-        }
-
-        return filtered.isEmpty() ? Collections.singletonList(tracks.get(0)) : filtered;
     }
 
     @Override
@@ -280,6 +232,15 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         return dashParser.getWidevineInitData();
     }
 
+    private @Nullable byte[] getWidevineInitDataOrNull(File localFile) {
+        try {
+            return getWidevineInitData(localFile);
+        } catch (IOException e) {
+            log.w("No Widevine init data -- not a DRM asset");
+            return null;
+        }
+    }
+
     @Override
     public void startAssetDownload(AssetInfo assetInfo) {
         if (assetInfo == null) {
@@ -308,21 +269,17 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     @Override
     public boolean removeAsset(String assetId) {
-        try {
-            final File localFile = cm.getLocalFile(assetId);
-            if (localFile == null) {
-                log.e("removeAsset: asset not found");
-                return false;
-            }
-            final byte[] drmInitData = getWidevineInitData(localFile);
-            lam.unregisterAsset(assetId, drmInitData);
-            cm.removeItem(assetId);
-            removeAssetSourceId(assetId);
-
-        } catch (IOException e) {
-            log.e("removeAsset failed ", e);
+        final File localFile = cm.getLocalFile(assetId);
+        if (localFile == null) {
+            log.e("removeAsset: asset not found");
             return false;
         }
+
+        final byte[] drmInitData = getWidevineInitDataOrNull(localFile);
+        lam.unregisterAsset(assetId, drmInitData);
+        cm.removeItem(assetId);
+        removeAssetSourceId(assetId);
+
         return true;
     }
 
