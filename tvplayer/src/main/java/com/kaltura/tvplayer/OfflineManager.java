@@ -336,11 +336,31 @@ public abstract class OfflineManager {
         int height;
     }
 
+    public enum TrackCodec {
+        // Video Codecs
+        /// AVC1 codec, AKA H.264
+        AVC1,
+        /// HEVC codec, AKA HVC1 or H.265
+        HEVC,
+        /// MP4A
+
+        // Audio Codecs
+        MP4A,
+        /// AC3: Dolby Atmos
+        AC3,
+        /// E-AC3: Dolby Digital Plus (Enhanced AC3)
+        EAC3
+    }
+
+
     /**
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
-        public Integer videoBitrate;
+        public Map<TrackCodec, Integer> videoBitrates;
+        public List<TrackCodec> videoCodecs;
+        public List<TrackCodec> audioCodecs;
+
         public Integer videoHeight;
         public Integer videoWidth;
 

@@ -165,15 +165,17 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
             @Override
             public void onTracksAvailable(DownloadItem item, TrackSelector trackSelector) {
-                applySelectionPrefs(trackSelector, prefs);
+                DTGTrackSelectionKt.selectTracks(trackSelector, prefs);
             }
         };
+
         cm.addDownloadStateListener(listener);
 
         dtgItem.loadMetadata();
 
         try {
             latch.await(10, TimeUnit.SECONDS);
+            latch.await();
             if (errorOut[0] != null) {
                 postEvent(() -> prepareCallback.onPrepareError(assetId, errorOut[0]));
             } else {
@@ -207,48 +209,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         }
 
         return filtered;
-    }
-
-    private void applySelectionPrefs(TrackSelector trackSelector, SelectionPrefs prefs) {
-
-        // TODO: 2019-08-26 handle groups, audio bitrate, codecs
-
-        List<DownloadItem.Track> videoTracks = trackSelector.getAvailableTracks(DownloadItem.TrackType.VIDEO);
-        List<DownloadItem.Track> audioTracks = trackSelector.getAvailableTracks(DownloadItem.TrackType.AUDIO);
-        List<DownloadItem.Track> textTracks = trackSelector.getAvailableTracks(DownloadItem.TrackType.TEXT);
-
-        if (prefs.videoBitrate != null) {
-            videoTracks = filterTracks(videoTracks,
-                    DownloadItem.Track.bitrateComparator,
-                    input -> input.getBitrate() >= prefs.videoBitrate);
-        }
-
-        if (prefs.videoHeight != null) {
-            videoTracks = filterTracks(videoTracks,
-                    DownloadItem.Track.heightComparator,
-                    input -> input.getHeight() >= prefs.videoHeight);
-        }
-
-        if (prefs.videoWidth != null) {
-            videoTracks = filterTracks(videoTracks,
-                    DownloadItem.Track.widthComparator,
-                    input -> input.getWidth() >= prefs.videoWidth);
-        }
-
-        trackSelector.setSelectedTracks(DownloadItem.TrackType.VIDEO, Collections.singletonList(videoTracks.get(0)));
-
-        audioTracks = filterTracks(audioTracks, prefs.audioLanguages, prefs.allAudioLanguages);
-        trackSelector.setSelectedTracks(DownloadItem.TrackType.AUDIO, audioTracks);
-
-        textTracks = filterTracks(textTracks, prefs.textLanguages, prefs.allTextLanguages);
-        trackSelector.setSelectedTracks(DownloadItem.TrackType.TEXT, textTracks);
-
-        trackSelector.apply(new DownloadItem.OnTrackSelectionListener() {
-            @Override
-            public void onTrackSelectionComplete(Exception e) {
-
-            }
-        });
     }
 
     private List<DownloadItem.Track> filterTracks(List<DownloadItem.Track> tracks, List<String> languages, boolean allLanguages) {
