@@ -21,6 +21,8 @@ enum KnownPlugin {
     // IMA
     ima("com.kaltura.playkit.plugins.ima.IMAPlugin"),
     imadai("com.kaltura.playkit.plugins.imadai.IMADAIPlugin"),
+    // Faceboook
+    fbads("com.kaltura.playkit.plugins.fbads.fbinstream.FBInstreamPlugin"),
     // Youbora
     youbora("com.kaltura.playkit.plugins.youbora.YouboraPlugin");
 
