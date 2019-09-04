@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKController;
@@ -28,6 +29,7 @@ import com.kaltura.playkit.ads.AdController;
 
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
+import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
@@ -54,6 +56,7 @@ public class KalturaPlayer {
     public static final String DEFAULT_OVP_SERVER_URL = "https://cdnapisec.kaltura.com/";
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
+    public static final String OKHTTP = "okhttp";
 
     private static boolean playerConfigRetrieved;
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
@@ -144,7 +147,9 @@ public class KalturaPlayer {
         this.referrer = buildReferrer(context, initOptions.referrer);
         populatePartnersValues();
         this.ks = initOptions.ks;
-
+        if (OKHTTP.equals(PKHttpClientManager.getHttpProvider())) {
+            APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder()); // share connection-pool with netkit
+        }
         registerPlugins(context);
         loadPlayer();
     }
