@@ -342,9 +342,10 @@ public abstract class OfflineManager {
         AVC1,
         /// HEVC codec, AKA HVC1 or H.265
         HEVC,
-        /// MP4A
+
 
         // Audio Codecs
+        /// MP4A
         MP4A,
         /// AC3: Dolby Atmos
         AC3,
