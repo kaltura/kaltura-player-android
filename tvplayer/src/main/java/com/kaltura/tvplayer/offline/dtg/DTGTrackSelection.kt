@@ -1,5 +1,8 @@
+@file:Suppress("MoveLambdaOutsideParentheses")
+
 package com.kaltura.tvplayer.offline.dtg
 
+import com.kaltura.dtg.AssetFormat
 import com.kaltura.dtg.CodecSupport
 import com.kaltura.dtg.DownloadItem
 import com.kaltura.dtg.DownloadItem.Track
@@ -15,13 +18,18 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 
-internal fun selectTracks(trackSelector: TrackSelector, prefs: SelectionPrefs) {
-    DTGTrackSelection(prefs, trackSelector).selectTracks()
+fun selectTracks(
+    assetFormat: AssetFormat,
+    trackSelector: TrackSelector,
+    prefs: SelectionPrefs
+) {
+    DTGTrackSelection(assetFormat, prefs, trackSelector).selectTracks()
 }
 
 private val log = PKLog.get("DTGTrackSelection")
 
 class DTGTrackSelection(
+    private val assetFormat: AssetFormat,
     private val prefs: SelectionPrefs,
     private val trackSelector: TrackSelector
 ) {
@@ -37,13 +45,8 @@ class DTGTrackSelection(
     private var selectedVideoTrack : Track? = null
 
     internal fun selectTracks() {
-        // Video
         selectVideoTrack()
-
-        // Audio
         selectLingualTracks(AUDIO)
-
-        // Text
         selectLingualTracks(TEXT)
     }
 
@@ -56,9 +59,72 @@ class DTGTrackSelection(
     private fun selectVideoTrack() {
         val videoTracks = trackSelector.getAvailableTracks(VIDEO)
 
-        selectedVideoTrack = selectVideoTrack(videoTracks)
+        when (assetFormat) {
+            // HLS differs in two important aspects: (a) audio group id (b) "video" tracks can actually be audio-only
+            // As a result the algorithm is more complex.
+            AssetFormat.hls -> selectedVideoTrack = selectVideoTrackHls(videoTracks)
+            AssetFormat.dash -> selectedVideoTrack = selectVideoTrackDash(videoTracks)
+            else -> {
+                log.e("Unsupported asset format $assetFormat")
+                return
+            }
+        }
 
-        trackSelector.setSelectedTracks(VIDEO, listOf(selectedVideoTrack))
+        if (selectedVideoTrack != null) {
+            trackSelector.setSelectedTracks(VIDEO, listOf(selectedVideoTrack))
+        }
+    }
+
+    private fun selectVideoTrackDash(videoTracks: List<Track>): Track? {
+
+        var tracks = videoTracks.filter { !it.usesUnsupportedCodecs() }
+
+        prefs.videoHeight?.let { videoHeight ->
+            tracks = filterTracks(tracks, Track.heightComparator, { it.height >= videoHeight} )
+        }
+
+        prefs.videoWidth?.let { videoWidth ->
+            tracks = filterTracks(tracks, Track.widthComparator, { it.width >= videoWidth} )
+        }
+
+        prefs.videoBitrate?.let { videoBitrate ->
+            tracks = filterTracks(tracks, Track.bitrateComparator, { it.bitrate >= videoBitrate} )
+        }
+
+
+        val videoBitrates = videoBitratePrefsPerCodec()
+
+        val tracksByCodec = mutableMapOf<CodecTag, List<Track>>()
+
+        for (codec in TrackCodec.values()) {
+            tracksByCodec[codec.tag()] = tracks.filter { it.codecs.split(".").firstOrNull() == codec.tag() }
+        }
+
+        for ((codec, bitrate) in videoBitrates) {
+            val codecTracks = tracksByCodec[codec.tag()] ?: continue
+            tracksByCodec[codec.tag()] = filterTracks(codecTracks, Track.bitrateComparator, { it.bitrate >= bitrate })
+        }
+
+        for (codecTag in fullVideoCodecPriority()) {
+            val codecTracks = tracksByCodec[codecTag] ?: continue
+            val first = codecTracks.firstOrNull()
+            if (first != null) {
+                return first
+            }
+        }
+
+        return null
+    }
+
+    private fun videoBitratePrefsPerCodec(): HashMap<TrackCodec, Int> {
+        val videoBitrates = HashMap(prefs.codecVideoBitrates ?: mapOf())
+        if (videoBitrates[AVC1] == null) {
+            videoBitrates[AVC1] = 180_000
+        }
+        if (videoBitrates[HEVC] == null) {
+            videoBitrates[HEVC] = 120_000
+        }
+        return videoBitrates
     }
 
     private fun canonicalLangList(list: List<String>?) : List<String> {
@@ -81,6 +147,7 @@ class DTGTrackSelection(
         val langList = canonicalLangPref(type)
         val allLangs = if (type == AUDIO) prefs.allAudioLanguages else prefs.allTextLanguages
 
+        // Only applicable to HLS, null otherwise
         val groupId = selectedVideoTrack?.audioGroupId
 
         for (track in tracks) {
@@ -103,7 +170,7 @@ class DTGTrackSelection(
         return matchingTracks
     }
 
-    private fun selectVideoTrack(videoTracks: List<Track>) : Track {
+    private fun selectVideoTrackHls(videoTracks: List<Track>) : Track? {
         val videoCodecTags = videoCodecs.map { it.tag() }
         val audioCodecTags = audioCodecs.map { it.tag() }
 
@@ -159,28 +226,22 @@ class DTGTrackSelection(
             for (c in videoCodecTags) {
                 val height = prefs.videoHeight
                 if (height != null) {
-                    mainTracks[c] = filterTracks(mainTracks[c]!!, Track.heightComparator, {it.height >= height})
+                    mainTracks[c] = filterTracks(mainTracks[c]!!, Track.heightComparator, {it.height >= height}).toMutableList()
                 }
                 val width = prefs.videoWidth
                 if (width != null) {
-                    mainTracks[c] = filterTracks(mainTracks[c]!!, Track.widthComparator, {it.width >= width})
+                    mainTracks[c] = filterTracks(mainTracks[c]!!, Track.widthComparator, {it.width >= width}).toMutableList()
                 }
             }
         }
 
         // Filter by bitrate
 
-        val videoBitrates = HashMap(prefs.codecVideoBitrates ?: mapOf())
-        if (videoBitrates[AVC1] == null) {
-            videoBitrates[AVC1] = 180_000
-        }
-        if (videoBitrates[HEVC] == null) {
-            videoBitrates[HEVC] = 120_000
-        }
+        val videoBitrates = videoBitratePrefsPerCodec()
 
         for ((codec, bitrate) in videoBitrates) {
             val codecTracks = mainTracks[codec.tag()] ?: continue
-            mainTracks[codec.tag()] = filterTracks(codecTracks, Track.bitrateComparator, { it.bitrate >= bitrate })
+            mainTracks[codec.tag()] = filterTracks(codecTracks, Track.bitrateComparator, { it.bitrate >= bitrate }).toMutableList()
         }
 
         log.d("Filtered video tracks: $mainTracks")
@@ -202,17 +263,14 @@ class DTGTrackSelection(
                 }
             }
         }
-
-        TODO()
-//        throw HLSLocalizerError.malformedPlaylist
+        return null
     }
 
-
     private fun filterTracks(
-        tracks: MutableList<Track>,
+        tracks: List<Track>,
         comparator: Comparator<Track?>,
         predicate: (Track) -> Boolean
-    ): MutableList<Track> {
+    ): List<Track> {
         if (tracks.size < 2) {
             return tracks
         }
@@ -221,37 +279,25 @@ class DTGTrackSelection(
 
         val filtered = sorted.filter(predicate)
 
-        return if (filtered.isEmpty()) sorted.subList(0, 1).toMutableList() else filtered.toMutableList()
+        return if (filtered.isEmpty()) sorted.subList(0, 1) else filtered
     }
 
-    private fun filterTracks(
-        tracks: List<Track>,
-        languages: List<String>?,
-        allLanguages: Boolean
-    ): List<Track> {
-        if (tracks.size < 2 || allLanguages) {  // TODO: this is wrong, we may get duplicate tracks per language
-            return tracks
-        }
+    private fun Track.usesUnsupportedCodecs(): Boolean {
 
-        if (languages.isNullOrEmpty()) {
-            return emptyList()
-        }
-
-        val filtered = tracks.filter { languages.contains(it.language) }
-
-        return if (filtered.isEmpty()) tracks.subList(0, 1) else filtered
-    }
-
-    fun Track.usesUnsupportedCodecs(): Boolean {
-        for (tag in codecTags()) {
-            if (!allowedCodecTags.contains(tag)) {
-                return true
+        if (assetFormat == AssetFormat.hls) {
+            for (tag in codecTags()) {
+                if (!allowedCodecTags.contains(tag)) {
+                    return true
+                }
             }
+            return false
+
+        } else {
+            return !CodecSupport.hasDecoder(this.codecs, false, prefs.allowInefficientCodecs)
         }
-        return false
     }
 
-    fun TrackCodec.isAllowed() = when (this) {
+    private fun TrackCodec.isAllowed() = when (this) {
         AVC1 -> true
         HEVC -> OMCodecSupport.hardwareHEVC || OMCodecSupport.anyHEVC && prefs.allowInefficientCodecs
         MP4A -> true
@@ -259,7 +305,7 @@ class DTGTrackSelection(
         EAC3 -> OMCodecSupport.EAC3
     }
 
-    internal fun TrackCodec.tag(): CodecTag = when (this) {
+    private fun TrackCodec.tag(): CodecTag = when (this) {
         AVC1 -> "avc1"
         HEVC -> "hvc1"
         MP4A -> "mp4a"
@@ -267,7 +313,7 @@ class DTGTrackSelection(
         EAC3 -> "ec-3"
     }
 
-    fun Track.codecTags(): Set<CodecTag> {
+    private fun Track.codecTags(): Set<CodecTag> {
         // `codecs` is an array of String, but it's declared as a non-generic `Array`.
         // It might also be nil.
 
@@ -285,7 +331,7 @@ class DTGTrackSelection(
         return tags
     }
 
-    fun Track.videoCodec(): CodecTag? {
+    private fun Track.videoCodec(): CodecTag? {
         for (tag in codecTags()) {
             if (videoCodecs.any { it.tag() == tag }) {
                 return tag
@@ -294,7 +340,7 @@ class DTGTrackSelection(
         return null
     }
 
-    fun Track.audioCodec(): CodecTag? {
+    private fun Track.audioCodec(): CodecTag? {
         for (tag in codecTags()) {
             if (audioCodecs.any { it.tag() == tag }) {
                 return tag
@@ -304,13 +350,19 @@ class DTGTrackSelection(
     }
 
 
-    fun fullVideoCodecPriority() : List<CodecTag> =
-        fullCodecPriority(requestedTags = (prefs.videoCodecs ?: listOf()).map { it.tag() }, allowedTags = allowedVideoCodecTags)
+    private fun fullVideoCodecPriority() : List<CodecTag> =
+        fullCodecPriority(
+            requestedTags = (prefs.videoCodecs ?: listOf()).map { it.tag() },
+            allowedTags = allowedVideoCodecTags
+        )
 
-    fun fullAudioCodecPriority() : List<CodecTag> =
-        fullCodecPriority(requestedTags = (prefs.audioCodecs ?: listOf()).map { it.tag() }, allowedTags = allowedAudioCodecTags)
+    private fun fullAudioCodecPriority() : List<CodecTag> =
+        fullCodecPriority(
+            requestedTags = (prefs.audioCodecs ?: listOf()).map { it.tag() },
+            allowedTags = allowedAudioCodecTags
+        )
 
-    fun fullCodecPriority(requestedTags: List<CodecTag>, allowedTags: List<CodecTag>) : List<CodecTag> {
+    private fun fullCodecPriority(requestedTags: List<CodecTag>, allowedTags: List<CodecTag>) : List<CodecTag> {
         val codecPriority = ArrayList(requestedTags)
         for (codec in allowedTags) {
             if (!codecPriority.contains(codec)) {
@@ -322,12 +374,12 @@ class DTGTrackSelection(
 
 }
 
-internal val videoCodecs = listOf(HEVC, AVC1)
-internal val audioCodecs = listOf(EAC3, AC3, MP4A)
+private val videoCodecs = listOf(HEVC, AVC1)
+private val audioCodecs = listOf(EAC3, AC3, MP4A)
 
-typealias CodecTag = String
+private typealias CodecTag = String
 
-object OMCodecSupport {
+private object OMCodecSupport {
     val AC3 = CodecSupport.hasDecoder(MimeTypes.AUDIO_AC3, true, true)
     val EAC3 = CodecSupport.hasDecoder(MimeTypes.AUDIO_E_AC3, true, true)
     val hardwareHEVC = CodecSupport.hasDecoder(MimeTypes.VIDEO_H265, true, false)

@@ -176,7 +176,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                     return; // wrong item - could be a matter of timing
                 }
 
-                DTGTrackSelectionKt.selectTracks(trackSelector, prefs);
+                DTGTrackSelectionKt.selectTracks(item.getAssetFormat(), trackSelector, prefs);
             }
         };
 
