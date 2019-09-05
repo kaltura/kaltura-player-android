@@ -31,7 +31,6 @@ import com.kaltura.android.exoplayer2.upstream.cache.*;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
-import com.kaltura.tvplayer.TODO;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import okhttp3.OkHttpClient;
 import org.json.JSONException;
@@ -95,7 +94,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     break;
                 case Download.STATE_RESTARTING:
                     log.d("STATE_RESTARTING: " + assetId);
-                    throw new TODO();
+                    // TODO: 2019-09-04 what does it mean?
+                    break;
                 case Download.STATE_STOPPED:
                     log.d("STATE_STOPPED: " + assetId);
                     if (StopReason.fromExoReason(download.stopReason) == StopReason.pause) {
