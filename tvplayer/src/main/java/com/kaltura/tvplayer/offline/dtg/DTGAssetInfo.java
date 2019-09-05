@@ -1,5 +1,7 @@
 package com.kaltura.tvplayer.offline.dtg;
 
+import androidx.annotation.NonNull;
+
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
@@ -50,11 +52,13 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
 //        ContentManager.getInstance(null).release(this);
     }
 
+    @NonNull
     @Override
     public String getAssetId() {
         return itemId;
     }
 
+    @NonNull
     @Override
     public AssetDownloadState getState() {
         return state;

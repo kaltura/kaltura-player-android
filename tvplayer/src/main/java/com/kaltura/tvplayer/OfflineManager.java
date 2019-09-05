@@ -18,7 +18,7 @@ import java.util.Map;
 @SuppressWarnings({"WeakerAccess", "unused", "JavaDoc"})
 public abstract class OfflineManager {
 
-    public static OfflineManager getInstance(Context context) {
+    public static @NonNull OfflineManager getInstance(Context context) {
         return DTGOfflineManager.getInstance(context);
     }
 
@@ -42,17 +42,17 @@ public abstract class OfflineManager {
      *
      * @param listener
      */
-    public abstract void setAssetStateListener(AssetStateListener listener);
+    public abstract void setAssetStateListener(@Nullable AssetStateListener listener);
 
     /**
      * Set the global download progress listener
      *
      * @param listener
      */
-    public abstract void setDownloadProgressListener(DownloadProgressListener listener);
+    public abstract void setDownloadProgressListener(@Nullable DownloadProgressListener listener);
 
 
-    public abstract void start(ManagerStartCallback callback) throws IOException;
+    public abstract void start(@Nullable ManagerStartCallback callback) throws IOException;
 
     public abstract void stop();
 
@@ -75,8 +75,9 @@ public abstract class OfflineManager {
      * @param prefs
      * @param prepareCallback
      */
-    public abstract void prepareAsset(PKMediaEntry mediaEntry,
-                                      SelectionPrefs prefs, PrepareCallback prepareCallback);
+    public abstract void prepareAsset(@NonNull PKMediaEntry mediaEntry,
+                                      @NonNull SelectionPrefs prefs,
+                                      @NonNull PrepareCallback prepareCallback);
 
     /**
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
@@ -90,28 +91,29 @@ public abstract class OfflineManager {
      * @param prepareCallback
      * @throws IllegalStateException if partner id and/or server URL were not set.
      */
-    public abstract void prepareAsset(MediaOptions mediaOptions,
-                                      SelectionPrefs prefs, PrepareCallback prepareCallback)
+    public abstract void prepareAsset(@NonNull MediaOptions mediaOptions,
+                                      @NonNull SelectionPrefs prefs,
+                                      @NonNull PrepareCallback prepareCallback)
             throws IllegalStateException;
 
     /**
      * Add a prepared asset to the db and start downloading it.
      */
-    public abstract void startAssetDownload(AssetInfo assetInfo);
+    public abstract void startAssetDownload(@NonNull AssetInfo assetInfo);
 
     /**
      * Pause downloading an asset. Resume by calling {@link #resumeAssetDownload(String)}.
      *
      * @param assetId
      */
-    public abstract void pauseAssetDownload(String assetId);
+    public abstract void pauseAssetDownload(@NonNull String assetId);
 
     /**
      * Resume a download that was paused by {@link #pauseAssetDownload(String)}.
      *
      * @param assetId
      */
-    public abstract void resumeAssetDownload(String assetId);
+    public abstract void resumeAssetDownload(@NonNull String assetId);
 
     /**
      * Remove asset with all its data.
@@ -119,7 +121,7 @@ public abstract class OfflineManager {
      * @param assetId
      * @return false if asset is not found, true otherwise.
      */
-    public abstract boolean removeAsset(String assetId);
+    public abstract boolean removeAsset(@NonNull String assetId);
 
 
     /**
@@ -129,9 +131,12 @@ public abstract class OfflineManager {
      * @param drmParams
      * @return false if asset is not found, true otherwise.
      */
-    public abstract void renewDrmAsset(String assetId, PKDrmParams drmParams);
+    public abstract void renewDrmAsset(@NonNull String assetId,
+                                       @NonNull PKDrmParams drmParams);
 
-    public abstract void renewDrmAsset(String assetId, MediaOptions mediaOptions, MediaEntryCallback mediaEntryCallback);
+    public abstract void renewDrmAsset(@NonNull String assetId,
+                                       @NonNull MediaOptions mediaOptions,
+                                       @NonNull MediaEntryCallback mediaEntryCallback);
 
 
     /**
@@ -140,7 +145,7 @@ public abstract class OfflineManager {
      * @param assetId
      * @return asset info or null if not found.
      */
-    public abstract AssetInfo getAssetInfo(String assetId);
+    public abstract @Nullable AssetInfo getAssetInfo(@NonNull String assetId);
 
     /**
      * Get list of {@link AssetInfo} objects for all assets in the given state.
@@ -148,7 +153,7 @@ public abstract class OfflineManager {
      * @param state
      * @return
      */
-    public abstract List<AssetInfo> getAssetsInState(AssetDownloadState state);
+    public abstract @NonNull List<AssetInfo> getAssetsInState(@NonNull AssetDownloadState state);
 
     /**
      * Get an offline-playable PKMediaEntry object.
@@ -156,7 +161,7 @@ public abstract class OfflineManager {
      * @param assetId
      * @return
      */
-    public abstract PKMediaEntry getLocalPlaybackEntry(String assetId) throws IOException;
+    public abstract @NonNull PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) throws IOException;
 
     /**
      * Send a downloaded asset to the player.
@@ -164,7 +169,7 @@ public abstract class OfflineManager {
      * @param assetId
      * @param player
      */
-    public abstract void sendAssetToPlayer(String assetId, KalturaPlayer player) throws IOException;
+    public abstract void sendAssetToPlayer(@NonNull String assetId, @NonNull KalturaPlayer player) throws IOException;
 
 
     /**
@@ -173,12 +178,12 @@ public abstract class OfflineManager {
      * @param assetId
      * @return DRM license status - {@link DrmStatus}.
      */
-    public abstract DrmStatus getDrmStatus(String assetId);
+    public abstract @NonNull DrmStatus getDrmStatus(@NonNull String assetId);
 
 
-    public abstract void setKs(String ks);
+    public abstract void setKs(@Nullable String ks);
 
-    public abstract void setPreferredMediaFormat(PKMediaFormat preferredMediaFormat);
+    public abstract void setPreferredMediaFormat(@Nullable PKMediaFormat preferredMediaFormat);
 
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
 
@@ -218,7 +223,7 @@ public abstract class OfflineManager {
          * @param assetId
          * @param error
          */
-        void onPrepareError(@NonNull String assetId, Exception error);
+        void onPrepareError(@NonNull String assetId, @NonNull Exception error);
 
         /**
          * Called when loading a {@link PKMediaEntry} object from the backend has succeeded. It allows the app to
@@ -239,7 +244,7 @@ public abstract class OfflineManager {
          * @param error
          */
         @Override
-        default void onMediaEntryLoadError(Exception error) {}
+        default void onMediaEntryLoadError(@NonNull Exception error) {}
 
         /**
          * Called when prepareAsset() has selected a specific {@link PKMediaSource} from the provided or loaded
@@ -256,18 +261,18 @@ public abstract class OfflineManager {
      * Invoked while downloading an asset; use with {@link #setDownloadProgressListener(DownloadProgressListener)}.
      */
     public interface DownloadProgressListener {
-        void onDownloadProgress(String assetId, long bytesDownloaded, long totalBytesEstimated, float percentDownloaded);
+        void onDownloadProgress(@NonNull String assetId, long bytesDownloaded, long totalBytesEstimated, float percentDownloaded);
     }
 
     public interface AssetStateListener {
         void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo);
         void onAssetRemoved(@NonNull String assetId);
-        void onAssetDownloadFailed(@NonNull String assetId, @Nullable Exception error);
+        void onAssetDownloadFailed(@NonNull String assetId, @NonNull Exception error);
         void onAssetDownloadComplete(@NonNull String assetId);
         void onAssetDownloadPending(@NonNull String assetId);
         void onAssetDownloadPaused(@NonNull String assetId);
-        void onRegistered(@NonNull String assetId, DrmStatus drmStatus);
-        void onRegisterError(@NonNull String assetId, @Nullable Exception error);
+        void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus);
+        void onRegisterError(@NonNull String assetId, @NonNull Exception error);
     }
 
     public interface ManagerStartCallback {
@@ -305,6 +310,7 @@ public abstract class OfflineManager {
             this.totalRemainingTime = totalRemainingTime;
         }
 
+        @NonNull
         @Override
         public String toString() {
 
@@ -378,8 +384,10 @@ public abstract class OfflineManager {
 
         public abstract void release();
 
+        @NonNull
         public abstract String getAssetId();
 
+        @NonNull
         public abstract AssetDownloadState getState();
 
         public abstract long getEstimatedSize();
@@ -396,6 +404,6 @@ public abstract class OfflineManager {
     public interface MediaEntryCallback {
         void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry);
 
-        void onMediaEntryLoadError(Exception error);
+        void onMediaEntryLoadError(@NonNull Exception error);
     }
 }

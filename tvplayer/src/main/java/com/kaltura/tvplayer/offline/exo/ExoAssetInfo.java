@@ -1,9 +1,11 @@
 package com.kaltura.tvplayer.offline.exo;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadHelper;
 import com.kaltura.tvplayer.OfflineManager;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -79,11 +81,13 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
         }
     }
 
+    @NonNull
     @Override
     public String getAssetId() {
         return assetId;
     }
 
+    @NonNull
     @Override
     public OfflineManager.AssetDownloadState getState() {
         return state;

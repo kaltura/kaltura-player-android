@@ -5,18 +5,31 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Pair;
-import android.util.SparseIntArray;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
 import com.kaltura.android.exoplayer2.database.ExoDatabaseProvider;
-import com.kaltura.android.exoplayer2.drm.*;
+import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.DrmInitData;
+import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaCrypto;
+import com.kaltura.android.exoplayer2.drm.HttpMediaDrmCallback;
+import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
-import com.kaltura.android.exoplayer2.offline.*;
+import com.kaltura.android.exoplayer2.offline.DefaultDownloadIndex;
+import com.kaltura.android.exoplayer2.offline.DefaultDownloaderFactory;
+import com.kaltura.android.exoplayer2.offline.Download;
+import com.kaltura.android.exoplayer2.offline.DownloadCursor;
+import com.kaltura.android.exoplayer2.offline.DownloadHelper;
+import com.kaltura.android.exoplayer2.offline.DownloadManager;
+import com.kaltura.android.exoplayer2.offline.DownloadRequest;
+import com.kaltura.android.exoplayer2.offline.DownloadService;
+import com.kaltura.android.exoplayer2.offline.DownloaderConstructorHelper;
 import com.kaltura.android.exoplayer2.scheduler.Requirements;
 import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.source.dash.DashUtil;
@@ -27,17 +40,31 @@ import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.upstream.DataSource;
 import com.kaltura.android.exoplayer2.upstream.FileDataSourceFactory;
-import com.kaltura.android.exoplayer2.upstream.cache.*;
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
+import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSourceFactory;
+import com.kaltura.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
+import com.kaltura.android.exoplayer2.upstream.cache.SimpleCache;
 import com.kaltura.android.exoplayer2.util.Util;
-import com.kaltura.playkit.*;
+import com.kaltura.playkit.LocalAssetsManager;
+import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
-import okhttp3.OkHttpClient;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import okhttp3.OkHttpClient;
 
 
 public class ExoOfflineManager extends AbstractOfflineManager {
@@ -200,7 +227,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
 
     @Override
-    public void prepareAsset(PKMediaEntry mediaEntry, SelectionPrefs prefs, PrepareCallback prepareCallback) {
+    public void prepareAsset(@NonNull PKMediaEntry mediaEntry, @NonNull SelectionPrefs prefs, @NonNull PrepareCallback prepareCallback) {
 
         SourceSelector selector = new SourceSelector(mediaEntry, preferredMediaFormat);
 
@@ -370,8 +397,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 /* foreground= */ false);
     }
 
+    @NonNull
     @Override
-    public AssetInfo getAssetInfo(String assetId) {
+    public AssetInfo getAssetInfo(@NonNull String assetId) {
         final Download download;
         try {
             download = downloadManager.getDownloadIndex().getDownload(assetId);
@@ -384,8 +412,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return null;
     }
 
+    @NonNull
     @Override
-    public List<AssetInfo> getAssetsInState(AssetDownloadState state) {
+    public List<AssetInfo> getAssetsInState(@NonNull AssetDownloadState state) {
 
         @Download.State int[] exoStates;
         switch (state) {
@@ -428,8 +457,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return assetInfoList;
     }
 
+    @NonNull
     @Override
-    public PKMediaEntry getLocalPlaybackEntry(String assetId) throws IOException {
+    public PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) throws IOException {
 
         final Download download = downloadManager.getDownloadIndex().getDownload(assetId);
 
@@ -445,12 +475,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void startAssetDownload(AssetInfo assetInfo) {
-
-        if (assetInfo == null) {
-            log.e("assetInfo == null");
-            return;
-        }
+    public void startAssetDownload(@NonNull AssetInfo assetInfo) {
 
         if (!(assetInfo instanceof ExoAssetInfo)) {
             throw new IllegalArgumentException("Not an ExoAssetInfo object");
@@ -485,7 +510,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void resumeAssetDownload(String assetId) {
+    public void resumeAssetDownload(@NonNull String assetId) {
 
         // Clear the stop reason for a single download.
         DownloadService.sendSetStopReason(
@@ -497,7 +522,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void pauseAssetDownload(String assetId) {
+    public void pauseAssetDownload(@NonNull String assetId) {
         // Set the stop reason for a single download.
         DownloadService.sendSetStopReason(
                 appContext,
@@ -508,7 +533,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public boolean removeAsset(String assetId) {
+    public boolean removeAsset(@NonNull String assetId) {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
             lam.unregisterAsset(assetId, drmInitData);

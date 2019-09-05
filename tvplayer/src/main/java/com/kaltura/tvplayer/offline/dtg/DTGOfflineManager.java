@@ -4,14 +4,18 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.dtg.DownloadItem.TrackSelector;
 import com.kaltura.dtg.DownloadState;
-import com.kaltura.dtg.exoparser.util.Predicate;
-import com.kaltura.playkit.*;
+import com.kaltura.playkit.LocalAssetsManager;
+import com.kaltura.playkit.PKDrmParams;
+import com.kaltura.playkit.PKLog;
+import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.drm.SimpleDashParser;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
@@ -21,10 +25,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 
 public class DTGOfflineManager extends AbstractOfflineManager {
@@ -74,7 +75,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         }
     };
 
-    public static DTGOfflineManager getInstance(Context context) {
+    public static @NonNull DTGOfflineManager getInstance(Context context) {
         if (instance == null) {
             synchronized (DTGOfflineManager.class) {
                 if (instance == null) {
@@ -120,7 +121,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void prepareAsset(PKMediaEntry mediaEntry, SelectionPrefs prefs, PrepareCallback prepareCallback) {
+    public void prepareAsset(@NonNull PKMediaEntry mediaEntry, @NonNull SelectionPrefs prefs, @NonNull PrepareCallback prepareCallback) {
         SourceSelector selector = new SourceSelector(mediaEntry, preferredMediaFormat);
 
         final String assetId = mediaEntry.getId();
@@ -242,11 +243,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void startAssetDownload(AssetInfo assetInfo) {
-        if (assetInfo == null) {
-            log.e("assetInfo == null");
-            return;
-        }
+    public void startAssetDownload(@NonNull AssetInfo assetInfo) {
 
         if (!(assetInfo instanceof DTGAssetInfo)) {
             throw new IllegalArgumentException("Not a DTGAssetInfo object");
@@ -258,17 +255,17 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void pauseAssetDownload(String assetId) {
+    public void pauseAssetDownload(@NonNull String assetId) {
         cm.findItem(assetId).pauseDownload();
     }
 
     @Override
-    public void resumeAssetDownload(String assetId) {
+    public void resumeAssetDownload(@NonNull String assetId) {
         cm.findItem(assetId).startDownload();
     }
 
     @Override
-    public boolean removeAsset(String assetId) {
+    public boolean removeAsset(@NonNull String assetId) {
         final File localFile = cm.getLocalFile(assetId);
         if (localFile == null) {
             log.e("removeAsset: asset not found");
@@ -283,8 +280,9 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         return true;
     }
 
+    @Nullable
     @Override
-    public AssetInfo getAssetInfo(String assetId) {
+    public AssetInfo getAssetInfo(@NonNull String assetId) {
         final DownloadItem item = cm.findItem(assetId);
         if (item == null) {
             return null;
@@ -292,8 +290,9 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         return new DTGAssetInfo(item, null);
     }
 
+    @NonNull
     @Override
-    public List<AssetInfo> getAssetsInState(AssetDownloadState state) {
+    public List<AssetInfo> getAssetsInState(@NonNull AssetDownloadState state) {
         DownloadState dtgState;
         switch (state) {
             case started:
@@ -329,8 +328,9 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         return list;
     }
 
+    @NonNull
     @Override
-    public PKMediaEntry getLocalPlaybackEntry(String assetId) {
+    public PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) {
         final String playbackURL = cm.getPlaybackURL(assetId);
         final PKMediaSource localMediaSource = lam.getLocalMediaSource(assetId, playbackURL);
         return new PKMediaEntry().setId(assetId).setSources(Collections.singletonList(localMediaSource));
