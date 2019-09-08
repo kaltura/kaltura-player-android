@@ -1,5 +1,6 @@
 package com.kaltura.tvplayer.offline
 
+import android.app.Instrumentation
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -29,7 +30,9 @@ class OfflineManagerTest {
 
     private fun toastLong(msg: String) = mainHandler.post { Toast.makeText(context, msg, Toast.LENGTH_LONG).show() }
 
-    lateinit var context: Context
+    private lateinit var context: Context
+    private lateinit var instrumentation: Instrumentation
+
 
     val handler: Handler = {
 
@@ -82,17 +85,23 @@ class OfflineManagerTest {
 
     @Before
     fun setup() {
-        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation = InstrumentationRegistry.getInstrumentation()
         context = instrumentation.targetContext
 
         DTGOfflineManager.getInstance(context).setAssetStateListener(listener)
     }
 
-    private fun startPlayer(assetId: String) {
+    private fun startPlayer(assetId: String, expectedDuration: Long) {
         val intent = Intent(context, PlayActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             data = Uri.parse(assetId ?: return)
+            putExtra("expectedDuration", expectedDuration)
         }
+
+//        instrumentation.startActivitySync(intent)
+
+
+
         context.startActivity(intent)
     }
 
@@ -104,7 +113,11 @@ class OfflineManagerTest {
 
         handler.post {
 
-            manager.waitUntilStarted()
+            val startLatch = CountDownLatch(1)
+            manager.start{ startLatch.countDown() }
+            startLatch.await()
+
+//            manager.waitUntilStarted()
 
             block(manager)
 
@@ -185,8 +198,11 @@ class OfflineManagerTest {
         val item = OVPItem(2215841, "0_axrfacp3")
         val expectedEstSize = 36837968L
         val expectedDownloadedBytes = 37671264L
+        val expectedDuration = 634253L
 
-        test { om ->
+        log.d("prepare1.thread=${Thread.currentThread()}")
+
+        val block: (OfflineManager) -> Unit = { om ->
             download(
                 om,
                 item,
@@ -195,10 +211,13 @@ class OfflineManagerTest {
                 expectedDownloadedBytes = expectedDownloadedBytes
             )
 
-            startPlayer(item.id())
+            log.d("prepare1.block.thread=${Thread.currentThread()}")
+//            startPlayer(item.id(), expectedDuration)
 
-            Thread.sleep(5000)
+//            Looper.getMainLooper().thread.join()
+//            Thread.sleep(10000)
         }
+        test(block)
 
 
 
