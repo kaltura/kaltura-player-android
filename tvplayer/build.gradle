@@ -32,8 +32,8 @@ dependencies {
     api 'com.kaltura:playkit-android:dev-SNAPSHOT'
     api 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
     api 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
-    
     api 'com.kaltura:playkit-dtg-android:FEM-2603-SNAPSHOT'
+    
 //    api project(":playkit")
 //    api project(":providers")
 //    api project(":kava")
