@@ -141,7 +141,7 @@ class OfflineManagerTest {
     ) {
         om.removeAsset(item.id())
         if (item is KalturaItem) {
-            om.setKalturaPartnerId(item.partnerId)
+            om.setKalturaParams(item.partnerId, KalturaPlayer.Type.ovp)
             om.setKalturaServerUrl(item.serverUrl)
         }
 

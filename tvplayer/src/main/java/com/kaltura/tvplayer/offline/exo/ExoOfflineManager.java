@@ -67,6 +67,9 @@ import java.util.List;
 import okhttp3.OkHttpClient;
 
 
+// NOTE: this and related classes are not currently in use. OfflineManager.getInstance() always
+// returns an instance of DTGOfflineManager. ExoOfflineManager will be used in a future version.
+
 public class ExoOfflineManager extends AbstractOfflineManager {
 
     private static final PKLog log = PKLog.get("ExoOfflineManager");

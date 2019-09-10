@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
-import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.OfflineManager;
 
@@ -28,8 +27,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
     protected DownloadProgressListener downloadProgressListener;
-    private String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
-    private Integer kalturaPartnerId;
     private AssetStateListener assetStateListener;
     private String ks;
 
@@ -86,7 +83,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
-    public void renewDrmAsset(@NonNull String assetId, @NonNull MediaOptions mediaOptions, @NonNull MediaEntryCallback mediaEntryCallback) {
+    public void renewDrmAssetLicense(@NonNull String assetId, @NonNull MediaOptions mediaOptions, @NonNull MediaEntryCallback mediaEntryCallback) {
 
         if (kalturaPartnerId == null || kalturaServerUrl == null) {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
@@ -99,7 +96,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 final PKMediaEntry mediaEntry = response.getResponse();
                 mediaEntryCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
 
-                renewDrmAsset(assetId, mediaEntry);
+                renewDrmAssetLicense(assetId, mediaEntry);
 
             } else {
                 mediaEntryCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
@@ -107,27 +104,11 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         }));
     }
 
-    private void renewDrmAsset(String assetId, PKMediaEntry mediaEntry) {
+    private void renewDrmAssetLicense(String assetId, PKMediaEntry mediaEntry) {
         PKDrmParams drmParams = findDrmParams(assetId, mediaEntry);
         if (drmParams != null) {
-            renewDrmAsset(assetId, drmParams);
+            renewDrmAssetLicense(assetId, drmParams);
         }
-    }
-
-    @Override
-    public final void sendAssetToPlayer(@NonNull String assetId, @NonNull KalturaPlayer player) throws IOException {
-        final PKMediaEntry entry = getLocalPlaybackEntry(assetId);
-        player.setMedia(entry);
-    }
-
-    @Override
-    public void setKalturaServerUrl(String url) {
-        this.kalturaServerUrl = url;
-    }
-
-    @Override
-    public void setKalturaPartnerId(int partnerId) {
-        this.kalturaPartnerId = partnerId;
     }
 
     @Override
@@ -231,7 +212,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected abstract byte[] getDrmInitData(String assetId) throws IOException, InterruptedException;
 
     @Override
-    public void renewDrmAsset(@NonNull String assetId, @NonNull PKDrmParams drmParams) {
+    public void renewDrmAssetLicense(@NonNull String assetId, @NonNull PKDrmParams drmParams) {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
             lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData);

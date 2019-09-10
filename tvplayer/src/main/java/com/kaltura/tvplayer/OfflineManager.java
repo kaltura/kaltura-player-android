@@ -7,6 +7,7 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.tvplayer.config.TVPlayerParams;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 
 import java.io.IOException;
@@ -18,24 +19,24 @@ import java.util.Map;
 @SuppressWarnings({"WeakerAccess", "unused", "JavaDoc"})
 public abstract class OfflineManager {
 
+    protected String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
+    protected Integer kalturaPartnerId;
+
     public static @NonNull OfflineManager getInstance(Context context) {
         return DTGOfflineManager.getInstance(context);
     }
 
+    public void setKalturaParams(KalturaPlayer.Type type, int partnerId) {
+        this.kalturaPartnerId = partnerId;
+        final TVPlayerParams params = PlayerConfigManager.retrieve(type, partnerId);
+        if (params != null) {
+            this.kalturaServerUrl = params.serviceUrl;
+        }
+    }
 
-    /**
-     * Sets the server URL used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}.
-     *
-     * @param url
-     */
-    public abstract void setKalturaServerUrl(String url);
-
-    /**
-     * Sets the partner id used with {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}.
-     *
-     * @param partnerId
-     */
-    public abstract void setKalturaPartnerId(int partnerId);
+    public void setKalturaServerUrl(String url) {
+        this.kalturaServerUrl = url;
+    }
 
     /**
      * Set the global download state listener, to be notified about state changes.
@@ -83,7 +84,7 @@ public abstract class OfflineManager {
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
      * the entry, load the source metadata, select tracks based on the prefs, call the listener. If the asset requires
      * KS, make sure to set {@link MediaOptions#ks}.
-     * Before calling this method, the partner id and the server URL must be set by {@link #setKalturaPartnerId(int)}
+     * Before calling this method, the partner id and the server URL must be set by {@link #setKalturaParams(KalturaPlayer.Type, int)}
      * and {@link #setKalturaServerUrl(String)}, respectively.
      *
      * @param mediaOptions
@@ -131,12 +132,12 @@ public abstract class OfflineManager {
      * @param drmParams
      * @return false if asset is not found, true otherwise.
      */
-    public abstract void renewDrmAsset(@NonNull String assetId,
-                                       @NonNull PKDrmParams drmParams);
+    public abstract void renewDrmAssetLicense(@NonNull String assetId,
+                                              @NonNull PKDrmParams drmParams);
 
-    public abstract void renewDrmAsset(@NonNull String assetId,
-                                       @NonNull MediaOptions mediaOptions,
-                                       @NonNull MediaEntryCallback mediaEntryCallback);
+    public abstract void renewDrmAssetLicense(@NonNull String assetId,
+                                              @NonNull MediaOptions mediaOptions,
+                                              @NonNull MediaEntryCallback mediaEntryCallback);
 
 
     /**
@@ -163,14 +164,6 @@ public abstract class OfflineManager {
      */
     public abstract @NonNull PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) throws IOException;
 
-    /**
-     * Send a downloaded asset to the player.
-     *
-     * @param assetId
-     * @param player
-     */
-    public abstract void sendAssetToPlayer(@NonNull String assetId, @NonNull KalturaPlayer player) throws IOException;
-
 
     /**
      * Check the license status of an asset.
@@ -193,10 +186,6 @@ public abstract class OfflineManager {
 
     public enum TrackType {
         video, audio, text
-    }
-
-    public enum CodecType {
-        avc, hevc, vp9
     }
 
     /**
@@ -334,12 +323,11 @@ public abstract class OfflineManager {
     }
 
     public static class Track {
-        TrackType type;
         String language;
-        CodecType codec;
         long bitrate;
         int width;
         int height;
+        TrackCodec codec;
     }
 
     public enum TrackCodec {
