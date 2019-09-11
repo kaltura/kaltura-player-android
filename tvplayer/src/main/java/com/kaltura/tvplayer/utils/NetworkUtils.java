@@ -12,7 +12,6 @@ import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.tvplayer.PlayerConfigManager;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;

@@ -5,12 +5,14 @@ import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKController;
@@ -27,6 +29,7 @@ import com.kaltura.playkit.ads.AdController;
 
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
+import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
@@ -102,6 +105,7 @@ public class KalturaPlayerBase {
             BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
+    public static final String OKHTTP = "okhttp";
 
     static boolean playerConfigRetrieved;
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
@@ -192,7 +196,9 @@ public class KalturaPlayerBase {
         this.referrer = buildReferrer(context, initOptions.referrer);
         populatePartnersValues();
         this.ks = initOptions.ks;
-
+        if (OKHTTP.equals(PKHttpClientManager.getHttpProvider())) {
+            APIOkRequestsExecutor.setClientBuilder(PKHttpClientManager.newClientBuilder()); // share connection-pool with netkit
+        }
         registerPlugins(context);
         loadPlayer();
     }
@@ -306,6 +312,10 @@ public class KalturaPlayerBase {
 
         if (initOptions.allowClearLead != null) {
             pkPlayer.getSettings().allowClearLead(initOptions.allowClearLead);
+        }
+
+        if (initOptions.enableDecoderFallback != null) {
+            pkPlayer.getSettings().enableDecoderFallback(initOptions.enableDecoderFallback);
         }
 
         if (initOptions.secureSurface != null) {
