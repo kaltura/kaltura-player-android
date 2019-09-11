@@ -4,6 +4,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
+import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -44,6 +45,7 @@ public class PlayerInitOptions {
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
+    public PKVideoCodec preferredVideoCodec;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -243,6 +245,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions useTextureView(Boolean useTextureView) {
         if (useTextureView != null) {
             this.useTextureView = useTextureView;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setPreferredVideoCodec(PKVideoCodec videoCodec) {
+        if (videoCodec != null) {
+            this.preferredVideoCodec = videoCodec;
         }
         return this;
     }

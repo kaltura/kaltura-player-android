@@ -329,6 +329,9 @@ public class KalturaPlayer {
             pkPlayer.getSettings().useTextureView(initOptions.useTextureView);
         }
 
+        if (initOptions.preferredVideoCodec != null) {
+            pkPlayer.getSettings().setPreferredVideoCodec(initOptions.preferredVideoCodec);
+        }
     }
 
     @NonNull
