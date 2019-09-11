@@ -36,6 +36,7 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
+import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
@@ -52,8 +53,7 @@ public abstract class KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaPlayer");
 
-    public static final String DEFAULT_OVP_SERVER_URL =
-            BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
+    public static final String DEFAULT_OVP_SERVER_URL = "https://cdnapisec.kaltura.com/";
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
@@ -583,7 +583,7 @@ public abstract class KalturaPlayer {
         }
     }
 
-    public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    public void loadMedia(@NonNull OVPMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
 
         if (!isValidOVPPlayer())
             return;
@@ -600,8 +600,7 @@ public abstract class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final KalturaOvpMediaProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                            .setEntryId(mediaOptions.entryId).setUseApiCaptions(mediaOptions.useApiCaptions).setReferrer(referrer);
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
@@ -625,7 +624,7 @@ public abstract class KalturaPlayer {
         return true;
     }
 
-    public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
 
         if (!isValidOTTPlayerType())
             return;
@@ -642,32 +641,7 @@ public abstract class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                            .setAssetId(mediaOptions.assetId).setReferrer(referrer);
-
-                    if (mediaOptions.protocol != null) {
-                        provider.setProtocol(mediaOptions.protocol);
-                    }
-
-                    if (mediaOptions.fileIds != null) {
-                        provider.setFileIds(mediaOptions.fileIds);
-                    }
-
-                    if (mediaOptions.contextType != null) {
-                        provider.setContextType(mediaOptions.contextType);
-                    }
-
-                    if (mediaOptions.assetType != null) {
-                        provider.setAssetType(mediaOptions.assetType);
-                    }
-
-                    if (mediaOptions.formats != null) {
-                        provider.setFormats(mediaOptions.formats);
-                    }
-
-                    if (mediaOptions.assetReferenceType != null) {
-                        provider.setAssetReferenceType(mediaOptions.assetReferenceType);
-                    }
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
