@@ -15,7 +15,6 @@ import com.kaltura.playkit.PlayerEvent.*
 import com.kaltura.tvplayer.KalturaPlayer
 import com.kaltura.tvplayer.OfflineManager
 import com.kaltura.tvplayer.PlayerInitOptions
-import org.greenrobot.eventbus.EventBus
 import org.junit.Assert.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -54,7 +53,8 @@ class PlayActivity : AppCompatActivity() {
         val manager = OfflineManager.getInstance(this)
 
         intent.dataString?.let {
-            manager.sendAssetToPlayer(it, player)
+            val entry = manager.getLocalPlaybackEntry(it)
+            player.setMedia(entry)
         } ?: run {
             Toast.makeText(this, "No asset id given", LENGTH_LONG)
         }
@@ -119,7 +119,5 @@ class PlayActivity : AppCompatActivity() {
         super.onDestroy()
 
         player.destroy()
-
-        EventBus.getDefault().post(Destroyed())
     }
 }
