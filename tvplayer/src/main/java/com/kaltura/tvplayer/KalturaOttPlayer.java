@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.playkit.PKLog;
 
-public class KalturaOttPlayer extends KalturaPlayerBase {
+public class KalturaOttPlayer extends KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaOttPlayer");
 
@@ -21,7 +21,7 @@ public class KalturaOttPlayer extends KalturaPlayerBase {
         return new KalturaOttPlayer(context, initOptions);
     }
 
-    public static void initializeOTT(Context context, int partnerId, @NonNull String serverUrl) {
+    public static void initialize(Context context, int partnerId, @NonNull String serverUrl) {
 
         PlayerConfigManager.retrieve(context, Type.ott, partnerId, serverUrl, (config, error, freshness) -> {
             if (error != null) {

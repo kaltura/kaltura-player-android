@@ -48,13 +48,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-
-
-
-
-
-
-public class KalturaPlayerBase {
+public abstract class KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaPlayer");
 
@@ -100,7 +94,7 @@ public class KalturaPlayerBase {
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
 
-    KalturaPlayerBase(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
+    KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
         this.context = context;
         this.tvPlayerType = tvPlayerType;
@@ -515,27 +509,24 @@ public class KalturaPlayerBase {
         return startPosition;
     }
 
-    public KalturaPlayerBase setStartPosition(double startPosition) {
+    public void setStartPosition(double startPosition) {
         this.startPosition = startPosition;
-        return this;
     }
 
     public boolean isPreload() {
         return preload;
     }
 
-    public KalturaPlayerBase setPreload(boolean preload) {
+    public void setPreload(boolean preload) {
         this.preload = preload;
-        return this;
     }
 
     public boolean isAutoPlay() {
         return autoPlay;
     }
 
-    public KalturaPlayerBase setAutoPlay(boolean autoPlay) {
+    public void setAutoPlay(boolean autoPlay) {
         this.autoPlay = autoPlay;
-        return this;
     }
 
     public PlayerInitOptions getInitOptions() {
@@ -552,7 +543,7 @@ public class KalturaPlayerBase {
 
     public String getServerUrl() {
         if (initOptions.tvPlayerParams != null && !TextUtils.isEmpty(initOptions.tvPlayerParams.serviceUrl)) {
-            return safeServerUrl(tvPlayerType, initOptions.tvPlayerParams.serviceUrl, Type.ovp.equals(tvPlayerType) ? KalturaPlayerBase.DEFAULT_OVP_SERVER_URL : null);
+            return safeServerUrl(tvPlayerType, initOptions.tvPlayerParams.serviceUrl, Type.ovp.equals(tvPlayerType) ? KalturaPlayer.DEFAULT_OVP_SERVER_URL : null);
         }
         return null;
     }

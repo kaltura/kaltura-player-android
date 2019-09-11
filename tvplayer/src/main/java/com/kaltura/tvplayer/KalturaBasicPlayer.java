@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.kaltura.playkit.PKLog;
 
-public class KalturaBasicPlayer extends KalturaPlayerBase {
+public class KalturaBasicPlayer extends KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaBasicPlayer");
 

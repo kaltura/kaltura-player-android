@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKLog;
 
-public class KalturaOvpPlayer extends KalturaPlayerBase {
+public class KalturaOvpPlayer extends KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaOvpPlayer");
 
@@ -21,7 +21,7 @@ public class KalturaOvpPlayer extends KalturaPlayerBase {
         return new KalturaOvpPlayer(context, initOptions);
     }
 
-    public static void initializeOVP(Context context, int partnerId, @Nullable String serverUrl) {
+    public static void initialize(Context context, int partnerId, @Nullable String serverUrl) {
 
         PlayerConfigManager.retrieve(context, Type.ovp, partnerId, serverUrl, (config, error, freshness) -> {
             if (error != null) {
