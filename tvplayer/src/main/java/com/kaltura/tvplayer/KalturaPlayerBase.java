@@ -48,54 +48,11 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-class KalturaOvpPlayer extends KalturaPlayerBase {
-    private KalturaOvpPlayer(Context context, PlayerInitOptions initOptions) {
-        super(context, Type.ovp, initOptions);
-    }
 
-    public static void initialize(Context context, int partnerId) {
-        initializeOVP(context, partnerId, DEFAULT_OVP_SERVER_URL);
-    }
 
-    public static void initialize(Context context, int partnerId, String serverUrl) {
-        initializeOVP(context, partnerId, serverUrl);
-    }
 
-    public static KalturaOvpPlayer create(Context context, PlayerInitOptions initOptions) {
-        if (playerConfigRetrieved) {
-            initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
-        }
-        return new KalturaOvpPlayer(context, initOptions);
-    }
-}
 
-class KalturaOttPlayer extends KalturaPlayerBase {
-    private KalturaOttPlayer(Context context, PlayerInitOptions initOptions) {
-        super(context, Type.ott, initOptions);
-    }
 
-    static void initializeOTT(Context context, int partnerId, String serverUrl) {
-        initializeOTT(context, partnerId, serverUrl);
-    }
-
-    static KalturaOttPlayer create(Context context, PlayerInitOptions initOptions) {
-        if (playerConfigRetrieved) {
-            initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
-        }
-        return new KalturaOttPlayer(context, initOptions);
-    }
-}
-
-class KalturaBasicPlayer extends KalturaPlayerBase {
-
-    private KalturaBasicPlayer(Context context, PlayerInitOptions initOptions) {
-        super(context, Type.basic, initOptions);
-    }
-
-    static KalturaBasicPlayer create(Context context, PlayerInitOptions initOptions) {
-        return new KalturaBasicPlayer(context, initOptions);
-    }
-}
 
 public class KalturaPlayerBase {
 
@@ -142,46 +99,6 @@ public class KalturaPlayerBase {
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
-
-    static void initializeOVP(Context context, int partnerId, @Nullable String serverUrl) {
-
-        PlayerConfigManager.retrieve(context, Type.ovp, partnerId, serverUrl, (config, error, freshness) -> {
-            if (error != null) {
-                log.e("initialize KalturaPlayerType failed");
-            } else {
-                playerConfigRetrieved = true;
-            }
-        });
-    }
-
-    static void initializeOTT(Context context, int partnerId, @NonNull String serverUrl) {
-
-        PlayerConfigManager.retrieve(context, Type.ott, partnerId, serverUrl, (config, error, freshness) -> {
-            if (error != null) {
-                log.e("initialize KalturaPlayerType failed");
-            } else {
-                playerConfigRetrieved = true;
-            }
-        });
-    }
-
-    static KalturaPlayerBase createOVPPlayer(Context context, PlayerInitOptions initOptions) {
-        if (playerConfigRetrieved) {
-            initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
-        }
-        return new KalturaPlayerBase(context, Type.ovp, initOptions);
-    }
-
-    static KalturaPlayerBase createOTTPlayer(Context context, PlayerInitOptions initOptions) {
-        if (playerConfigRetrieved) {
-            initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
-        }
-        return new KalturaPlayerBase(context, Type.ott, initOptions);
-    }
-
-    static KalturaPlayerBase createBasicPlayer(Context context, PlayerInitOptions initOptions) {
-        return new KalturaPlayerBase(context, Type.basic, initOptions);
-    }
 
     KalturaPlayerBase(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
