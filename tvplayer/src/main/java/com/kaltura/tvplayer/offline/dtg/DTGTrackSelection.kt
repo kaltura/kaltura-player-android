@@ -324,7 +324,7 @@ class DTGTrackSelection(
         val tags = mutableSetOf<CodecTag>()
 
         for (c in codecList) {
-            val tag = c.split('.').first()
+            val tag = c.split('.').first().trim()
             tags.add(tag)
         }
 
