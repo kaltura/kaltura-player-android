@@ -68,7 +68,7 @@ public class PlayerConfigManager {
         refreshCache(context, playerType, partnerId, serverUrl, cachedConfig, onPlayerConfigLoaded);
     }
 
-    protected static TVPlayerParams retrieve(KalturaPlayer.Type tvPlayerType, int partnerId) {
+    static TVPlayerParams retrieve(KalturaPlayer.Type tvPlayerType, int partnerId) {
         final CachedConfig cachedConfig = loadFromCache(partnerId);
         if (cachedConfig != null) {
             if (KalturaPlayer.Type.ovp.equals(tvPlayerType)) {
@@ -179,11 +179,11 @@ public class PlayerConfigManager {
         }
     }
 
-    private static CachedConfig loadFromCache(int id) {
+    static CachedConfig loadFromCache(int partnerId) {
         if (dataDir == null) {
             return null;
         }
-        final File file = new File(dataDir, id + ".json");
+        final File file = new File(dataDir, partnerId + ".json");
         if (!file.exists()) {
             return null;
         }
@@ -202,7 +202,7 @@ public class PlayerConfigManager {
             }
 
         } catch (IOException e) {
-            log.e("Failed to open config " + id, e);
+            log.e("Failed to open config " + partnerId, e);
             return null;
         } finally {
             if (reader != null) {

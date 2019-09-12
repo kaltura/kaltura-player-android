@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Kaltura Player</string>
+    <string name="download_notification_channel">Download</string>
 </resources>
