@@ -19,9 +19,9 @@ import kotlin.collections.HashMap
 
 
 fun selectTracks(
-    assetFormat: AssetFormat,
-    trackSelector: TrackSelector,
-    prefs: SelectionPrefs
+        assetFormat: AssetFormat,
+        trackSelector: TrackSelector,
+        prefs: SelectionPrefs
 ) {
     DTGTrackSelection(assetFormat, prefs, trackSelector).selectTracks()
 }
@@ -29,9 +29,9 @@ fun selectTracks(
 private val log = PKLog.get("DTGTrackSelection")
 
 class DTGTrackSelection(
-    private val assetFormat: AssetFormat,
-    private val prefs: SelectionPrefs,
-    private val trackSelector: TrackSelector
+        private val assetFormat: AssetFormat,
+        private val prefs: SelectionPrefs,
+        private val trackSelector: TrackSelector
 ) {
 
     private val allowedVideoCodecs = videoCodecs.filter { it.isAllowed() }
@@ -267,9 +267,9 @@ class DTGTrackSelection(
     }
 
     private fun filterTracks(
-        tracks: List<Track>,
-        comparator: Comparator<Track?>,
-        predicate: (Track) -> Boolean
+            tracks: List<Track>,
+            comparator: Comparator<Track?>,
+            predicate: (Track) -> Boolean
     ): List<Track> {
         if (tracks.size < 2) {
             return tracks
@@ -351,16 +351,16 @@ class DTGTrackSelection(
 
 
     private fun fullVideoCodecPriority() : List<CodecTag> =
-        fullCodecPriority(
-            requestedTags = (prefs.videoCodecs ?: listOf()).map { it.tag() },
-            allowedTags = allowedVideoCodecTags
-        )
+            fullCodecPriority(
+                    requestedTags = (prefs.videoCodecs ?: listOf()).map { it.tag() },
+                    allowedTags = allowedVideoCodecTags
+            )
 
     private fun fullAudioCodecPriority() : List<CodecTag> =
-        fullCodecPriority(
-            requestedTags = (prefs.audioCodecs ?: listOf()).map { it.tag() },
-            allowedTags = allowedAudioCodecTags
-        )
+            fullCodecPriority(
+                    requestedTags = (prefs.audioCodecs ?: listOf()).map { it.tag() },
+                    allowedTags = allowedAudioCodecTags
+            )
 
     private fun fullCodecPriority(requestedTags: List<CodecTag>, allowedTags: List<CodecTag>) : List<CodecTag> {
         val codecPriority = ArrayList(requestedTags)
