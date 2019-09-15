@@ -151,7 +151,7 @@ class DTGTrackSelection(
         val groupId = selectedVideoTrack?.audioGroupId
 
         for (track in tracks) {
-            if (groupId != null && track.audioGroupId != null && track.audioGroupId != groupId) {
+            if (type == AUDIO && groupId != null && track.audioGroupId != null && track.audioGroupId != groupId) {
                 continue    // can't use this track
             }
 
