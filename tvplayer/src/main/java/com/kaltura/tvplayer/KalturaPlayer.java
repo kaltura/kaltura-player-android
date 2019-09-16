@@ -36,6 +36,7 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
+import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
@@ -48,17 +49,16 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-public class KalturaPlayer {
+public abstract class KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaPlayer");
 
-    public static final String DEFAULT_OVP_SERVER_URL =
-            BuildConfig.DEBUG ? "http://cdnapi.kaltura.com/" : "https://cdnapisec.kaltura.com/";
+    public static final String DEFAULT_OVP_SERVER_URL = "https://cdnapisec.kaltura.com/";
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
 
-    private static boolean playerConfigRetrieved;
+    static boolean playerConfigRetrieved;
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
     public static ErrorElement KalturaPlayerNotInitializedError = new ErrorElement("KalturaPlayerNotInitializedError", KALTURA_PLAYER_INIT_EXCEPTION, 777);
 
@@ -94,47 +94,7 @@ public class KalturaPlayer {
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
 
-    public static void initializeOVP(Context context, int partnerId, @Nullable String serverUrl) {
-
-        PlayerConfigManager.retrieve(context, Type.ovp, partnerId, serverUrl, (config, error, freshness) -> {
-            if (error != null) {
-                log.e("initialize KalturaPlayerType failed");
-            } else {
-                playerConfigRetrieved = true;
-            }
-        });
-    }
-
-    public static void initializeOTT(Context context, int partnerId, @NonNull String serverUrl) {
-
-        PlayerConfigManager.retrieve(context, Type.ott, partnerId, serverUrl, (config, error, freshness) -> {
-            if (error != null) {
-                log.e("initialize KalturaPlayerType failed");
-            } else {
-                playerConfigRetrieved = true;
-            }
-        });
-    }
-
-    public static KalturaPlayer createOVPPlayer(Context context, PlayerInitOptions initOptions) {
-        if (playerConfigRetrieved) {
-            initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
-        }
-        return new KalturaPlayer(context, Type.ovp, initOptions);
-    }
-
-    public static KalturaPlayer createOTTPlayer(Context context, PlayerInitOptions initOptions) {
-        if (playerConfigRetrieved) {
-            initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
-        }
-        return new KalturaPlayer(context, Type.ott, initOptions);
-    }
-
-    public static KalturaPlayer createBasicPlayer(Context context, PlayerInitOptions initOptions) {
-        return new KalturaPlayer(context, Type.basic, initOptions);
-    }
-
-    protected KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
+    KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
         this.context = context;
         this.tvPlayerType = tvPlayerType;
@@ -549,27 +509,24 @@ public class KalturaPlayer {
         return startPosition;
     }
 
-    public KalturaPlayer setStartPosition(double startPosition) {
+    public void setStartPosition(double startPosition) {
         this.startPosition = startPosition;
-        return this;
     }
 
     public boolean isPreload() {
         return preload;
     }
 
-    public KalturaPlayer setPreload(boolean preload) {
+    public void setPreload(boolean preload) {
         this.preload = preload;
-        return this;
     }
 
     public boolean isAutoPlay() {
         return autoPlay;
     }
 
-    public KalturaPlayer setAutoPlay(boolean autoPlay) {
+    public void setAutoPlay(boolean autoPlay) {
         this.autoPlay = autoPlay;
-        return this;
     }
 
     public PlayerInitOptions getInitOptions() {
@@ -626,7 +583,7 @@ public class KalturaPlayer {
         }
     }
 
-    public void loadMedia(OVPMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    public void loadMedia(@NonNull OVPMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
 
         if (!isValidOVPPlayer())
             return;
@@ -643,8 +600,7 @@ public class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final KalturaOvpMediaProvider provider = new KalturaOvpMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                            .setEntryId(mediaOptions.entryId).setUseApiCaptions(mediaOptions.useApiCaptions).setReferrer(referrer);
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
@@ -668,7 +624,7 @@ public class KalturaPlayer {
         return true;
     }
 
-    public void loadMedia(OTTMediaOptions mediaOptions, final OnEntryLoadListener listener) {
+    public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
 
         if (!isValidOTTPlayerType())
             return;
@@ -685,32 +641,7 @@ public class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final PhoenixMediaProvider provider = new PhoenixMediaProvider(getServerUrl(), getPartnerId(), getKS())
-                            .setAssetId(mediaOptions.assetId).setReferrer(referrer);
-
-                    if (mediaOptions.protocol != null) {
-                        provider.setProtocol(mediaOptions.protocol);
-                    }
-
-                    if (mediaOptions.fileIds != null) {
-                        provider.setFileIds(mediaOptions.fileIds);
-                    }
-
-                    if (mediaOptions.contextType != null) {
-                        provider.setContextType(mediaOptions.contextType);
-                    }
-
-                    if (mediaOptions.assetType != null) {
-                        provider.setAssetType(mediaOptions.assetType);
-                    }
-
-                    if (mediaOptions.formats != null) {
-                        provider.setFormats(mediaOptions.formats);
-                    }
-
-                    if (mediaOptions.assetReferenceType != null) {
-                        provider.setAssetReferenceType(mediaOptions.assetReferenceType);
-                    }
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
