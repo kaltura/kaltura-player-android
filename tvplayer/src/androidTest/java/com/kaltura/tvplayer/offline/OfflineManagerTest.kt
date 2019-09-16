@@ -10,6 +10,7 @@ import android.os.Looper
 import android.widget.Toast
 import androidx.test.platform.app.InstrumentationRegistry
 import com.kaltura.playkit.PKLog
+import com.kaltura.tvplayer.KalturaPlayer
 import com.kaltura.tvplayer.OfflineManager
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState.completed
 import com.kaltura.tvplayer.OfflineManager.SelectionPrefs
@@ -141,13 +142,9 @@ class OfflineManagerTest {
     ) {
         om.removeAsset(item.id())
         if (item is KalturaItem) {
-            om.setKalturaParams(item.partnerId, KalturaPlayer.Type.ovp)
+            om.setKalturaParams(KalturaPlayer.Type.ovp, item.partnerId)
             om.setKalturaServerUrl(item.serverUrl)
         }
-
-//        val latch = CountDownLatch(1)
-
-//        val latch = downloadLatch
 
         downloadLatch = CountDownLatch(1)
 
@@ -159,15 +156,11 @@ class OfflineManagerTest {
             ) {
                 assertEquals(expectedEstSize, assetInfo.estimatedSize)
                 om.startAssetDownload(assetInfo)
-
-//                latch.countDown()
             }
 
             override fun onPrepareError(assetId: String, error: Exception) {
                 fail("Prepare failed with $error")
                 downloadComplete(error)
-
-//                latch.countDown()
             }
         }
 
@@ -178,8 +171,6 @@ class OfflineManagerTest {
                 om.prepareAsset(it, prefs, callback)
             } ?: downloadComplete(Exception())
         }
-
-//        latch.await()//5, TimeUnit.SECONDS)
 
         downloadLatch?.await()
         assertNull("Download has failed: $downloadError", downloadError)
