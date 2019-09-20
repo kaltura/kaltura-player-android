@@ -19,6 +19,8 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.Formatter;
 import java.util.Locale;
 
+import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Live;
+
 
 public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeekBarChangeListener {
 
@@ -108,16 +110,23 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 bufferedPosition = player.getBufferedPosition();
             }
         }
-        if(duration != Consts.TIME_UNSET){
-            tvTime.setText(stringForTime(duration));
+
+        if (player != null && player.getMediaEntry().getMediaType().equals(Live)) {
+            tvTime.setText("Live  ");
+            tvCurTime.setVisibility(INVISIBLE);
+            seekBar.setVisibility(INVISIBLE);
+        } else {
+            if(duration != Consts.TIME_UNSET){
+                tvTime.setText(stringForTime(duration));
+            }
+
+            if (!dragging && position != Consts.POSITION_UNSET && duration != Consts.TIME_UNSET) {
+                tvCurTime.setText(stringForTime(position));
+                seekBar.setProgress(progressBarValue(position));
+            }
+            seekBar.setSecondaryProgress(progressBarValue(bufferedPosition));
         }
 
-        if (!dragging && position != Consts.POSITION_UNSET && duration != Consts.TIME_UNSET) {
-            tvCurTime.setText(stringForTime(position));
-            seekBar.setProgress(progressBarValue(position));
-        }
-
-        seekBar.setSecondaryProgress(progressBarValue(bufferedPosition));
         // Remove scheduled updates.
         removeCallbacks(updateProgressAction);
         // Schedule an update if necessary.
