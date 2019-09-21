@@ -9,6 +9,7 @@ import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
@@ -45,7 +46,7 @@ public class PlayerInitOptions {
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
-    public PKVideoCodec preferredVideoCodec;
+    public VideoCodecSettings videoCodecSettings;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -249,9 +250,9 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setPreferredVideoCodec(PKVideoCodec videoCodec) {
-        if (videoCodec != null) {
-            this.preferredVideoCodec = videoCodec;
+    public PlayerInitOptions setVideoCodecSettings(VideoCodecSettings videoCodecSettings) {
+        if (videoCodecSettings != null) {
+            this.videoCodecSettings = videoCodecSettings;
         }
         return this;
     }

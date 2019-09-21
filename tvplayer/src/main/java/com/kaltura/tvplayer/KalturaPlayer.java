@@ -38,8 +38,6 @@ import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
-import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
-import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.utils.ConfigResolver;
@@ -289,8 +287,8 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().useTextureView(initOptions.useTextureView);
         }
 
-        if (initOptions.preferredVideoCodec != null) {
-            pkPlayer.getSettings().setPreferredVideoCodec(initOptions.preferredVideoCodec);
+        if (initOptions.videoCodecSettings != null) {
+            pkPlayer.getSettings().setPreferredVideoCodecSettings(initOptions.videoCodecSettings);
         }
     }
 
