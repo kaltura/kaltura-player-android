@@ -289,6 +289,9 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().useTextureView(initOptions.useTextureView);
         }
 
+        if (initOptions.isTunneledAudioPlayback !=null) {
+            pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.isTunneledAudioPlayback);
+        }
     }
 
     @NonNull
