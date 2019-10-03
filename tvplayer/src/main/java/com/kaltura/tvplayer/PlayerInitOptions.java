@@ -44,6 +44,7 @@ public class PlayerInitOptions {
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
+    public Boolean isTunneledAudioPlayback;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -243,6 +244,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions useTextureView(Boolean useTextureView) {
         if (useTextureView != null) {
             this.useTextureView = useTextureView;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setTunneledAudioPlayback(Boolean isTunneledAudioPlayback) {
+        if (isTunneledAudioPlayback != null) {
+            this.isTunneledAudioPlayback = isTunneledAudioPlayback;
         }
         return this;
     }
