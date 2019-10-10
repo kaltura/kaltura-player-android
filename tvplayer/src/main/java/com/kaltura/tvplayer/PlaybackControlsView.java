@@ -19,6 +19,7 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.Formatter;
 import java.util.Locale;
 
+import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.DvrLive;
 import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Live;
 
 
@@ -27,6 +28,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private static final PKLog log = PKLog.get("PlaybackControlsView");
     private static final int PROGRESS_BAR_MAX = 100;
     private static final int UPDATE_TIME_INTERVAL = 300; //1000
+    private static final int LIVE_EDGE = 60000; // in milliseconds
 
     private KalturaPlayer player;
     private PlayerState playerState;
@@ -34,9 +36,10 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private Formatter formatter;
     private StringBuilder formatBuilder;
 
+
     private ImageButton playPauseToggle;
     private SeekBar seekBar;
-    private TextView tvCurTime, tvTime;
+    private TextView tvCurTime, tvTime, tvLiveIndicator;
 
     private boolean dragging = false;
 
@@ -88,8 +91,8 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
         tvCurTime = this.findViewById(R.id.time_current);
         tvTime = this.findViewById(R.id.time);
+        tvLiveIndicator = this.findViewById(R.id.liveIndicator);
     }
-
 
     private void updateProgress() {
         long duration = Consts.TIME_UNSET;
@@ -112,18 +115,30 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         }
 
         if (player != null && player.getMediaEntry().getMediaType().equals(Live)) {
-            tvTime.setText("Live  ");
+            tvLiveIndicator.setVisibility(VISIBLE);
             tvCurTime.setVisibility(INVISIBLE);
+            tvTime.setVisibility(View.INVISIBLE);
             seekBar.setVisibility(INVISIBLE);
         } else {
             if(duration != Consts.TIME_UNSET){
                 tvTime.setText(stringForTime(duration));
             }
-
             if (!dragging && position != Consts.POSITION_UNSET && duration != Consts.TIME_UNSET) {
                 tvCurTime.setText(stringForTime(position));
                 seekBar.setProgress(progressBarValue(position));
             }
+
+            if (player != null && player.getMediaEntry().getMediaType().equals(DvrLive)) {
+                tvLiveIndicator.setVisibility(VISIBLE);
+                if (!dragging && position > duration - LIVE_EDGE) {
+                    tvLiveIndicator.setBackgroundResource(R.drawable.red_background);
+                } else {
+                    tvLiveIndicator.setBackgroundResource(R.drawable.grey_background);
+                }
+            } else {
+                tvLiveIndicator.setVisibility(GONE);
+            }
+
             seekBar.setSecondaryProgress(progressBarValue(bufferedPosition));
         }
 
