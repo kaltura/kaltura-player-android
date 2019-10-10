@@ -28,7 +28,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private static final PKLog log = PKLog.get("PlaybackControlsView");
     private static final int PROGRESS_BAR_MAX = 100;
     private static final int UPDATE_TIME_INTERVAL = 300; //1000
-    private static final int LIVE_EDGE = 60000; // in milliseconds
+    private static final int LIVE_EDGE_THRESHOLD = 60000; // in milliseconds
 
     private KalturaPlayer player;
     private PlayerState playerState;
@@ -42,6 +42,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private TextView tvCurTime, tvTime, tvLiveIndicator;
 
     private boolean dragging = false;
+
 
     private Runnable updateProgressAction = new Runnable() {
         @Override
@@ -130,7 +131,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
             if (player != null && player.getMediaEntry().getMediaType().equals(DvrLive)) {
                 tvLiveIndicator.setVisibility(VISIBLE);
-                if (!dragging && position > duration - LIVE_EDGE) {
+                if (!dragging && position > (duration - LIVE_EDGE_THRESHOLD)) {
                     tvLiveIndicator.setBackgroundResource(R.drawable.red_background);
                 } else {
                     tvLiveIndicator.setBackgroundResource(R.drawable.grey_background);
