@@ -223,29 +223,28 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         if (player == null) {
             return;
         }
-        if(player != null) {
-            AdController adController = player.getController(AdController.class);
-            if (adController != null && adController.isAdDisplayed()) {
-                if (adController.isAdPlaying()) {
-                    adController.pause();
-                    setPlayImage();
-                } else {
-                    adController.play();
-                    setPauseImage();
-                }
-            } else {
-                if (player.isPlaying()) {
-                    player.pause();
-                    setPlayImage();
 
+        AdController adController = player.getController(AdController.class);
+        if (adController != null && adController.isAdDisplayed()) {
+            if (adController.isAdPlaying()) {
+                adController.pause();
+                setPlayImage();
+            } else {
+                adController.play();
+                setPauseImage();
+            }
+        } else {
+            if (player.isPlaying()) {
+                player.pause();
+                setPlayImage();
+
+            } else {
+                if (player.getCurrentPosition() > 0 && player.getCurrentPosition() >= player.getDuration()) {
+                    player.replay();
                 } else {
-                    if (player.getCurrentPosition() >= 0 && player.getCurrentPosition() >= player.getDuration()) {
-                        player.replay();
-                    } else {
-                        player.play();
-                    }
-                    setPauseImage();
+                    player.play();
                 }
+                setPauseImage();
             }
         }
     }
