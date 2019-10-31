@@ -86,7 +86,7 @@ public abstract class KalturaPlayer {
     private static Handler mainHandler = new Handler(Looper.getMainLooper());
     private boolean autoPlay;
     private boolean preload;
-    private double startPosition;
+    private Long startPosition;
     private List<PKExternalSubtitle> externalSubtitles;
     private View view;
     private PKMediaEntry mediaEntry;
@@ -289,6 +289,9 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().useTextureView(initOptions.useTextureView);
         }
 
+        if (initOptions.isTunneledAudioPlayback != null) {
+            pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.isTunneledAudioPlayback);
+        }
     }
 
     @NonNull
@@ -367,7 +370,7 @@ public abstract class KalturaPlayer {
 
         final PKMediaConfig config = new PKMediaConfig()
                 .setMediaEntry(mediaEntry)
-                .setStartPosition((long) (startPosition));
+                .setStartPosition(startPosition);
 
         pkPlayer.prepare(config);
         prepareState = PrepareState.preparing;
@@ -505,11 +508,11 @@ public abstract class KalturaPlayer {
         return pkPlayer.getSessionId();
     }
 
-    public double getStartPosition() {
+    public Long getStartPosition() {
         return startPosition;
     }
 
-    public void setStartPosition(double startPosition) {
+    public void setStartPosition(Long startPosition) {
         this.startPosition = startPosition;
     }
 

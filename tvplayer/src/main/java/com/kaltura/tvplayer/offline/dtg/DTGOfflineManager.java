@@ -208,10 +208,19 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         final File localFile = cm.getLocalFile(assetId);
 
+        if (localFile == null) {
+            log.w("registerDrmAsset: Asset was removed before register: " + assetId);
+            return;
+        }
+
         if (!localFile.canRead()) {
-            if (!allowFileNotFound) {
+            if (allowFileNotFound) {
+                log.w("registerDrmAsset: file not found (non-fatal)");
+            } else {
+                log.e("registerDrmAsset: file not found");
                 postEvent(() -> getListener().onRegisterError(assetId, new FileNotFoundException(localFile.getAbsolutePath())));
             }
+
             return;
         }
 
