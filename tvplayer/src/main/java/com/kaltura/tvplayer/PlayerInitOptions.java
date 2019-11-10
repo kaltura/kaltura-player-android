@@ -110,15 +110,10 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setPreferredMediaFormat(String preferredMediaFormat) {
+    public PlayerInitOptions setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         if (preferredMediaFormat != null) {
-            if (preferredMediaFormat.equals("progressive")) {
-                preferredMediaFormat = "mp4";
-            }
-            this.preferredMediaFormat = PKMediaFormat.valueOf(preferredMediaFormat);
-        } else {
-            this.preferredMediaFormat = PKMediaFormat.dash;
-        }
+            this.preferredMediaFormat = preferredMediaFormat;
+        } 
         return this;
     }
 
