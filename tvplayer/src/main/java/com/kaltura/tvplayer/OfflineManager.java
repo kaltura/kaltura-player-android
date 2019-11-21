@@ -21,6 +21,8 @@ public abstract class OfflineManager {
 
     protected String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;
     protected Integer kalturaPartnerId;
+    protected String widgetId;
+    protected String referrer;
 
     public static @NonNull OfflineManager getInstance(Context context) {
         return DTGOfflineManager.getInstance(context);
@@ -36,6 +38,14 @@ public abstract class OfflineManager {
 
     public void setKalturaServerUrl(String url) {
         this.kalturaServerUrl = url;
+    }
+
+    public void setReferrer(String referrer) {
+        this.referrer = referrer;
+    }
+
+    public void setWidgetId(String widgetId) {
+        this.widgetId = widgetId;
     }
 
     /**

@@ -21,6 +21,7 @@ public class PlayerInitOptions {
     public Boolean autoplay = true;
     public Boolean preload = true;
     public String referrer;
+    public String widgetId;
     public PKTrackConfig.Mode audioLanguageMode;
     public String audioLanguage;
     public PKTrackConfig.Mode textLanguageMode;
@@ -83,6 +84,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setReferrer(String referrer) {
         if (referrer != null) {
             this.referrer = referrer;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setWidgetId(String widgetId) {
+        if (widgetId != null) {
+            this.widgetId = widgetId;
         }
         return this;
     }

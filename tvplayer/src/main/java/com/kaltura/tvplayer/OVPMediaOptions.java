@@ -14,9 +14,9 @@ public class OVPMediaOptions extends MediaOptions {
     public OVPMediaOptions() {}
 
     @Override
-    public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String ks, String referrer) {
+    public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String widgetId, String ks, String referrer) {
         return new KalturaOvpMediaProvider(serverUrl, partnerId, ks)
-                .setEntryId(this.entryId).setUseApiCaptions(this.useApiCaptions).setReferrer(referrer);
+                .setEntryId(this.entryId).setUseApiCaptions(this.useApiCaptions).setWidgetId(widgetId).setReferrer(referrer);
     }
 }
 
