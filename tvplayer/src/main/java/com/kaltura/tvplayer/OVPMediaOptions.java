@@ -11,7 +11,7 @@ public class OVPMediaOptions extends MediaOptions {
     public OVPMediaOptions(String entryId) {
         this.entryId = entryId;
     }
-    
+
     public OVPMediaOptions() {}
 
     @Override
