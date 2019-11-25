@@ -12,6 +12,6 @@ public abstract class MediaOptions {
     public Long startPosition;
     public List<PKExternalSubtitle> externalSubtitles;
 
-    public abstract MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String widgetId, String ks, String referrer);
+    public abstract MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String ks, String referrer);
 }
 

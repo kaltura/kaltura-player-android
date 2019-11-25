@@ -16,8 +16,9 @@ public class OTTMediaOptions extends MediaOptions {
     public String[] formats;
     public String[] fileIds;
 
+
     @Override
-    public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String widgetId /* not used in OTT */, String ks, String referrer) {
+    public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String ks, String referrer) {
         OTTMediaOptions mediaOptions = this;
         final PhoenixMediaProvider provider = new PhoenixMediaProvider(serverUrl, partnerId, ks)
                 .setAssetId(mediaOptions.assetId).setReferrer(referrer);

@@ -81,7 +81,6 @@ public abstract class KalturaPlayer {
     private String ks;
 
     protected final String referrer;
-    protected final String widgetId;
     private final Context context;
     private Player pkPlayer;
     private static Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -106,7 +105,6 @@ public abstract class KalturaPlayer {
             this.preload = true; // autoplay implies preload
         }
         this.referrer = buildReferrer(context, initOptions.referrer);
-        this.widgetId = initOptions.widgetId;
         populatePartnersValues();
         this.ks = initOptions.ks;
         if (OKHTTP.equals(PKHttpClientManager.getHttpProvider())) {
@@ -605,7 +603,7 @@ public abstract class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), widgetId, getKS(), referrer);
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
@@ -646,7 +644,7 @@ public abstract class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), null, getKS(), referrer);
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
