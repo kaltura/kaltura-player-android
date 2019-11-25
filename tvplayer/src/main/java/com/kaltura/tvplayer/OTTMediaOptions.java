@@ -15,8 +15,7 @@ public class OTTMediaOptions extends MediaOptions {
     public String protocol = HTTPS;
     public String[] formats;
     public String[] fileIds;
-
-
+    
     @Override
     public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String ks, String referrer) {
         OTTMediaOptions mediaOptions = this;
