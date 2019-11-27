@@ -5,7 +5,6 @@ import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 
 public class OVPMediaOptions extends MediaOptions {
     public String entryId;
-    public String widgetId;
     public boolean useApiCaptions;
 
     public OVPMediaOptions(String entryId) {
@@ -17,7 +16,7 @@ public class OVPMediaOptions extends MediaOptions {
     @Override
     public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String ks, String referrer) {
         return new KalturaOvpMediaProvider(serverUrl, partnerId, ks)
-                .setEntryId(this.entryId).setUseApiCaptions(this.useApiCaptions).setWidgetId(widgetId).setReferrer(referrer);
+                .setEntryId(this.entryId).setUseApiCaptions(this.useApiCaptions).setReferrer(referrer);
     }
 }
 
