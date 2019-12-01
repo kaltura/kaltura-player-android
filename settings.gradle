@@ -6,6 +6,8 @@ include ':tvplayer'
 //project(':providers').projectDir = new File(settingsDir,'../playkit-android-providers/mediaproviders')
 //include ':kava'
 //project(':kava').projectDir = new File(settingsDir,'../playkit-android-kava/kavaplugin')
+//include ':fbads'
+//project(':fbads').projectDir = new File(settingsDir,'../playkit-android-fb-ads/fbadsplugin')
 //include ':dtglib'
 //project(':dtglib').projectDir = new File(settingsDir,'../playkit-dtg-android/dtglib')
 
