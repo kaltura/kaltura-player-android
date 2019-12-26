@@ -6,6 +6,8 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.view.Surface;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -441,6 +443,20 @@ public abstract class KalturaPlayer {
         }
         if(pkPlayer != null) {
             pkPlayer.play();
+        }
+    }
+
+    public void setSurface(Surface surface) {
+
+        if(pkPlayer != null) {
+            pkPlayer.setVideoSurface(surface);
+        }
+    }
+
+    public void setVideoSurfaceView(SurfaceView surfaceView) {
+
+        if(pkPlayer != null) {
+            pkPlayer.setVideoSurfaceView(surfaceView);
         }
     }
 

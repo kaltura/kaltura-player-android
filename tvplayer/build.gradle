@@ -31,10 +31,15 @@ dependencies {
 
 
     api 'com.kaltura:playkit-android:1db48be'
-    api 'com.kaltura:playkit-android-providers:de194ca'
-
-    api 'com.kaltura:playkit-android-kava:ae05a4c'
-    api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT'
+    api 'com.kaltura:playkit-android-providers:de194ca', {
+        exclude group: 'com.kaltura.playkit', module: 'playkit'
+    }
+    api 'com.kaltura:playkit-android-kava:ae05a4c', {
+        exclude group: 'com.kaltura.playkit', module: 'playkit'
+    }
+    api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT', {
+        exclude group: 'com.kaltura.playkit', module: 'playkit'
+    }
 
 //    api project(":playkit")
 //    api project(":providers")
