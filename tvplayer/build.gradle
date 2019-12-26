@@ -29,9 +29,11 @@ android {
 
 dependencies {
 
-    api 'com.kaltura:playkit-android:dev-SNAPSHOT'
-    api 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
-    api 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
+
+    api 'com.kaltura:playkit-android:1db48be'
+    api 'com.kaltura:playkit-android-providers:de194ca'
+
+    api 'com.kaltura:playkit-android-kava:ae05a4c'
     api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT'
 
 //    api project(":playkit")
