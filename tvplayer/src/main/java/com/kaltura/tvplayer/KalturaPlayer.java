@@ -446,7 +446,7 @@ public abstract class KalturaPlayer {
         }
     }
 
-    public void setSurface(Surface surface) {
+    public void setVideoSurface(Surface surface) {
 
         if(pkPlayer != null) {
             pkPlayer.setVideoSurface(surface);
