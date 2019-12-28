@@ -31,7 +31,7 @@ dependencies {
 
 
 
-    api 'com.kaltura:playkit-android:dbe03ff'
+    api 'com.kaltura:playkit-android:e80944a'
     api 'com.kaltura:playkit-android-providers:de194ca', {
         exclude group: 'com.kaltura.playkit', module: 'playkit'
     }
