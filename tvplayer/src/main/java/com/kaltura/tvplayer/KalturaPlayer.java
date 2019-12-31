@@ -35,6 +35,7 @@ import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
+import com.kaltura.playkit.plugins.playback.KalturaPlaybackRequestAdapter;
 import com.kaltura.playkit.plugins.playback.KalturaUDRMLicenseRequestAdapter;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
@@ -200,7 +201,7 @@ public abstract class KalturaPlayer {
 
     private void updatePlayerSettings() {
         if (initOptions.referrer != null) {
-            PlayManifestRequestAdapter.install(pkPlayer, initOptions.referrer);
+            KalturaPlaybackRequestAdapter.install(pkPlayer, initOptions.referrer);
             KalturaUDRMLicenseRequestAdapter.install(pkPlayer, initOptions.referrer);
         }
 
