@@ -9,7 +9,7 @@ import com.kaltura.tvplayer.OVPMediaOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OVPPlaylistIdOptions extends PlaylistOptions {
+public class OVPPlaylistIdOptions extends ProviderPlaylistOptions {
     public String playlistId;
 
     public OVPPlaylistIdOptions(String playlistId) {

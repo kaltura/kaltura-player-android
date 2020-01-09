@@ -10,6 +10,7 @@ import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
+import com.kaltura.tvplayer.PKBasicPlaylist;
 
 import java.util.ArrayList;
 
@@ -19,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class ProvidersPlaylistController implements PlaylistController {
+public class PKPlaylistController implements PlaylistController {
 
     private static final PKLog log = PKLog.get("PlaylistController");
     private static Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -34,7 +35,7 @@ public class ProvidersPlaylistController implements PlaylistController {
     private List<PKPlaylistMedia> shuffledEntries;
     private Map<Integer, PKMediaEntry> loadedMediasMap;
 
-    public ProvidersPlaylistController(KalturaPlayer kalturaPlayer, PKPlaylist playlist) {
+    public PKPlaylistController(KalturaPlayer kalturaPlayer, PKPlaylist playlist) {
         this.kalturaPlayer = kalturaPlayer;
         this.playlist = playlist;
         shuffledEntries = new ArrayList<>();
@@ -58,7 +59,10 @@ public class ProvidersPlaylistController implements PlaylistController {
 
     @Override
     public void playItem(int index) {
-        if (playlist == null || playlist.getMediaList() == null) {
+
+        if (playlist instanceof PKBasicPlaylist && ((PKBasicPlaylist) playlist).getPlaylistMediaEntryList() == null) {
+            return;
+        } else if (!(playlist instanceof PKBasicPlaylist) && (playlist == null ||  playlist.getMediaList() == null)) {
             return;
         }
 
@@ -67,7 +71,7 @@ public class ProvidersPlaylistController implements PlaylistController {
             return;
         }
 
-        if (index >= 0 && index < playlist.getMediaList().size()) {
+        if (isValidPlaylistIndex(index)) {
             currentPlayingIndex = index;
             if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ovp) {
                 OVPMediaOptions ovpMediaOptions;
@@ -84,11 +88,12 @@ public class ProvidersPlaylistController implements PlaylistController {
                         ovpMediaOptions.useApiCaptions =  ovpPlaylistOptions.useApiCaptions;
                     }
                 } else { // PlaylistId case
+                    OVPPlaylistIdOptions ovpPlaylistIdOptions = (OVPPlaylistIdOptions) playlistOptions;
                     ovpMediaOptions = new OVPMediaOptions();
                     ovpMediaOptions.entryId = playlist.getMediaList().get(index).getId();
                     ovpMediaOptions.ks = (playlist.getMediaList().get(index).getKs() != null) ? playlist.getMediaList().get(index).getKs() : playlist.getKs();
                     ovpMediaOptions.referrer = kalturaPlayer.getInitOptions().referrer;
-                    ovpMediaOptions.useApiCaptions = playlistOptions.useApiCaptions;
+                    ovpMediaOptions.useApiCaptions = ovpPlaylistIdOptions.useApiCaptions;
                 }
                 kalturaPlayer.loadMedia(ovpMediaOptions, (entry, loadError) -> {
                     if (loadError != null) {
@@ -119,9 +124,26 @@ public class ProvidersPlaylistController implements PlaylistController {
                     }
                 });
             } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic) {
-
+                BasicPlaylistOptions basicPlaylistOptions = (BasicPlaylistOptions) playlistOptions;
+                PKMediaEntry pkMediaEntry = getNextMediaOptions(index, basicPlaylistOptions);
+                loadedMediasMap.put(index, pkMediaEntry);
+                kalturaPlayer.setMedia(pkMediaEntry, 0L);
             }
         }
+    }
+
+    private boolean isValidPlaylistIndex(int index) {
+        boolean isValidIndex;
+        if (playlist instanceof PKBasicPlaylist) {
+            isValidIndex = index >= 0 && index < ((PKBasicPlaylist) playlist).getPlaylistMediaEntryList().size();
+        } else {
+            isValidIndex = index >= 0 && index < playlist.getMediaList().size();
+        }
+        return isValidIndex;
+    }
+
+    private PKMediaEntry getNextMediaOptions(int index, BasicPlaylistOptions basicPlaylistOptions) {
+        return basicPlaylistOptions.pkMediaEntryList.get(index);
     }
 
     private OVPMediaOptions getNextMediaOptions(int index, OVPPlaylistOptions ovpPlaylistOptions) {

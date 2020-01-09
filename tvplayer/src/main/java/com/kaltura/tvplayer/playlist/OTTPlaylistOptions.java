@@ -4,16 +4,13 @@ import com.kaltura.playkit.providers.PlaylistMetadata;
 import com.kaltura.playkit.providers.PlaylistProvider;
 import com.kaltura.playkit.providers.ott.OTTMediaAsset;
 import com.kaltura.playkit.providers.ott.PhoenixPlaylistProvider;
-import com.kaltura.playkit.providers.ovp.KalturaOvpPlaylistProvider;
-import com.kaltura.playkit.providers.ovp.OVPMediaAsset;
 import com.kaltura.tvplayer.OTTMediaOptions;
-import com.kaltura.tvplayer.OVPMediaOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class OTTPlaylistOptions extends PlaylistOptions {
+public class OTTPlaylistOptions extends ProviderPlaylistOptions {
     public PlaylistMetadata playlistMetadata;
     public List<OTTMediaOptions> ottMediaOptionsList;
 
