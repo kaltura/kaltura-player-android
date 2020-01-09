@@ -28,5 +28,7 @@ public interface PlaylistController {
 
     void reset();
 
+    void release();
+
     void setPlaylistOptions(PlaylistOptions playlistOptions);
 }

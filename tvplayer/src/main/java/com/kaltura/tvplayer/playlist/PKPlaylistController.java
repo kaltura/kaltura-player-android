@@ -7,6 +7,8 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
+import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.player.PKTracks;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
@@ -37,6 +39,7 @@ public class PKPlaylistController implements PlaylistController {
 
     public PKPlaylistController(KalturaPlayer kalturaPlayer, PKPlaylist playlist) {
         this.kalturaPlayer = kalturaPlayer;
+        subscribeToPlayerEvents();
         this.playlist = playlist;
         shuffledEntries = new ArrayList<>();
         loadedMediasMap = new HashMap<>();
@@ -74,62 +77,82 @@ public class PKPlaylistController implements PlaylistController {
         if (isValidPlaylistIndex(index)) {
             currentPlayingIndex = index;
             if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ovp) {
-                OVPMediaOptions ovpMediaOptions;
-                if (playlistOptions instanceof OVPPlaylistOptions) {
-                    OVPPlaylistOptions ovpPlaylistOptions = (OVPPlaylistOptions) playlistOptions;
-                    ovpMediaOptions = getNextMediaOptions(index, ovpPlaylistOptions);
-                    if (ovpMediaOptions.ks == null) {
-                        ovpMediaOptions.ks =  ovpPlaylistOptions.ks;
-                    }
-                    if (ovpMediaOptions.referrer == null) {
-                        ovpMediaOptions.referrer =  kalturaPlayer.getInitOptions().referrer;
-                    }
-                    if (!ovpMediaOptions.useApiCaptions) {
-                        ovpMediaOptions.useApiCaptions =  ovpPlaylistOptions.useApiCaptions;
-                    }
-                } else { // PlaylistId case
-                    OVPPlaylistIdOptions ovpPlaylistIdOptions = (OVPPlaylistIdOptions) playlistOptions;
-                    ovpMediaOptions = new OVPMediaOptions();
-                    ovpMediaOptions.entryId = playlist.getMediaList().get(index).getId();
-                    ovpMediaOptions.ks = (playlist.getMediaList().get(index).getKs() != null) ? playlist.getMediaList().get(index).getKs() : playlist.getKs();
-                    ovpMediaOptions.referrer = kalturaPlayer.getInitOptions().referrer;
-                    ovpMediaOptions.useApiCaptions = ovpPlaylistIdOptions.useApiCaptions;
-                }
-                kalturaPlayer.loadMedia(ovpMediaOptions, (entry, loadError) -> {
-                    if (loadError != null) {
-                        log.e(loadError.getMessage());
-                        // send error event
-                    } else {
-                        loadedMediasMap.put(index, entry);
-                        log.d("OVPMedia onEntryLoadComplete  entry = " + entry.getId());
-                    }
-                });
+                playItemOVP(index);
             } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
-                OTTPlaylistOptions ottPlaylistOptions =  (OTTPlaylistOptions) playlistOptions;
-
-                OTTMediaOptions ottMediaOptions = getNextMediaOptions(index, ottPlaylistOptions);
-                if (ottMediaOptions.ks == null) {
-                    ottMediaOptions.ks =  ottPlaylistOptions.ks;
-                }
-                if (ottMediaOptions.referrer == null) {
-                    ottMediaOptions.referrer =  kalturaPlayer.getInitOptions().referrer;
-                }
-
-                kalturaPlayer.loadMedia(ottMediaOptions, (entry, loadError) -> {
-                    if (loadError != null) {
-                        log.e(loadError.getMessage());
-                        // send error event
-                    } else {
-                        log.d("OVPMedia onEntryLoadComplete  entry = " + entry.getId());
-                    }
-                });
+                playItemOTT(index);
             } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic) {
-                BasicPlaylistOptions basicPlaylistOptions = (BasicPlaylistOptions) playlistOptions;
-                PKMediaEntry pkMediaEntry = getNextMediaOptions(index, basicPlaylistOptions);
-                loadedMediasMap.put(index, pkMediaEntry);
-                kalturaPlayer.setMedia(pkMediaEntry, 0L);
+                playItemBasic(index);
             }
         }
+    }
+
+    private void playItemOVP(int index) {
+        OVPMediaOptions ovpMediaOptions;
+        if (playlistOptions instanceof OVPPlaylistOptions) {
+            OVPPlaylistOptions ovpPlaylistOptions = (OVPPlaylistOptions) playlistOptions;
+            ovpMediaOptions = getNextMediaOptions(index, ovpPlaylistOptions);
+            if (ovpMediaOptions == null) {
+                return; // error cannot play any next item
+            }
+            if (ovpMediaOptions.ks == null) {
+                ovpMediaOptions.ks = ovpPlaylistOptions.ks;
+            }
+            if (ovpMediaOptions.referrer == null) {
+                ovpMediaOptions.referrer = kalturaPlayer.getInitOptions().referrer;
+            }
+            if (!ovpMediaOptions.useApiCaptions) {
+                ovpMediaOptions.useApiCaptions = ovpPlaylistOptions.useApiCaptions;
+            }
+        } else { // PlaylistId case
+            OVPPlaylistIdOptions ovpPlaylistIdOptions = (OVPPlaylistIdOptions) playlistOptions;
+            ovpMediaOptions = new OVPMediaOptions();
+            ovpMediaOptions.entryId = playlist.getMediaList().get(index).getId();
+            ovpMediaOptions.ks = (playlist.getMediaList().get(index).getKs() != null) ? playlist.getMediaList().get(index).getKs() : playlist.getKs();
+            ovpMediaOptions.referrer = kalturaPlayer.getInitOptions().referrer;
+            ovpMediaOptions.useApiCaptions = ovpPlaylistIdOptions.useApiCaptions;
+        }
+        kalturaPlayer.loadMedia(ovpMediaOptions, (entry, loadError) -> {
+            if (loadError != null) {
+                log.e(loadError.getMessage());
+                // send error event
+            } else {
+                loadedMediasMap.put(index, entry);
+                log.d("OVPMedia onEntryLoadComplete  entry = " + entry.getId());
+            }
+        });
+    }
+
+    private void playItemOTT(int index) {
+        OTTPlaylistOptions ottPlaylistOptions =  (OTTPlaylistOptions) playlistOptions;
+        OTTMediaOptions ottMediaOptions = getNextMediaOptions(index, ottPlaylistOptions);
+        if (ottMediaOptions == null) {
+            return; // error cannot play any next item
+        }
+        if (ottMediaOptions.ks == null) {
+            ottMediaOptions.ks =  ottPlaylistOptions.ks;
+        }
+        if (ottMediaOptions.referrer == null) {
+            ottMediaOptions.referrer = kalturaPlayer.getInitOptions().referrer;
+        }
+
+        kalturaPlayer.loadMedia(ottMediaOptions, (entry, loadError) -> {
+            if (loadError != null) {
+                log.e(loadError.getMessage());
+                // send error event
+            } else {
+                log.d("OVPMedia onEntryLoadComplete  entry = " + entry.getId());
+            }
+        });
+    }
+
+    private void playItemBasic(int index) {
+        BasicPlaylistOptions basicPlaylistOptions = (BasicPlaylistOptions) playlistOptions;
+        PKMediaEntry pkMediaEntry = getNextMediaOptions(index, basicPlaylistOptions);
+        if (pkMediaEntry == null) {
+            return; // error cannot play any next item
+        }
+        loadedMediasMap.put(index, pkMediaEntry);
+        kalturaPlayer.setMedia(pkMediaEntry, 0L);
     }
 
     private boolean isValidPlaylistIndex(int index) {
@@ -142,16 +165,38 @@ public class PKPlaylistController implements PlaylistController {
         return isValidIndex;
     }
 
-    private PKMediaEntry getNextMediaOptions(int index, BasicPlaylistOptions basicPlaylistOptions) {
-        return basicPlaylistOptions.pkMediaEntryList.get(index);
-    }
-
     private OVPMediaOptions getNextMediaOptions(int index, OVPPlaylistOptions ovpPlaylistOptions) {
-        return ovpPlaylistOptions.ovpMediaOptionsList.get(index);
+        while (true) {
+            List<OVPMediaOptions> ovpMediaOptionsList = ovpPlaylistOptions.ovpMediaOptionsList;
+            if (!(index < ovpMediaOptionsList.size())) break;
+            if (ovpMediaOptionsList.get(index) != null) {
+                return ovpMediaOptionsList.get(index);
+            }
+            index++;
+        }
+        return null;
     }
 
     private OTTMediaOptions getNextMediaOptions(int index, OTTPlaylistOptions ottPlaylistOptions) {
-        return ottPlaylistOptions.ottMediaOptionsList.get(index);
+        while(index < ottPlaylistOptions.ottMediaOptionsList.size()) {
+            if (ottPlaylistOptions.ottMediaOptionsList.get(index) != null) {
+                return ottPlaylistOptions.ottMediaOptionsList.get(index);
+            }
+            index++;
+        }
+        return null;
+    }
+
+    private PKMediaEntry getNextMediaOptions(int index, BasicPlaylistOptions basicPlaylistOptions) {
+        while(true) {
+            List<PKMediaEntry> pkMediaEntryList = basicPlaylistOptions.pkMediaEntryList;
+            if (!(index < pkMediaEntryList.size())) break;
+            if (pkMediaEntryList.get(index) != null) {
+                return pkMediaEntryList.get(index);
+            }
+            index++;
+        }
+        return null;
     }
 
     @Override
@@ -211,9 +256,38 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     @Override
+    public void release() {
+        kalturaPlayer.removeListeners(this);
+        //kalturaPlayer = null;
+    }
+
+    @Override
     public void setPlaylistOptions(PlaylistOptions playlistOptions) {
         this.playlistOptions = playlistOptions;
         shuffle(playlistOptions.shuffleEnabled);
         loop(playlistOptions.loopEnabled);
+    }
+
+    private void subscribeToPlayerEvents() {
+
+        kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
+            log.d("event received: " + event.eventType().name());
+            playNext();
+
+        });
+
+        kalturaPlayer.addListener(this, PlayerEvent.playheadUpdated, event -> {
+            log.d("event received: " + event.eventType().name());
+            if (kalturaPlayer.getCurrentPosition() + 10 >= kalturaPlayer.getDuration()) {
+                //SEND EVENT FOR CONFIGURATION
+            }
+
+        });
+
+        kalturaPlayer.addListener(this, PlayerEvent.error, event -> {
+            PlayerEvent.Error errorEvent = event;
+            log.e("errorEvent.error.errorType"  + " " + event.error.message);
+            //playNext();
+        });
     }
 }
