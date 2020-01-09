@@ -45,6 +45,11 @@ public class OTTMediaOptions extends MediaOptions {
         if (mediaOptions.assetReferenceType != null) {
             provider.setAssetReferenceType(mediaOptions.assetReferenceType);
         }
+
+        if (mediaOptions.referrer != null) {
+            provider.setReferrer(mediaOptions.referrer);
+        }
+
         return provider;
     }
 }

@@ -7,8 +7,19 @@ public class OVPMediaOptions extends MediaOptions {
     public String entryId;
     public boolean useApiCaptions;
 
+
     public OVPMediaOptions(String entryId) {
         this.entryId = entryId;
+    }
+
+    public OVPMediaOptions setReferrer (String referrer) {
+        this.referrer = referrer;
+        return this;
+    }
+
+    public OVPMediaOptions setUseApiCaptions (boolean useApiCaptions) {
+        this.useApiCaptions = useApiCaptions;
+        return this;
     }
 
     public OVPMediaOptions() {}

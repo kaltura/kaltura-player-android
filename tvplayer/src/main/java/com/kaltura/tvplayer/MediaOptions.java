@@ -10,6 +10,7 @@ import java.util.List;
 public abstract class MediaOptions {
     public String ks;
     public Long startPosition;
+    public String referrer;
     public List<PKExternalSubtitle> externalSubtitles;
 
     public abstract MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String ks, String referrer);
