@@ -47,6 +47,8 @@ import com.kaltura.tvplayer.playlist.BasicPlaylistOptions;
 import com.kaltura.tvplayer.playlist.OTTPlaylistOptions;
 import com.kaltura.tvplayer.playlist.OVPPlaylistIdOptions;
 import com.kaltura.tvplayer.playlist.OVPPlaylistOptions;
+import com.kaltura.tvplayer.playlist.PKBasicPlaylist;
+import com.kaltura.tvplayer.playlist.PKPlaylistMediaEntry;
 import com.kaltura.tvplayer.playlist.PlaylistController;
 
 import com.kaltura.tvplayer.playlist.PKPlaylistController;

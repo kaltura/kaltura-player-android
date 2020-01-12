@@ -1,18 +1,16 @@
 package com.kaltura.tvplayer.playlist;
 
-import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.providers.PlaylistMetadata;
-import com.kaltura.tvplayer.OTTMediaOptions;
 
 import java.util.List;
 
 public class BasicPlaylistOptions extends  PlaylistOptions{
     public PlaylistMetadata playlistMetadata;
-    public List<PKMediaEntry> pkMediaEntryList;
+    public List<PlaylistPKMediaEntry> playlistPKMediaEntryList;
 
-    public BasicPlaylistOptions(PlaylistMetadata playlistMetadata, List<PKMediaEntry> pkMediaEntryList) {
+    public BasicPlaylistOptions(PlaylistMetadata playlistMetadata, List<PlaylistPKMediaEntry> playlistPKMediaEntryList) {
         this.playlistMetadata = playlistMetadata;
-        this.pkMediaEntryList = pkMediaEntryList;
+        this.playlistPKMediaEntryList = playlistPKMediaEntryList;
     }
 
     public BasicPlaylistOptions() {}

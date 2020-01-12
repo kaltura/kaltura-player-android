@@ -1,6 +1,4 @@
-package com.kaltura.tvplayer;
-
-import android.os.Parcel;
+package com.kaltura.tvplayer.playlist;
 
 import com.kaltura.playkit.PKPlaylist;
 

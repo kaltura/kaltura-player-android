@@ -13,7 +13,6 @@ import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
-import com.kaltura.tvplayer.PKBasicPlaylist;
 
 import java.util.ArrayList;
 
@@ -230,10 +229,10 @@ public class PKPlaylistController implements PlaylistController {
 
     private PKMediaEntry getNextMediaOptions(int index, BasicPlaylistOptions basicPlaylistOptions) {
         while(true) {
-            List<PKMediaEntry> pkMediaEntryList = basicPlaylistOptions.pkMediaEntryList;
-            if (!(index < pkMediaEntryList.size())) break;
-            if (pkMediaEntryList.get(index) != null) {
-                return pkMediaEntryList.get(index);
+            List<PlaylistPKMediaEntry> playlistPKMediaEntryList = basicPlaylistOptions.playlistPKMediaEntryList;
+            if (!(index < playlistPKMediaEntryList.size())) break;
+            if (playlistPKMediaEntryList.get(index) != null && playlistPKMediaEntryList.get(index).getPkMediaEntry() != null) {
+                return playlistPKMediaEntryList.get(index).getPkMediaEntry();
             }
             index++;
         }
@@ -341,6 +340,10 @@ public class PKPlaylistController implements PlaylistController {
                     countDownOptions = ((OTTPlaylistOptions) playlistOptions).ottMediaOptionsList.get(currentPlayingIndex).countDownOptions;
                 }
 
+                if (playlistOptions instanceof BasicPlaylistOptions) {
+                    countDownOptions = ((BasicPlaylistOptions) playlistOptions).playlistPKMediaEntryList.get(currentPlayingIndex).getCountDownOptions();
+                }
+                
                 if (countDownOptions == null) {
                     countDownOptions = playlistOptions.countDownOptions;
                 }

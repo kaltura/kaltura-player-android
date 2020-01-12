@@ -1,4 +1,4 @@
-package com.kaltura.tvplayer;
+package com.kaltura.tvplayer.playlist;
 
 import com.kaltura.playkit.PKMediaEntry;
 
