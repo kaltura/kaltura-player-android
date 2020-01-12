@@ -1,5 +1,6 @@
 package com.kaltura.tvplayer.playlist;
 
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -8,6 +9,7 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
@@ -29,6 +31,7 @@ public class PKPlaylistController implements PlaylistController {
     private KalturaPlayer kalturaPlayer;
     private PKPlaylist playlist;
     private PlaylistOptions playlistOptions;
+    private CountDownOptions countDownOptions;
 
     private int currentPlayingIndex = -1;
     private boolean playlistAutoContinue = true;
@@ -41,6 +44,7 @@ public class PKPlaylistController implements PlaylistController {
         this.kalturaPlayer = kalturaPlayer;
         subscribeToPlayerEvents();
         this.playlist = playlist;
+
         shuffledEntries = new ArrayList<>();
         loadedMediasMap = new HashMap<>();
     }
@@ -307,6 +311,7 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void setPlaylistOptions(PlaylistOptions playlistOptions) {
         this.playlistOptions = playlistOptions;
+        this.countDownOptions = playlistOptions.countDownOptions;
         shuffle(playlistOptions.shuffleEnabled);
         loop(playlistOptions.loopEnabled);
     }
@@ -318,18 +323,49 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
-            if (playlistAutoContinue) {
+            if (playlistAutoContinue && countDownOptions == null) {
                 playNext();
             }
+            countDownOptions = null;
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.playheadUpdated, event -> {
             log.d("playheadUpdated received position = " + event.position);
-            if (kalturaPlayer.getCurrentPosition() + 10 >= kalturaPlayer.getDuration()) {
-                //SEND EVENT FOR CONFIGURATION
+
+            if (countDownOptions == null) {
+                if (playlistOptions instanceof OVPPlaylistOptions) {
+                    countDownOptions = ((OVPPlaylistOptions) playlistOptions).ovpMediaOptionsList.get(currentPlayingIndex).countDownOptions;
+
+                }
+                if (playlistOptions instanceof OTTPlaylistOptions) {
+                    countDownOptions = ((OTTPlaylistOptions) playlistOptions).ottMediaOptionsList.get(currentPlayingIndex).countDownOptions;
+                }
+
+                if (countDownOptions == null) {
+                    countDownOptions = playlistOptions.countDownOptions;
+                }
             }
 
+            if (playlistAutoContinue && countDownOptions != null) {
+                if (!countDownOptions.isEventSent()) {
+                    log.d("XXX SEND COUNT DOWN EVENT");
+                    countDownOptions.setEventSent(true);
+                    preloadNext();
 
+                    long countDownInterval  = (countDownOptions.getTimeToShowMS() < Consts.MILLISECONDS_MULTIPLIER) ? countDownOptions.getTimeToShowMS() : Consts.MILLISECONDS_MULTIPLIER;
+                    new CountDownTimer(countDownOptions.getTimeToShowMS(), countDownInterval) {
+                        public void onTick(long millisUntilFinished) {
+                            log.d("XXX count down options tick");
+                        }
+
+                        public void onFinish() {
+                            log.d("XXX PLAY NEXT");
+                            playNext();
+                        }
+                    }.start();
+                }
+
+            }
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.error, event -> {
