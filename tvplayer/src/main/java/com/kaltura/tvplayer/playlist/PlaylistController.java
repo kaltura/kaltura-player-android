@@ -12,6 +12,8 @@ public interface PlaylistController {
 
     int getCurrentMediaIndex();
 
+    void preloadNext();
+
     void playItem(int index);
 
     void playNext();

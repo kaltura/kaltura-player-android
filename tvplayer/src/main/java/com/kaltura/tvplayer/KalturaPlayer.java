@@ -350,12 +350,10 @@ public abstract class KalturaPlayer {
         }
 
         this.mediaEntry = mediaEntry;
-        PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
-        updateKalturaPluginConfigs(combinedPluginConfigs);
-
-        prepareState = PrepareState.not_prepared;
-
+        this.prepareState = PrepareState.not_prepared;
         if (preload) {
+            PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
+            updateKalturaPluginConfigs(combinedPluginConfigs);
             prepare();
         }
     }
