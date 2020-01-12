@@ -28,6 +28,8 @@ public interface PlaylistController {
 
     void shuffle(boolean mode);
 
+    void setAutoContinue(boolean mode);
+
     void reset();
 
     void release();

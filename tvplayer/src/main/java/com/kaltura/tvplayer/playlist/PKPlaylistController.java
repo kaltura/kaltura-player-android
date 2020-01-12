@@ -31,6 +31,7 @@ public class PKPlaylistController implements PlaylistController {
     private PlaylistOptions playlistOptions;
 
     private int currentPlayingIndex = -1;
+    private boolean playlistAutoContinue = true;
     private boolean loopEnabled;
     private boolean shuffleEnabled;
     private List<PKPlaylistMedia> shuffledEntries;
@@ -282,6 +283,12 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     @Override
+    public void setAutoContinue(boolean mode) {
+        playlistAutoContinue = mode;
+    }
+
+
+    @Override
     public void reset() {
         log.d("reset");
         currentPlayingIndex = -1;
@@ -311,7 +318,9 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
-            playNext();
+            if (playlistAutoContinue) {
+                playNext();
+            }
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.playheadUpdated, event -> {
