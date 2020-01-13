@@ -4,6 +4,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
@@ -124,8 +125,10 @@ public class PKPlaylistController implements PlaylistController {
                 playItemBasic(index);
             }
         } else {
+            if (index > playlist.getMediaList().size() - 1) {
+                kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistError(new ErrorElement("PlaylistIndexInvalid", "Invalid playlist index = " + index + " size = " + playlist.getMediaList().size())));
+            }
             // SEND EVENT ERROR OR PLAYLIST ENDED
-
             //SEND EVENT FOR LOOP
         }
     }
