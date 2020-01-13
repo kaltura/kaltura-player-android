@@ -2,7 +2,7 @@ package com.kaltura.tvplayer.playlist;
 
 import com.kaltura.playkit.PKMediaEntry;
 
-class PKPlaylistMediaEntry {
+public class PKPlaylistMediaEntry {
     private Integer index;
     private PKMediaEntry pkMediaEntry;
 

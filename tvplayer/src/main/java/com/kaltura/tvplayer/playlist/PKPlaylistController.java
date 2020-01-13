@@ -122,6 +122,10 @@ public class PKPlaylistController implements PlaylistController {
             } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic) {
                 playItemBasic(index);
             }
+        } else {
+            // SEND EVENT ERROR OR PLAYLIST ENDED
+
+            //SEND EVENT FOR LOOP
         }
     }
 
@@ -231,8 +235,8 @@ public class PKPlaylistController implements PlaylistController {
         while(true) {
             List<PlaylistPKMediaEntry> playlistPKMediaEntryList = basicPlaylistOptions.playlistPKMediaEntryList;
             if (!(index < playlistPKMediaEntryList.size())) break;
-            if (playlistPKMediaEntryList.get(index) != null && playlistPKMediaEntryList.get(index).getPkMediaEntry() != null) {
-                return playlistPKMediaEntryList.get(index).getPkMediaEntry();
+            if (playlistPKMediaEntryList.get(index) != null && playlistPKMediaEntryList.get(index).getPKMediaEntry() != null) {
+                return playlistPKMediaEntryList.get(index).getPKMediaEntry();
             }
             index++;
         }
@@ -322,7 +326,7 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
-            if (playlistAutoContinue && countDownOptions == null) {
+            if (playlistAutoContinue && (countDownOptions == null || !countDownOptions.shouldDisplay())) {
                 playNext();
             }
             countDownOptions = null;
@@ -343,19 +347,19 @@ public class PKPlaylistController implements PlaylistController {
                 if (playlistOptions instanceof BasicPlaylistOptions) {
                     countDownOptions = ((BasicPlaylistOptions) playlistOptions).playlistPKMediaEntryList.get(currentPlayingIndex).getCountDownOptions();
                 }
-                
+
                 if (countDownOptions == null) {
                     countDownOptions = playlistOptions.countDownOptions;
                 }
             }
 
-            if (playlistAutoContinue && countDownOptions != null) {
+            if (playlistAutoContinue && countDownOptions != null && countDownOptions.shouldDisplay() && kalturaPlayer.getCurrentPosition() >= countDownOptions.getTimeToShowMS()) {
                 if (!countDownOptions.isEventSent()) {
                     log.d("XXX SEND COUNT DOWN EVENT");
                     countDownOptions.setEventSent(true);
                     preloadNext();
 
-                    long countDownInterval  = (countDownOptions.getTimeToShowMS() < Consts.MILLISECONDS_MULTIPLIER) ? countDownOptions.getTimeToShowMS() : Consts.MILLISECONDS_MULTIPLIER;
+                    long countDownInterval  = (countDownOptions.getDurationMS() < Consts.MILLISECONDS_MULTIPLIER) ? countDownOptions.getDurationMS() : Consts.MILLISECONDS_MULTIPLIER;
                     new CountDownTimer(countDownOptions.getTimeToShowMS(), countDownInterval) {
                         public void onTick(long millisUntilFinished) {
                             log.d("XXX count down options tick");

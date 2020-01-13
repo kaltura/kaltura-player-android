@@ -799,9 +799,13 @@ public abstract class KalturaPlayer {
         if (!isValidBasicPlayer())
             return;
 
+        if (playlistOptions == null || playlistOptions.playlistPKMediaEntryList == null) {
+            return;
+        }
+
         List<PKPlaylistMediaEntry> pkPlaylistMediaEntryList = new ArrayList<>();
-        for (int i = 0; i < playlistOptions.pkMediaEntryList.size() ; i++) {
-            pkPlaylistMediaEntryList.add(new PKPlaylistMediaEntry(i, playlistOptions.pkMediaEntryList.get(i)));
+        for (int i = 0; i < playlistOptions.playlistPKMediaEntryList.size() ; i++) {
+            pkPlaylistMediaEntryList.add(new PKPlaylistMediaEntry(i, playlistOptions.playlistPKMediaEntryList.get(i).getPKMediaEntry()));
         }
 
         PKPlaylist basicPlaylist = new PKBasicPlaylist()

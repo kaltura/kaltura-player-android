@@ -15,7 +15,7 @@ public class PlaylistPKMediaEntry {
         this.countDownOptions = countDownOptions;
     }
 
-    public PKMediaEntry getPkMediaEntry() {
+    public PKMediaEntry getPKMediaEntry() {
         return pkMediaEntry;
     }
 
