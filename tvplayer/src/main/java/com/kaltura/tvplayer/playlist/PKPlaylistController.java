@@ -99,6 +99,7 @@ public class PKPlaylistController implements PlaylistController {
 
     @Override
     public void playItem(int index) {
+        log.d("playItem index = " + index);
         kalturaPlayer.setAutoPlay(true);
         kalturaPlayer.setPreload(true);
 
@@ -275,11 +276,14 @@ public class PKPlaylistController implements PlaylistController {
     public void loop(boolean mode) {
         log.d("loop mode = " + mode);
         loopEnabled = mode;
+        kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistLoopStateChanged(mode));
     }
 
     @Override
     public void shuffle(boolean mode) {
         log.d("shuffle mode = " + mode);
+        kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistShuffleStateChanged(mode));
+
         shuffleEnabled = mode;
         if (playlist != null && mode) {
             shuffledEntries = new ArrayList<>(playlist.getMediaList());
@@ -327,13 +331,13 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
             if (playlistAutoContinue && (countDownOptions == null || !countDownOptions.shouldDisplay())) {
-                playNext();
+                handlePlaylistEnded();
             }
-            countDownOptions = null;
+            resetCountDownOptions();
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.playheadUpdated, event -> {
-            log.d("playheadUpdated received position = " + event.position);
+            log.d("playheadUpdated received position = " + event.position + "/" + event.duration);
 
             if (countDownOptions == null) {
                 if (playlistOptions instanceof OVPPlaylistOptions) {
@@ -353,21 +357,36 @@ public class PKPlaylistController implements PlaylistController {
                 }
             }
 
-            if (playlistAutoContinue && countDownOptions != null && countDownOptions.shouldDisplay() && kalturaPlayer.getCurrentPosition() >= countDownOptions.getTimeToShowMS()) {
+            if (playlistAutoContinue && countDownOptions != null && countDownOptions.shouldDisplay() &&
+                    event.position >= event.duration - countDownOptions.getTimeToShowMS()) {
                 if (!countDownOptions.isEventSent()) {
                     log.d("XXX SEND COUNT DOWN EVENT");
+                    kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistMediaCountDown(currentPlayingIndex, countDownOptions));
                     countDownOptions.setEventSent(true);
                     preloadNext();
 
+                    long timerFutureMS = countDownOptions.getTimeToShowMS();
+                    if (event.duration - countDownOptions.getTimeToShowMS() < 0) {
+                        timerFutureMS= countDownOptions.getTimeToShowMS();
+                    }
                     long countDownInterval  = (countDownOptions.getDurationMS() < Consts.MILLISECONDS_MULTIPLIER) ? countDownOptions.getDurationMS() : Consts.MILLISECONDS_MULTIPLIER;
-                    new CountDownTimer(countDownOptions.getTimeToShowMS(), countDownInterval) {
+                    new CountDownTimer(timerFutureMS, countDownInterval) {
                         public void onTick(long millisUntilFinished) {
                             log.d("XXX count down options tick");
                         }
 
                         public void onFinish() {
-                            log.d("XXX PLAY NEXT");
-                            playNext();
+                            if (currentPlayingIndex + 1 == playlist.getMediaList().size()) {
+                                kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistEnded(playlist));
+                                if (loopEnabled && !shuffleEnabled) {
+                                    log.d("XXX REPLAY");
+                                    replay();
+                                }
+                                kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistEnded(playlist));
+                            } else {
+                                log.d("XXX PLAY NEXT");
+                                playNext();
+                            }
                         }
                     }.start();
                 }
@@ -380,5 +399,23 @@ public class PKPlaylistController implements PlaylistController {
             log.e("errorEvent.error.errorType"  + " " + event.error.message);
             //playNext();
         });
+    }
+
+    private void handlePlaylistEnded() {
+        if (currentPlayingIndex + 1 == playlist.getMediaList().size()) {
+            log.d("XXX REPLAY");
+            if (loopEnabled && !shuffleEnabled) {
+                replay();
+            }
+            kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistEnded(playlist));
+        } else {
+            log.d("XXX PLAY NEXT");
+            playNext();
+        }
+    }
+
+    private void resetCountDownOptions() {
+        countDownOptions.setEventSent(false);
+        countDownOptions = null;
     }
 }

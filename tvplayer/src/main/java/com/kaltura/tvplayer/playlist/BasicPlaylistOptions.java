@@ -4,7 +4,7 @@ import com.kaltura.playkit.providers.PlaylistMetadata;
 
 import java.util.List;
 
-public class BasicPlaylistOptions extends  PlaylistOptions{
+public class BasicPlaylistOptions extends  PlaylistOptions {
     public PlaylistMetadata playlistMetadata;
     public List<PlaylistPKMediaEntry> playlistPKMediaEntryList;
 
