@@ -97,7 +97,6 @@ public class PKPlaylistController implements PlaylistController {
         }
     }
 
-
     @Override
     public void playItem(int index) {
         log.d("playItem index = " + index);
@@ -124,12 +123,6 @@ public class PKPlaylistController implements PlaylistController {
             } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic) {
                 playItemBasic(index);
             }
-        } else {
-            if (index > playlist.getMediaList().size() - 1) {
-                kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistError(new ErrorElement("PlaylistIndexInvalid", "Invalid playlist index = " + index + " size = " + playlist.getMediaList().size())));
-            }
-            // SEND EVENT ERROR OR PLAYLIST ENDED
-            //SEND EVENT FOR LOOP
         }
     }
 
@@ -210,6 +203,12 @@ public class PKPlaylistController implements PlaylistController {
         } else {
             isValidIndex = index >= 0 && index < playlist.getMediaList().size();
         }
+        if (!isValidIndex) {
+            String errorMessage = "Invalid playlist index = " + index + " size = " + playlist.getMediaList().size();
+            String errorCode = "InvalidPlaylistIndex";
+            kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistError
+                    (new ErrorElement(errorMessage, errorCode)));
+        }
         return isValidIndex;
     }
 
@@ -250,12 +249,27 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void playNext() {
         log.d("playNext");
+        if (currentPlayingIndex + 1 == playlist.getMediaList().size()) {
+            if (loopEnabled) {
+                replay();
+            }
+            log.d("Ignore playNext - invalid index!");
+            return;
+        }
         playItem(++currentPlayingIndex);
     }
 
     @Override
     public void playPrev() {
         log.d("playPrev");
+        if (currentPlayingIndex - 1 < 0) {
+            if (loopEnabled) {
+                currentPlayingIndex = playlist.getMediaList().size() - 1;
+                playItem(currentPlayingIndex) ;
+            }
+            log.d("Ignore playPrev - invalid index!");
+            return;
+        }
         playItem(--currentPlayingIndex);
     }
 
@@ -301,7 +315,6 @@ public class PKPlaylistController implements PlaylistController {
         playlistAutoContinue = mode;
     }
 
-
     @Override
     public void reset() {
         log.d("reset");
@@ -334,7 +347,7 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
             if (playlistAutoContinue && (countDownOptions == null || !countDownOptions.shouldDisplay())) {
-                handlePlaylistEnded();
+                handlePlaylistMediaEnded();
             }
             resetCountDownOptions();
         });
@@ -379,17 +392,7 @@ public class PKPlaylistController implements PlaylistController {
                         }
 
                         public void onFinish() {
-                            if (currentPlayingIndex + 1 == playlist.getMediaList().size()) {
-                                kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistEnded(playlist));
-                                if (loopEnabled && !shuffleEnabled) {
-                                    log.d("XXX REPLAY");
-                                    replay();
-                                }
-                                kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistEnded(playlist));
-                            } else {
-                                log.d("XXX PLAY NEXT");
-                                playNext();
-                            }
+                            handlePlaylistMediaEnded();
                         }
                     }.start();
                 }
@@ -404,7 +407,7 @@ public class PKPlaylistController implements PlaylistController {
         });
     }
 
-    private void handlePlaylistEnded() {
+    private void handlePlaylistMediaEnded() {
         if (currentPlayingIndex + 1 == playlist.getMediaList().size()) {
             log.d("XXX REPLAY");
             if (loopEnabled && !shuffleEnabled) {
