@@ -11,6 +11,7 @@ import java.util.List;
 
 public class OVPPlaylistIdOptions extends ProviderPlaylistOptions {
     public String playlistId;
+    public boolean useApiCaptions;
 
     public OVPPlaylistIdOptions(String playlistId) {
         this.playlistId = playlistId;

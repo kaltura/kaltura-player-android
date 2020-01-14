@@ -140,9 +140,6 @@ public class PKPlaylistController implements PlaylistController {
             if (ovpMediaOptions.referrer == null) {
                 ovpMediaOptions.referrer = kalturaPlayer.getInitOptions().referrer;
             }
-            if (!ovpMediaOptions.useApiCaptions) {
-                ovpMediaOptions.useApiCaptions = ovpPlaylistOptions.useApiCaptions;
-            }
         } else { // PlaylistId case
             OVPPlaylistIdOptions ovpPlaylistIdOptions = (OVPPlaylistIdOptions) playlistOptions;
             ovpMediaOptions = new OVPMediaOptions();
