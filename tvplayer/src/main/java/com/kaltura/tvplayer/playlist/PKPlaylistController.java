@@ -37,7 +37,7 @@ public class PKPlaylistController implements PlaylistController {
     private boolean playlistAutoContinue = true;
     private boolean loopEnabled;
     private boolean shuffleEnabled;
-    private List<PKPlaylistMedia> shuffledEntries;
+    private List<PKPlaylistMedia> origlPlaylistEntries;
     private Map<Integer, PKMediaEntry> loadedMediasMap;
 
     public PKPlaylistController(KalturaPlayer kalturaPlayer, PKPlaylist playlist) {
@@ -45,7 +45,7 @@ public class PKPlaylistController implements PlaylistController {
         subscribeToPlayerEvents();
         this.playlist = playlist;
 
-        shuffledEntries = new ArrayList<>();
+        origlPlaylistEntries = new ArrayList<>();
         loadedMediasMap = new HashMap<>();
     }
 
@@ -81,19 +81,29 @@ public class PKPlaylistController implements PlaylistController {
             return;
         }
 
-        if (loadedMediasMap.containsKey(index)) {
-            kalturaPlayer.setMedia(loadedMediasMap.get(index));
+        boolean isValidIndex = isValidPlaylistIndex(index);
+        if (!isValidIndex) {
             return;
         }
-
-        if (isValidPlaylistIndex(index)) {
-            if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ovp) {
-                playItemOVP(index);
-            } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
-                playItemOTT(index);
-            } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic) {
-                playItemBasic(index);
+        if (shuffleEnabled) {
+            int origIndex = playlist.getMediaList().get(index).getMediaIndex();
+            if (loadedMediasMap.containsKey(origIndex)) {
+                kalturaPlayer.setMedia(loadedMediasMap.get(origIndex));
+                return;
             }
+        } else {
+            if (loadedMediasMap.containsKey(index)) {
+                kalturaPlayer.setMedia(loadedMediasMap.get(index));
+                return;
+            }
+        }
+
+        if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ovp) {
+            playItemOVP(index);
+        } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
+            playItemOTT(index);
+        } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic) {
+            playItemBasic(index);
         }
     }
 
@@ -109,20 +119,30 @@ public class PKPlaylistController implements PlaylistController {
             return;
         }
 
-        if (loadedMediasMap.containsKey(index)) {
-            kalturaPlayer.setMedia(loadedMediasMap.get(index));
+        boolean isValidIndex = isValidPlaylistIndex(index);
+        if (!isValidIndex) {
             return;
         }
-
-        if (isValidPlaylistIndex(index)) {
-            currentPlayingIndex = index;
-            if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ovp) {
-                playItemOVP(index);
-            } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
-                playItemOTT(index);
-            } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic) {
-                playItemBasic(index);
+        if (shuffleEnabled) {
+            int origIndex = playlist.getMediaList().get(index).getMediaIndex();
+            if (loadedMediasMap.containsKey(origIndex)) {
+                kalturaPlayer.setMedia(loadedMediasMap.get(origIndex));
+                return;
             }
+        } else {
+            if (loadedMediasMap.containsKey(index)) {
+                kalturaPlayer.setMedia(loadedMediasMap.get(index));
+                return;
+            }
+        }
+
+        currentPlayingIndex = index;
+        if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ovp) {
+            playItemOVP(index);
+        } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
+            playItemOTT(index);
+        } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic) {
+            playItemBasic(index);
         }
     }
 
@@ -153,7 +173,7 @@ public class PKPlaylistController implements PlaylistController {
                 log.e(loadError.getMessage());
                 // send error event
             } else {
-                loadedMediasMap.put(index, entry);
+                loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
                 log.d("OVPMedia onEntryLoadComplete  entry = " + entry.getId());
             }
         });
@@ -177,7 +197,7 @@ public class PKPlaylistController implements PlaylistController {
                 log.e(loadError.getMessage());
                 // send error event
             } else {
-                loadedMediasMap.put(index, entry);
+                loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
                 log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
             }
         });
@@ -189,7 +209,7 @@ public class PKPlaylistController implements PlaylistController {
         if (pkMediaEntry == null) {
             return; // error cannot play any next item
         }
-        loadedMediasMap.put(index, pkMediaEntry);
+        loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), pkMediaEntry);
         kalturaPlayer.setMedia(pkMediaEntry, 0L);
     }
 
@@ -300,11 +320,15 @@ public class PKPlaylistController implements PlaylistController {
 
         shuffleEnabled = mode;
         if (playlist != null && mode) {
-            shuffledEntries = new ArrayList<>(playlist.getMediaList());
-            Collections.shuffle(shuffledEntries);
+            origlPlaylistEntries = playlist.getMediaList();
+            playlist.setMediaList(new ArrayList<>(playlist.getMediaList()));
+            Collections.shuffle(playlist.getMediaList());
         } else {
-            shuffledEntries.clear();
+            if (origlPlaylistEntries != null && !origlPlaylistEntries.isEmpty()) {
+                playlist.setMediaList(origlPlaylistEntries);
+            }
         }
+        int rrr =1;
     }
 
     @Override
@@ -319,7 +343,7 @@ public class PKPlaylistController implements PlaylistController {
         loopEnabled  = false;
         shuffleEnabled = false;
         loadedMediasMap.clear();
-        shuffledEntries.clear();
+        origlPlaylistEntries.clear();
     }
 
     @Override
@@ -407,7 +431,7 @@ public class PKPlaylistController implements PlaylistController {
     private void handlePlaylistMediaEnded() {
         if (currentPlayingIndex + 1 == playlist.getMediaList().size()) {
             log.d("XXX REPLAY");
-            if (loopEnabled && !shuffleEnabled) {
+            if (loopEnabled) {
                 replay();
             }
             kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistEnded(playlist));
