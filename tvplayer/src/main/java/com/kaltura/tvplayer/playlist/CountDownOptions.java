@@ -9,7 +9,7 @@ public class CountDownOptions {
     private boolean eventSent;
 
     public CountDownOptions() {
-        this.timeToShowMS = 10 * Consts.MILLISECONDS_MULTIPLIER;
+        this.timeToShowMS = -1; // default - show 10 sec before end
         this.durationMS =  10 * Consts.MILLISECONDS_MULTIPLIER;
         this.shouldDisplay = true;
         eventSent = false;
@@ -17,7 +17,7 @@ public class CountDownOptions {
 
     public CountDownOptions(long timeToShowMS, long durationMS, boolean shouldDisplay) {
         if (timeToShowMS <= 0) {
-            timeToShowMS = 10 * Consts.MILLISECONDS_MULTIPLIER;
+            timeToShowMS = -1; // default - show 10 sec before end
             durationMS =  10 * Consts.MILLISECONDS_MULTIPLIER;
         }
         this.timeToShowMS = timeToShowMS;

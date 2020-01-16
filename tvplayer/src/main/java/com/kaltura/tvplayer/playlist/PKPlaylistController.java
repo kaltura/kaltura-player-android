@@ -88,12 +88,12 @@ public class PKPlaylistController implements PlaylistController {
         if (shuffleEnabled) {
             int origIndex = playlist.getMediaList().get(index).getMediaIndex();
             if (loadedMediasMap.containsKey(origIndex)) {
-                kalturaPlayer.setMedia(loadedMediasMap.get(origIndex));
+                //kalturaPlayer.setMedia(loadedMediasMap.get(origIndex));
                 return;
             }
         } else {
             if (loadedMediasMap.containsKey(index)) {
-                kalturaPlayer.setMedia(loadedMediasMap.get(index));
+                //kalturaPlayer.setMedia(loadedMediasMap.get(index));
                 return;
             }
         }
@@ -327,7 +327,6 @@ public class PKPlaylistController implements PlaylistController {
                 playlist.setMediaList(origlPlaylistEntries);
             }
         }
-        int rrr =1;
     }
 
     @Override
@@ -366,10 +365,18 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
-            if (playlistAutoContinue && (countDownOptions == null || !countDownOptions.shouldDisplay()|| countDownOptions != null && !countDownOptions.isEventSent())) {
+            if (playlistAutoContinue && (countDownOptions == null || !countDownOptions.shouldDisplay()|| countDownOptions.getTimeToShowMS() == -1 || !countDownOptions.isEventSent())) {
                 handlePlaylistMediaEnded();
             }
             resetCountDownOptions();
+        });
+
+
+        kalturaPlayer.addListener(this, PlayerEvent.seeking, event -> {
+            log.d("seeking event received");
+            if (countDownOptions.isEventSent() && event.targetPosition < countDownOptions.getTimeToShowMS()) {
+                countDownOptions.setEventSent(false);
+            }
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.playheadUpdated, event -> {
@@ -393,30 +400,19 @@ public class PKPlaylistController implements PlaylistController {
                 }
             }
 
-            if (playlistAutoContinue && countDownOptions != null && countDownOptions.shouldDisplay() &&
-                    event.position >= event.duration - countDownOptions.getTimeToShowMS()) {
-                if (!countDownOptions.isEventSent()) {
-                    log.d("XXX SEND COUNT DOWN EVENT");
-                    kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistMediaCountDown(currentPlayingIndex, countDownOptions));
-                    countDownOptions.setEventSent(true);
-                    preloadNext();
-
-                    long timerFutureMS = countDownOptions.getTimeToShowMS();
-                    if (event.duration - countDownOptions.getTimeToShowMS() < 0) {
-                        timerFutureMS= countDownOptions.getTimeToShowMS();
+            if (playlistAutoContinue && countDownOptions != null && countDownOptions.shouldDisplay()) {
+                long timeToShow = (countDownOptions.getTimeToShowMS() == -1) ? Math.max(0, event.duration - countDownOptions.getDurationMS()) : countDownOptions.getTimeToShowMS();
+                if (event.position >= timeToShow) {
+                    if (!countDownOptions.isEventSent()) {
+                        log.d("XXX SEND COUNT DOWN EVENT position = " + event.position);
+                        kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistMediaCountDown(currentPlayingIndex, countDownOptions));
+                        countDownOptions.setEventSent(true);
+                        preloadNext();
+                    } else if (event.position >= Math.min(timeToShow + countDownOptions.getDurationMS(), event.duration)) {
+                        log.d("XXX playjead updated handlePlaylistMediaEnded");
+                        handlePlaylistMediaEnded();
                     }
-                    long countDownInterval  = (countDownOptions.getDurationMS() < Consts.MILLISECONDS_MULTIPLIER) ? countDownOptions.getDurationMS() : Consts.MILLISECONDS_MULTIPLIER;
-                    new CountDownTimer(timerFutureMS, countDownInterval) {
-                        public void onTick(long millisUntilFinished) {
-                            log.d("XXX count down options tick");
-                        }
-
-                        public void onFinish() {
-                            handlePlaylistMediaEnded();
-                        }
-                    }.start();
                 }
-
             }
         });
 
