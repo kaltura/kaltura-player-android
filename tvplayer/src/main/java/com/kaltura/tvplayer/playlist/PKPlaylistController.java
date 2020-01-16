@@ -409,7 +409,7 @@ public class PKPlaylistController implements PlaylistController {
                         countDownOptions.setEventSent(true);
                         preloadNext();
                     } else if (event.position >= Math.min(timeToShow + countDownOptions.getDurationMS(), event.duration)) {
-                        log.d("XXX playjead updated handlePlaylistMediaEnded");
+                        log.d("XXX playhead updated handlePlaylistMediaEnded");
                         handlePlaylistMediaEnded();
                     }
                 }
