@@ -209,19 +209,16 @@ public class PKPlaylistController implements PlaylistController {
         if (pkMediaEntry == null) {
             return; // error cannot play any next item
         }
-        loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), pkMediaEntry);
+        loadedMediasMap.put(((PKBasicPlaylist)playlist).getPlaylistMediaEntryList().get(index).getMediaIndex(), pkMediaEntry);
         kalturaPlayer.setMedia(pkMediaEntry, 0L);
     }
 
     private boolean isValidPlaylistIndex(int index) {
         boolean isValidIndex;
-        if (playlist instanceof PKBasicPlaylist) {
-            isValidIndex = index >= 0 && index < ((PKBasicPlaylist) playlist).getPlaylistMediaEntryList().size();
-        } else {
-            isValidIndex = index >= 0 && index < playlist.getMediaList().size();
-        }
+        int playlistSize = playlist.getMediaListSize();
+        isValidIndex = index >= 0 && index < playlistSize;
         if (!isValidIndex) {
-            String errorMessage = "Invalid playlist index = " + index + " size = " + playlist.getMediaList().size();
+            String errorMessage = "Invalid Basic playlist index = " + index + " size = " + playlistSize;
             String errorCode = "InvalidPlaylistIndex";
             kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistError
                     (new ErrorElement(errorMessage, errorCode)));
@@ -266,7 +263,8 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void playNext() {
         log.d("playNext");
-        if (currentPlayingIndex + 1 == playlist.getMediaList().size()) {
+        int playlistSize = playlist.getMediaListSize();
+        if (currentPlayingIndex + 1 == playlistSize) {
             if (loopEnabled) {
                 replay();
             }
@@ -279,9 +277,10 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void playPrev() {
         log.d("playPrev");
+        int playlistSize = playlist.getMediaListSize();
         if (currentPlayingIndex - 1 < 0) {
             if (loopEnabled) {
-                currentPlayingIndex = playlist.getMediaList().size() - 1;
+                currentPlayingIndex = playlistSize - 1;
                 playItem(currentPlayingIndex) ;
             }
             log.d("Ignore playPrev - invalid index!");
@@ -367,7 +366,7 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
-            if (playlistAutoContinue && (countDownOptions == null || !countDownOptions.shouldDisplay())) {
+            if (playlistAutoContinue && (countDownOptions == null || !countDownOptions.shouldDisplay()|| countDownOptions != null && !countDownOptions.isEventSent())) {
                 handlePlaylistMediaEnded();
             }
             resetCountDownOptions();
@@ -399,7 +398,7 @@ public class PKPlaylistController implements PlaylistController {
                 if (!countDownOptions.isEventSent()) {
                     log.d("XXX SEND COUNT DOWN EVENT");
                     kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistMediaCountDown(currentPlayingIndex, countDownOptions));
-                    countDownOptions.setEventSent(true);
+                        countDownOptions.setEventSent(true);
                     preloadNext();
 
                     long timerFutureMS = countDownOptions.getTimeToShowMS();
@@ -429,7 +428,8 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private void handlePlaylistMediaEnded() {
-        if (currentPlayingIndex + 1 == playlist.getMediaList().size()) {
+        int playlistSize = playlist.getMediaListSize();
+        if (currentPlayingIndex + 1 == playlistSize) {
             log.d("XXX REPLAY");
             if (loopEnabled) {
                 replay();

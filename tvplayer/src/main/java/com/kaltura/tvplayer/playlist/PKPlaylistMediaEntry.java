@@ -3,20 +3,20 @@ package com.kaltura.tvplayer.playlist;
 import com.kaltura.playkit.PKMediaEntry;
 
 public class PKPlaylistMediaEntry {
-    private Integer index;
+    private int mediaIndex;
     private PKMediaEntry pkMediaEntry;
 
-    public PKPlaylistMediaEntry(Integer index, PKMediaEntry pkMediaEntry) {
-        this.index = index;
+    public PKPlaylistMediaEntry(int mediaIndex, PKMediaEntry pkMediaEntry) {
+        this.mediaIndex = mediaIndex;
         this.pkMediaEntry = pkMediaEntry;
     }
 
-    public Integer getIndex() {
-        return index;
+    public int getMediaIndex() {
+        return mediaIndex;
     }
 
-    public void setIndex(Integer index) {
-        this.index = index;
+    public void setMediaIndex(int mediaIndex) {
+        this.mediaIndex = mediaIndex;
     }
 
     public PKMediaEntry getPkMediaEntry() {

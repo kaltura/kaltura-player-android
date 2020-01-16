@@ -15,4 +15,9 @@ public class PKBasicPlaylist extends PKPlaylist {
     public List<PKPlaylistMediaEntry> getPlaylistMediaEntryList() {
         return playlistMediaEntryList;
     }
+
+    @Override
+    public int getMediaListSize() {
+        return playlistMediaEntryList != null ? playlistMediaEntryList.size() : 0;
+    }
 }
