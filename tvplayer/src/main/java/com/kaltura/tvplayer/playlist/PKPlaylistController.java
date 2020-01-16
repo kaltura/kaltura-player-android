@@ -398,7 +398,7 @@ public class PKPlaylistController implements PlaylistController {
                 if (!countDownOptions.isEventSent()) {
                     log.d("XXX SEND COUNT DOWN EVENT");
                     kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistMediaCountDown(currentPlayingIndex, countDownOptions));
-                        countDownOptions.setEventSent(true);
+                    countDownOptions.setEventSent(true);
                     preloadNext();
 
                     long timerFutureMS = countDownOptions.getTimeToShowMS();
