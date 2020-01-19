@@ -26,9 +26,15 @@ public interface PlaylistController {
 
     void loop(boolean mode);
 
+    boolean isLoopEnabled();
+
     void shuffle(boolean mode);
 
+    boolean isShuffleEnabled(boolean mode);
+
     void setAutoContinue(boolean mode);
+
+    boolean isAutoContinueEnabled();
 
     void reset();
 

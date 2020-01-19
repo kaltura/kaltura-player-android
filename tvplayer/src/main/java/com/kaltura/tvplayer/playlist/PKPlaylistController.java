@@ -313,6 +313,11 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     @Override
+    public boolean isLoopEnabled() {
+        return loopEnabled;
+    }
+
+    @Override
     public void shuffle(boolean mode) {
         log.d("shuffle mode = " + mode);
         kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistShuffleStateChanged(mode));
@@ -330,8 +335,19 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     @Override
+    public boolean isShuffleEnabled(boolean mode) {
+        return shuffleEnabled;
+    }
+
+    @Override
     public void setAutoContinue(boolean mode) {
         playlistAutoContinue = mode;
+    }
+
+
+    @Override
+    public boolean isAutoContinueEnabled() {
+        return playlistAutoContinue;
     }
 
     @Override
