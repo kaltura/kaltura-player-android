@@ -12,6 +12,10 @@ public interface PlaylistController {
 
     int getCurrentMediaIndex();
 
+    CountDownOptions getCurrentCountDownOptions();
+
+    void disableCountDown();
+
     void preloadNext();
 
     void playItem(int index);

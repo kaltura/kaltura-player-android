@@ -1,16 +1,11 @@
 package com.kaltura.tvplayer.playlist;
 
-import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
-
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PlayerEvent;
-import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
@@ -26,7 +21,6 @@ import java.util.Map;
 public class PKPlaylistController implements PlaylistController {
 
     private static final PKLog log = PKLog.get("PlaylistController");
-    private static Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private KalturaPlayer kalturaPlayer;
     private PKPlaylist playlist;
@@ -62,6 +56,16 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public int getCurrentMediaIndex() {
         return currentPlayingIndex;
+    }
+
+    @Override
+    public CountDownOptions getCurrentCountDownOptions() {
+        return countDownOptions;
+    }
+
+    @Override
+    public void disableCountDown() {
+        countDownOptions.setShouldDisplay(false);
     }
 
     @Override
@@ -416,6 +420,10 @@ public class PKPlaylistController implements PlaylistController {
                 }
             }
 
+            if (event.position >= event.duration) {
+                return;
+            }
+
             if (playlistAutoContinue && countDownOptions != null && countDownOptions.shouldDisplay()) {
                 long timeToShow = (countDownOptions.getTimeToShowMS() == -1) ? Math.max(0, event.duration - countDownOptions.getDurationMS()) : countDownOptions.getTimeToShowMS();
                 if (event.position >= timeToShow) {
@@ -442,10 +450,12 @@ public class PKPlaylistController implements PlaylistController {
     private void handlePlaylistMediaEnded() {
         int playlistSize = playlist.getMediaListSize();
         if (currentPlayingIndex + 1 == playlistSize) {
-            log.d("XXX REPLAY");
+
             if (loopEnabled) {
+                log.d("XXX REPLAY");
                 replay();
             }
+            log.d("XXX PLAYLIST ENDED");
             kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistEnded(playlist));
         } else {
             log.d("XXX PLAY NEXT");
