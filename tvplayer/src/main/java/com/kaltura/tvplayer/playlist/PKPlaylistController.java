@@ -31,6 +31,7 @@ public class PKPlaylistController implements PlaylistController {
     private boolean playlistAutoContinue = true;
     private boolean loopEnabled;
     private boolean shuffleEnabled;
+
     private List<PKPlaylistMedia> origlPlaylistEntries;
     private Map<Integer, PKMediaEntry> loadedMediasMap;
 
@@ -111,6 +112,7 @@ public class PKPlaylistController implements PlaylistController {
         }
     }
 
+
     @Override
     public void playItem(int index) {
         log.d("playItem index = " + index);
@@ -175,7 +177,7 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.loadMedia(ovpMediaOptions, (entry, loadError) -> {
             if (loadError != null) {
                 log.e(loadError.getMessage());
-                // send error event
+                kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
             } else {
                 loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
                 log.d("OVPMedia onEntryLoadComplete  entry = " + entry.getId());
@@ -199,8 +201,9 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.loadMedia(ottMediaOptions, (entry, loadError) -> {
             if (loadError != null) {
                 log.e(loadError.getMessage());
-                // send error event
-            } else {
+                kalturaPlayer.messageBus.post(new PlaylistEvent.PlaylistMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
+            }
+            else {
                 loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
                 log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
             }
@@ -443,7 +446,9 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.addListener(this, PlayerEvent.error, event -> {
             PlayerEvent.Error errorEvent = event;
             log.e("errorEvent.error.errorType"  + " " + event.error.message);
-            //playNext();
+            if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && kalturaPlayer.getPlaylistController() != null && kalturaPlayer.getPlaylistController().isAutoContinueEnabled()) {
+                playNext();
+            }
         });
     }
 

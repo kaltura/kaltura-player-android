@@ -16,6 +16,7 @@ public class PlaylistEvent implements PKEvent {
     public static final Class<PlaylistLoopStateChanged> playlistLoopStateChanged = PlaylistLoopStateChanged.class;
     public static final Class<PlaylistShuffleStateChanged> playlistShuffleStateChanged = PlaylistShuffleStateChanged.class;
     public static final Class<PlaylistError> playListError = PlaylistError.class;
+    public static final Class<PlaylistMediaError> playListMediaError = PlaylistMediaError.class;
 
     public final Type type;
 
@@ -101,6 +102,18 @@ public class PlaylistEvent implements PKEvent {
         }
     }
 
+    public static class PlaylistMediaError extends PlaylistEvent {
+
+        public final Integer mediaIndex;
+        public final ErrorElement error;
+
+        public PlaylistMediaError(Integer mediaIndex, ErrorElement error) {
+            super(Type.PLAYLIST_MEDIA_ERROR);
+            this.mediaIndex = mediaIndex;
+            this.error = error;
+        }
+    }
+
     public enum Type {
         PLAYLIST_LOADED,
         PLAYLIST_STARTED,
@@ -108,10 +121,10 @@ public class PlaylistEvent implements PKEvent {
         PLAYLIST_MEDIA_COUNT_DOWN,
         PLAYLIST_LOOP_STATE_CHANGED,
         PLAYLIST_SUFFLE_STATE_CHANGED,
-        PLAYLIST_ERROR
+        PLAYLIST_ERROR,
         //PLAYLIST_MEDIA_SELECTED,
         //PLAYLIST_MEDIA_ENDED,
-        //PLAYLIST_MEDIA_ERROR,
+        PLAYLIST_MEDIA_ERROR
     }
 
     @Override
