@@ -365,12 +365,13 @@ public class PKPlaylistController implements PlaylistController {
         shuffleEnabled = false;
         loadedMediasMap.clear();
         origlPlaylistEntries.clear();
+        playlist.getMediaList().clear();
     }
 
     @Override
     public void release() {
+        reset();
         kalturaPlayer.removeListeners(this);
-        //kalturaPlayer = null;
     }
 
     @Override
