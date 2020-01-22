@@ -454,11 +454,15 @@ public abstract class KalturaPlayer {
 
     public void destroy() {
         log.d("destroy KalturaPlayer");
-        pkPlayer.removeListeners(this);
-        pkPlayer.destroy();
+        if (pkPlayer != null) {
+            pkPlayer.removeListeners(this);
+            pkPlayer.destroy();
+        }
 
-        playlistController.release();
-        playlistController = null;
+        if (playlistController  != null) {
+            playlistController.release();
+            playlistController = null;
+        }
     }
 
     public void stop() {
