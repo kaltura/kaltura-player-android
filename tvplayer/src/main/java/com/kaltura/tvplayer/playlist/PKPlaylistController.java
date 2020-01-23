@@ -278,6 +278,11 @@ public class PKPlaylistController implements PlaylistController {
             log.d("Ignore playNext - invalid index!");
             return;
         }
+        if (playlist.getMediaList().get(currentPlayingIndex + 1) == null) {
+            ++currentPlayingIndex;
+            playNext();
+            return;
+        }
         playItem(++currentPlayingIndex);
     }
 
@@ -291,6 +296,12 @@ public class PKPlaylistController implements PlaylistController {
                 playItem(currentPlayingIndex) ;
             }
             log.d("Ignore playPrev - invalid index!");
+            return;
+        }
+
+        if (playlist.getMediaList().get(currentPlayingIndex -1) == null) {
+            --currentPlayingIndex;
+            playPrev();
             return;
         }
         playItem(--currentPlayingIndex);
