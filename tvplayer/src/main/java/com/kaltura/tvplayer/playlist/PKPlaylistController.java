@@ -278,11 +278,14 @@ public class PKPlaylistController implements PlaylistController {
             log.d("Ignore playNext - invalid index!");
             return;
         }
-        if (playlist.getMediaList().get(currentPlayingIndex + 1) == null) {
-            ++currentPlayingIndex;
-            playNext();
-            return;
+
+        if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex + 1) == null) ||
+                (kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getPlaylistMediaEntryList().get(currentPlayingIndex + 1) == null)) {
+                ++currentPlayingIndex;
+                playNext();
+                return;
         }
+
         playItem(++currentPlayingIndex);
     }
 
@@ -299,7 +302,8 @@ public class PKPlaylistController implements PlaylistController {
             return;
         }
 
-        if (playlist.getMediaList().get(currentPlayingIndex -1) == null) {
+        if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex + 1) == null) ||
+                (kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getPlaylistMediaEntryList().get(currentPlayingIndex + 1) == null)) {
             --currentPlayingIndex;
             playPrev();
             return;
@@ -376,7 +380,12 @@ public class PKPlaylistController implements PlaylistController {
         shuffleEnabled = false;
         loadedMediasMap.clear();
         origlPlaylistEntries.clear();
-        playlist.getMediaList().clear();
+        if (kalturaPlayer != null && kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist != null && playlist.getMediaList() != null) {
+            playlist.getMediaList().clear();
+        }
+        if (kalturaPlayer != null && kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && playlist != null && ((PKBasicPlaylist)playlist).getPlaylistMediaEntryList() != null) {
+            ((PKBasicPlaylist)playlist).getPlaylistMediaEntryList().clear();
+        }
     }
 
     @Override
