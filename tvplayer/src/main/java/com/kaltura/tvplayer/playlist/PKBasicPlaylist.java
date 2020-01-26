@@ -5,19 +5,18 @@ import com.kaltura.playkit.PKPlaylist;
 import java.util.List;
 
 public class PKBasicPlaylist extends PKPlaylist {
-    private List<PKPlaylistMediaEntry> playlistMediaEntryList;
+    private List<BasicMediaOptions> basicMediaOptionsList;
 
-    public PKBasicPlaylist setPlaylistMediaEntryList(List<PKPlaylistMediaEntry> playlistMediaEntryList) {
-        this.playlistMediaEntryList = playlistMediaEntryList;
-        return this;
+    public List<BasicMediaOptions> getBasicMediaOptionsList() {
+        return basicMediaOptionsList;
     }
 
-    public List<PKPlaylistMediaEntry> getPlaylistMediaEntryList() {
-        return playlistMediaEntryList;
+    public void setBasicMediaOptionsList(List<BasicMediaOptions> basicMediaOptionsList) {
+        this.basicMediaOptionsList = basicMediaOptionsList;
     }
 
     @Override
     public int getMediaListSize() {
-        return playlistMediaEntryList != null ? playlistMediaEntryList.size() : 0;
+        return basicMediaOptionsList != null ? basicMediaOptionsList.size() : 0;
     }
 }

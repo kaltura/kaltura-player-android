@@ -33,7 +33,6 @@ import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
-import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
@@ -45,12 +44,12 @@ import com.kaltura.playkit.providers.PlaylistProvider;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
+import com.kaltura.tvplayer.playlist.BasicMediaOptions;
 import com.kaltura.tvplayer.playlist.BasicPlaylistOptions;
 import com.kaltura.tvplayer.playlist.OTTPlaylistOptions;
 import com.kaltura.tvplayer.playlist.OVPPlaylistIdOptions;
 import com.kaltura.tvplayer.playlist.OVPPlaylistOptions;
 import com.kaltura.tvplayer.playlist.PKBasicPlaylist;
-import com.kaltura.tvplayer.playlist.PKPlaylistMediaEntry;
 import com.kaltura.tvplayer.playlist.PlaylistController;
 
 import com.kaltura.tvplayer.playlist.PKPlaylistController;
@@ -822,13 +821,13 @@ public abstract class KalturaPlayer {
         if (!isValidBasicPlayer())
             return;
 
-        if (playlistOptions == null || playlistOptions.playlistPKMediaEntryList == null) {
+        if (playlistOptions == null || playlistOptions.basicMediaOptionsList == null) {
             return;
         }
 
-        List<PKPlaylistMediaEntry> pkPlaylistMediaEntryList = new ArrayList<>();
-        for (int i = 0; i < playlistOptions.playlistPKMediaEntryList.size() ; i++) {
-            pkPlaylistMediaEntryList.add(new PKPlaylistMediaEntry(i, playlistOptions.playlistPKMediaEntryList.get(i).getPKMediaEntry()));
+        List<BasicMediaOptions> playlistMediaEntryList = new ArrayList<>();
+        for (int i = 0; i < playlistOptions.basicMediaOptionsList.size() ; i++) {
+            playlistMediaEntryList.add(new BasicMediaOptions(i, playlistOptions.basicMediaOptionsList.get(i).getPKMediaEntry()));
         }
 
         PKPlaylist basicPlaylist = new PKBasicPlaylist()
@@ -836,7 +835,7 @@ public abstract class KalturaPlayer {
                 .setName(playlistOptions.playlistMetadata.getName())
                 .setDescription(playlistOptions.playlistMetadata.getDescription())
                 .setThumbnailUrl(playlistOptions.playlistMetadata.getThumbnailUrl());
-        ((PKBasicPlaylist)basicPlaylist).setPlaylistMediaEntryList(pkPlaylistMediaEntryList);
+        ((PKBasicPlaylist)basicPlaylist).setBasicMediaOptionsList(playlistMediaEntryList);
 
         PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), basicPlaylist);
         playlistController.setPlaylistOptions(playlistOptions);

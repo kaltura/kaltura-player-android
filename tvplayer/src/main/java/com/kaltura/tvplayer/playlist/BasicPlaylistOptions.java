@@ -6,11 +6,11 @@ import java.util.List;
 
 public class BasicPlaylistOptions extends  PlaylistOptions {
     public PlaylistMetadata playlistMetadata;
-    public List<PlaylistPKMediaEntry> playlistPKMediaEntryList;
+    public List<BasicMediaOptions> basicMediaOptionsList;
 
-    public BasicPlaylistOptions(PlaylistMetadata playlistMetadata, List<PlaylistPKMediaEntry> playlistPKMediaEntryList) {
+    public BasicPlaylistOptions(PlaylistMetadata playlistMetadata, List<BasicMediaOptions> basicMediaOptionsList) {
         this.playlistMetadata = playlistMetadata;
-        this.playlistPKMediaEntryList = playlistPKMediaEntryList;
+        this.basicMediaOptionsList = basicMediaOptionsList;
     }
 
     public BasicPlaylistOptions() {}

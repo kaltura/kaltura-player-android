@@ -81,7 +81,7 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.setAutoPlay(false);
         kalturaPlayer.setPreload(false);
 
-        if (playlist instanceof PKBasicPlaylist && ((PKBasicPlaylist) playlist).getPlaylistMediaEntryList() == null) {
+        if (playlist instanceof PKBasicPlaylist && ((PKBasicPlaylist) playlist).getBasicMediaOptionsList() == null) {
             return;
         } else if (!(playlist instanceof PKBasicPlaylist) && (playlist == null ||  playlist.getMediaList() == null)) {
             return;
@@ -120,7 +120,7 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.setAutoPlay(true);
         kalturaPlayer.setPreload(true);
 
-        if (playlist instanceof PKBasicPlaylist && ((PKBasicPlaylist) playlist).getPlaylistMediaEntryList() == null) {
+        if (playlist instanceof PKBasicPlaylist && ((PKBasicPlaylist) playlist).getBasicMediaOptionsList() == null) {
             return;
         } else if (!(playlist instanceof PKBasicPlaylist) && (playlist == null ||  playlist.getMediaList() == null)) {
             return;
@@ -180,6 +180,7 @@ public class PKPlaylistController implements PlaylistController {
                 log.e(loadError.getMessage());
                 kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
             } else {
+                // TODO PROTECT NULL ON playlist.getMediaList().get(index)
                 loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
                 log.d("OVPMedia onEntryLoadComplete  entry = " + entry.getId());
             }
@@ -205,6 +206,7 @@ public class PKPlaylistController implements PlaylistController {
                 kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
             }
             else {
+                // TODO PROTECT NULL ON playlist.getMediaList().get(index)
                 loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
                 log.d("OTTMedia onEntryLoadComplete  entry = " + entry.getId());
             }
@@ -215,9 +217,10 @@ public class PKPlaylistController implements PlaylistController {
         BasicPlaylistOptions basicPlaylistOptions = (BasicPlaylistOptions) playlistOptions;
         PKMediaEntry pkMediaEntry = getNextMediaOptions(index, basicPlaylistOptions);
         if (pkMediaEntry == null) {
-            return; // error cannot play any next item
+            return; // error cannot play any next/prev item
         }
-        loadedMediasMap.put(((PKBasicPlaylist)playlist).getPlaylistMediaEntryList().get(index).getMediaIndex(), pkMediaEntry);
+        // TODO PROTECT NULL ON playlist.getMediaList().get(index)
+        loadedMediasMap.put(((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(index).getMediaIndex(), pkMediaEntry);
         kalturaPlayer.setMedia(pkMediaEntry, 0L);
     }
 
@@ -258,10 +261,13 @@ public class PKPlaylistController implements PlaylistController {
 
     private PKMediaEntry getNextMediaOptions(int index, BasicPlaylistOptions basicPlaylistOptions) {
         while(true) {
-            List<PlaylistPKMediaEntry> playlistPKMediaEntryList = basicPlaylistOptions.playlistPKMediaEntryList;
-            if (!(index < playlistPKMediaEntryList.size())) break;
-            if (playlistPKMediaEntryList.get(index) != null && playlistPKMediaEntryList.get(index).getPKMediaEntry() != null) {
-                return playlistPKMediaEntryList.get(index).getPKMediaEntry();
+            List<BasicMediaOptions> playlistBasicMediaEntryList = basicPlaylistOptions.basicMediaOptionsList;
+            if (!(index < playlistBasicMediaEntryList.size())) {
+                break;
+            }
+
+            if (playlistBasicMediaEntryList.get(index) != null && playlistBasicMediaEntryList.get(index).getPKMediaEntry() != null) {
+                return playlistBasicMediaEntryList.get(index).getPKMediaEntry();
             }
             index++;
         }
@@ -281,7 +287,7 @@ public class PKPlaylistController implements PlaylistController {
         }
 
         if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex + 1) == null) ||
-                (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getPlaylistMediaEntryList().get(currentPlayingIndex + 1) == null)) {
+                (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex + 1) == null)) {
                 ++currentPlayingIndex;
                 playNext();
                 return;
@@ -304,7 +310,7 @@ public class PKPlaylistController implements PlaylistController {
         }
 
         if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex - 1) == null) ||
-                (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getPlaylistMediaEntryList().get(currentPlayingIndex - 1) == null)) {
+                (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex - 1) == null)) {
             --currentPlayingIndex;
             playPrev();
             return;
@@ -386,8 +392,8 @@ public class PKPlaylistController implements PlaylistController {
         if (kalturaPlayer != null && kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist != null && playlist.getMediaList() != null) {
             playlist.getMediaList().clear();
         }
-        if (kalturaPlayer != null && kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && playlist != null && ((PKBasicPlaylist)playlist).getPlaylistMediaEntryList() != null) {
-            ((PKBasicPlaylist)playlist).getPlaylistMediaEntryList().clear();
+        if (kalturaPlayer != null && kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && playlist != null && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList() != null) {
+            ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().clear();
         }
     }
 
@@ -440,7 +446,7 @@ public class PKPlaylistController implements PlaylistController {
                 }
 
                 if (playlistOptions instanceof BasicPlaylistOptions) {
-                    countDownOptions = ((BasicPlaylistOptions) playlistOptions).playlistPKMediaEntryList.get(currentPlayingIndex).getCountDownOptions();
+                    countDownOptions = ((BasicPlaylistOptions) playlistOptions).basicMediaOptionsList.get(currentPlayingIndex).getCountDownOptions();
                 }
 
                 if (countDownOptions == null) {
