@@ -488,6 +488,7 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private void handlePlaylistMediaEnded() {
+        resetCountDownOptions();
         int playlistSize = playlist.getMediaListSize();
         if (currentPlayingIndex + 1 == playlistSize) {
 
