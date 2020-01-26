@@ -421,8 +421,9 @@ public class PKPlaylistController implements PlaylistController {
             log.d("ended event received");
             if (playlistAutoContinue && (countDownOptions == null || !countDownOptions.shouldDisplay()|| countDownOptions.getTimeToShowMS() == -1 || !countDownOptions.isEventSent())) {
                 handlePlaylistMediaEnded();
+            } else {
+                resetCountDownOptions();
             }
-            resetCountDownOptions();
         });
 
 
