@@ -119,7 +119,7 @@ public class PKPlaylistController implements PlaylistController {
         log.d("playItem index = " + index);
         kalturaPlayer.setAutoPlay(true);
         kalturaPlayer.setPreload(true);
-
+        countDownOptions = null;
         if (playlist instanceof PKBasicPlaylist && ((PKBasicPlaylist) playlist).getBasicMediaOptionsList() == null) {
             return;
         } else if (!(playlist instanceof PKBasicPlaylist) && (playlist == null ||  playlist.getMediaList() == null)) {
@@ -406,7 +406,6 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void setPlaylistOptions(PlaylistOptions playlistOptions) {
         this.playlistOptions = playlistOptions;
-        this.countDownOptions = playlistOptions.countDownOptions;
         shuffle(playlistOptions.shuffleEnabled);
         loop(playlistOptions.loopEnabled);
         setAutoContinue(playlistOptions.autoContinue);
@@ -440,19 +439,16 @@ public class PKPlaylistController implements PlaylistController {
             if (countDownOptions == null) {
                 if (playlistOptions instanceof OVPPlaylistOptions) {
                     countDownOptions = ((OVPPlaylistOptions) playlistOptions).ovpMediaOptionsList.get(currentPlayingIndex).countDownOptions;
-
-                }
-                if (playlistOptions instanceof OTTPlaylistOptions) {
+                } else if (playlistOptions instanceof OTTPlaylistOptions) {
                     countDownOptions = ((OTTPlaylistOptions) playlistOptions).ottMediaOptionsList.get(currentPlayingIndex).countDownOptions;
-                }
-
-                if (playlistOptions instanceof BasicPlaylistOptions) {
+                } else if (playlistOptions instanceof BasicPlaylistOptions) {
                     countDownOptions = ((BasicPlaylistOptions) playlistOptions).basicMediaOptionsList.get(currentPlayingIndex).getCountDownOptions();
                 }
 
                 if (countDownOptions == null) {
-                    countDownOptions = playlistOptions.countDownOptions;
+                    countDownOptions = (playlistOptions.countDownOptions != null) ? playlistOptions.countDownOptions : new CountDownOptions();
                 }
+                countDownOptions.setEventSent(false);
             }
 
             if (event.position >= event.duration) {
