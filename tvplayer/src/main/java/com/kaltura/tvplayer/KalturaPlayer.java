@@ -71,7 +71,6 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
-    public static MessageBus messageBus = new MessageBus();
 
     static boolean playerConfigRetrieved;
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
@@ -92,6 +91,7 @@ public abstract class KalturaPlayer {
         basic
     }
 
+    private MessageBus messageBus;
     private boolean pluginsRegistered;
     private Type tvPlayerType;
 
@@ -124,6 +124,7 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
+        messageBus = new MessageBus();
         this.referrer = buildReferrer(context, initOptions.referrer);
         populatePartnersValues();
         this.ks = initOptions.ks;
@@ -208,6 +209,10 @@ public abstract class KalturaPlayer {
             kavaAnalyticsConfig.setReferrer(referrer);
         }
         return kavaAnalyticsConfig;
+    }
+
+    public MessageBus getMessageBus() {
+        return messageBus;
     }
 
     private void loadPlayer() {
@@ -463,6 +468,7 @@ public abstract class KalturaPlayer {
             playlistController.release();
             playlistController = null;
         }
+        messageBus = null;
     }
 
     public void stop() {

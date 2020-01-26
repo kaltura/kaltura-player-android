@@ -12,7 +12,8 @@ public class PlaylistEvent implements PKEvent {
     public static final Class<PlaylistLoaded> playListLoaded = PlaylistLoaded.class;
     public static final Class<PlaylistStarted> playListStarted = PlaylistStarted.class;
     public static final Class<PlaylistEnded> playListEnded = PlaylistEnded.class;
-    public static final Class<PlaylistMediaCountDown> playlistMediaCountDown = PlaylistMediaCountDown.class;
+    public static final Class<CountDownStart> countDownStart = CountDownStart.class;
+    public static final Class<CountDownEnd> countDownEnd = CountDownEnd.class;
     public static final Class<PlaylistLoopStateChanged> playlistLoopStateChanged = PlaylistLoopStateChanged.class;
     public static final Class<PlaylistShuffleStateChanged> playlistShuffleStateChanged = PlaylistShuffleStateChanged.class;
     public static final Class<PlaylistError> playListError = PlaylistError.class;
@@ -60,13 +61,25 @@ public class PlaylistEvent implements PKEvent {
         }
     }
 
-    public static class PlaylistMediaCountDown extends PlaylistEvent {
+    public static class CountDownStart extends PlaylistEvent {
 
         public final int currentPlayingIndex;
         public final CountDownOptions countDownOptions;
 
-        public PlaylistMediaCountDown(int currentPlayingIndex, CountDownOptions countDownOptions) {
-            super(Type.PLAYLIST_MEDIA_COUNT_DOWN);
+        public CountDownStart(int currentPlayingIndex, CountDownOptions countDownOptions) {
+            super(Type.PLAYLIST_COUNT_DOWN_START);
+            this.currentPlayingIndex = currentPlayingIndex;
+            this.countDownOptions = countDownOptions;
+        }
+    }
+
+    public static class CountDownEnd extends PlaylistEvent {
+
+        public final int currentPlayingIndex;
+        public final CountDownOptions countDownOptions;
+
+        public CountDownEnd(int currentPlayingIndex, CountDownOptions countDownOptions) {
+            super(Type.PLAYLIST_COUNT_DOWN_END);
             this.currentPlayingIndex = currentPlayingIndex;
             this.countDownOptions = countDownOptions;
         }
@@ -118,7 +131,8 @@ public class PlaylistEvent implements PKEvent {
         PLAYLIST_LOADED,
         PLAYLIST_STARTED,
         PLAYLIST_ENDED,
-        PLAYLIST_MEDIA_COUNT_DOWN,
+        PLAYLIST_COUNT_DOWN_START,
+        PLAYLIST_COUNT_DOWN_END,
         PLAYLIST_LOOP_STATE_CHANGED,
         PLAYLIST_SUFFLE_STATE_CHANGED,
         PLAYLIST_ERROR,
