@@ -607,8 +607,7 @@ public abstract class KalturaPlayer {
     // Called by implementation of loadMedia().
     private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
 
-        PKMediaEntry responseEntry = response.getResponse();
-        final PKMediaEntry entry = responseEntry;
+        final PKMediaEntry entry = response.getResponse();
         mainHandler.post(() -> {
             if (entry != null) {
                 setMedia(entry);
@@ -631,41 +630,6 @@ public abstract class KalturaPlayer {
             messageBus.post(new PlaylistEvent.PlaylistLoaded(playlist));
             onPlaylistLoadListener.onPlaylistLoadComplete(playlist, null);
         });
-
-//        mainHandler.post(() -> {
-//            if (playlist != null) {
-//                if (tvPlayerType == Type.ovp) {
-//                    OVPMediaOptions ovpMediaOptions = new OVPMediaOptions();
-//                    ovpMediaOptions.entryId = playlist.getMediaList().get(0).getId();
-//                    ovpMediaOptions.ks = playlist.getMediaList().get(0).getKs();
-//                    loadMedia(ovpMediaOptions, (entry, loadError) -> {
-//                        if (loadError != null) {
-//                            log.e(loadError.getMessage());
-//                            // send error event
-//                        } else {
-//                            log.d("OVPMedia onEntryLoadComplete  entry = " + entry.getId());
-//                        }
-//                    });
-//                } else if (tvPlayerType == Type.ott) {
-//                    OTTMediaOptions ottMediaOptions = new OTTMediaOptions();
-//                    ottMediaOptions.assetId = playlist.getMediaList().get(0).getId();
-////                   ottMediaOptions.assetType = playlist.getMediaList().get(0).
-////
-////                    ovpMediaOptions.ks = playlist.getMediaList().get(0).getKs();
-////                    loadMedia(ovpMediaOptions, (entry, loadError) -> {
-////                        if (loadError != null) {
-////                            log.e(loadError.getMessage());
-////                            // send error event
-////                        } else {
-////                            log.d("OVPMedia onEntryLoadComplete  entry = " + entry.getId());
-////                        }
-////                    });
-//                } else {
-//
-//                }
-//            }
-//        });
-
     }
 
 
@@ -710,28 +674,20 @@ public abstract class KalturaPlayer {
                     }
                     populatePartnersValues();
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
-                    provider.load(response -> playlistLoadCompleted(response, new OnPlaylistLoadListener() {
-
-
-                        @Override
-                        public void onPlaylistLoadComplete(PKPlaylist playlist, ErrorElement error) {
-                            PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist);
-                            playlistController.setPlaylistOptions(playlistOptions);
-                            controllerListener.onPlaylistControllerComplete(playlistController, null);
-                            setPlaylistController(playlistController);
-                            if (playlistController != null) {
-                                messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
-                                playlistController.playItem(playlistOptions.startIndex);
-
-                            }
-                        }
+                    provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
+                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist);
+                        playlistController.setPlaylistOptions(playlistOptions);
+                        controllerListener.onPlaylistControllerComplete(playlistController, null);
+                        setPlaylistController(playlistController);
+                            messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+                            playlistController.playItem(playlistOptions.startIndex);
                     }));
                 }
             }
 
             @Override
             public void onFinish() {
-                log.e("KalturaPlayerNotInitializedError");
+                log.e("OVP loadPlaylist by id KalturaPlayerNotInitializedError");
                 controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError);
             }
         }.start();
@@ -754,24 +710,19 @@ public abstract class KalturaPlayer {
                     }
                     populatePartnersValues();
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
-                    provider.load(response -> playlistLoadCompleted(response, new OnPlaylistLoadListener() {
-                        @Override
-                        public void onPlaylistLoadComplete(PKPlaylist playlist, ErrorElement error) {
-                            PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist);
-                            playlistController.setPlaylistOptions(playlistOptions);
-                            controllerListener.onPlaylistControllerComplete(playlistController, null);
-                            setPlaylistController(playlistController);
-                            if (playlistController != null) {
-                                playlistController.playItem(playlistOptions.startIndex);
-                            }
-                        }
+                    provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
+                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist);
+                        playlistController.setPlaylistOptions(playlistOptions);
+                        controllerListener.onPlaylistControllerComplete(playlistController, null);
+                        setPlaylistController(playlistController);
+                        playlistController.playItem(playlistOptions.startIndex);
                     }));
                 }
             }
 
             @Override
             public void onFinish() {
-                log.e("KalturaPlaylistInitializedError");
+                log.e("OVP loadPlaylist KalturaPlaylistInitializedError");
                 controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError);
             }
         }.start();
@@ -793,16 +744,13 @@ public abstract class KalturaPlayer {
                     }
                     populatePartnersValues();
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
-                    provider.load(response -> playlistLoadCompleted(response, new OnPlaylistLoadListener() {
-                        @Override
-                        public void onPlaylistLoadComplete(PKPlaylist playlist, ErrorElement error) {
-                            PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist);
-                            playlistController.setPlaylistOptions(playlistOptions);
-                            controllerListener.onPlaylistControllerComplete(playlistController, null);
-                            setPlaylistController(playlistController);
-                            if (playlistController != null) {
-                                playlistController.playItem(playlistOptions.startIndex);
-                            }
+                    provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
+                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist);
+                        playlistController.setPlaylistOptions(playlistOptions);
+                        controllerListener.onPlaylistControllerComplete(playlistController, null);
+                        setPlaylistController(playlistController);
+                        if (playlistController != null) {
+                            playlistController.playItem(playlistOptions.startIndex);
                         }
                     }));
                 }
@@ -810,7 +758,7 @@ public abstract class KalturaPlayer {
 
             @Override
             public void onFinish() {
-                log.e("KalturaPlayerNotInitializedError");
+                log.e("OTT loadPlaylist KalturaPlayerNotInitializedError");
                 controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError);
             }
         }.start();
@@ -841,9 +789,7 @@ public abstract class KalturaPlayer {
         playlistController.setPlaylistOptions(playlistOptions);
         controllerListener.onPlaylistControllerComplete(playlistController, null);
         setPlaylistController(playlistController);
-        if (playlistController != null) {
-            playlistController.playItem(playlistOptions.startIndex);
-        }
+        playlistController.playItem(playlistOptions.startIndex);
     }
 
     public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
@@ -929,7 +875,7 @@ public abstract class KalturaPlayer {
     }
 
     private boolean isValidBasicPlayer() {
-        return Type.basic.equals(tvPlayerType) ? true : false;
+        return Type.basic.equals(tvPlayerType);
     }
 
     private void prepareLoadMedia(MediaOptions mediaOptions) {

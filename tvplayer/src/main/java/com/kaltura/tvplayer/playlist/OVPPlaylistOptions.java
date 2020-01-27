@@ -5,7 +5,6 @@ import com.kaltura.playkit.providers.PlaylistProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpPlaylistProvider;
 import com.kaltura.playkit.providers.ovp.OVPMediaAsset;
 import com.kaltura.tvplayer.OVPMediaOptions;
-import com.kaltura.tvplayer.playlist.PlaylistOptions;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,6 @@
 package com.kaltura.tvplayer.playlist;
 
 import com.kaltura.netkit.utils.ErrorElement;
-import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlaylist;
 

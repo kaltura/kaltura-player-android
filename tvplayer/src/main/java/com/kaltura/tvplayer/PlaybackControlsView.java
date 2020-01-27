@@ -44,12 +44,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private boolean dragging = false;
 
 
-    private Runnable updateProgressAction = new Runnable() {
-        @Override
-        public void run() {
-            updateProgress();
-        }
-    };
+    private Runnable updateProgressAction = () -> updateProgress();
 
     public PlaybackControlsView(Context context) {
         this(context, null);

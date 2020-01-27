@@ -2,8 +2,6 @@ package com.kaltura.tvplayer;
 
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.providers.MediaEntryProvider;
-import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
-import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.tvplayer.playlist.CountDownOptions;
 
 import java.util.List;
