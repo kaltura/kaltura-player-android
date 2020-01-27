@@ -331,7 +331,7 @@ public class PKPlaylistController implements PlaylistController {
         if (loadedMediasMap == null) {
             return false;
         }
-        return loadedMediasMap.get(index) != null ;
+        return loadedMediasMap.containsKey(index) && loadedMediasMap.get(index) != null ;
     }
 
     @Override
