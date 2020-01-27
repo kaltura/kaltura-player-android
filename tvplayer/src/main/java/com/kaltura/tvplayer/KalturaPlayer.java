@@ -631,9 +631,7 @@ public abstract class KalturaPlayer {
             onPlaylistLoadListener.onPlaylistLoadComplete(playlist, null);
         });
     }
-
-
-
+    
     private void populatePartnersValues() {
         if (Type.basic.equals(tvPlayerType) || (Type.ott.equals(tvPlayerType)) && kavaPartnerIdIsMissing(initOptions)) {
             if (Type.basic.equals(tvPlayerType)) {
