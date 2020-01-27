@@ -303,7 +303,7 @@ public class PKPlaylistController implements PlaylistController {
         if (currentPlayingIndex - 1 < 0) {
             if (loopEnabled) {
                 currentPlayingIndex = playlistSize - 1;
-                playItem(currentPlayingIndex) ;
+                playItem(currentPlayingIndex);
             }
             log.d("Ignore playPrev - invalid index!");
             return;
