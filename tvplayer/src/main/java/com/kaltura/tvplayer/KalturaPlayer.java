@@ -631,7 +631,7 @@ public abstract class KalturaPlayer {
             onPlaylistLoadListener.onPlaylistLoadComplete(playlist, null);
         });
     }
-    
+
     private void populatePartnersValues() {
         if (Type.basic.equals(tvPlayerType) || (Type.ott.equals(tvPlayerType)) && kavaPartnerIdIsMissing(initOptions)) {
             if (Type.basic.equals(tvPlayerType)) {
@@ -677,8 +677,8 @@ public abstract class KalturaPlayer {
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
-                            messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
-                            playlistController.playItem(playlistOptions.startIndex);
+                        messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+                        playlistController.playItem(playlistOptions.startIndex, autoPlay);
                     }));
                 }
             }
@@ -713,7 +713,7 @@ public abstract class KalturaPlayer {
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
-                        playlistController.playItem(playlistOptions.startIndex);
+                        playlistController.playItem(playlistOptions.startIndex, autoPlay);
                     }));
                 }
             }
@@ -747,9 +747,8 @@ public abstract class KalturaPlayer {
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
-                        if (playlistController != null) {
-                            playlistController.playItem(playlistOptions.startIndex);
-                        }
+                        playlistController.playItem(playlistOptions.startIndex, autoPlay);
+
                     }));
                 }
             }
@@ -787,7 +786,7 @@ public abstract class KalturaPlayer {
         playlistController.setPlaylistOptions(playlistOptions);
         controllerListener.onPlaylistControllerComplete(playlistController, null);
         setPlaylistController(playlistController);
-        playlistController.playItem(playlistOptions.startIndex);
+        playlistController.playItem(playlistOptions.startIndex, autoPlay);
     }
 
     public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {

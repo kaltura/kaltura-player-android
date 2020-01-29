@@ -18,7 +18,11 @@ public interface PlaylistController {
 
     void preloadNext();
 
+    void preloadItem(int index);
+
     void playItem(int index);
+
+    void playItem(int index, boolean isAutoPlay);
 
     void playNext();
 

@@ -114,10 +114,24 @@ public class PKPlaylistController implements PlaylistController {
         }
     }
 
+    /**
+     *  playback will start automatically
+     */
+
     @Override
     public void playItem(int index) {
         log.d("playItem index = " + index);
-        kalturaPlayer.setAutoPlay(true);
+        playItem(index, true);
+    }
+
+    /**
+     *  playback will start only if isAutoPlay == true
+     */
+
+    @Override
+    public void playItem(int index, boolean isAutoPlay) {
+        log.d("playItem index = " + index);
+        kalturaPlayer.setAutoPlay(isAutoPlay);
         kalturaPlayer.setPreload(true);
         countDownOptions = null;
         if (playlist instanceof PKBasicPlaylist && ((PKBasicPlaylist) playlist).getBasicMediaOptionsList() == null) {
