@@ -67,7 +67,9 @@ public class PKPlaylistController implements PlaylistController {
 
     @Override
     public void disableCountDown() {
-        countDownOptions.setShouldDisplay(false);
+        if (countDownOptions != null) {
+            countDownOptions.setShouldDisplay(false);
+        }
     }
 
     @Override
@@ -77,7 +79,8 @@ public class PKPlaylistController implements PlaylistController {
         }
     }
 
-    private void preloadItem(int index) {
+    @Override
+    public void preloadItem(int index) {
         kalturaPlayer.setAutoPlay(false);
         kalturaPlayer.setPreload(false);
 
@@ -442,7 +445,7 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.seeking, event -> {
             log.d("seeking event received");
-            if (countDownOptions.isEventSent() && event.targetPosition < countDownOptions.getTimeToShowMS()) {
+            if (countDownOptions != null && countDownOptions.isEventSent() && event.targetPosition < countDownOptions.getTimeToShowMS()) {
                 countDownOptions.setEventSent(false);
             }
         });
@@ -517,7 +520,9 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private void resetCountDownOptions() {
-        countDownOptions.setEventSent(false);
-        countDownOptions = null;
+        if (countDownOptions != null) {
+            countDownOptions.setEventSent(false);
+            countDownOptions = null;
+        }
     }
 }
