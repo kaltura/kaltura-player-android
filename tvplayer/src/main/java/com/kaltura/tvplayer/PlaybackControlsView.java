@@ -110,7 +110,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
             }
         }
 
-        if (player != null && player.getMediaEntry().getMediaType().equals(Live)) {
+        if (player != null && player.getMediaEntry() != null && player.getMediaEntry().getMediaType().equals(Live)) {
             tvLiveIndicator.setVisibility(VISIBLE);
             tvCurTime.setVisibility(INVISIBLE);
             tvTime.setVisibility(View.INVISIBLE);
@@ -124,7 +124,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 seekBar.setProgress(progressBarValue(position));
             }
 
-            if (player != null && player.getMediaEntry().getMediaType().equals(DvrLive)) {
+            if (player != null && player.getMediaEntry() != null && player.getMediaEntry().getMediaType().equals(DvrLive)) {
                 tvLiveIndicator.setVisibility(VISIBLE);
                 if (!dragging && position > (duration - LIVE_EDGE_THRESHOLD)) {
                     tvLiveIndicator.setBackgroundResource(R.drawable.red_background);

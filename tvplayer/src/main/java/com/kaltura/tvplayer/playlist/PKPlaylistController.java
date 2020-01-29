@@ -240,7 +240,7 @@ public class PKPlaylistController implements PlaylistController {
         int playlistSize = playlist.getMediaListSize();
         isValidIndex = index >= 0 && index < playlistSize;
         if (!isValidIndex) {
-            String errorMessage = "Invalid Basic playlist index = " + index + " size = " + playlistSize;
+            String errorMessage = "Invalid playlist index = " + index + " size = " + playlistSize;
             String errorCode = "InvalidPlaylistIndex";
             kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistError
                     (new ErrorElement(errorMessage, errorCode)));
@@ -298,7 +298,9 @@ public class PKPlaylistController implements PlaylistController {
         }
 
         if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex + 1) == null) ||
-                (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex + 1) == null)) {
+                (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex + 1) == null) ||
+                (loadedMediasMap.containsKey(currentPlayingIndex + 1) && loadedMediasMap.get(currentPlayingIndex + 1) == null)
+        ) {
             ++currentPlayingIndex;
             playNext();
             return;
@@ -321,7 +323,8 @@ public class PKPlaylistController implements PlaylistController {
         }
 
         if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex - 1) == null) ||
-                (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex - 1) == null)) {
+                (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex - 1) == null) ||
+                (loadedMediasMap.containsKey(currentPlayingIndex - 1) && loadedMediasMap.get(currentPlayingIndex - 1) == null)) {
             --currentPlayingIndex;
             playPrev();
             return;
@@ -490,6 +493,7 @@ public class PKPlaylistController implements PlaylistController {
                     kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic &&
                     kalturaPlayer.getPlaylistController() != null &&
                     kalturaPlayer.getPlaylistController().isAutoContinueEnabled()) {
+                loadedMediasMap.put(currentPlayingIndex, null);
                 playNext();
             }
         });
