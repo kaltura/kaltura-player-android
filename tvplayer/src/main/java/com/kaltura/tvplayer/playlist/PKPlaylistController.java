@@ -120,8 +120,6 @@ public class PKPlaylistController implements PlaylistController {
 
     @Override
     public void playItem(int index) {
-        log.d("playItem index = " + index);
-
         playItem(index, isAutoContinueEnabled());
     }
 
