@@ -419,6 +419,7 @@ public class PKPlaylistController implements PlaylistController {
         currentPlayingIndex = -1;
         loopEnabled  = false;
         shuffleEnabled = false;
+        playlistAutoContinue = true;
         loadedMediasMap.clear();
         origlPlaylistEntries.clear();
         if (kalturaPlayer != null && kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist != null && playlist.getMediaList() != null) {
@@ -506,13 +507,14 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.error, event -> {
             log.e("errorEvent.error.errorType"  + " " + event.error.message + " severity = " + event.error.severity);
-            if (playlistAutoContinue &&
-                    event.error.severity == PKError.Severity.Fatal &&
-                    kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic &&
-                    kalturaPlayer.getPlaylistController() != null &&
-                    kalturaPlayer.getPlaylistController().isAutoContinueEnabled()) {
+            if (event.error.severity == PKError.Severity.Fatal) {
                 loadedMediasMap.put(currentPlayingIndex, null);
-                playNext();
+                kalturaPlayer.stop();
+                if (isAutoContinueEnabled()) {
+                    playNext();
+                } else {
+                    playItem(currentPlayingIndex + 1, false);
+                }
             }
         });
     }
