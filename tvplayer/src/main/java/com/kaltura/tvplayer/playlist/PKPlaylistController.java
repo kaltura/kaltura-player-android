@@ -461,6 +461,12 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.seeking, event -> {
             log.d("seeking event received");
+
+            if (countDownOptions != null && !countDownOptions.isEventSent() && event.targetPosition > (countDownOptions.getTimeToShowMS() + countDownOptions.getDurationMS())) {
+                countDownOptions.setTimeToShowMS(event.targetPosition);
+                return;
+            }
+
             if (countDownOptions != null && countDownOptions.isEventSent() && event.targetPosition < countDownOptions.getTimeToShowMS()) {
                 countDownOptions.setEventSent(false);
             }
@@ -488,21 +494,7 @@ public class PKPlaylistController implements PlaylistController {
                 return;
             }
 
-            if (playlistAutoContinue && countDownOptions != null && countDownOptions.shouldDisplay()) {
-                long timeToShow = (countDownOptions.getTimeToShowMS() == -1) ? Math.max(0, event.duration - countDownOptions.getDurationMS()) : countDownOptions.getTimeToShowMS();
-                if (event.position >= timeToShow) {
-                    if (!countDownOptions.isEventSent()) {
-                        log.d("SEND COUNT DOWN EVENT position = " + event.position);
-                        kalturaPlayer.getMessageBus().post(new PlaylistEvent.CountDownStart(currentPlayingIndex, countDownOptions));
-                        countDownOptions.setEventSent(true);
-                        preloadNext();
-                    } else if (event.position >= Math.min(timeToShow + countDownOptions.getDurationMS(), event.duration)) {
-                        kalturaPlayer.getMessageBus().post(new PlaylistEvent.CountDownEnd(currentPlayingIndex, countDownOptions));
-                        //log.d("playhead updated handlePlaylistMediaEnded");
-                        handlePlaylistMediaEnded();
-                    }
-                }
-            }
+            handleCountDownEvent(event);
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.error, event -> {
@@ -519,11 +511,28 @@ public class PKPlaylistController implements PlaylistController {
         });
     }
 
+    private void handleCountDownEvent(PlayerEvent.PlayheadUpdated event) {
+        if (currentPlayingIndex + 1 <  playlist.getMediaListSize() && playlistAutoContinue && countDownOptions != null && countDownOptions.shouldDisplay()) {
+            long timeToShow = (countDownOptions.getTimeToShowMS() == -1) ? Math.max(0, event.duration - countDownOptions.getDurationMS()) : countDownOptions.getTimeToShowMS();
+            if (event.position >= timeToShow) {
+                if (!countDownOptions.isEventSent()) {
+                    log.d("SEND COUNT DOWN EVENT position = " + event.position);
+                    kalturaPlayer.getMessageBus().post(new PlaylistEvent.CountDownStart(currentPlayingIndex, countDownOptions));
+                    countDownOptions.setEventSent(true);
+                    preloadNext();
+                } else if (event.position >= Math.min(timeToShow + countDownOptions.getDurationMS(), event.duration)) {
+                    kalturaPlayer.getMessageBus().post(new PlaylistEvent.CountDownEnd(currentPlayingIndex, countDownOptions));
+                    //log.d("playhead updated handlePlaylistMediaEnded");
+                    handlePlaylistMediaEnded();
+                }
+            }
+        }
+    }
+
     private void handlePlaylistMediaEnded() {
         resetCountDownOptions();
         int playlistSize = playlist.getMediaListSize();
         if (currentPlayingIndex + 1 == playlistSize) {
-
             if (loopEnabled) {
                 log.d("PLAYLIST REPLAY");
                 replay();
