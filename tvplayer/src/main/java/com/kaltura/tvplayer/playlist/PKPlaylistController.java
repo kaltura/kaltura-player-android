@@ -470,11 +470,9 @@ public class PKPlaylistController implements PlaylistController {
                 return;
             }
 
-            if (event.targetPosition < kalturaPlayer.getCurrentPosition()) {
-                if (countDownOptions.isEventSent()) {
-                    countDownOptions.setTimeToShowMS(countDownOptions.getOrigTimeToShowMS());
-                    countDownOptions.setEventSent(false);
-                }
+            if (event.targetPosition < event.currentPosition) {
+                countDownOptions.setTimeToShowMS(countDownOptions.getOrigTimeToShowMS());
+                countDownOptions.setEventSent(false);
                 return;
             }
 
@@ -498,18 +496,20 @@ public class PKPlaylistController implements PlaylistController {
             log.d("playheadUpdated received position = " + event.position + "/" + event.duration);
 
             if (countDownOptions == null) {
+                CountDownOptions tmpCountDownOptions = null;
                 if (playlistOptions instanceof OVPPlaylistOptions) {
-                    countDownOptions = ((OVPPlaylistOptions) playlistOptions).ovpMediaOptionsList.get(currentPlayingIndex).countDownOptions;
+                    tmpCountDownOptions = ((OVPPlaylistOptions) playlistOptions).ovpMediaOptionsList.get(currentPlayingIndex).countDownOptions;
                 } else if (playlistOptions instanceof OTTPlaylistOptions) {
-                    countDownOptions = ((OTTPlaylistOptions) playlistOptions).ottMediaOptionsList.get(currentPlayingIndex).countDownOptions;
+                    tmpCountDownOptions = ((OTTPlaylistOptions) playlistOptions).ottMediaOptionsList.get(currentPlayingIndex).countDownOptions;
                 } else if (playlistOptions instanceof BasicPlaylistOptions) {
-                    countDownOptions = ((BasicPlaylistOptions) playlistOptions).basicMediaOptionsList.get(currentPlayingIndex).getCountDownOptions();
+                    tmpCountDownOptions = ((BasicPlaylistOptions) playlistOptions).basicMediaOptionsList.get(currentPlayingIndex).getCountDownOptions();
                 }
 
-                if (countDownOptions == null) {
-                    countDownOptions = (playlistOptions.countDownOptions != null) ? playlistOptions.countDownOptions : new CountDownOptions();
+                if (tmpCountDownOptions == null) {
+                    tmpCountDownOptions = (playlistOptions.countDownOptions != null) ? playlistOptions.countDownOptions : new CountDownOptions();
                 }
-                countDownOptions.setEventSent(false);
+
+                countDownOptions = new CountDownOptions(tmpCountDownOptions.getTimeToShowMS(), tmpCountDownOptions.getDurationMS(), tmpCountDownOptions.shouldDisplay());
             }
 
             if (event.position >= event.duration) {
