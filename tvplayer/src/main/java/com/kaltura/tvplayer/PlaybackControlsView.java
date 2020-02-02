@@ -274,4 +274,10 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     public void setSeekbarEnabled() {
         seekBar.setEnabled(true);
     }
+
+    public void setSeekBarVisibility(int visibility) {
+        seekBar.setVisibility(visibility);
+        tvCurTime.setVisibility(visibility);
+        tvTime.setVisibility(visibility);
+    }
 }
