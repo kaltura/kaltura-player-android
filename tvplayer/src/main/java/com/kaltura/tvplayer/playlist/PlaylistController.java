@@ -8,6 +8,8 @@ public interface PlaylistController {
 
     PKPlaylist getPlaylist();
 
+    PKPlaylistType getPlaylistType();
+
     PKPlaylistMedia getCurrentPlaylistMedia();
 
     int getCurrentMediaIndex();

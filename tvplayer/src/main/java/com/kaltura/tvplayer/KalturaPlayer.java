@@ -50,6 +50,7 @@ import com.kaltura.tvplayer.playlist.OTTPlaylistOptions;
 import com.kaltura.tvplayer.playlist.OVPPlaylistIdOptions;
 import com.kaltura.tvplayer.playlist.OVPPlaylistOptions;
 import com.kaltura.tvplayer.playlist.PKBasicPlaylist;
+import com.kaltura.tvplayer.playlist.PKPlaylistType;
 import com.kaltura.tvplayer.playlist.PlaylistController;
 
 import com.kaltura.tvplayer.playlist.PKPlaylistController;
@@ -204,9 +205,18 @@ public abstract class KalturaPlayer {
         if (!TextUtils.isEmpty(ks)) {
             kavaAnalyticsConfig.setKs(ks);
         }
+
         if (!TextUtils.isEmpty(referrer)) {
             kavaAnalyticsConfig.setReferrer(referrer);
         }
+
+        if (playlistController != null &&
+                playlistController.getPlaylist() != null &&
+                playlistController.getPlaylistType() == PKPlaylistType.OVP_ID &&
+                playlistController.getPlaylist().getId() != null) {
+            kavaAnalyticsConfig.setPlaylistId(playlistController.getPlaylist().getId());
+        }
+
         return kavaAnalyticsConfig;
     }
 
@@ -673,7 +683,7 @@ public abstract class KalturaPlayer {
                     populatePartnersValues();
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
-                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist);
+                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist, PKPlaylistType.OVP_ID);
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
@@ -709,7 +719,7 @@ public abstract class KalturaPlayer {
                     populatePartnersValues();
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
-                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist);
+                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist, PKPlaylistType.OVP_LIST);
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
@@ -743,7 +753,7 @@ public abstract class KalturaPlayer {
                     populatePartnersValues();
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
-                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist);
+                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist, PKPlaylistType.OTT_LIST);
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
@@ -782,7 +792,7 @@ public abstract class KalturaPlayer {
                 .setThumbnailUrl(playlistOptions.playlistMetadata.getThumbnailUrl());
         ((PKBasicPlaylist)basicPlaylist).setBasicMediaOptionsList(playlistMediaEntryList);
 
-        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), basicPlaylist);
+        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), basicPlaylist, PKPlaylistType.BASIC_LIST);
         playlistController.setPlaylistOptions(playlistOptions);
         controllerListener.onPlaylistControllerComplete(playlistController, null);
         setPlaylistController(playlistController);

@@ -7,7 +7,6 @@ import com.kaltura.playkit.PKPlaylist;
 @SuppressWarnings({"unused", "WeakerAccess"})
 public class PlaylistEvent implements PKEvent {
 
-
     public static final Class<PlaylistLoaded> playListLoaded = PlaylistLoaded.class;
     public static final Class<PlaylistStarted> playListStarted = PlaylistStarted.class;
     public static final Class<PlaylistEnded> playListEnded = PlaylistEnded.class;

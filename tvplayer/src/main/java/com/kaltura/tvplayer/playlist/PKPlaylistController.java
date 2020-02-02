@@ -25,6 +25,7 @@ public class PKPlaylistController implements PlaylistController {
 
     private KalturaPlayer kalturaPlayer;
     private PKPlaylist playlist;
+    private PKPlaylistType playlistType;
     private PlaylistOptions playlistOptions;
     private CountDownOptions countDownOptions;
 
@@ -36,10 +37,11 @@ public class PKPlaylistController implements PlaylistController {
     private List<PKPlaylistMedia> origlPlaylistEntries;
     private Map<Integer, PKMediaEntry> loadedMediasMap;
 
-    public PKPlaylistController(KalturaPlayer kalturaPlayer, PKPlaylist playlist) {
+    public PKPlaylistController(KalturaPlayer kalturaPlayer, PKPlaylist playlist, PKPlaylistType playlistType) {
         this.kalturaPlayer = kalturaPlayer;
         subscribeToPlayerEvents();
         this.playlist = playlist;
+        this.playlistType = playlistType;
 
         origlPlaylistEntries = new ArrayList<>();
         loadedMediasMap = new HashMap<>();
@@ -48,6 +50,11 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public PKPlaylist getPlaylist() {
         return playlist;
+    }
+
+    @Override
+    public PKPlaylistType getPlaylistType() {
+        return playlistType;
     }
 
     @Override
