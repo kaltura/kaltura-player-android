@@ -463,11 +463,28 @@ public class PKPlaylistController implements PlaylistController {
             }
         });
 
-
         kalturaPlayer.addListener(this, PlayerEvent.seeking, event -> {
             log.d("seeking event received");
 
+            if (event.targetPosition >= kalturaPlayer.getDuration()) {
+                return;
+            }
+
+            if (event.targetPosition < kalturaPlayer.getCurrentPosition()) {
+                if (countDownOptions.isEventSent()) {
+                    countDownOptions.setTimeToShowMS(countDownOptions.getOrigTimeToShowMS());
+                    countDownOptions.setEventSent(false);
+                }
+                return;
+            }
+
             if (countDownOptions != null && !countDownOptions.isEventSent() && event.targetPosition > (countDownOptions.getTimeToShowMS() + countDownOptions.getDurationMS())) {
+                countDownOptions.setTimeToShowMS(event.targetPosition);
+                return;
+            }
+
+            if (countDownOptions != null && countDownOptions.isEventSent() && event.targetPosition > (countDownOptions.getTimeToShowMS() + countDownOptions.getDurationMS())) {
+                countDownOptions.setEventSent(false);
                 countDownOptions.setTimeToShowMS(event.targetPosition);
                 return;
             }

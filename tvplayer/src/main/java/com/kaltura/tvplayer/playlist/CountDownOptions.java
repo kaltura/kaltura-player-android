@@ -4,12 +4,14 @@ import com.kaltura.playkit.utils.Consts;
 
 public class CountDownOptions {
     private long timeToShowMS;
+    private long origTimeToShowMS;
     private long durationMS;
     private boolean shouldDisplay;
     private boolean eventSent;
 
     public CountDownOptions() {
         this.timeToShowMS = -1; // default - show 10 sec before end
+        this.origTimeToShowMS = this.timeToShowMS;
         this.durationMS =  10 * Consts.MILLISECONDS_MULTIPLIER;
         this.shouldDisplay = true;
         eventSent = false;
@@ -21,6 +23,7 @@ public class CountDownOptions {
             durationMS =  10 * Consts.MILLISECONDS_MULTIPLIER;
         }
         this.timeToShowMS = timeToShowMS;
+        this.origTimeToShowMS = timeToShowMS;
         if (durationMS > timeToShowMS) {
             this.durationMS = timeToShowMS;
         } else {
@@ -32,6 +35,10 @@ public class CountDownOptions {
 
     public long getTimeToShowMS() {
         return timeToShowMS;
+    }
+
+    public long getOrigTimeToShowMS() {
+        return origTimeToShowMS;
     }
 
     public void setTimeToShowMS(long timeToShowMS) {
