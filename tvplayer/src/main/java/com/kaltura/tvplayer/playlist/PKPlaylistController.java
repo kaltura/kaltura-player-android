@@ -150,6 +150,7 @@ public class PKPlaylistController implements PlaylistController {
         if (!isValidIndex) {
             return;
         }
+
         if (shuffleEnabled) {
             int origIndex = playlist.getMediaList().get(index).getMediaIndex();
             if (loadedMediasMap.containsKey(origIndex)) {
@@ -199,7 +200,7 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.loadMedia(ovpMediaOptions, (entry, loadError) -> {
             if (loadError != null) {
-                log.e(loadError.getMessage());
+                log.e("OVPMedia error = " + loadError.getMessage());
                 kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
             } else {
                 if (playlist.getMediaList() != null && playlist.getMediaList().get(index) != null) {
@@ -454,9 +455,16 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.addListener(this, PlayerEvent.playing, event -> {
         });
 
+        kalturaPlayer.addListener(this, PlayerEvent.replay, event -> {
+            resetCountDownOptions();
+        });
+
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
-            if (playlistAutoContinue && (countDownOptions == null || !countDownOptions.shouldDisplay()|| countDownOptions.getTimeToShowMS() == -1 || !countDownOptions.isEventSent())) {
+//            if (countDownOptions != null && countDownOptions.isEventSent()) { // needed???
+//                kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownEnd(currentPlayingIndex, countDownOptions));
+//            }
+            if (playlistAutoContinue) {
                 handlePlaylistMediaEnded();
             } else {
                 resetCountDownOptions();
@@ -466,28 +474,32 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.addListener(this, PlayerEvent.seeking, event -> {
             log.d("seeking event received");
 
-            if (event.targetPosition >= kalturaPlayer.getDuration()) {
+            // do nothing
+            if (countDownOptions == null || event.targetPosition >= kalturaPlayer.getDuration()) {
                 return;
             }
 
-            if (event.targetPosition < event.currentPosition) {
+            // do nothing
+            if (event.targetPosition == countDownOptions.getTimeToShowMS()) {
+                return;
+            }
+
+            // start counting again
+            if (event.targetPosition > (countDownOptions.getTimeToShowMS() + countDownOptions.getDurationMS())) {
+                countDownOptions.setEventSent(false);
+                countDownOptions.setTimeToShowMS(event.targetPosition);
+                return;
+            }
+
+            // reset
+            if (event.targetPosition < event.currentPosition && event.targetPosition < countDownOptions.getTimeToShowMS()) {
                 countDownOptions.setTimeToShowMS(countDownOptions.getOrigTimeToShowMS());
                 countDownOptions.setEventSent(false);
                 return;
             }
 
-            if (countDownOptions != null && !countDownOptions.isEventSent() && event.targetPosition > (countDownOptions.getTimeToShowMS() + countDownOptions.getDurationMS())) {
-                countDownOptions.setTimeToShowMS(event.targetPosition);
-                return;
-            }
-
-            if (countDownOptions != null && countDownOptions.isEventSent() && event.targetPosition > (countDownOptions.getTimeToShowMS() + countDownOptions.getDurationMS())) {
-                countDownOptions.setEventSent(false);
-                countDownOptions.setTimeToShowMS(event.targetPosition);
-                return;
-            }
-
-            if (countDownOptions != null && countDownOptions.isEventSent() && event.targetPosition < countDownOptions.getTimeToShowMS()) {
+            // start counting again
+            if (countDownOptions.isEventSent() && event.targetPosition < countDownOptions.getTimeToShowMS()) {
                 countDownOptions.setEventSent(false);
             }
         });
@@ -508,8 +520,8 @@ public class PKPlaylistController implements PlaylistController {
                 if (tmpCountDownOptions == null) {
                     tmpCountDownOptions = (playlistOptions.countDownOptions != null) ? playlistOptions.countDownOptions : new CountDownOptions();
                 }
-
-                countDownOptions = new CountDownOptions(tmpCountDownOptions.getTimeToShowMS(), tmpCountDownOptions.getDurationMS(), tmpCountDownOptions.shouldDisplay());
+                long fixedTimeToShow = (tmpCountDownOptions.getTimeToShowMS() == -1) ? event.duration - tmpCountDownOptions.getDurationMS() : tmpCountDownOptions.getTimeToShowMS();
+                countDownOptions = new CountDownOptions(fixedTimeToShow, tmpCountDownOptions.getDurationMS(), tmpCountDownOptions.shouldDisplay());
             }
 
             if (event.position >= event.duration) {
@@ -534,16 +546,15 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private void handleCountDownEvent(PlayerEvent.PlayheadUpdated event) {
-        if (currentPlayingIndex + 1 <  playlist.getMediaListSize() && playlistAutoContinue && countDownOptions != null && countDownOptions.shouldDisplay()) {
-            long timeToShow = (countDownOptions.getTimeToShowMS() == -1) ? Math.max(0, event.duration - countDownOptions.getDurationMS()) : countDownOptions.getTimeToShowMS();
-            if (event.position >= timeToShow) {
+        if (countDownOptions != null && countDownOptions.shouldDisplay() && playlistAutoContinue && currentPlayingIndex + 1 <  playlist.getMediaListSize()) {
+            if (event.position >= countDownOptions.getTimeToShowMS()) {
                 if (!countDownOptions.isEventSent()) {
                     log.d("SEND COUNT DOWN EVENT position = " + event.position);
-                    kalturaPlayer.getMessageBus().post(new PlaylistEvent.CountDownStart(currentPlayingIndex, countDownOptions));
+                    kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownStart(currentPlayingIndex, countDownOptions));
                     countDownOptions.setEventSent(true);
                     preloadNext();
-                } else if (event.position >= Math.min(timeToShow + countDownOptions.getDurationMS(), event.duration)) {
-                    kalturaPlayer.getMessageBus().post(new PlaylistEvent.CountDownEnd(currentPlayingIndex, countDownOptions));
+                } else if (event.position >= Math.min(countDownOptions.getTimeToShowMS() + countDownOptions.getDurationMS(), event.duration)) {
+                    kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownEnd(currentPlayingIndex, countDownOptions));
                     //log.d("playhead updated handlePlaylistMediaEnded");
                     handlePlaylistMediaEnded();
                 }

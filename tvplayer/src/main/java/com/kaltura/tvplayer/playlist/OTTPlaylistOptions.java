@@ -30,6 +30,7 @@ public class OTTPlaylistOptions extends ProviderPlaylistOptions {
                     .setAssetId(ottMediaOptionsItem.assetId)
                     .setAssetType(ottMediaOptionsItem.assetType)
                     .setContextType(ottMediaOptionsItem.contextType)
+                    .setUrlType(ottMediaOptionsItem.urlType)
                     .setAssetReferenceType(ottMediaOptionsItem.assetReferenceType)
                     .setMediaFileIds(ottMediaOptionsItem.fileIds != null ? Arrays.asList(ottMediaOptionsItem.fileIds) : null)
                     .setProtocol(ottMediaOptionsItem.protocol)

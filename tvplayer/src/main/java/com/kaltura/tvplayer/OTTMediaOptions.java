@@ -12,6 +12,7 @@ public class OTTMediaOptions extends MediaOptions {
     public APIDefines.KalturaAssetType assetType;
     public APIDefines.PlaybackContextType contextType;
     public APIDefines.AssetReferenceType assetReferenceType;
+    public APIDefines.KalturaUrlType urlType;
     public String protocol = HTTPS;
     public String[] formats;
     public String[] fileIds;
@@ -36,6 +37,10 @@ public class OTTMediaOptions extends MediaOptions {
 
         if (mediaOptions.assetType != null) {
             provider.setAssetType(mediaOptions.assetType);
+        }
+
+        if (mediaOptions.urlType != null) {
+            provider.setPKUrlType(mediaOptions.urlType);
         }
 
         if (mediaOptions.formats != null) {

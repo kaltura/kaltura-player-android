@@ -19,18 +19,22 @@ public class CountDownOptions {
 
     public CountDownOptions(long timeToShowMS, long durationMS, boolean shouldDisplay) {
         if (timeToShowMS <= 0) {
-            timeToShowMS = -1; // default - show 10 sec before end
-            durationMS =  10 * Consts.MILLISECONDS_MULTIPLIER;
+            timeToShowMS = -1; // default - show from the end - DurationMS
         }
         this.timeToShowMS = timeToShowMS;
         this.origTimeToShowMS = timeToShowMS;
-        if (durationMS > timeToShowMS) {
-            this.durationMS = timeToShowMS;
+        if (timeToShowMS > 0 && durationMS > timeToShowMS) {
+            this.durationMS = 10 * Consts.MILLISECONDS_MULTIPLIER;
         } else {
             this.durationMS = durationMS;
         }
         this.shouldDisplay = shouldDisplay;
         eventSent = false;
+    }
+
+    // will start from the enn - durationMS
+    public CountDownOptions(long durationMS, boolean shouldDisplay) {
+        this(-1, durationMS, shouldDisplay);
     }
 
     public long getTimeToShowMS() {
