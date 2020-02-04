@@ -404,12 +404,12 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     @Override
-    public boolean isShuffleEnabled(boolean mode) {
+    public boolean isShuffleEnabled() {
         return shuffleEnabled;
     }
 
     @Override
-    public void setAutoContinue(boolean mode) {
+    public void autoContinue(boolean mode) {
         playlistAutoContinue = mode;
     }
 
@@ -419,7 +419,6 @@ public class PKPlaylistController implements PlaylistController {
         return playlistAutoContinue;
     }
 
-    @Override
     public void reset() {
         log.d("reset");
         currentPlayingIndex = -1;
@@ -447,7 +446,7 @@ public class PKPlaylistController implements PlaylistController {
         this.playlistOptions = playlistOptions;
         shuffle(playlistOptions.shuffleEnabled);
         loop(playlistOptions.loopEnabled);
-        setAutoContinue(playlistOptions.autoContinue);
+        autoContinue(playlistOptions.autoContinue);
     }
 
     private void subscribeToPlayerEvents() {
@@ -464,11 +463,7 @@ public class PKPlaylistController implements PlaylistController {
 //            if (countDownOptions != null && countDownOptions.isEventSent()) { // needed???
 //                kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownEnd(currentPlayingIndex, countDownOptions));
 //            }
-            if (playlistAutoContinue) {
-                handlePlaylistMediaEnded();
-            } else {
-                resetCountDownOptions();
-            }
+            handlePlaylistMediaEnded();
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.seeking, event -> {
@@ -565,16 +560,20 @@ public class PKPlaylistController implements PlaylistController {
     private void handlePlaylistMediaEnded() {
         resetCountDownOptions();
         int playlistSize = playlist.getMediaListSize();
-        if (currentPlayingIndex + 1 == playlistSize) {
+        boolean isLastMediaInPlaylist = ((currentPlayingIndex + 1) == playlistSize);
+
+        if (isLastMediaInPlaylist) {
+            log.d("PLAYLIST ENDED");
+            kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistEnded(playlist));
             if (loopEnabled) {
                 log.d("PLAYLIST REPLAY");
                 replay();
             }
-            log.d("PLAYLIST ENDED");
-            kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistEnded(playlist));
         } else {
-            log.d("PLAYLIST PLAY NEXT");
-            playNext();
+            if (playlistAutoContinue) {
+                log.d("PLAYLIST PLAY NEXT");
+                playNext();
+            }
         }
     }
 
