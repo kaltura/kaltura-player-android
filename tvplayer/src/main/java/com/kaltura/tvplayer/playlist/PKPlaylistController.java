@@ -349,8 +349,12 @@ public class PKPlaylistController implements PlaylistController {
         if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex - 1) == null) ||
                 (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex - 1) == null) ||
                 (loadedMediasMap.containsKey(currentPlayingIndex - 1) && loadedMediasMap.get(currentPlayingIndex - 1) == null)) {
-            --currentPlayingIndex;
-            playPrev();
+            if (loopEnabled) {
+                --currentPlayingIndex;
+                playPrev();
+            } else {
+                playItem(currentPlayingIndex, isAutoContinueEnabled());
+            }
             return;
         }
         playItem(--currentPlayingIndex);
