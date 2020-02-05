@@ -316,8 +316,10 @@ public class PKPlaylistController implements PlaylistController {
         if (currentPlayingIndex + 1 == playlistSize) {
             if (loopEnabled) {
                 replay();
+                return;
             }
             log.d("Ignore playNext - invalid index!");
+            playPrev();
             return;
         }
 
@@ -341,19 +343,21 @@ public class PKPlaylistController implements PlaylistController {
             if (loopEnabled) {
                 currentPlayingIndex = playlistSize - 1;
                 playItem(currentPlayingIndex);
+            } else {
+                log.d("Ignore playPrev - invalid index!");
+                playNext();
             }
-            log.d("Ignore playPrev - invalid index!");
             return;
         }
 
         if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex - 1) == null) ||
                 (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex - 1) == null) ||
                 (loadedMediasMap.containsKey(currentPlayingIndex - 1) && loadedMediasMap.get(currentPlayingIndex - 1) == null)) {
-            if (loopEnabled) {
+            if (currentPlayingIndex - 1 < 0){
+                playItem(currentPlayingIndex, isAutoContinueEnabled());
+            } else {
                 --currentPlayingIndex;
                 playPrev();
-            } else {
-                playItem(currentPlayingIndex, isAutoContinueEnabled());
             }
             return;
         }
@@ -538,7 +542,16 @@ public class PKPlaylistController implements PlaylistController {
                 if (isAutoContinueEnabled()) {
                     playNext();
                 } else {
-                    playItem(currentPlayingIndex + 1, false);
+                    int playlistSize = playlist.getMediaListSize();
+                    if (currentPlayingIndex + 1 < playlistSize) {
+                        playItem(currentPlayingIndex + 1, false);
+                    } else {
+                        if (loopEnabled) {
+                            playNext();
+                        } else {
+                            playPrev();
+                        }
+                    }
                 }
             }
         });
