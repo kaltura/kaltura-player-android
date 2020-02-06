@@ -264,6 +264,10 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setABRSettings(initOptions.abrSettings);//(new ABRSettings());
         }
 
+        if (initOptions.pkMaxVideoSize != null) {
+            pkPlayer.getSettings().setMaxVideoSize(initOptions.pkMaxVideoSize);
+        }
+
         if (initOptions.vrPlayerEnabled != null) {
             pkPlayer.getSettings().setVRPlayerEnabled(initOptions.vrPlayerEnabled);
         }

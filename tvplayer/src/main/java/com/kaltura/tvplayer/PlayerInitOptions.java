@@ -7,6 +7,7 @@ import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.tvplayer.config.TVPlayerParams;
@@ -40,6 +41,7 @@ public class PlayerInitOptions {
     public PKRequestParams.Adapter licenseRequestAdapter;
     public LoadControlBuffers loadControlBuffers;
     public ABRSettings abrSettings;
+    public PKMaxVideoSize pkMaxVideoSize;
     public VRSettings vrSettings;
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
@@ -211,6 +213,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setAbrSettings(ABRSettings abrSettings) {
         if (abrSettings != null) {
             this.abrSettings = abrSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setPkMaxVideoSize(PKMaxVideoSize pkMaxVideoSize) {
+        if (pkMaxVideoSize != null) {
+            this.pkMaxVideoSize = pkMaxVideoSize;
         }
         return this;
     }
