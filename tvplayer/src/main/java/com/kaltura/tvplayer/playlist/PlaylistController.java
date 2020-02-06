@@ -144,6 +144,21 @@ public interface PlaylistController {
     boolean isAutoContinueEnabled();
 
     /**
+     * recoverOnError - ignore media playback errors and continue
+     *
+     * @param mode - enabled/disabled.
+     */
+    void recoverOnError(boolean mode);
+
+
+    /**
+     * isRecoverOnError - validation if playlist controller should recover on error.
+     *
+     * @return - boolean
+     */
+    boolean isRecoverOnError();
+
+    /**
      * release - should e called if we want to reuse the player for single media or for loading new play list.
      */
     void release();

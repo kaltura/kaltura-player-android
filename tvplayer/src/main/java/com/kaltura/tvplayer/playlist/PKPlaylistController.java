@@ -33,6 +33,7 @@ public class PKPlaylistController implements PlaylistController {
     private boolean playlistAutoContinue = true;
     private boolean loopEnabled;
     private boolean shuffleEnabled;
+    private boolean recoverOnError;
 
     private List<PKPlaylistMedia> origlPlaylistEntries;
     private Map<Integer, PKMediaEntry> loadedMediasMap;
@@ -392,6 +393,18 @@ public class PKPlaylistController implements PlaylistController {
         return loopEnabled;
     }
 
+
+    @Override
+    public void recoverOnError(boolean mode) {
+        log.d("recoverOnError mode = " + mode);
+        recoverOnError = mode;
+    }
+
+    @Override
+    public boolean isRecoverOnError() {
+        return recoverOnError;
+    }
+
     @Override
     public void shuffle(boolean mode) {
         log.d("shuffle mode = " + mode);
@@ -455,6 +468,7 @@ public class PKPlaylistController implements PlaylistController {
         shuffle(playlistOptions.shuffleEnabled);
         loop(playlistOptions.loopEnabled);
         autoContinue(playlistOptions.autoContinue);
+        recoverOnError(playlistOptions.recoverOnError);
     }
 
     private void subscribeToPlayerEvents() {
@@ -537,8 +551,11 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.addListener(this, PlayerEvent.error, event -> {
             log.e("errorEvent.error.errorType"  + " " + event.error.message + " severity = " + event.error.severity);
             if (event.error.severity == PKError.Severity.Fatal) {
-                loadedMediasMap.put(currentPlayingIndex, null);
                 kalturaPlayer.stop();
+                if (!isRecoverOnError()) {
+                    return;
+                }
+                loadedMediasMap.put(currentPlayingIndex, null);
                 if (isAutoContinueEnabled()) {
                     playNext();
                 } else {
