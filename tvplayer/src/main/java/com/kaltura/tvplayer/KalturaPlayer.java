@@ -22,6 +22,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
+import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayKitManager;
@@ -782,7 +783,7 @@ public abstract class KalturaPlayer {
             return;
         }
 
-        List<BasicMediaOptions> playlistMediaEntryList = new ArrayList<>();
+        List<PKPlaylistMedia> playlistMediaEntryList = new ArrayList<>();
         for (int i = 0; i < playlistOptions.basicMediaOptionsList.size() ; i++) {
             playlistMediaEntryList.add(new BasicMediaOptions(i, playlistOptions.basicMediaOptionsList.get(i).getPKMediaEntry()));
         }

@@ -251,7 +251,7 @@ public class PKPlaylistController implements PlaylistController {
             return; // error cannot play any next/prev item
         }
 
-        List<BasicMediaOptions> basicMediaOptionsList = ((PKBasicPlaylist) playlist).getBasicMediaOptionsList();
+        List<PKPlaylistMedia> basicMediaOptionsList = ((PKBasicPlaylist) playlist).getBasicMediaOptionsList();
         if (basicMediaOptionsList != null && basicMediaOptionsList.get(index) != null) {
             loadedMediasMap.put(basicMediaOptionsList.get(index).getMediaIndex(), pkMediaEntry);
             kalturaPlayer.setMedia(pkMediaEntry, 0L);
