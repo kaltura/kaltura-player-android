@@ -635,11 +635,16 @@ public abstract class KalturaPlayer {
                 log.e(response.getError().getMessage());
 
                 onPlaylistLoadListener.onPlaylistLoadComplete(null, response.getError());
-                messageBus.post(new PlaylistEvent.PlaylistError(response.getError()));
+                if (messageBus != null) {
+                    messageBus.post(new PlaylistEvent.PlaylistError(response.getError()));
+                }
                 return;
             }
-            messageBus.post(new PlaylistEvent.PlaylistLoaded(playlist));
-            onPlaylistLoadListener.onPlaylistLoadComplete(playlist, null);
+            if (messageBus != null) {
+                messageBus.post(new PlaylistEvent.PlaylistLoaded(playlist));
+                onPlaylistLoadListener.onPlaylistLoadComplete(playlist, null);
+            }
+
         });
     }
 
@@ -688,7 +693,9 @@ public abstract class KalturaPlayer {
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
-                        messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+                        if (messageBus != null) {
+                            messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+                        }
                         playlistController.playItem(playlistOptions.startIndex, autoPlay);
                     }));
                 }
@@ -724,7 +731,9 @@ public abstract class KalturaPlayer {
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
-                        messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+                        if (messageBus != null) {
+                            messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+                        }
                         playlistController.playItem(playlistOptions.startIndex, autoPlay);
                     }));
                 }
@@ -759,7 +768,9 @@ public abstract class KalturaPlayer {
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
-                        messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+                        if (messageBus != null) {
+                            messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+                        }
                         playlistController.playItem(playlistOptions.startIndex, autoPlay);
 
                     }));
@@ -799,7 +810,9 @@ public abstract class KalturaPlayer {
         playlistController.setPlaylistOptions(playlistOptions);
         controllerListener.onPlaylistControllerComplete(playlistController, null);
         setPlaylistController(playlistController);
-        messageBus.post(new PlaylistEvent.PlaylistStarted(basicPlaylist));
+        if (messageBus != null) {
+            messageBus.post(new PlaylistEvent.PlaylistStarted(basicPlaylist));
+        }
         playlistController.playItem(playlistOptions.startIndex, autoPlay);
     }
 

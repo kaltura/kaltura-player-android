@@ -202,9 +202,12 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.loadMedia(ovpMediaOptions, (entry, loadError) -> {
             if (loadError != null) {
                 log.e("OVPMedia error = " + loadError.getMessage());
-                kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
+                if (kalturaPlayer.getMessageBus() == null) {
+                    return;
+                }
+                kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoadMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
             } else {
-                if (playlist.getMediaList() != null && playlist.getMediaList().get(index) != null) {
+                if (playlist.getMediaList() != null && !playlist.getMediaList().isEmpty() && playlist.getMediaList().get(index) != null) {
                     loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
                     log.d("OVPMedia onEntryLoadComplete entry = " + entry.getId());
                 } else {
@@ -215,6 +218,11 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private void playItemOTT(int index) {
+        log.d("XXXX playItemOTT  " + index) ;
+        if (playlist.getMediaList().isEmpty()) {
+           int r = 0;
+           r++;
+        }
 
         OTTPlaylistOptions ottPlaylistOptions =  (OTTPlaylistOptions) playlistOptions;
         OTTMediaOptions ottMediaOptions = getNextMediaOptions(index, ottPlaylistOptions);
@@ -231,10 +239,13 @@ public class PKPlaylistController implements PlaylistController {
         kalturaPlayer.loadMedia(ottMediaOptions, (entry, loadError) -> {
             if (loadError != null) {
                 log.e(loadError.getMessage());
-                kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
+                if (kalturaPlayer.getMessageBus() == null) {
+                    return;
+                }
+                kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoadMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
             }
             else {
-                if (playlist.getMediaList() != null && playlist.getMediaList().get(index) != null) {
+                if (playlist.getMediaList() != null && !playlist.getMediaList().isEmpty() && playlist.getMediaList().get(index) != null) {
                     loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
                     log.d("OTTMedia onEntryLoadComplete entry = " + entry.getId());
                 } else {
@@ -252,7 +263,7 @@ public class PKPlaylistController implements PlaylistController {
         }
 
         List<PKPlaylistMedia> basicMediaOptionsList = ((PKBasicPlaylist) playlist).getBasicMediaOptionsList();
-        if (basicMediaOptionsList != null && basicMediaOptionsList.get(index) != null) {
+        if (basicMediaOptionsList != null && !basicMediaOptionsList.isEmpty() && basicMediaOptionsList.get(index) != null) {
             loadedMediasMap.put(basicMediaOptionsList.get(index).getMediaIndex(), pkMediaEntry);
             kalturaPlayer.setMedia(pkMediaEntry, 0L);
         } else {
@@ -267,6 +278,9 @@ public class PKPlaylistController implements PlaylistController {
         if (!isValidIndex) {
             String errorMessage = "Invalid playlist index = " + index + " size = " + playlistSize;
             String errorCode = "InvalidPlaylistIndex";
+            if (kalturaPlayer.getMessageBus() == null) {
+                return false;
+            }
             kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistError
                     (new ErrorElement(errorMessage, errorCode)));
         }
@@ -385,6 +399,9 @@ public class PKPlaylistController implements PlaylistController {
     public void loop(boolean mode) {
         log.d("loop mode = " + mode);
         loopEnabled = mode;
+        if (kalturaPlayer.getMessageBus() == null) {
+            return;
+        }
         kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoopStateChanged(mode));
     }
 
@@ -408,6 +425,9 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void shuffle(boolean mode) {
         log.d("shuffle mode = " + mode);
+        if (kalturaPlayer.getMessageBus() == null) {
+            return;
+        }
         kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistShuffleStateChanged(mode));
 
         shuffleEnabled = mode;
@@ -431,7 +451,12 @@ public class PKPlaylistController implements PlaylistController {
 
     @Override
     public void autoContinue(boolean mode) {
+        log.d("autoContinue mode = " + mode);
         playlistAutoContinue = mode;
+        if (kalturaPlayer.getMessageBus() == null) {
+            return;
+        }
+        kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistAutoContinueStateChanged(mode));
     }
 
 
@@ -482,9 +507,6 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
-//            if (countDownOptions != null && countDownOptions.isEventSent()) { // needed???
-//                kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownEnd(currentPlayingIndex, countDownOptions));
-//            }
             handlePlaylistMediaEnded();
         });
 
@@ -522,7 +544,7 @@ public class PKPlaylistController implements PlaylistController {
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.playheadUpdated, event -> {
-            log.d("playheadUpdated received position = " + event.position + "/" + event.duration);
+            //log.d("playheadUpdated received position = " + event.position + "/" + event.duration);
 
             if (countDownOptions == null) {
                 CountDownOptions tmpCountDownOptions = null;
@@ -577,6 +599,9 @@ public class PKPlaylistController implements PlaylistController {
     private void handleCountDownEvent(PlayerEvent.PlayheadUpdated event) {
         if (countDownOptions != null && countDownOptions.shouldDisplay() && playlistAutoContinue && currentPlayingIndex + 1 <  playlist.getMediaListSize()) {
             if (event.position >= countDownOptions.getTimeToShowMS()) {
+                if (kalturaPlayer.getMessageBus() == null) {
+                    return;
+                }
                 if (!countDownOptions.isEventSent()) {
                     log.d("SEND COUNT DOWN EVENT position = " + event.position);
                     kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownStart(currentPlayingIndex, countDownOptions));
@@ -598,6 +623,9 @@ public class PKPlaylistController implements PlaylistController {
 
         if (isLastMediaInPlaylist) {
             log.d("PLAYLIST ENDED");
+            if (kalturaPlayer.getMessageBus() == null) {
+                return;
+            }
             kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistEnded(playlist));
             if (loopEnabled) {
                 log.d("PLAYLIST REPLAY");
