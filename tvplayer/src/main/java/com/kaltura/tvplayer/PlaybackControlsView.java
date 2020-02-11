@@ -32,6 +32,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
     private KalturaPlayer player;
     private PlayerState playerState;
+    private boolean isError;
 
     private Formatter formatter;
     private StringBuilder formatBuilder;
@@ -188,6 +189,14 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 setPlayerState(PlayerState.IDLE);
             }
         });
+
+        this.player.addListener(this, PlayerEvent.error, event -> {
+            isError = true;
+        });
+
+        this.player.addListener(this, PlayerEvent.canPlay, event -> {
+            isError = false;
+        });
     }
 
     public void setPlayerState(PlayerState playerState) {
@@ -212,7 +221,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     }
 
     public void togglePlayPauseClick() {
-        if (player == null) {
+        if (player == null || isError) {
             return;
         }
 
