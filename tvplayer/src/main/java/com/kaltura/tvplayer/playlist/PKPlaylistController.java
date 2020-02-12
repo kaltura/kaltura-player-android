@@ -60,7 +60,10 @@ public class PKPlaylistController implements PlaylistController {
 
     @Override
     public PKPlaylistMedia getCurrentPlaylistMedia() {
-        return playlist.getMediaList().get(currentPlayingIndex);
+        if (playlist != null && playlist.getMediaList() != null && !playlist.getMediaList().isEmpty()) {
+            return playlist.getMediaList().get(currentPlayingIndex);
+        }
+        return null;
     }
 
     @Override
@@ -218,12 +221,8 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private void playItemOTT(int index) {
-        log.d("XXXX playItemOTT  " + index) ;
-        if (playlist.getMediaList().isEmpty()) {
-           int r = 0;
-           r++;
-        }
-
+        log.d("playItemOTT  " + index) ;
+        
         OTTPlaylistOptions ottPlaylistOptions =  (OTTPlaylistOptions) playlistOptions;
         OTTMediaOptions ottMediaOptions = getNextMediaOptions(index, ottPlaylistOptions);
         if (ottMediaOptions == null) {
@@ -290,7 +289,9 @@ public class PKPlaylistController implements PlaylistController {
     private OVPMediaOptions getNextMediaOptions(int index, OVPPlaylistOptions ovpPlaylistOptions) {
         while (true) {
             List<OVPMediaOptions> ovpMediaOptionsList = ovpPlaylistOptions.ovpMediaOptionsList;
-            if (!(index < ovpMediaOptionsList.size())) break;
+            if (!(index < ovpMediaOptionsList.size())) {
+                break;
+            }
             if (ovpMediaOptionsList.get(index) != null) {
                 return ovpMediaOptionsList.get(index);
             }
@@ -300,9 +301,13 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private OTTMediaOptions getNextMediaOptions(int index, OTTPlaylistOptions ottPlaylistOptions) {
-        while(index < ottPlaylistOptions.ottMediaOptionsList.size()) {
-            if (ottPlaylistOptions.ottMediaOptionsList.get(index) != null) {
-                return ottPlaylistOptions.ottMediaOptionsList.get(index);
+        while(true) {
+            List<OTTMediaOptions> ottMediaOptionsList = ottPlaylistOptions.ottMediaOptionsList;
+            if (!(index < ottMediaOptionsList.size())) {
+                break;
+            }
+            if (ottMediaOptionsList.get(index) != null) {
+                return ottMediaOptionsList.get(index);
             }
             index++;
         }
