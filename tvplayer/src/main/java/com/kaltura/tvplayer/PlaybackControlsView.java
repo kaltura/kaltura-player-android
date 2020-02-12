@@ -220,6 +220,13 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         playPauseToggle.setBackgroundResource(R.drawable.pause);
     }
 
+    public void destroy() {
+        if (player != null)
+            player.removeListeners(this);
+            player.destroy();
+            player = null;
+    }
+
     public void togglePlayPauseClick() {
         if (player == null || isError) {
             return;
@@ -256,7 +263,6 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
             tvCurTime.setText(stringForTime(positionValue(progress)));
         }
     }
-
 
     public void onStartTrackingTouch(SeekBar seekBar) {
         dragging = true;
