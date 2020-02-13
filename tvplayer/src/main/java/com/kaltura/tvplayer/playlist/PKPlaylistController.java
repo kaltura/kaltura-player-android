@@ -489,7 +489,9 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void release() {
         reset();
-        kalturaPlayer.removeListeners(this);
+        if (kalturaPlayer != null) {
+            kalturaPlayer.removeListeners(this);
+        }
     }
 
     @Override
