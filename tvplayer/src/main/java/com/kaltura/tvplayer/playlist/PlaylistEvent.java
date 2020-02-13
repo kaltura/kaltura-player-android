@@ -130,7 +130,7 @@ public class PlaylistEvent implements PKEvent {
         public final ErrorElement error;
 
         public PlaylistLoadMediaError(Integer mediaIndex, ErrorElement error) {
-            super(Type.PLAYLIST_MEDIA_ERROR);
+            super(Type.PLAYLIST_LOAD_MEDIA_ERROR);
             this.mediaIndex = mediaIndex;
             this.error = error;
         }
@@ -146,7 +146,7 @@ public class PlaylistEvent implements PKEvent {
         PLAYLIST_SUFFLE_STATE_CHANGED,
         PLAYLIST_AUTO_CONTINUE_STATE_CHANGED,
         PLAYLIST_ERROR,
-        PLAYLIST_MEDIA_ERROR
+        PLAYLIST_LOAD_MEDIA_ERROR
     }
 
     @Override
