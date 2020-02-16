@@ -1,5 +1,7 @@
 package com.kaltura.tvplayer.playlist;
 
+import android.text.TextUtils;
+
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -241,7 +243,11 @@ public class PKPlaylistController implements PlaylistController {
                 if (kalturaPlayer.getMessageBus() == null) {
                     return;
                 }
-                kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoadMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
+                String errMsg = loadError.getMessage();
+                if (TextUtils.equals(errMsg,"Asset not found")) {
+                   errMsg  = "Asset: [" + ottMediaOptions.assetId + "] not found";
+                }
+                kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoadMediaError(index, new ErrorElement(errMsg, loadError.getCode())));
             }
             else {
                 if (playlist.getMediaList() != null && !playlist.getMediaList().isEmpty() && playlist.getMediaList().get(index) != null) {
@@ -347,11 +353,12 @@ public class PKPlaylistController implements PlaylistController {
                 (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex + 1) == null) ||
                 (loadedMediasMap.containsKey(currentPlayingIndex + 1) && loadedMediasMap.get(currentPlayingIndex + 1) == null)
         ) {
-            ++currentPlayingIndex;
-            playNext();
-            return;
+            if (recoverOnError) {
+                ++currentPlayingIndex;
+                playNext();
+                return;
+            }
         }
-
         playItem(++currentPlayingIndex);
     }
 
@@ -373,13 +380,15 @@ public class PKPlaylistController implements PlaylistController {
         if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex - 1) == null) ||
                 (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex - 1) == null) ||
                 (loadedMediasMap.containsKey(currentPlayingIndex - 1) && loadedMediasMap.get(currentPlayingIndex - 1) == null)) {
-            if (currentPlayingIndex - 1 < 0){
-                playItem(currentPlayingIndex, isAutoContinueEnabled());
-            } else {
-                --currentPlayingIndex;
-                playPrev();
+            if (recoverOnError) {
+                if (currentPlayingIndex - 1 < 0) {
+                    playItem(currentPlayingIndex, isAutoContinueEnabled());
+                } else {
+                    --currentPlayingIndex;
+                    playPrev();
+                }
+                return;
             }
-            return;
         }
         playItem(--currentPlayingIndex);
     }
@@ -624,6 +633,7 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private void handlePlaylistMediaEnded() {
+        log.d("PLAYLIST handlePlaylistMediaEnded");
         resetCountDownOptions();
         int playlistSize = playlist.getMediaListSize();
         boolean isLastMediaInPlaylist = ((currentPlayingIndex + 1) == playlistSize);
