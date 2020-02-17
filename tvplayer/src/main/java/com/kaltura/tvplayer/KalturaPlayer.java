@@ -64,6 +64,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.kaltura.netkit.utils.ErrorElement.ErrorCode.LoadErrorCode;
+
 public abstract class KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaPlayer");
@@ -690,6 +692,9 @@ public abstract class KalturaPlayer {
                     populatePartnersValues();
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
+                        if (error != null) {
+                            return;
+                        }
                         PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist, PKPlaylistType.OVP_ID);
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
@@ -716,6 +721,13 @@ public abstract class KalturaPlayer {
         if (!isValidOVPPlayer())
             return;
 
+        if (playlistOptions.ovpMediaOptionsList.isEmpty()) {
+            if (messageBus != null) {
+                messageBus.post(new PlaylistEvent.PlaylistError(ErrorElement.LoadError.message("ovpMediaOptionsList is empty")));
+            }
+            return;
+        }
+
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -728,6 +740,9 @@ public abstract class KalturaPlayer {
                     populatePartnersValues();
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
+                        if (error != null) {
+                            return;
+                        }
                         PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist, PKPlaylistType.OVP_LIST);
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
@@ -753,6 +768,12 @@ public abstract class KalturaPlayer {
         if (!isValidOTTPlayer())
             return;
 
+        if (playlistOptions.ottMediaOptionsList.isEmpty()) {
+            if (messageBus != null) {
+                messageBus.post(new PlaylistEvent.PlaylistError(ErrorElement.LoadError.message("ottMediaOptionsList is empty")));
+            }
+            return;
+        }
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -765,6 +786,9 @@ public abstract class KalturaPlayer {
                     populatePartnersValues();
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
+                        if (error != null) {
+                            return;
+                        }
                         PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist, PKPlaylistType.OTT_LIST);
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
@@ -792,6 +816,13 @@ public abstract class KalturaPlayer {
             return;
 
         if (playlistOptions == null || playlistOptions.basicMediaOptionsList == null) {
+            return;
+        }
+
+        if (playlistOptions.basicMediaOptionsList.isEmpty()) {
+            if (messageBus != null) {
+                messageBus.post(new PlaylistEvent.PlaylistError(ErrorElement.LoadError.message("playlistMediaEntryList is empty")));
+            }
             return;
         }
 
