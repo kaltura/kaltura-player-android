@@ -436,32 +436,32 @@ public class PKPlaylistController implements PlaylistController {
         return recoverOnError;
     }
 
-    @Override
-    public void shuffle(boolean mode) {
-        log.d("shuffle mode = " + mode);
-        if (kalturaPlayer.getMessageBus() == null) {
-            return;
-        }
-        kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistShuffleStateChanged(mode));
-
-        shuffleEnabled = mode;
-        if (playlist != null) {
-            if (mode) {
-                origlPlaylistEntries = playlist.getMediaList();
-                playlist.setMediaList(new ArrayList<>(playlist.getMediaList()));
-                Collections.shuffle(playlist.getMediaList());
-            } else {
-                if (origlPlaylistEntries != null && !origlPlaylistEntries.isEmpty()) {
-                    playlist.setMediaList(origlPlaylistEntries);
-                }
-            }
-        }
-    }
-
-    @Override
-    public boolean isShuffleEnabled() {
-        return shuffleEnabled;
-    }
+//    @Override
+//    public void shuffle(boolean mode) {
+//        log.d("shuffle mode = " + mode);
+//        if (kalturaPlayer.getMessageBus() == null) {
+//            return;
+//        }
+//        kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistShuffleStateChanged(mode));
+//
+//        shuffleEnabled = mode;
+//        if (playlist != null) {
+//            if (mode) {
+//                origlPlaylistEntries = playlist.getMediaList();
+//                playlist.setMediaList(new ArrayList<>(playlist.getMediaList()));
+//                Collections.shuffle(playlist.getMediaList());
+//            } else {
+//                if (origlPlaylistEntries != null && !origlPlaylistEntries.isEmpty()) {
+//                    playlist.setMediaList(origlPlaylistEntries);
+//                }
+//            }
+//        }
+//    }
+//
+//    @Override
+//    public boolean isShuffleEnabled() {
+//        return shuffleEnabled;
+//    }
 
     @Override
     public void autoContinue(boolean mode) {
@@ -506,7 +506,7 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void setPlaylistOptions(PlaylistOptions playlistOptions) {
         this.playlistOptions = playlistOptions;
-        shuffle(playlistOptions.shuffleEnabled);
+        //shuffle(playlistOptions.shuffleEnabled);
         loop(playlistOptions.loopEnabled);
         autoContinue(playlistOptions.autoContinue);
         recoverOnError(playlistOptions.recoverOnError);

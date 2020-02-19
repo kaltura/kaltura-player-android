@@ -115,19 +115,19 @@ public interface PlaylistController {
      */
     boolean isLoopEnabled();
 
-    /**
-     * shuffle - configure the controller to play the playlist in random mode
-     *
-     * @param mode - enabled/disabled.
-     */
-    void shuffle(boolean mode);
-
-    /**
-     * isShuffleEnabled - validation if playlist controller is configured to support shuffle mode.
-     *
-     * @return - boolean
-     */
-    boolean isShuffleEnabled();
+//    /**
+//     * shuffle - configure the controller to play the playlist in random mode
+//     *
+//     * @param mode - enabled/disabled.
+//     */
+//    void shuffle(boolean mode);
+//
+//    /**
+//     * isShuffleEnabled - validation if playlist controller is configured to support shuffle mode.
+//     *
+//     * @return - boolean
+//     */
+//    boolean isShuffleEnabled();
 
     /**
      * autoContinue - configure the controller to play the playlist in autoContinue mode
