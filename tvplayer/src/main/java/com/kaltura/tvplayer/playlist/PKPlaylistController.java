@@ -224,7 +224,7 @@ public class PKPlaylistController implements PlaylistController {
 
     private void playItemOTT(int index) {
         log.d("playItemOTT  " + index) ;
-        
+
         OTTPlaylistOptions ottPlaylistOptions =  (OTTPlaylistOptions) playlistOptions;
         OTTMediaOptions ottMediaOptions = getNextMediaOptions(index, ottPlaylistOptions);
         if (ottMediaOptions == null) {
@@ -510,6 +510,14 @@ public class PKPlaylistController implements PlaylistController {
         loop(playlistOptions.loopEnabled);
         autoContinue(playlistOptions.autoContinue);
         recoverOnError(playlistOptions.recoverOnError);
+    }
+
+    @Override
+    public void setPlaylistCountDownOptions(CountDownOptions countDownOptions) {
+        if (playlistOptions == null && countDownOptions != null) {
+            return;
+        }
+        playlistOptions.countDownOptions = countDownOptions;
     }
 
     private void subscribeToPlayerEvents() {

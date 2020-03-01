@@ -169,4 +169,11 @@ public interface PlaylistController {
      * @param playlistOptions - playlist initial configuration.
      */
     void setPlaylistOptions(PlaylistOptions playlistOptions);
+
+    /**
+     * setPlaylistCountDownOptions - update the current playlist countdown configuration
+     *
+     * @param countDownOptions - playlist countdown.
+     */
+    void setPlaylistCountDownOptions(CountDownOptions countDownOptions);
 }
