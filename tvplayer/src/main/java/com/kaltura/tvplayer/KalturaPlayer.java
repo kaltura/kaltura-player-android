@@ -64,8 +64,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.kaltura.netkit.utils.ErrorElement.ErrorCode.LoadErrorCode;
-
 public abstract class KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaPlayer");
@@ -865,7 +863,7 @@ public abstract class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
@@ -895,7 +893,7 @@ public abstract class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId(), getKS(), referrer);
+                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
                     provider.load(response -> mediaLoadCompleted(response, listener));
                 }
             }
@@ -941,8 +939,19 @@ public abstract class KalturaPlayer {
         }
 
         ks = null;
-        if (!TextUtils.isEmpty(mediaOptions.ks)) {
-            setKS(mediaOptions.ks);
+
+        String mediaKS = null;
+        if (isValidOVPPlayer()) {
+            if (((OVPMediaOptions) mediaOptions).getOvpMediaAsset() != null) {
+                mediaKS = ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().getKs();
+            }
+        } else if (isValidOTTPlayer()) {
+            if (((OTTMediaOptions) mediaOptions).getOttMediaAsset() != null) {
+                mediaKS = ((OTTMediaOptions) mediaOptions).getOttMediaAsset().getKs();
+            }
+        }
+        if (!TextUtils.isEmpty(mediaKS)) {
+            setKS(mediaKS);
         } else if (!TextUtils.isEmpty(initOptions.ks)) {
             setKS(initOptions.ks);
         }

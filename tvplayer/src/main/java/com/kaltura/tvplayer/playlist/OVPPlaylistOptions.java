@@ -24,9 +24,9 @@ public class OVPPlaylistOptions extends ProviderPlaylistOptions {
     public PlaylistProvider buildPlaylistProvider(String serverUrl, int partnerId, String ks) {
         List<OVPMediaAsset> ovpMediaAssetList = new ArrayList<>();
         for(OVPMediaOptions ovpMediaOptionsItem : ovpMediaOptionsList) {
-            ovpMediaAssetList.add(new OVPMediaAsset()
-                    .setEntryId(ovpMediaOptionsItem.entryId)
-                    .setKs(ovpMediaOptionsItem.ks));
+            if (ovpMediaOptionsItem != null) {
+                ovpMediaAssetList.add(ovpMediaOptionsItem.getOvpMediaAsset());
+            }
         }
         return new KalturaOvpPlaylistProvider(serverUrl, partnerId, ks).setPlaylistParams(playlistMetadata != null ? playlistMetadata : new PlaylistMetadata(), ovpMediaAssetList);
     }

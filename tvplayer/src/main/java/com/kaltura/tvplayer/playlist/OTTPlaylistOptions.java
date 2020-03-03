@@ -25,16 +25,9 @@ public class OTTPlaylistOptions extends ProviderPlaylistOptions {
     public PlaylistProvider buildPlaylistProvider(String serverUrl, int partnerId, String ks) {
         List<OTTMediaAsset> ottMediaAssetList = new ArrayList<>();
         for(OTTMediaOptions ottMediaOptionsItem : ottMediaOptionsList) {
-            ottMediaAssetList.add(new OTTMediaAsset()
-                    .setKs(ottMediaOptionsItem.ks)
-                    .setAssetId(ottMediaOptionsItem.assetId)
-                    .setAssetType(ottMediaOptionsItem.assetType)
-                    .setContextType(ottMediaOptionsItem.contextType)
-                    .setUrlType(ottMediaOptionsItem.urlType)
-                    .setAssetReferenceType(ottMediaOptionsItem.assetReferenceType)
-                    .setMediaFileIds(ottMediaOptionsItem.fileIds != null ? Arrays.asList(ottMediaOptionsItem.fileIds) : null)
-                    .setProtocol(ottMediaOptionsItem.protocol)
-                    .setFormats(ottMediaOptionsItem.formats != null ? Arrays.asList(ottMediaOptionsItem.formats): null));
+            if (ottMediaOptionsItem != null) {
+                ottMediaAssetList.add(ottMediaOptionsItem.getOttMediaAsset());
+            }
         }
         return new PhoenixPlaylistProvider(serverUrl, partnerId, ks).setPlaylistParams(playlistMetadata != null ? playlistMetadata : new PlaylistMetadata(), ottMediaAssetList);
     }

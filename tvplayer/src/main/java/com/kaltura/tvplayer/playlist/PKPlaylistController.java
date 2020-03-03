@@ -9,6 +9,8 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.providers.ott.OTTMediaAsset;
+import com.kaltura.playkit.providers.ovp.OVPMediaAsset;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
@@ -189,19 +191,24 @@ public class PKPlaylistController implements PlaylistController {
             if (ovpMediaOptions == null) {
                 return; // error cannot play any next item
             }
-            if (ovpMediaOptions.ks == null) {
-                ovpMediaOptions.ks = ovpPlaylistOptions.ks;
-            }
-            if (ovpMediaOptions.referrer == null) {
-                ovpMediaOptions.referrer = kalturaPlayer.getInitOptions().referrer;
+            OVPMediaAsset ovpMediaAsset = ovpMediaOptions.getOvpMediaAsset();
+            if (ovpMediaAsset != null) {
+                if (ovpMediaAsset.getKs() == null) {
+                    ovpMediaAsset.setKs(ovpPlaylistOptions.ks);
+                }
+                if (ovpMediaAsset.getReferrer() == null) {
+                    ovpMediaAsset.setReferrer(kalturaPlayer.getInitOptions().referrer);
+                }
             }
         } else { // PlaylistId case
             OVPPlaylistIdOptions ovpPlaylistIdOptions = (OVPPlaylistIdOptions) playlistOptions;
-            ovpMediaOptions = new OVPMediaOptions();
-            ovpMediaOptions.entryId = playlist.getMediaList().get(index).getId();
-            ovpMediaOptions.ks = (playlist.getMediaList().get(index).getKs() != null) ? playlist.getMediaList().get(index).getKs() : playlist.getKs();
-            ovpMediaOptions.referrer = kalturaPlayer.getInitOptions().referrer;
-            ovpMediaOptions.useApiCaptions = ovpPlaylistIdOptions.useApiCaptions;
+            OVPMediaAsset ovpMediaAsset = new OVPMediaAsset();
+            ovpMediaAsset.setEntryId(playlist.getMediaList().get(index).getId());
+            ovpMediaAsset.setKs((playlist.getMediaList().get(index).getKs() != null) ? playlist.getMediaList().get(index).getKs() : playlist.getKs());
+            ovpMediaAsset.setReferrer(kalturaPlayer.getInitOptions().referrer);
+
+            ovpMediaOptions = new OVPMediaOptions(ovpMediaAsset);
+            ovpMediaOptions.setUseApiCaptions(ovpPlaylistIdOptions.useApiCaptions);
         }
 
         kalturaPlayer.loadMedia(ovpMediaOptions, (entry, loadError) -> {
@@ -230,11 +237,14 @@ public class PKPlaylistController implements PlaylistController {
         if (ottMediaOptions == null) {
             return; // error cannot play any next item
         }
-        if (ottMediaOptions.ks == null) {
-            ottMediaOptions.ks =  ottPlaylistOptions.ks;
-        }
-        if (ottMediaOptions.referrer == null) {
-            ottMediaOptions.referrer = kalturaPlayer.getInitOptions().referrer;
+        OTTMediaAsset ottMediaAsset = ottMediaOptions.getOttMediaAsset();
+        if (ottMediaAsset != null) {
+            if (ottMediaAsset.getKs() == null) {
+                ottMediaAsset.setKs(ottPlaylistOptions.ks);
+            }
+            if (ottMediaAsset.getReferrer() == null) {
+                ottMediaAsset.setReferrer(kalturaPlayer.getInitOptions().referrer);
+            }
         }
 
         kalturaPlayer.loadMedia(ottMediaOptions, (entry, loadError) -> {
@@ -245,7 +255,7 @@ public class PKPlaylistController implements PlaylistController {
                 }
                 String errMsg = loadError.getMessage();
                 if (TextUtils.equals(errMsg,"Asset not found")) {
-                   errMsg  = "Asset: [" + ottMediaOptions.assetId + "] not found";
+                   errMsg  = "Asset: [" + ottMediaOptions.getOttMediaAsset().getAssetId() + "] not found";
                 }
                 kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoadMediaError(index, new ErrorElement(errMsg, loadError.getCode())));
             }

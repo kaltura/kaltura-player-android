@@ -1,58 +1,62 @@
 package com.kaltura.tvplayer;
 
+import com.kaltura.playkit.providers.BaseMediaAsset;
 import com.kaltura.playkit.providers.MediaEntryProvider;
-import com.kaltura.playkit.providers.api.phoenix.APIDefines;
+import com.kaltura.playkit.providers.ott.OTTMediaAsset;
 import com.kaltura.playkit.providers.ott.PhoenixMediaProvider;
 
-public class OTTMediaOptions extends MediaOptions {
-    public static final String HTTP = PhoenixMediaProvider.HttpProtocol.Http;;
-    public static final String HTTPS = PhoenixMediaProvider.HttpProtocol.Https;
+import java.util.List;
 
-    public String assetId;
-    public APIDefines.KalturaAssetType assetType;
-    public APIDefines.PlaybackContextType contextType;
-    public APIDefines.AssetReferenceType assetReferenceType;
-    public APIDefines.KalturaUrlType urlType;
-    public String protocol = HTTPS;
-    public String[] formats;
-    public String[] fileIds;
+public class OTTMediaOptions extends MediaOptions {
+
+    private OTTMediaAsset ottMediaAsset;
+
+    public OTTMediaOptions(OTTMediaAsset ottMediaAsset) {
+        this.ottMediaAsset = ottMediaAsset;
+    }
+
+    public OTTMediaAsset getOttMediaAsset() {
+        return ottMediaAsset;
+    }
 
     @Override
-    public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId, String ks, String referrer) {
-        OTTMediaOptions mediaOptions = this;
-        final PhoenixMediaProvider provider = new PhoenixMediaProvider(serverUrl, partnerId, ks)
-                .setAssetId(mediaOptions.assetId).setReferrer(referrer);
+    public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId) {
 
-        if (mediaOptions.protocol != null) {
-            provider.setProtocol(mediaOptions.protocol);
+        final PhoenixMediaProvider provider = new PhoenixMediaProvider(serverUrl, partnerId, ottMediaAsset.getKs())
+                .setAssetId(ottMediaAsset.getAssetId());
+
+        if (ottMediaAsset.getProtocol() != null) {
+            provider.setProtocol(ottMediaAsset.getProtocol());
         }
 
-        if (mediaOptions.fileIds != null) {
-            provider.setFileIds(mediaOptions.fileIds);
+        if (ottMediaAsset.getMediaFileIds() != null) {
+            List<String> fileIds = ottMediaAsset.getMediaFileIds();
+            provider.setFileIds((String[])fileIds.toArray(new String[0]));
         }
 
-        if (mediaOptions.contextType != null) {
-            provider.setContextType(mediaOptions.contextType);
+        if (ottMediaAsset.getContextType() != null) {
+            provider.setContextType(ottMediaAsset.getContextType());
         }
 
-        if (mediaOptions.assetType != null) {
-            provider.setAssetType(mediaOptions.assetType);
+        if (ottMediaAsset.getAssetType() != null) {
+            provider.setAssetType(ottMediaAsset.getAssetType());
         }
 
-        if (mediaOptions.urlType != null) {
-            provider.setPKUrlType(mediaOptions.urlType);
+        if (ottMediaAsset.getUrlType() != null) {
+            provider.setPKUrlType(ottMediaAsset.getUrlType());
         }
 
-        if (mediaOptions.formats != null) {
-            provider.setFormats(mediaOptions.formats);
+        if (ottMediaAsset.getFormats() != null) {
+            List<String> formats = ottMediaAsset.getFormats();
+            provider.setFormats((String[]) formats.toArray(new String[0]));
         }
 
-        if (mediaOptions.assetReferenceType != null) {
-            provider.setAssetReferenceType(mediaOptions.assetReferenceType);
+        if (ottMediaAsset.getAssetReferenceType() != null) {
+            provider.setAssetReferenceType(ottMediaAsset.getAssetReferenceType());
         }
 
-        if (mediaOptions.referrer != null) {
-            provider.setReferrer(mediaOptions.referrer);
+        if (ottMediaAsset.getReferrer() != null) {
+            provider.setReferrer(ottMediaAsset.getReferrer());
         }
 
         return provider;
