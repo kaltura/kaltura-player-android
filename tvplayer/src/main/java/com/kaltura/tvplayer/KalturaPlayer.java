@@ -688,7 +688,7 @@ public abstract class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
+                    final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
                         if (error != null) {
                             return;
@@ -736,7 +736,7 @@ public abstract class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
+                    final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
                         if (error != null) {
                             return;
@@ -782,7 +782,7 @@ public abstract class KalturaPlayer {
                         initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
                     }
                     populatePartnersValues();
-                    final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), getKS());
+                    final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
                         if (error != null) {
                             return;
