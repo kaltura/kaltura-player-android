@@ -17,7 +17,6 @@ import com.kaltura.tvplayer.OVPMediaOptions;
 
 import java.util.ArrayList;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +39,11 @@ public class PKPlaylistController implements PlaylistController {
     private boolean recoverOnError;
 
     private List<PKPlaylistMedia> origlPlaylistEntries;
-    private Map<Integer, PKMediaEntry> loadedMediasMap;
+    private Map<String, PKMediaEntry> loadedMediasMap; // map of the media id and it's PKMediaEntry (ovp/ott in entryId format basic any string that ws given by user as id)
+
+    private enum CacheMediaType {
+        Prev, Current, Next
+    }
 
     public PKPlaylistController(KalturaPlayer kalturaPlayer, PKPlaylist playlist, PKPlaylistType playlistType) {
         this.kalturaPlayer = kalturaPlayer;
@@ -110,12 +113,11 @@ public class PKPlaylistController implements PlaylistController {
             return;
         }
         if (shuffleEnabled) {
-            int origIndex = playlist.getMediaList().get(index).getMediaIndex();
-            if (loadedMediasMap.containsKey(origIndex)) {
+            if (loadedMediasMap.containsKey(getCacheMediaId(CacheMediaType.Current))) {
                 return;
             }
         } else {
-            if (loadedMediasMap.containsKey(index)) {
+            if (loadedMediasMap.containsKey(getCacheMediaId(CacheMediaType.Current))) {
                 return;
             }
         }
@@ -158,16 +160,15 @@ public class PKPlaylistController implements PlaylistController {
         if (!isValidIndex) {
             return;
         }
-
+        String mediaId = getCacheMediaId(CacheMediaType.Current);
         if (shuffleEnabled) {
-            int origIndex = playlist.getMediaList().get(index).getMediaIndex();
-            if (loadedMediasMap.containsKey(origIndex)) {
-                kalturaPlayer.setMedia(loadedMediasMap.get(origIndex));
+            if (loadedMediasMap.containsKey(mediaId)) {
+                kalturaPlayer.setMedia(loadedMediasMap.get(mediaId));
                 return;
             }
         } else {
-            if (loadedMediasMap.containsKey(index)) {
-                kalturaPlayer.setMedia(loadedMediasMap.get(index));
+            if (loadedMediasMap.containsKey(mediaId)) {
+                kalturaPlayer.setMedia(loadedMediasMap.get(mediaId));
                 return;
             }
         }
@@ -220,7 +221,7 @@ public class PKPlaylistController implements PlaylistController {
                 kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoadMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
             } else {
                 if (playlist.getMediaList() != null && !playlist.getMediaList().isEmpty() && playlist.getMediaList().get(index) != null) {
-                    loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
+                    loadedMediasMap.put(getCacheMediaId(CacheMediaType.Current), entry);
                     log.d("OVPMedia onEntryLoadComplete entry = " + entry.getId());
                 } else {
                     log.e("OVPMedia onEntryLoadComplete playlist.getMediaList().get(" + index + ") == null");
@@ -261,7 +262,7 @@ public class PKPlaylistController implements PlaylistController {
             }
             else {
                 if (playlist.getMediaList() != null && !playlist.getMediaList().isEmpty() && playlist.getMediaList().get(index) != null) {
-                    loadedMediasMap.put(playlist.getMediaList().get(index).getMediaIndex(), entry);
+                    loadedMediasMap.put(getCacheMediaId(CacheMediaType.Current), entry);
                     log.d("OTTMedia onEntryLoadComplete entry = " + entry.getId());
                 } else {
                     log.e("OTTMedia onEntryLoadComplete playlist.getMediaList().get(" + index + ") == null");
@@ -279,7 +280,7 @@ public class PKPlaylistController implements PlaylistController {
 
         List<PKPlaylistMedia> basicMediaOptionsList = ((PKBasicPlaylist) playlist).getBasicMediaOptionsList();
         if (basicMediaOptionsList != null && !basicMediaOptionsList.isEmpty() && basicMediaOptionsList.get(index) != null) {
-            loadedMediasMap.put(basicMediaOptionsList.get(index).getMediaIndex(), pkMediaEntry);
+            loadedMediasMap.put(getCacheMediaId(CacheMediaType.Current), pkMediaEntry);
             kalturaPlayer.setMedia(pkMediaEntry, 0L);
         } else {
             log.e("BasicMedia onEntryLoadComplete basicMediaOptionsList.get(" + index + ") == null");
@@ -361,7 +362,7 @@ public class PKPlaylistController implements PlaylistController {
 
         if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex + 1) == null) ||
                 (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex + 1) == null) ||
-                (loadedMediasMap.containsKey(currentPlayingIndex + 1) && loadedMediasMap.get(currentPlayingIndex + 1) == null)
+                (loadedMediasMap.containsKey(getCacheMediaId(CacheMediaType.Next)) && loadedMediasMap.get(getCacheMediaId(CacheMediaType.Next)) == null)
         ) {
             if (recoverOnError) {
                 ++currentPlayingIndex;
@@ -389,7 +390,7 @@ public class PKPlaylistController implements PlaylistController {
 
         if ((kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic && playlist.getMediaList().get(currentPlayingIndex - 1) == null) ||
                 (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.basic && ((PKBasicPlaylist)playlist).getBasicMediaOptionsList().get(currentPlayingIndex - 1) == null) ||
-                (loadedMediasMap.containsKey(currentPlayingIndex - 1) && loadedMediasMap.get(currentPlayingIndex - 1) == null)) {
+                (loadedMediasMap.containsKey(getCacheMediaId(CacheMediaType.Prev)) && loadedMediasMap.get(getCacheMediaId(CacheMediaType.Prev)) == null)) {
             if (recoverOnError) {
                 if (currentPlayingIndex - 1 < 0) {
                     playItem(currentPlayingIndex, isAutoContinueEnabled());
@@ -411,12 +412,12 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     @Override
-    public boolean isMediaLoaded(int index) {
-        log.d("isMediaLoaded index = " + index);
+    public boolean isMediaLoaded(String mediaId) {
+        log.d("isMediaLoaded mediaId = " + mediaId);
         if (loadedMediasMap == null) {
             return false;
         }
-        return loadedMediasMap.containsKey(index) && loadedMediasMap.get(index) != null;
+        return loadedMediasMap.containsKey(mediaId) && loadedMediasMap.get(mediaId) != null;
     }
 
     @Override
@@ -611,7 +612,8 @@ public class PKPlaylistController implements PlaylistController {
                 if (!isRecoverOnError()) {
                     return;
                 }
-                loadedMediasMap.put(currentPlayingIndex, null);
+                String mediaId = getCacheMediaId(CacheMediaType.Current);
+                loadedMediasMap.put(mediaId, null);
                 if (isAutoContinueEnabled()) {
                     playNext();
                 } else {
@@ -628,6 +630,26 @@ public class PKPlaylistController implements PlaylistController {
                 }
             }
         });
+    }
+
+    private String getCacheMediaId(CacheMediaType cacheMediaType) {
+
+        if (currentPlayingIndex < 0 || currentPlayingIndex >= playlist.getMediaList().size()) {
+            return "";
+        }
+
+        int mediaListIndex = currentPlayingIndex;
+        if (cacheMediaType == CacheMediaType.Next) {
+            mediaListIndex += 1;
+        } else if (cacheMediaType == CacheMediaType.Prev) {
+            mediaListIndex -= 1;
+        }
+
+        String mediaId = playlist.getMediaList().get(mediaListIndex).getId();
+        if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
+            mediaId = playlist.getMediaList().get(mediaListIndex).getMetadata().get("entryId");
+        }
+        return mediaId;
     }
 
     private void handleCountDownEvent(PlayerEvent.PlayheadUpdated event) {

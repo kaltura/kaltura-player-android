@@ -825,7 +825,7 @@ public abstract class KalturaPlayer {
 
         List<PKPlaylistMedia> playlistMediaEntryList = new ArrayList<>();
         for (int i = 0; i < playlistOptions.basicMediaOptionsList.size() ; i++) {
-            playlistMediaEntryList.add(new BasicMediaOptions(playlistOptions.basicMediaOptionsList.get(i).getPKMediaEntry()).setMediaIndex(i));
+            playlistMediaEntryList.add(new BasicMediaOptions(playlistOptions.basicMediaOptionsList.get(i).getPKMediaEntry()));
         }
 
         PKPlaylist basicPlaylist = new PKBasicPlaylist()

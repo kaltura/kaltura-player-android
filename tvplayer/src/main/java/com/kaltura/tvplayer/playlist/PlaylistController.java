@@ -96,9 +96,10 @@ public interface PlaylistController {
     /**
      * isMediaLoaded - validation if media was fetched/played at least one time so the playback information is available.
      *
+     * @param mediaId - media id in playlist.
      * @return - boolean
      */
-    boolean isMediaLoaded(int index);
+    boolean isMediaLoaded(String mediaId);
 
     /**
      * loop - configure the controller to play the playlist again
