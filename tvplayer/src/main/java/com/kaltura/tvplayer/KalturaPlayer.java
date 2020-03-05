@@ -369,7 +369,7 @@ public abstract class KalturaPlayer {
                 mediaEntry.getExternalSubtitleList().addAll(externalSubtitles);
             }
         }
-        
+
         if (preload) {
             this.mediaEntry = mediaEntry;
             this.prepareState = PrepareState.not_prepared;
@@ -825,7 +825,7 @@ public abstract class KalturaPlayer {
 
         List<PKPlaylistMedia> playlistMediaEntryList = new ArrayList<>();
         for (int i = 0; i < playlistOptions.basicMediaOptionsList.size() ; i++) {
-            playlistMediaEntryList.add(new BasicMediaOptions(i, playlistOptions.basicMediaOptionsList.get(i).getPKMediaEntry()));
+            playlistMediaEntryList.add(new BasicMediaOptions(playlistOptions.basicMediaOptionsList.get(i).getPKMediaEntry()).setMediaIndex(i));
         }
 
         PKPlaylist basicPlaylist = new PKBasicPlaylist()

@@ -8,8 +8,7 @@ public class BasicMediaOptions extends PKPlaylistMedia {
     private PKMediaEntry pkMediaEntry;
     private CountDownOptions countDownOptions;
 
-    public BasicMediaOptions(int mediaIndex, PKMediaEntry pkMediaEntry) {
-        setMediaIndex(mediaIndex);
+    public BasicMediaOptions(PKMediaEntry pkMediaEntry) {
         super.setId(pkMediaEntry.getId());
         super.setName(pkMediaEntry.getName());
         super.setMetadata(pkMediaEntry.getMetadata());
@@ -19,13 +18,9 @@ public class BasicMediaOptions extends PKPlaylistMedia {
         this.countDownOptions = new CountDownOptions();
     }
 
-    public BasicMediaOptions(int mediaIndex, PKMediaEntry pkMediaEntry, CountDownOptions countDownOptions) {
-        this(mediaIndex, pkMediaEntry);
+    public BasicMediaOptions(PKMediaEntry pkMediaEntry, CountDownOptions countDownOptions) {
+        this(pkMediaEntry);
         this.countDownOptions = countDownOptions;
-    }
-
-    public void setMediaIndex(int mediaIndex) {
-        super.setMediaIndex(mediaIndex);
     }
 
     public PKMediaEntry getPKMediaEntry() {
