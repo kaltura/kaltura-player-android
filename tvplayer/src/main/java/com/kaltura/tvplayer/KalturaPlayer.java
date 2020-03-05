@@ -369,8 +369,7 @@ public abstract class KalturaPlayer {
                 mediaEntry.getExternalSubtitleList().addAll(externalSubtitles);
             }
         }
-
-
+        
         if (preload) {
             this.mediaEntry = mediaEntry;
             this.prepareState = PrepareState.not_prepared;
