@@ -45,31 +45,31 @@ public class CountDownOptions {
         return origTimeToShowMS;
     }
 
-    public void setTimeToShowMS(long timeToShowMS) {
-        this.timeToShowMS = timeToShowMS;
-    }
-
     public long getDurationMS() {
         return durationMS;
-    }
-
-    public void setDurationMS(long durationMS) {
-        this.durationMS = durationMS;
-    }
-
-    public boolean shouldDisplay() {
-        return shouldDisplay;
-    }
-
-    public void setShouldDisplay(boolean shouldDisplay) {
-        this.shouldDisplay = shouldDisplay;
     }
 
     public boolean isEventSent() {
         return eventSent;
     }
 
-    public void setEventSent(boolean eventSent) {
+    public boolean shouldDisplay() {
+        return shouldDisplay;
+    }
+
+    void setTimeToShowMS(long timeToShowMS) {
+        this.timeToShowMS = timeToShowMS;
+    }
+
+    void setDurationMS(long durationMS) {
+        this.durationMS = durationMS;
+    }
+
+    void setShouldDisplay(boolean shouldDisplay) {
+        this.shouldDisplay = shouldDisplay;
+    }
+
+    void setEventSent(boolean eventSent) {
         this.eventSent = eventSent;
     }
 }
