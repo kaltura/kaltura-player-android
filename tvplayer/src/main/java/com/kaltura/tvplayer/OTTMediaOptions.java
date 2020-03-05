@@ -18,6 +18,6 @@ public class OTTMediaOptions extends MediaOptions {
 
     @Override
     public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId) {
-        return new PhoenixMediaProvider(serverUrl, partnerId, ottMediaAsset.getKs(), ottMediaAsset);
+        return new PhoenixMediaProvider(serverUrl, partnerId, ottMediaAsset);
     }
 }
