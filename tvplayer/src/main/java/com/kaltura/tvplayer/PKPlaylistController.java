@@ -46,7 +46,6 @@ public class PKPlaylistController implements PlaylistController {
     private int currentPlayingIndex = -1;
     private boolean playlistAutoContinue = true;
     private boolean loopEnabled;
-    private boolean shuffleEnabled;
     private boolean recoverOnError;
 
     private List<PKPlaylistMedia> origlPlaylistEntries;
@@ -123,14 +122,9 @@ public class PKPlaylistController implements PlaylistController {
         if (!isValidIndex) {
             return;
         }
-        if (shuffleEnabled) {
-            if (loadedMediasMap.containsKey(getCacheMediaId(CacheMediaType.Current))) {
-                return;
-            }
-        } else {
-            if (loadedMediasMap.containsKey(getCacheMediaId(CacheMediaType.Current))) {
-                return;
-            }
+
+        if (loadedMediasMap.containsKey(getCacheMediaId(CacheMediaType.Current))) {
+            return;
         }
 
         if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ovp) {
@@ -172,16 +166,10 @@ public class PKPlaylistController implements PlaylistController {
             return;
         }
         String mediaId = getCacheMediaId(CacheMediaType.Current);
-        if (shuffleEnabled) {
-            if (loadedMediasMap.containsKey(mediaId)) {
-                kalturaPlayer.setMedia(loadedMediasMap.get(mediaId));
-                return;
-            }
-        } else {
-            if (loadedMediasMap.containsKey(mediaId)) {
-                kalturaPlayer.setMedia(loadedMediasMap.get(mediaId));
-                return;
-            }
+
+        if (loadedMediasMap.containsKey(mediaId)) {
+            kalturaPlayer.setMedia(loadedMediasMap.get(mediaId));
+            return;
         }
 
         currentPlayingIndex = index;
@@ -267,7 +255,7 @@ public class PKPlaylistController implements PlaylistController {
                 }
                 String errMsg = loadError.getMessage();
                 if (TextUtils.equals(errMsg,"Asset not found")) {
-                   errMsg  = "Asset: [" + ottMediaOptions.getOttMediaAsset().getAssetId() + "] not found";
+                    errMsg  = "Asset: [" + ottMediaOptions.getOttMediaAsset().getAssetId() + "] not found";
                 }
                 kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoadMediaError(index, new ErrorElement(errMsg, loadError.getCode())));
             }
@@ -458,33 +446,6 @@ public class PKPlaylistController implements PlaylistController {
         return recoverOnError;
     }
 
-//    @Override
-//    public void shuffle(boolean mode) {
-//        log.d("shuffle mode = " + mode);
-//        if (kalturaPlayer.getMessageBus() == null) {
-//            return;
-//        }
-//        kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistShuffleStateChanged(mode));
-//
-//        shuffleEnabled = mode;
-//        if (playlist != null) {
-//            if (mode) {
-//                origlPlaylistEntries = playlist.getMediaList();
-//                playlist.setMediaList(new ArrayList<>(playlist.getMediaList()));
-//                Collections.shuffle(playlist.getMediaList());
-//            } else {
-//                if (origlPlaylistEntries != null && !origlPlaylistEntries.isEmpty()) {
-//                    playlist.setMediaList(origlPlaylistEntries);
-//                }
-//            }
-//        }
-//    }
-//
-//    @Override
-//    public boolean isShuffleEnabled() {
-//        return shuffleEnabled;
-//    }
-
     @Override
     public void autoContinue(boolean mode) {
         log.d("autoContinue mode = " + mode);
@@ -505,7 +466,6 @@ public class PKPlaylistController implements PlaylistController {
         log.d("reset");
         currentPlayingIndex = -1;
         loopEnabled  = false;
-        shuffleEnabled = false;
         playlistAutoContinue = true;
         loadedMediasMap.clear();
         origlPlaylistEntries.clear();
@@ -528,7 +488,6 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void setPlaylistOptions(PlaylistOptions playlistOptions) {
         this.playlistOptions = playlistOptions;
-        //shuffle(playlistOptions.shuffleEnabled);
         loop(playlistOptions.loopEnabled);
         autoContinue(playlistOptions.autoContinue);
         recoverOnError(playlistOptions.recoverOnError);
