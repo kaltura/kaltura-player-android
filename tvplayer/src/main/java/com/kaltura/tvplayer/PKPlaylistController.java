@@ -11,9 +11,6 @@ import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.providers.ott.OTTMediaAsset;
 import com.kaltura.playkit.providers.ovp.OVPMediaAsset;
-import com.kaltura.tvplayer.KalturaPlayer;
-import com.kaltura.tvplayer.OTTMediaOptions;
-import com.kaltura.tvplayer.OVPMediaOptions;
 import com.kaltura.tvplayer.playlist.BasicMediaOptions;
 import com.kaltura.tvplayer.playlist.BasicPlaylistOptions;
 import com.kaltura.tvplayer.playlist.CountDownOptions;
@@ -420,8 +417,8 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     @Override
-    public void loop(boolean mode) {
-        log.d("loop mode = " + mode);
+    public void setLoop(boolean mode) {
+        log.d("setLoop mode = " + mode);
         loopEnabled = mode;
         if (kalturaPlayer.getMessageBus() == null) {
             return;
@@ -436,8 +433,8 @@ public class PKPlaylistController implements PlaylistController {
 
 
     @Override
-    public void recoverOnError(boolean mode) {
-        log.d("recoverOnError mode = " + mode);
+    public void setRecoverOnError(boolean mode) {
+        log.d("setRecoverOnError mode = " + mode);
         recoverOnError = mode;
     }
 
@@ -447,8 +444,8 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     @Override
-    public void autoContinue(boolean mode) {
-        log.d("autoContinue mode = " + mode);
+    public void setAutoContinue(boolean mode) {
+        log.d("setAutoContinue mode = " + mode);
         playlistAutoContinue = mode;
         if (kalturaPlayer.getMessageBus() == null) {
             return;
@@ -488,9 +485,9 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void setPlaylistOptions(PlaylistOptions playlistOptions) {
         this.playlistOptions = playlistOptions;
-        loop(playlistOptions.loopEnabled);
-        autoContinue(playlistOptions.autoContinue);
-        recoverOnError(playlistOptions.recoverOnError);
+        setLoop(playlistOptions.loopEnabled);
+        setAutoContinue(playlistOptions.autoContinue);
+        setRecoverOnError(playlistOptions.recoverOnError);
     }
 
     @Override

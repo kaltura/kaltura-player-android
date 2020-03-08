@@ -102,55 +102,40 @@ public interface PlaylistController {
     boolean isMediaLoaded(String mediaId);
 
     /**
-     * loop - configure the controller to play the playlist again
+     * setLoop - configure the controller to play the playlist again
      * when last playlist media is ended
      *
      * @param mode - enabled/disabled.
      */
-    void loop(boolean mode);
+    void setLoop(boolean mode);
 
     /**
-     * isLoopEnabled - validation if playlist controller is configured to support loop mode.
+     * isLoopEnabled - validation if playlist controller is configured to support setLoop mode.
      *
      * @return - boolean
      */
     boolean isLoopEnabled();
 
-//    /**
-//     * shuffle - configure the controller to play the playlist in random mode
-//     *
-//     * @param mode - enabled/disabled.
-//     */
-//    void shuffle(boolean mode);
-//
-//    /**
-//     * isShuffleEnabled - validation if playlist controller is configured to support shuffle mode.
-//     *
-//     * @return - boolean
-//     */
-//    boolean isShuffleEnabled();
-
     /**
-     * autoContinue - configure the controller to play the playlist in autoContinue mode
+     * setAutoContinue - configure the controller to play the playlist in setAutoContinue mode
      *
      * @param mode - enabled/disabled.
      */
-    void autoContinue(boolean mode);
+    void setAutoContinue(boolean mode);
 
     /**
-     * isAutoContinueEnabled - validation if playlist controller is configured to support autoContinue mode.
+     * isAutoContinueEnabled - validation if playlist controller is configured to support setAutoContinue mode.
      *
      * @return - boolean
      */
     boolean isAutoContinueEnabled();
 
     /**
-     * recoverOnError - ignore media playback errors and continue
+     * setRecoverOnError - ignore media playback errors and continue
      *
      * @param mode - enabled/disabled.
      */
-    void recoverOnError(boolean mode);
-
+    void setRecoverOnError(boolean mode);
 
     /**
      * isRecoverOnError - validation if playlist controller should recover on error.
