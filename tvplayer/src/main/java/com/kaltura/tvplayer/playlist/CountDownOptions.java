@@ -57,19 +57,19 @@ public class CountDownOptions {
         return shouldDisplay;
     }
 
-    void setTimeToShowMS(long timeToShowMS) {
+    public void setTimeToShowMS(long timeToShowMS) {
         this.timeToShowMS = timeToShowMS;
     }
 
-    void setDurationMS(long durationMS) {
+    public void setDurationMS(long durationMS) {
         this.durationMS = durationMS;
     }
 
-    void setShouldDisplay(boolean shouldDisplay) {
+    public void setShouldDisplay(boolean shouldDisplay) {
         this.shouldDisplay = shouldDisplay;
     }
 
-    void setEventSent(boolean eventSent) {
+    public void setEventSent(boolean eventSent) {
         this.eventSent = eventSent;
     }
 }

@@ -1,4 +1,4 @@
-package com.kaltura.tvplayer.playlist;
+package com.kaltura.tvplayer;
 
 import android.text.TextUtils;
 
@@ -14,6 +14,17 @@ import com.kaltura.playkit.providers.ovp.OVPMediaAsset;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.OTTMediaOptions;
 import com.kaltura.tvplayer.OVPMediaOptions;
+import com.kaltura.tvplayer.playlist.BasicMediaOptions;
+import com.kaltura.tvplayer.playlist.BasicPlaylistOptions;
+import com.kaltura.tvplayer.playlist.CountDownOptions;
+import com.kaltura.tvplayer.playlist.OTTPlaylistOptions;
+import com.kaltura.tvplayer.playlist.OVPPlaylistIdOptions;
+import com.kaltura.tvplayer.playlist.OVPPlaylistOptions;
+import com.kaltura.tvplayer.playlist.PKBasicPlaylist;
+import com.kaltura.tvplayer.playlist.PKPlaylistType;
+import com.kaltura.tvplayer.playlist.PlaylistController;
+import com.kaltura.tvplayer.playlist.PlaylistEvent;
+import com.kaltura.tvplayer.playlist.PlaylistOptions;
 
 import java.util.ArrayList;
 

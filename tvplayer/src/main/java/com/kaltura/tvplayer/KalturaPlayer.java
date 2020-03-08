@@ -54,7 +54,6 @@ import com.kaltura.tvplayer.playlist.PKBasicPlaylist;
 import com.kaltura.tvplayer.playlist.PKPlaylistType;
 import com.kaltura.tvplayer.playlist.PlaylistController;
 
-import com.kaltura.tvplayer.playlist.PKPlaylistController;
 import com.kaltura.tvplayer.playlist.PlaylistEvent;
 import com.kaltura.tvplayer.utils.ConfigResolver;
 import com.kaltura.tvplayer.utils.NetworkUtils;
