@@ -221,7 +221,7 @@ public abstract class KalturaPlayer {
         return kavaAnalyticsConfig;
     }
 
-    public MessageBus getMessageBus() {
+    MessageBus getMessageBus() {
         return messageBus;
     }
 
