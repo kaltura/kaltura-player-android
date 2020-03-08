@@ -359,8 +359,8 @@ public class PKPlaylistController implements PlaylistController {
                 replay();
                 return;
             }
-            log.d("Ignore playNext - invalid index!");
-            playPrev();
+            log.d("Error invalid index - Ignore playNext - invalid index!");
+            //playPrev(); for now do not replat last media if play next is not valid
             return;
         }
 
@@ -386,8 +386,8 @@ public class PKPlaylistController implements PlaylistController {
                 currentPlayingIndex = playlistSize - 1;
                 playItem(currentPlayingIndex);
             } else {
-                log.d("Ignore playPrev - invalid index!");
-                playNext();
+                log.d("Error invalid index - Ignore playPrev - invalid index!");
+                //playNext(); for now do not replay last media if play prev is not valid
             }
             return;
         }
