@@ -299,6 +299,8 @@ public class PKPlaylistController implements PlaylistController {
         return isValidIndex;
     }
 
+    // incase the index that was requested to be played does not contain a valid media
+    // the controller will try to find the next media which is avaliable for playback
     private OVPMediaOptions getNextMediaOptions(int index, OVPPlaylistOptions ovpPlaylistOptions) {
         while (true) {
             List<OVPMediaOptions> ovpMediaOptionsList = ovpPlaylistOptions.ovpMediaOptionsList;
@@ -313,6 +315,8 @@ public class PKPlaylistController implements PlaylistController {
         return null;
     }
 
+    // incase the index that was requested to be played does not contain a valid media
+    // the controller will try to find the next media which is avaliable for playback
     private OTTMediaOptions getNextMediaOptions(int index, OTTPlaylistOptions ottPlaylistOptions) {
         while(true) {
             List<OTTMediaOptions> ottMediaOptionsList = ottPlaylistOptions.ottMediaOptionsList;
@@ -327,6 +331,8 @@ public class PKPlaylistController implements PlaylistController {
         return null;
     }
 
+    // incase the index that was requested to be played does not contain a valid media
+    // the controller will try to find the next media which is avaliable for playback
     private PKMediaEntry getNextMediaOptions(int index, BasicPlaylistOptions basicPlaylistOptions) {
         while(true) {
             List<BasicMediaOptions> playlistBasicMediaEntryList = basicPlaylistOptions.basicMediaOptionsList;
