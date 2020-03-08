@@ -14,6 +14,18 @@
 
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/icon_play_prev"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="80dp"
+        android:layout_marginRight="80dp"
+        android:layout_centerInParent="true"
+        android:layout_toLeftOf="@+id/toggleButton"
+        android:src="@drawable/exo_icon_previous"
+        android:visibility="invisible" />
+
     <ImageButton
         android:id="@+id/toggleButton"
         android:layout_width="wrap_content"
@@ -21,6 +33,18 @@
         android:layout_centerInParent="true"
         android:background="@drawable/play"
          />
+
+    <ImageView
+        android:id="@+id/icon_play_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="80dp"
+        android:layout_marginLeft="80dp"
+        android:layout_centerInParent="true"
+        android:src="@drawable/exo_icon_next"
+        android:layout_toRightOf="@+id/toggleButton"
+        android:visibility="invisible" />
 
     <LinearLayout
         android:layout_width="match_parent"

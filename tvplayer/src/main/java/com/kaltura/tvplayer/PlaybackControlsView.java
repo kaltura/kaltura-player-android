@@ -32,6 +32,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
     private KalturaPlayer player;
     private PlayerState playerState;
+    private boolean isError;
 
     private Formatter formatter;
     private StringBuilder formatBuilder;
@@ -44,12 +45,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private boolean dragging = false;
 
 
-    private Runnable updateProgressAction = new Runnable() {
-        @Override
-        public void run() {
-            updateProgress();
-        }
-    };
+    private Runnable updateProgressAction = () -> updateProgress();
 
     public PlaybackControlsView(Context context) {
         this(context, null);
@@ -69,14 +65,11 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
     private void initPlaybackControls() {
         playPauseToggle = this.findViewById(R.id.toggleButton);
-        playPauseToggle.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (playerState == null) {
-                    return;
-                }
-                togglePlayPauseClick();
+        playPauseToggle.setOnClickListener(view -> {
+            if (playerState == null) {
+                return;
             }
+            togglePlayPauseClick();
         });
 //        this.findViewById(R.id.playback_controls_layout).setOnClickListener(new OnClickListener() {
 //            @Override
@@ -115,7 +108,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
             }
         }
 
-        if (player != null && player.getMediaEntry().getMediaType().equals(Live)) {
+        if (player != null && player.getMediaEntry() != null && player.getMediaEntry().getMediaType().equals(Live)) {
             tvLiveIndicator.setVisibility(VISIBLE);
             tvCurTime.setVisibility(INVISIBLE);
             tvTime.setVisibility(View.INVISIBLE);
@@ -129,7 +122,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 seekBar.setProgress(progressBarValue(position));
             }
 
-            if (player != null && player.getMediaEntry().getMediaType().equals(DvrLive)) {
+            if (player != null && player.getMediaEntry() != null && player.getMediaEntry().getMediaType().equals(DvrLive)) {
                 tvLiveIndicator.setVisibility(VISIBLE);
                 if (!dragging && position > (duration - LIVE_EDGE_THRESHOLD)) {
                     tvLiveIndicator.setBackgroundResource(R.drawable.red_background);
@@ -196,6 +189,14 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 setPlayerState(PlayerState.IDLE);
             }
         });
+
+        this.player.addListener(this, PlayerEvent.error, event -> {
+            isError = true;
+        });
+
+        this.player.addListener(this, PlayerEvent.canPlay, event -> {
+            isError = false;
+        });
     }
 
     public void setPlayerState(PlayerState playerState) {
@@ -219,8 +220,15 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         playPauseToggle.setBackgroundResource(R.drawable.pause);
     }
 
+    public void destroy() {
+        if (player != null)
+            player.removeListeners(this);
+            player.destroy();
+            player = null;
+    }
+
     public void togglePlayPauseClick() {
-        if (player == null) {
+        if (player == null || isError) {
             return;
         }
 
@@ -256,7 +264,6 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         }
     }
 
-
     public void onStartTrackingTouch(SeekBar seekBar) {
         dragging = true;
     }
@@ -281,5 +288,11 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
     public void setSeekbarEnabled() {
         seekBar.setEnabled(true);
+    }
+
+    public void setSeekBarVisibility(int visibility) {
+        seekBar.setVisibility(visibility);
+        tvCurTime.setVisibility(visibility);
+        tvTime.setVisibility(visibility);
     }
 }

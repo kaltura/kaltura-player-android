@@ -5,6 +5,8 @@ import android.os.Parcelable
 import android.util.Log
 import com.kaltura.playkit.PKMediaEntry
 import com.kaltura.playkit.PKMediaSource
+import com.kaltura.playkit.providers.ott.OTTMediaAsset
+import com.kaltura.playkit.providers.ovp.OVPMediaAsset
 import com.kaltura.tvplayer.MediaOptions
 import com.kaltura.tvplayer.OTTMediaOptions
 import com.kaltura.tvplayer.OVPMediaOptions
@@ -63,8 +65,8 @@ class BasicItem(private val id: String, val url: String): Item() {
     override fun title() = id
 
     constructor(parcel: Parcel) : this(
-        parcel.readString()!!,
-        parcel.readString()!!
+            parcel.readString()!!,
+            parcel.readString()!!
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -99,12 +101,16 @@ class OVPItem(partnerId: Int, private val entryId: String, serverUrl: String = "
 
     override fun id() = assetInfo?.assetId ?: entryId
 
-    override fun mediaOptions() = OVPMediaOptions(entryId)
+    override fun mediaOptions() : OVPMediaOptions{
+        var ovpMediaAsset = OVPMediaAsset()
+        ovpMediaAsset.entryId = entryId
+        return OVPMediaOptions(ovpMediaAsset)
+    }
 
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString()!!
+            parcel.readInt(),
+            parcel.readString()!!,
+            parcel.readString()!!
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -131,17 +137,24 @@ class OVPItem(partnerId: Int, private val entryId: String, serverUrl: String = "
 class OTTItem(partnerId: Int, val ottAssetId: String, serverUrl: String, val format: String) : KalturaItem(partnerId, serverUrl) {
 
     constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readString()!!,
-        parcel.readString()!!
+            parcel.readInt(),
+            parcel.readString()!!,
+            parcel.readString()!!,
+            parcel.readString()!!
     )
 
     override fun id() = assetInfo?.assetId ?: ottAssetId
 
-    override fun mediaOptions() = OTTMediaOptions().apply {
-        assetId = ottAssetId
-        formats = arrayOf(format)
+    override fun mediaOptions(): OTTMediaOptions {
+
+        var formats = mutableListOf<String>()
+        formats.add(format)
+        var ottMediaAsset = OTTMediaAsset()
+        ottMediaAsset.formats = formats
+        ottMediaAsset.assetId = ottAssetId
+        val mediaOptions = OTTMediaOptions(ottMediaAsset)
+
+        return mediaOptions
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
