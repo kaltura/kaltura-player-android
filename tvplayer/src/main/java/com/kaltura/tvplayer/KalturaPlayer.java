@@ -228,7 +228,7 @@ public abstract class KalturaPlayer {
     private void loadPlayer() {
         tokenResolver.update(initOptions);
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
-        pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus); //pluginConfigs
+        pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
         if (Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId)) {
             NetworkUtils.sendKavaImpression(context);
