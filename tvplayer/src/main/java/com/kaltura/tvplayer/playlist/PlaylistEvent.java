@@ -13,7 +13,6 @@ public class PlaylistEvent implements PKEvent {
     public static final Class<PlaylistCountDownStart> playlistCountDownStart = PlaylistCountDownStart.class;
     public static final Class<PlaylistCountDownEnd> playlistCountDownEnd = PlaylistCountDownEnd.class;
     public static final Class<PlaylistLoopStateChanged> playlistLoopStateChanged = PlaylistLoopStateChanged.class;
-    public static final Class<PlaylistShuffleStateChanged> playlistShuffleStateChanged = PlaylistShuffleStateChanged.class;
     public static final Class<PlaylistAutoContinueStateChanged> playlistAutoContinueStateChanged = PlaylistAutoContinueStateChanged.class;
     public static final Class<PlaylistError> playListError = PlaylistError.class;
     public static final Class<PlaylistLoadMediaError> playListLoadMediaError = PlaylistLoadMediaError.class;
@@ -94,16 +93,6 @@ public class PlaylistEvent implements PKEvent {
         }
     }
 
-    public static class PlaylistShuffleStateChanged extends PlaylistEvent {
-
-        public final boolean mode;
-
-        public PlaylistShuffleStateChanged(boolean mode) {
-            super(Type.PLAYLIST_SUFFLE_STATE_CHANGED);
-            this.mode = mode;
-        }
-    }
-
     public static class PlaylistAutoContinueStateChanged extends PlaylistEvent {
 
         public final boolean mode;
@@ -143,7 +132,6 @@ public class PlaylistEvent implements PKEvent {
         PLAYLIST_COUNT_DOWN_START,
         PLAYLIST_COUNT_DOWN_END,
         PLAYLIST_LOOP_STATE_CHANGED,
-        PLAYLIST_SUFFLE_STATE_CHANGED,
         PLAYLIST_AUTO_CONTINUE_STATE_CHANGED,
         PLAYLIST_ERROR,
         PLAYLIST_LOAD_MEDIA_ERROR

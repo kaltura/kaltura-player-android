@@ -789,7 +789,6 @@ public abstract class KalturaPlayer {
                             messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
                         }
                         playlistController.playItem(playlistOptions.startIndex, autoPlay);
-
                     }));
                 }
             }
