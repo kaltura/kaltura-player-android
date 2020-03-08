@@ -667,10 +667,6 @@ public abstract class KalturaPlayer {
         }
     }
 
-    private KalturaPlayer getKalturaPlayer() {
-        return this;
-    }
-
     public void loadPlaylistById(@NonNull OVPPlaylistIdOptions playlistOptions, @NonNull final OnPlaylistControllerListener controllerListener) {
 
         if (!isValidOVPPlayer())
@@ -691,7 +687,7 @@ public abstract class KalturaPlayer {
                         if (error != null) {
                             return;
                         }
-                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist, PKPlaylistType.OVP_ID);
+                        PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, playlist, PKPlaylistType.OVP_ID);
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
@@ -739,7 +735,7 @@ public abstract class KalturaPlayer {
                         if (error != null) {
                             return;
                         }
-                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist, PKPlaylistType.OVP_LIST);
+                        PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, playlist, PKPlaylistType.OVP_LIST);
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
@@ -785,7 +781,7 @@ public abstract class KalturaPlayer {
                         if (error != null) {
                             return;
                         }
-                        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), playlist, PKPlaylistType.OTT_LIST);
+                        PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, playlist, PKPlaylistType.OTT_LIST);
                         playlistController.setPlaylistOptions(playlistOptions);
                         controllerListener.onPlaylistControllerComplete(playlistController, null);
                         setPlaylistController(playlistController);
@@ -834,7 +830,7 @@ public abstract class KalturaPlayer {
                 .setThumbnailUrl(playlistOptions.playlistMetadata.getThumbnailUrl());
         ((PKBasicPlaylist)basicPlaylist).setBasicMediaOptionsList(playlistMediaEntryList);
 
-        PlaylistController playlistController = new PKPlaylistController(getKalturaPlayer(), basicPlaylist, PKPlaylistType.BASIC_LIST);
+        PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, basicPlaylist, PKPlaylistType.BASIC_LIST);
         playlistController.setPlaylistOptions(playlistOptions);
         controllerListener.onPlaylistControllerComplete(playlistController, null);
         setPlaylistController(playlistController);
