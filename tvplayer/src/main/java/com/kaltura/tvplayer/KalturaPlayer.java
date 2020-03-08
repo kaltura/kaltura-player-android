@@ -932,7 +932,6 @@ public abstract class KalturaPlayer {
         }
 
         ks = null;
-
         String mediaKS = null;
         if (isValidOVPPlayer()) {
             if (((OVPMediaOptions) mediaOptions).getOvpMediaAsset() != null) {
