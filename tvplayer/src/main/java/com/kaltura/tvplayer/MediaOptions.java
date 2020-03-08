@@ -1,5 +1,7 @@
 package com.kaltura.tvplayer;
 
+import androidx.annotation.Nullable;
+
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.providers.BaseMediaAsset;
 import com.kaltura.playkit.providers.MediaEntryProvider;
@@ -10,7 +12,7 @@ import java.util.List;
 public abstract class MediaOptions {
     public Long startPosition;
     public List<PKExternalSubtitle> externalSubtitles;
-    public CountDownOptions countDownOptions;
+    public @Nullable CountDownOptions playlistCountDownOptions;
 
     public abstract MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId);
 }

@@ -1,12 +1,14 @@
 package com.kaltura.tvplayer.playlist;
 
+import androidx.annotation.Nullable;
+
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylistMedia;
 
 public class BasicMediaOptions extends PKPlaylistMedia {
 
     private PKMediaEntry pkMediaEntry;
-    private CountDownOptions countDownOptions;
+    private @Nullable CountDownOptions playlistCountDownOptions;
 
     public BasicMediaOptions(PKMediaEntry pkMediaEntry) {
         super.setId(pkMediaEntry.getId());
@@ -15,19 +17,19 @@ public class BasicMediaOptions extends PKPlaylistMedia {
         super.setMsDuration(pkMediaEntry.getDuration());
         super.setType(pkMediaEntry.getMediaType());
         this.pkMediaEntry = pkMediaEntry;
-        this.countDownOptions = new CountDownOptions();
+        this.playlistCountDownOptions = new CountDownOptions();
     }
 
-    public BasicMediaOptions(PKMediaEntry pkMediaEntry, CountDownOptions countDownOptions) {
+    public BasicMediaOptions(PKMediaEntry pkMediaEntry, @Nullable CountDownOptions playlistCountDownOptions) {
         this(pkMediaEntry);
-        this.countDownOptions = countDownOptions;
+        this.playlistCountDownOptions = playlistCountDownOptions;
     }
 
     public PKMediaEntry getPKMediaEntry() {
         return pkMediaEntry;
     }
 
-    public CountDownOptions getCountDownOptions() {
-        return countDownOptions;
+    public CountDownOptions getPlaylistCountDownOptions() {
+        return playlistCountDownOptions;
     }
 }

@@ -1,5 +1,7 @@
 package com.kaltura.tvplayer.playlist;
 
+import androidx.annotation.Nullable;
+
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKPlaylist;
@@ -62,24 +64,24 @@ public class PlaylistEvent implements PKEvent {
     public static class PlaylistCountDownStart extends PlaylistEvent {
 
         public final int currentPlayingIndex;
-        public final CountDownOptions countDownOptions;
+        public final @Nullable CountDownOptions playlistCountDownOptions;
 
-        public PlaylistCountDownStart(int currentPlayingIndex, CountDownOptions countDownOptions) {
+        public PlaylistCountDownStart(int currentPlayingIndex, @Nullable CountDownOptions playlistCountDownOptions) {
             super(Type.PLAYLIST_COUNT_DOWN_START);
             this.currentPlayingIndex = currentPlayingIndex;
-            this.countDownOptions = countDownOptions;
+            this.playlistCountDownOptions = playlistCountDownOptions;
         }
     }
 
     public static class PlaylistCountDownEnd extends PlaylistEvent {
 
         public final int currentPlayingIndex;
-        public final CountDownOptions countDownOptions;
+        public final @Nullable CountDownOptions playlistCountDownOptions;
 
-        public PlaylistCountDownEnd(int currentPlayingIndex, CountDownOptions countDownOptions) {
+        public PlaylistCountDownEnd(int currentPlayingIndex, @Nullable CountDownOptions playlistCountDownOptions) {
             super(Type.PLAYLIST_COUNT_DOWN_END);
             this.currentPlayingIndex = currentPlayingIndex;
-            this.countDownOptions = countDownOptions;
+            this.playlistCountDownOptions = playlistCountDownOptions;
         }
     }
 

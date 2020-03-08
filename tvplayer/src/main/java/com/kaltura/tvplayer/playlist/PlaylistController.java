@@ -1,6 +1,8 @@
 package com.kaltura.tvplayer.playlist;
 
 
+import androidx.annotation.Nullable;
+
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 
@@ -159,7 +161,7 @@ public interface PlaylistController {
     /**
      * setPlaylistCountDownOptions - update the current playlist countdown configuration
      *
-     * @param countDownOptions - playlist countdown.
+     * @param playlistCountDownOptions - playlist countdown.
      */
-    void setPlaylistCountDownOptions(CountDownOptions countDownOptions);
+    void setPlaylistCountDownOptions(@Nullable CountDownOptions playlistCountDownOptions);
 }
