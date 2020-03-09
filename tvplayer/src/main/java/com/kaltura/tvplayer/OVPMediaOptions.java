@@ -13,6 +13,20 @@ public class OVPMediaOptions extends MediaOptions {
         this.ovpMediaAsset = ovpMediaAsset;
     }
 
+    public OVPMediaOptions(String entryId, String ks, String referrer) {
+        this.ovpMediaAsset = new OVPMediaAsset();
+        this.ovpMediaAsset.setEntryId(entryId);
+        this.ovpMediaAsset.setReferrer(referrer);
+    }
+
+    public OVPMediaOptions(String entryId, String ks) {
+        this(entryId,ks, null);
+    }
+
+    public OVPMediaOptions(String entryId) {
+        this(entryId, null, null);
+    }
+
     public OVPMediaAsset getOvpMediaAsset() {
         return ovpMediaAsset;
     }

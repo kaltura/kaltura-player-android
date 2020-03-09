@@ -901,10 +901,8 @@ public abstract class KalturaPlayer {
 
     private boolean isValidOVPPlayer() {
         if (Type.basic.equals(tvPlayerType)) {
-            log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
             return false;
         } else if (Type.ott.equals(tvPlayerType)) {
-            log.e("loadMedia with OVPMediaOptions for player type KalturaPlayerType.ott is not supported");
             return false;
         }
         return true;
@@ -912,10 +910,8 @@ public abstract class KalturaPlayer {
 
     private boolean isValidOTTPlayer() {
         if (Type.basic.equals(tvPlayerType)) {
-            log.e("loadMedia api for player type KalturaPlayerType.basic is not supported");
             return false;
         } else if (Type.ovp.equals(tvPlayerType)) {
-            log.e("loadMedia with OTTMediaOptions for player type KalturaPlayerType.ovp is not supported");
             return false;
         }
         return true;
