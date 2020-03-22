@@ -355,6 +355,7 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void playNext() {
         log.d("playNext");
+        kalturaPlayer.pause();
         int playlistSize = playlist.getMediaListSize();
         if (currentPlayingIndex + 1 == playlistSize) {
             if (loopEnabled) {
@@ -382,6 +383,7 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void playPrev() {
         log.d("playPrev");
+        kalturaPlayer.pause();
         int playlistSize = playlist.getMediaListSize();
         if (currentPlayingIndex - 1 < 0) {
             if (loopEnabled) {
@@ -652,7 +654,6 @@ public class PKPlaylistController implements PlaylistController {
                         playlistCountDownOptions.setShouldDisplay(false);
                         return;
                     }
-                    kalturaPlayer.pause();
                     handlePlaylistMediaEnded();
                 }
             }
