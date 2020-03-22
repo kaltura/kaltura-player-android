@@ -539,6 +539,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     public boolean removeAsset(@NonNull String assetId) {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
+            if (drmInitData == null) {
+                log.e("removeAsset failed");
+                return false;
+            }
+
             lam.unregisterAsset(assetId, drmInitData);
             DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
             removeAssetSourceId(assetId);
