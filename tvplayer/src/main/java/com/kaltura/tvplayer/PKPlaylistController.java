@@ -576,6 +576,7 @@ public class PKPlaylistController implements PlaylistController {
                 long fixedTimeToShow = (tmpCountDownOptions.getTimeToShowMS() == -1) ? event.duration - tmpCountDownOptions.getDurationMS() : tmpCountDownOptions.getTimeToShowMS();
                 playlistCountDownOptions = new CountDownOptions(fixedTimeToShow, tmpCountDownOptions.getDurationMS(), tmpCountDownOptions.shouldDisplay());
 
+                // in case of seek after ended event and last media in list no loop
                 int playlistSize = playlist.getMediaListSize();
                 boolean isLastMediaInPlaylist = ((currentPlayingIndex + 1) == playlistSize);
                 if (isLastMediaInPlaylist && !loopEnabled) {
