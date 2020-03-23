@@ -575,6 +575,15 @@ public class PKPlaylistController implements PlaylistController {
                 }
                 long fixedTimeToShow = (tmpCountDownOptions.getTimeToShowMS() == -1) ? event.duration - tmpCountDownOptions.getDurationMS() : tmpCountDownOptions.getTimeToShowMS();
                 playlistCountDownOptions = new CountDownOptions(fixedTimeToShow, tmpCountDownOptions.getDurationMS(), tmpCountDownOptions.shouldDisplay());
+
+                int playlistSize = playlist.getMediaListSize();
+                boolean isLastMediaInPlaylist = ((currentPlayingIndex + 1) == playlistSize);
+                if (isLastMediaInPlaylist && !loopEnabled) {
+                    if (event.position > playlistCountDownOptions.getTimeToShowMS()) {
+                        playlistCountDownOptions.setTimeToShowMS(event.position);
+                        return;
+                    }
+                }
             }
 
             if (event.position >= event.duration) {
