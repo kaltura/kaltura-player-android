@@ -575,16 +575,6 @@ public class PKPlaylistController implements PlaylistController {
                 }
                 long fixedTimeToShow = (tmpCountDownOptions.getTimeToShowMS() == -1) ? event.duration - tmpCountDownOptions.getDurationMS() : tmpCountDownOptions.getTimeToShowMS();
                 playlistCountDownOptions = new CountDownOptions(fixedTimeToShow, tmpCountDownOptions.getDurationMS(), tmpCountDownOptions.shouldDisplay());
-
-                // in case of seek after ended event and last media in list no loop
-                int playlistSize = playlist.getMediaListSize();
-                boolean isLastMediaInPlaylist = ((currentPlayingIndex + 1) == playlistSize);
-                if (isLastMediaInPlaylist && !loopEnabled) {
-                    if (event.position > playlistCountDownOptions.getTimeToShowMS()) {
-                        playlistCountDownOptions.setTimeToShowMS(event.position);
-                        return;
-                    }
-                }
             }
 
             if (event.position >= event.duration) {
@@ -649,21 +639,19 @@ public class PKPlaylistController implements PlaylistController {
                 }
                 int playlistSize = playlist.getMediaListSize();
                 boolean isLastMediaInPlaylist = ((currentPlayingIndex + 1) == playlistSize);
+
+                if (isLastMediaInPlaylist && !loopEnabled) {
+                   return;
+                }
+
                 if (!playlistCountDownOptions.isEventSent()) {
                     log.d("SEND COUNT DOWN EVENT position = " + event.position);
                     kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownStart(currentPlayingIndex, playlistCountDownOptions));
                     playlistCountDownOptions.setEventSent(true);
-
-                    if (!isLastMediaInPlaylist || loopEnabled) {
-                        preloadNext();
-                    }
+                    preloadNext();
                 } else if (event.position >= Math.min(playlistCountDownOptions.getTimeToShowMS() + playlistCountDownOptions.getDurationMS(), event.duration)) {
                     kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownEnd(currentPlayingIndex, playlistCountDownOptions));
                     //log.d("playhead updated handlePlaylistMediaEnded");
-                    if (isLastMediaInPlaylist && !loopEnabled) {
-                        playlistCountDownOptions.setShouldDisplay(false);
-                        return;
-                    }
                     handlePlaylistMediaEnded();
                 }
             }
