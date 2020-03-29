@@ -1,6 +1,6 @@
 # Kaltura Player for Android
 
-**Kaltura Player**  - In this playkit wraper, we tried to simplify player integration so that client applications will write less boilerplate code on its end.
+**Kaltura Player**  - In this `Playkit` wraper, we have simplified the player integration so client applications will write less boilerplate code on its end and make faster integration.
 
 Gradle Dependency:  `implementation 'com.kaltura.player:tvplayer:4.x.x'`
 
@@ -26,12 +26,12 @@ Client application should call a mandatory initialization method calls at the ti
 `public static final int OTT_PARNTER_ID = 3009;`
 
 #### Note: 
-Without calling the initialization code on statup `KalturaPlayerNotInitializedError` error will be fired on the `player.loadMedia` callback phase.
+Without calling the initialization code on startup `KalturaPlayerNotInitializedError` error will be fired on the `player.loadMedia` callback phase.
 
 
 ###### Warmup
 
-Application can use the warmup connections for its specific `CDN` servers URLs where the medias are hosted so a connection to the hosts will be opend and ready for use so all handshake process will be saved and media plyback will be faster.
+Application can use the warmup connections for its specific `CDN` servers URLs where the medias are hosted so a connection to the hosts will be opened and ready for use so all handshake process will be saved and media playback will be faster.
 
 There should be only one URL per host, and the URLs should resolve to a valid pathnames. A good choice might be `favicon.ico` or `crossdomain.xml` after the host name.
 
