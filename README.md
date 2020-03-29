@@ -1,10 +1,10 @@
 # Kaltura Player for Android
 
-**Kaltura Player**  - In this `Playkit` wraper, we have simplified the player integration so client applications will write less boilerplate code on its end and make faster integration.
+**Kaltura Player**  - This `Playkit` wrapper simplifies the player integration so that client applications will require less boilerplate code, which ensures a faster integration.
 
 Gradle Dependency:  `implementation 'com.kaltura.player:tvplayer:4.x.x'`
 
-This dependency has **Playkit, Kava Analytics Player Providers and download to go library** internally so no need to add them to the client app's `build.gradle`.
+This dependency already includes **Playkit, Kava Analytics Player Providers and Download-to-Go libraries** internally, so no need to add them to the client app's `build.gradle`.
 
 [Kaltura Player Migration Guide](https://kaltura.github.io/playkit/guide/android)
 
@@ -12,7 +12,7 @@ This dependency has **Playkit, Kava Analytics Player Providers and download to g
 
 [Kaltura Player Samples](https://github.com/kaltura/kaltura-player-android-samples/tree/master)
 
-#### Prerequisite
+#### Pre-requisite
 
 ###### Player Initialization
 
@@ -26,7 +26,7 @@ Client application should call a mandatory initialization method calls at the ti
 `public static final int OTT_PARNTER_ID = 3009;`
 
 #### Note: 
-Without calling the initialization code on startup `KalturaPlayerNotInitializedError` error will be fired on the `player.loadMedia` callback phase.
+Without calling the initialization code on startup `KalturaPlayerNotInitializedError`, error will be fired on the `player.loadMedia` callback phase.
 
 
 ###### Warmup
@@ -98,6 +98,7 @@ OR
     }
 ```
 
+**Notes** 
 
 The `playerInitOptions` allows the app to set player settings. Following is the example what we had then and what we have now.
 
