@@ -326,6 +326,34 @@ public abstract class KalturaPlayer {
         if (initOptions.isTunneledAudioPlayback != null) {
             pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.isTunneledAudioPlayback);
         }
+
+        if (initOptions.handleAudioBecomingNoisyEnabled != null) {
+            pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.handleAudioBecomingNoisyEnabled);
+        }
+
+        if (initOptions.maxVideoSize != null) {
+            pkPlayer.getSettings().setMaxVideoSize(initOptions.maxVideoSize);
+        }
+
+        if (initOptions.maxVideoBitrate != null) {
+            pkPlayer.getSettings().setMaxVideoBitrate(initOptions.maxVideoBitrate);
+        }
+
+        if (initOptions.maxVideoSizeSdEnabled != null) {
+            pkPlayer.getSettings().setMaxVideoSizeSd(initOptions.maxVideoSizeSdEnabled);
+        }
+
+        if (initOptions.maxAudioBitrate != null) {
+            pkPlayer.getSettings().setMaxVideoBitrate(initOptions.maxAudioBitrate);
+        }
+
+        if (initOptions.maxAudioChannelCount != null) {
+            pkPlayer.getSettings().setMaxAudioChannelCount(initOptions.maxAudioChannelCount);
+        }
+
+        if (initOptions.preferredTextRoleFlags != null) {
+            pkPlayer.getSettings().setPreferredTextRoleFlags(initOptions.preferredTextRoleFlags);
+        }
     }
 
     @NonNull
