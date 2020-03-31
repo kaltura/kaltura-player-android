@@ -26,11 +26,9 @@ import com.kaltura.tvplayer.playlist.PlaylistEvent;
 import com.kaltura.tvplayer.playlist.PlaylistOptions;
 
 import java.util.ArrayList;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 
 public class PKPlaylistController implements PlaylistController {
 
@@ -102,6 +100,10 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void preloadNext() {
         if (kalturaPlayer.getTvPlayerType() != KalturaPlayer.Type.basic) {
+            if (playlist != null && currentPlayingIndex + 1 == playlist.getMediaListSize()) {
+                preloadItem(0);
+                return;
+            }
             preloadItem(currentPlayingIndex + 1);
         }
     }
@@ -353,6 +355,7 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void playNext() {
         log.d("playNext");
+        kalturaPlayer.pause();
         int playlistSize = playlist.getMediaListSize();
         if (currentPlayingIndex + 1 == playlistSize) {
             if (loopEnabled) {
@@ -380,6 +383,7 @@ public class PKPlaylistController implements PlaylistController {
     @Override
     public void playPrev() {
         log.d("playPrev");
+        kalturaPlayer.pause();
         int playlistSize = playlist.getMediaListSize();
         if (currentPlayingIndex - 1 < 0) {
             if (loopEnabled) {
@@ -555,7 +559,7 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.playheadUpdated, event -> {
             //log.d("playheadUpdated received position = " + event.position + "/" + event.duration);
-
+            
             if (playlistCountDownOptions == null) {
                 CountDownOptions tmpCountDownOptions = null;
                 if (playlistOptions instanceof OVPPlaylistOptions) {
@@ -628,11 +632,18 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private void handleCountDownEvent(PlayerEvent.PlayheadUpdated event) {
-        if (playlistCountDownOptions != null && playlistCountDownOptions.shouldDisplay() && playlistAutoContinue && currentPlayingIndex + 1 <  playlist.getMediaListSize()) {
+        if (playlistCountDownOptions != null && playlistCountDownOptions.shouldDisplay() && playlistAutoContinue) {
             if (event.position >= playlistCountDownOptions.getTimeToShowMS()) {
                 if (kalturaPlayer.getMessageBus() == null) {
                     return;
                 }
+                int playlistSize = playlist.getMediaListSize();
+                boolean isLastMediaInPlaylist = ((currentPlayingIndex + 1) == playlistSize);
+
+                if (isLastMediaInPlaylist && !loopEnabled) {
+                   return;
+                }
+
                 if (!playlistCountDownOptions.isEventSent()) {
                     log.d("SEND COUNT DOWN EVENT position = " + event.position);
                     kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownStart(currentPlayingIndex, playlistCountDownOptions));

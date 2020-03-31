@@ -189,6 +189,9 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     @Override
     protected byte[] getDrmInitData(String assetId) throws IOException {
         final File localFile = cm.getLocalFile(assetId);
+        if (localFile == null) {
+            return null;
+        }
         return getWidevineInitData(localFile);
     }
 
