@@ -53,11 +53,8 @@ public class PlayerInitOptions {
     public Boolean handleAudioBecomingNoisyEnabled;
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
-    public Boolean maxVideoSizeSdEnabled;
     public Integer maxAudioBitrate;
     public Integer maxAudioChannelCount;
-    public Integer preferredTextRoleFlags;
-
 
     public PlayerInitOptions() {
         partnerId = null;
