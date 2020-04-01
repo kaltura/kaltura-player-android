@@ -284,13 +284,6 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setMaxVideoSizeSd(Boolean maxVideoSizeSdEnabled) {
-        if (maxVideoSizeSdEnabled != null) {
-            this.maxVideoSizeSdEnabled = maxVideoSizeSdEnabled;
-        }
-        return this;
-    }
-
     public PlayerInitOptions setMaxAudioBitrate(@NonNull Integer maxAudioBitrate) {
         if (maxAudioBitrate != null) {
             this.maxAudioBitrate = maxAudioBitrate;
@@ -303,12 +296,5 @@ public class PlayerInitOptions {
             this.maxAudioChannelCount = maxAudioChannelCount;
         }
         return this;
-    }
-
-    public PlayerInitOptions setPreferredTextRoleFlags(@C.RoleFlags Integer preferredTextRoleFlags) {
-        if (preferredTextRoleFlags != null) {
-            this.preferredTextRoleFlags = preferredTextRoleFlags;
-        }
-        return this; 
     }
 }

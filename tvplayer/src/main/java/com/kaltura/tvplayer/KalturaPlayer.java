@@ -339,20 +339,12 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setMaxVideoBitrate(initOptions.maxVideoBitrate);
         }
 
-        if (initOptions.maxVideoSizeSdEnabled != null) {
-            pkPlayer.getSettings().setMaxVideoSizeSd(initOptions.maxVideoSizeSdEnabled);
-        }
-
         if (initOptions.maxAudioBitrate != null) {
             pkPlayer.getSettings().setMaxVideoBitrate(initOptions.maxAudioBitrate);
         }
 
         if (initOptions.maxAudioChannelCount != null) {
             pkPlayer.getSettings().setMaxAudioChannelCount(initOptions.maxAudioChannelCount);
-        }
-
-        if (initOptions.preferredTextRoleFlags != null) {
-            pkPlayer.getSettings().setPreferredTextRoleFlags(initOptions.preferredTextRoleFlags);
         }
     }
 
