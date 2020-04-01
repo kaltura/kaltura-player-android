@@ -78,7 +78,6 @@ public abstract class KalturaPlayer {
     public static ErrorElement KalturaPlayerNotInitializedError = new ErrorElement("KalturaPlayerNotInitializedError", KALTURA_PLAYER_INIT_EXCEPTION, 777);
     public static ErrorElement KalturaPlaylistInitializedError = new ErrorElement("KalturaPlayerPlaylistInitializedError", KALTURA_PLAYLIST_INIT_EXCEPTION, 778);
 
-
     private enum PrepareState {
         not_prepared,
         preparing,
@@ -325,6 +324,26 @@ public abstract class KalturaPlayer {
 
         if (initOptions.isTunneledAudioPlayback != null) {
             pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.isTunneledAudioPlayback);
+        }
+
+        if (initOptions.handleAudioBecomingNoisyEnabled != null) {
+            pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.handleAudioBecomingNoisyEnabled);
+        }
+
+        if (initOptions.maxVideoSize != null) {
+            pkPlayer.getSettings().setMaxVideoSize(initOptions.maxVideoSize);
+        }
+
+        if (initOptions.maxVideoBitrate != null) {
+            pkPlayer.getSettings().setMaxVideoBitrate(initOptions.maxVideoBitrate);
+        }
+
+        if (initOptions.maxAudioBitrate != null) {
+            pkPlayer.getSettings().setMaxVideoBitrate(initOptions.maxAudioBitrate);
+        }
+
+        if (initOptions.maxAudioChannelCount != null) {
+            pkPlayer.getSettings().setMaxAudioChannelCount(initOptions.maxAudioChannelCount);
         }
     }
 
