@@ -118,8 +118,8 @@ public abstract class KalturaPlayer {
         this.context = context;
         this.tvPlayerType = tvPlayerType;
         this.initOptions = initOptions;
-        this.preload = initOptions.preload != null ? initOptions.preload : false;
-        this.autoPlay = initOptions.autoplay != null ? initOptions.autoplay : false;
+        this.preload = initOptions.preload != null ? initOptions.preload : true;
+        this.autoPlay = initOptions.autoplay != null ? initOptions.autoplay : true;
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
