@@ -3,6 +3,8 @@ package com.kaltura.tvplayer;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.kaltura.dtg.DownloadRequestParams;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -184,6 +186,27 @@ public abstract class OfflineManager {
     public abstract void setPreferredMediaFormat(@Nullable PKMediaFormat preferredMediaFormat);
 
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
+
+    // ContentManager.Settings
+    public abstract void setMaxDownloadRetries(int maxDownloadRetries);
+
+    public  abstract void setHttpTimeoutMillis(int httpTimeoutMillis);
+
+    public abstract void setMaxConcurrentDownloads(int maxConcurrentDownloads);
+
+    public abstract void setApplicationName(String applicationName);
+
+    public abstract void setCreateNoMediaFileInDownloadsDir(boolean createNoMediaFileInDownloadsDir);
+
+    public abstract void setDefaultHlsAudioBitrateEstimation(int defaultHlsAudioBitrateEstimation);
+
+    public abstract void setFreeDiskSpaceRequiredBytes(long freeDiskSpaceRequiredBytes);
+
+    public abstract void setDownloadRequestAdapter(DownloadRequestParams.Adapter downloadRequestAdapter);
+
+    public abstract void setChunksUrlAdapter(DownloadRequestParams.Adapter chunksUrlAdapter);
+
+    public abstract void setCrossProtocolRedirectEnabled(boolean crossProtocolRedirectEnabled);
 
     public enum AssetDownloadState {
         none, prepared, started, completed, failed, removing, paused

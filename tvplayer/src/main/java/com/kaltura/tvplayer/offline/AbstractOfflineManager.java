@@ -8,6 +8,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.dtg.DownloadRequestParams;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
@@ -26,6 +27,16 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
+    protected int maxDownloadRetries = 5;
+    protected int httpTimeoutMillis = 15000;
+    protected int maxConcurrentDownloads = 4;
+    protected String applicationName = "";
+    protected boolean createNoMediaFileInDownloadsDir = true;
+    protected int defaultHlsAudioBitrateEstimation = 64000;
+    protected long freeDiskSpaceRequiredBytes = 400 * 1024 * 1024; // default 400MB
+    protected DownloadRequestParams.Adapter downloadRequestAdapter;
+    protected DownloadRequestParams.Adapter chunksUrlAdapter;
+    protected  boolean crossProtocolRedirectEnabled;
     protected DownloadProgressListener downloadProgressListener;
     private AssetStateListener assetStateListener;
     private String ks;
@@ -150,6 +161,56 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     @Override
     public void setEstimatedHlsAudioBitrate(int bitrate) {
         estimatedHlsAudioBitrate = bitrate;
+    }
+
+    @Override
+    public void setMaxDownloadRetries(int maxDownloadRetries) {
+        this.maxDownloadRetries = maxDownloadRetries;
+    }
+
+    @Override
+    public void setHttpTimeoutMillis(int httpTimeoutMillis) {
+        this.httpTimeoutMillis = httpTimeoutMillis;
+    }
+
+    @Override
+    public void setMaxConcurrentDownloads(int maxConcurrentDownloads) {
+        this.maxConcurrentDownloads = maxConcurrentDownloads;
+    }
+
+    @Override
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    @Override
+    public void setCreateNoMediaFileInDownloadsDir(boolean createNoMediaFileInDownloadsDir) {
+        this.createNoMediaFileInDownloadsDir = createNoMediaFileInDownloadsDir;
+    }
+
+    @Override
+    public void setDefaultHlsAudioBitrateEstimation(int defaultHlsAudioBitrateEstimation) {
+        this.defaultHlsAudioBitrateEstimation = defaultHlsAudioBitrateEstimation;
+    }
+
+    @Override
+    public void setFreeDiskSpaceRequiredBytes(long freeDiskSpaceRequiredBytes) {
+        this.freeDiskSpaceRequiredBytes = freeDiskSpaceRequiredBytes;
+    }
+
+    @Override
+    public void setDownloadRequestAdapter(DownloadRequestParams.Adapter downloadRequestAdapter) {
+        this.downloadRequestAdapter = downloadRequestAdapter;
+    }
+
+    @Override
+    public void setChunksUrlAdapter(DownloadRequestParams.Adapter chunksUrlAdapter) {
+        this.chunksUrlAdapter = chunksUrlAdapter;
+    }
+
+    @Override
+    public void setCrossProtocolRedirectEnabled(boolean crossProtocolRedirectEnabled) {
+        this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
     }
 
     @Override

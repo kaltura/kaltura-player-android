@@ -94,6 +94,17 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void start(ManagerStartCallback callback) throws IOException {
+        cm.getSettings().maxDownloadRetries = maxDownloadRetries;
+        cm.getSettings().httpTimeoutMillis = httpTimeoutMillis;
+        cm.getSettings().maxConcurrentDownloads = maxConcurrentDownloads;
+        cm.getSettings().applicationName = applicationName;
+        cm.getSettings().createNoMediaFileInDownloadsDir = createNoMediaFileInDownloadsDir;
+        cm.getSettings().defaultHlsAudioBitrateEstimation = defaultHlsAudioBitrateEstimation;
+        cm.getSettings().freeDiskSpaceRequiredBytes = freeDiskSpaceRequiredBytes;
+        cm.getSettings().downloadRequestAdapter = downloadRequestAdapter;
+        cm.getSettings().chunksUrlAdapter = chunksUrlAdapter;
+        cm.getSettings().crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+
         cm.addDownloadStateListener(dtgListener);
         cm.start(() -> {
             log.d("Started DTG");
