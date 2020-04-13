@@ -19,31 +19,33 @@ import com.kaltura.playkit.utils.Consts;
 import java.util.Formatter;
 import java.util.Locale;
 
+import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.DvrLive;
+import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Live;
+
 
 public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeekBarChangeListener {
 
     private static final PKLog log = PKLog.get("PlaybackControlsView");
     private static final int PROGRESS_BAR_MAX = 100;
     private static final int UPDATE_TIME_INTERVAL = 300; //1000
+    private static final int LIVE_EDGE_THRESHOLD = 60000; // in milliseconds
 
     private KalturaPlayer player;
     private PlayerState playerState;
+    private boolean isError;
 
     private Formatter formatter;
     private StringBuilder formatBuilder;
 
+
     private ImageButton playPauseToggle;
     private SeekBar seekBar;
-    private TextView tvCurTime, tvTime;
+    private TextView tvCurTime, tvTime, tvLiveIndicator;
 
     private boolean dragging = false;
 
-    private Runnable updateProgressAction = new Runnable() {
-        @Override
-        public void run() {
-            updateProgress();
-        }
-    };
+
+    private Runnable updateProgressAction = () -> updateProgress();
 
     public PlaybackControlsView(Context context) {
         this(context, null);
@@ -63,14 +65,11 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
     private void initPlaybackControls() {
         playPauseToggle = this.findViewById(R.id.toggleButton);
-        playPauseToggle.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (playerState == null) {
-                    return;
-                }
-                togglePlayPauseClick();
+        playPauseToggle.setOnClickListener(view -> {
+            if (playerState == null) {
+                return;
             }
+            togglePlayPauseClick();
         });
 //        this.findViewById(R.id.playback_controls_layout).setOnClickListener(new OnClickListener() {
 //            @Override
@@ -86,8 +85,8 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
         tvCurTime = this.findViewById(R.id.time_current);
         tvTime = this.findViewById(R.id.time);
+        tvLiveIndicator = this.findViewById(R.id.liveIndicator);
     }
-
 
     private void updateProgress() {
         long duration = Consts.TIME_UNSET;
@@ -108,16 +107,35 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 bufferedPosition = player.getBufferedPosition();
             }
         }
-        if(duration != Consts.TIME_UNSET){
-            tvTime.setText(stringForTime(duration));
+
+        if (player != null && player.getMediaEntry() != null && player.getMediaEntry().getMediaType().equals(Live)) {
+            tvLiveIndicator.setVisibility(VISIBLE);
+            tvCurTime.setVisibility(INVISIBLE);
+            tvTime.setVisibility(View.INVISIBLE);
+            seekBar.setVisibility(INVISIBLE);
+        } else {
+            if(duration != Consts.TIME_UNSET){
+                tvTime.setText(stringForTime(duration));
+            }
+            if (!dragging && position != Consts.POSITION_UNSET && duration != Consts.TIME_UNSET) {
+                tvCurTime.setText(stringForTime(position));
+                seekBar.setProgress(progressBarValue(position));
+            }
+
+            if (player != null && player.getMediaEntry() != null && player.getMediaEntry().getMediaType().equals(DvrLive)) {
+                tvLiveIndicator.setVisibility(VISIBLE);
+                if (!dragging && position > (duration - LIVE_EDGE_THRESHOLD)) {
+                    tvLiveIndicator.setBackgroundResource(R.drawable.red_background);
+                } else {
+                    tvLiveIndicator.setBackgroundResource(R.drawable.grey_background);
+                }
+            } else {
+                tvLiveIndicator.setVisibility(GONE);
+            }
+
+            seekBar.setSecondaryProgress(progressBarValue(bufferedPosition));
         }
 
-        if (!dragging && position != Consts.POSITION_UNSET && duration != Consts.TIME_UNSET) {
-            tvCurTime.setText(stringForTime(position));
-            seekBar.setProgress(progressBarValue(position));
-        }
-
-        seekBar.setSecondaryProgress(progressBarValue(bufferedPosition));
         // Remove scheduled updates.
         removeCallbacks(updateProgressAction);
         // Schedule an update if necessary.
@@ -171,6 +189,14 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 setPlayerState(PlayerState.IDLE);
             }
         });
+
+        this.player.addListener(this, PlayerEvent.error, event -> {
+            isError = true;
+        });
+
+        this.player.addListener(this, PlayerEvent.canPlay, event -> {
+            isError = false;
+        });
     }
 
     public void setPlayerState(PlayerState playerState) {
@@ -194,33 +220,39 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         playPauseToggle.setBackgroundResource(R.drawable.pause);
     }
 
+    public void destroy() {
+        if (player != null)
+            player.removeListeners(this);
+            player.destroy();
+            player = null;
+    }
+
     public void togglePlayPauseClick() {
-        if (player == null) {
+        if (player == null || isError) {
             return;
         }
-        if(player != null) {
-            AdController adController = player.getController(AdController.class);
-            if (adController != null && adController.isAdDisplayed()) {
-                if (adController.isAdPlaying()) {
-                    adController.pause();
-                    setPlayImage();
-                } else {
-                    adController.play();
-                    setPauseImage();
-                }
-            } else {
-                if (player.isPlaying()) {
-                    player.pause();
-                    setPlayImage();
 
+        AdController adController = player.getController(AdController.class);
+        if (adController != null && adController.isAdDisplayed()) {
+            if (adController.isAdPlaying()) {
+                adController.pause();
+                setPlayImage();
+            } else {
+                adController.play();
+                setPauseImage();
+            }
+        } else {
+            if (player.isPlaying()) {
+                player.pause();
+                setPlayImage();
+
+            } else {
+                if (player.getCurrentPosition() > 0 && player.getCurrentPosition() >= player.getDuration()) {
+                    player.replay();
                 } else {
-                    if (player.getCurrentPosition() >= 0 && player.getCurrentPosition() >= player.getDuration()) {
-                        player.replay();
-                    } else {
-                        player.play();
-                    }
-                    setPauseImage();
+                    player.play();
                 }
+                setPauseImage();
             }
         }
     }
@@ -231,7 +263,6 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
             tvCurTime.setText(stringForTime(positionValue(progress)));
         }
     }
-
 
     public void onStartTrackingTouch(SeekBar seekBar) {
         dragging = true;
@@ -257,5 +288,11 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 
     public void setSeekbarEnabled() {
         seekBar.setEnabled(true);
+    }
+
+    public void setSeekBarVisibility(int visibility) {
+        seekBar.setVisibility(visibility);
+        tvCurTime.setVisibility(visibility);
+        tvTime.setVisibility(visibility);
     }
 }

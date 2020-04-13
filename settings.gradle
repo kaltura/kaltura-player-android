@@ -1,5 +1,7 @@
 include ':tvplayer'
 
+//include ':netkit'
+//project(':netkit').projectDir = new File('../netkit-android/netkit')
 //include ':playkit'
 //project(':playkit').projectDir = new File(settingsDir,'../playkit-android/playkit')
 //include ':providers'

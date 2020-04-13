@@ -1,13 +1,15 @@
 package com.kaltura.tvplayer;
 
+import androidx.annotation.NonNull;
+
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
-import com.kaltura.playkit.PKVideoCodec;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
@@ -47,6 +49,12 @@ public class PlayerInitOptions {
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
     public VideoCodecSettings videoCodecSettings;
+    public Boolean isTunneledAudioPlayback;
+    public Boolean handleAudioBecomingNoisyEnabled;
+    public PKMaxVideoSize maxVideoSize;
+    public Integer maxVideoBitrate;
+    public Integer maxAudioBitrate;
+    public Integer maxAudioChannelCount;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -112,15 +120,10 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setPreferredMediaFormat(String preferredMediaFormat) {
+    public PlayerInitOptions setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         if (preferredMediaFormat != null) {
-            if (preferredMediaFormat.equals("progressive")) {
-                preferredMediaFormat = "mp4";
-            }
-            this.preferredMediaFormat = PKMediaFormat.valueOf(preferredMediaFormat);
-        } else {
-            this.preferredMediaFormat = PKMediaFormat.dash;
-        }
+            this.preferredMediaFormat = preferredMediaFormat;
+        } 
         return this;
     }
 
@@ -253,6 +256,48 @@ public class PlayerInitOptions {
     public PlayerInitOptions setVideoCodecSettings(VideoCodecSettings videoCodecSettings) {
         if (videoCodecSettings != null) {
             this.videoCodecSettings = videoCodecSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setTunneledAudioPlayback(Boolean isTunneledAudioPlayback) {
+        if (isTunneledAudioPlayback != null) {
+            this.isTunneledAudioPlayback = isTunneledAudioPlayback;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setHandleAudioBecomingNoisy(Boolean handleAudioBecomingNoisyEnabled) {
+        if (handleAudioBecomingNoisyEnabled != null) {
+            this.handleAudioBecomingNoisyEnabled = handleAudioBecomingNoisyEnabled;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize) {
+        if (maxVideoSize != null) {
+            this.maxVideoSize = maxVideoSize;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMaxVideoBitrate(@NonNull Integer maxVideoBitrate) {
+        if (maxVideoBitrate != null) {
+            this.maxVideoBitrate = maxVideoBitrate;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMaxAudioBitrate(@NonNull Integer maxAudioBitrate) {
+        if (maxAudioBitrate != null) {
+            this.maxAudioBitrate = maxAudioBitrate;
+        }
+        return this;  
+    }
+
+    public PlayerInitOptions  SetMaxAudioChannelCount(Integer maxAudioChannelCount) {
+        if (maxAudioChannelCount != null) {
+            this.maxAudioChannelCount = maxAudioChannelCount;
         }
         return this;
     }

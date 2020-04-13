@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.kaltura.playkit.PKLog
 import com.kaltura.playkit.PlayerEvent
 import com.kaltura.playkit.PlayerEvent.*
+import com.kaltura.tvplayer.KalturaBasicPlayer
 import com.kaltura.tvplayer.KalturaPlayer
 import com.kaltura.tvplayer.OfflineManager
 import com.kaltura.tvplayer.PlayerInitOptions
@@ -44,7 +45,7 @@ class PlayActivity : AppCompatActivity() {
             autoplay = true
         }
 
-        player = KalturaPlayer.createBasicPlayer(this, options)
+        player = KalturaBasicPlayer.create(this, options)
         player.setPlayerView(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
 
         setContentView(player.playerView)

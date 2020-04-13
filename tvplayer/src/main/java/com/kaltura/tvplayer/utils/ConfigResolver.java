@@ -5,7 +5,6 @@ import com.google.gson.JsonParser;
 import com.kaltura.playkit.PKLog;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 
 public class ConfigResolver {
     private static PKLog log = PKLog.get("ConfigResolver");

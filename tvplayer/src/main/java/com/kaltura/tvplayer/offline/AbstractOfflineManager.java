@@ -69,7 +69,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
         }
 
-        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId, ks, null);
+        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId);
 
         mediaEntryProvider.load(response -> postEvent(() -> {
             if (response.isSuccess()) {
@@ -89,7 +89,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
         }
 
-        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId, ks, null);
+        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId);
 
         mediaEntryProvider.load(response -> postEvent(() -> {
             if (response.isSuccess()) {
@@ -201,6 +201,10 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     public DrmStatus getDrmStatus(@NonNull String assetId) {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
+            if (drmInitData == null) {
+                log.e("getDrmStatus failed drmInitData = null");
+                return DrmStatus.unknown;
+            }
             return getDrmStatus(assetId, drmInitData);
 
         } catch (IOException | InterruptedException e) {
@@ -215,6 +219,10 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     public void renewDrmAssetLicense(@NonNull String assetId, @NonNull PKDrmParams drmParams) {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
+            if (drmInitData == null) {
+                postEvent(() -> getListener().onRegisterError(assetId, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
+                return;
+            }
             lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {

@@ -17,9 +17,12 @@ import com.kaltura.android.exoplayer2.database.ExoDatabaseProvider;
 import com.kaltura.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.ExoMediaCrypto;
+import com.kaltura.android.exoplayer2.drm.ExoMediaDrm;
 import com.kaltura.android.exoplayer2.drm.FrameworkMediaCrypto;
+import com.kaltura.android.exoplayer2.drm.FrameworkMediaDrm;
 import com.kaltura.android.exoplayer2.drm.HttpMediaDrmCallback;
-import com.kaltura.android.exoplayer2.drm.UnsupportedDrmException;
+import com.kaltura.android.exoplayer2.drm.MediaDrmCallback;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory;
 import com.kaltura.android.exoplayer2.offline.DefaultDownloadIndex;
 import com.kaltura.android.exoplayer2.offline.DefaultDownloaderFactory;
@@ -63,6 +66,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import okhttp3.OkHttpClient;
 
@@ -255,7 +259,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             // HLS: clear/aes only
             case hls:
                 downloadHelper = DownloadHelper.forHls(uri, httpDataSourceFactory,
-                        new DefaultRenderersFactory(appContext), null, buildExoParameters(prefs));
+                        new DefaultRenderersFactory(appContext), DrmSessionManager.getDummyDrmSessionManager(), buildExoParameters(prefs));
                 break;
 
             // Progressive
@@ -344,19 +348,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             throw new IllegalArgumentException("Only WidevineCENC");
         }
 
-        String licenseUrl = drmData.getLicenseUri();
-        DrmSessionManager<FrameworkMediaCrypto> drmSessionManager = null;
-        try {
-            final HttpMediaDrmCallback mediaDrmCallback = new HttpMediaDrmCallback(licenseUrl, httpDataSourceFactory);
-            drmSessionManager = DefaultDrmSessionManager.newWidevineInstance(mediaDrmCallback, null);
-        } catch (UnsupportedDrmException e) {
-            e.printStackTrace();
-        }
-        return drmSessionManager;
+        final HttpMediaDrmCallback mediaDrmCallback = new HttpMediaDrmCallback(drmData.getLicenseUri(), httpDataSourceFactory);
+        DefaultDrmSessionManager drmSessionManager = new DefaultDrmSessionManager.Builder().build(mediaDrmCallback);
+        return (DrmSessionManager<FrameworkMediaCrypto>)drmSessionManager;
     }
 
     private DefaultTrackSelector.Parameters buildExoParameters(SelectionPrefs prefs) {
-        return new DefaultTrackSelector.ParametersBuilder().setMaxVideoSizeSd().build();
+        return new DefaultTrackSelector.ParametersBuilder(appContext).setMaxVideoSizeSd().build();
 //        return DefaultTrackSelector.Parameters.DEFAULT;// TODO: 2019-07-31
     }
 
@@ -539,6 +537,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     public boolean removeAsset(@NonNull String assetId) {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
+            if (drmInitData == null) {
+                log.e("removeAsset failed");
+                return false;
+            }
+
             lam.unregisterAsset(assetId, drmInitData);
             DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
             removeAssetSourceId(assetId);
