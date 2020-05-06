@@ -944,7 +944,7 @@ public abstract class KalturaPlayer {
         return isProvisionError;
     }
 
-    public Set<PKDrmParams.Scheme> supportedDrmSchemes() {
+    public Set<PKDrmParams.Scheme> getSupportedDrmSchemes() {
         return supportedDrmSchemes;
     }
 
