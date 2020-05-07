@@ -165,6 +165,13 @@ public abstract class KalturaPlayer {
 
     protected static void initializeDrm(Context context) {
         MediaSupport.initializeDrm(context, (supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed, provisionError) -> {
+            String provisionPerformedStatus = "succeeded";
+            if (provisionPerformed) {
+                if (provisionError != null) {
+                    provisionPerformedStatus = "failed";
+                }
+            }
+            log.d("DRM initialized; supportedDrmSchemes: " + supportedDrmSchemes + " isHardwareDrmSupported = " + isHardwareDrmSupported + " provisionPerformedStatus = " + provisionPerformedStatus);
         });
 
     }
