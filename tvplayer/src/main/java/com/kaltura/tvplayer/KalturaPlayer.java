@@ -17,6 +17,7 @@ import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.MessageBus;
 import com.kaltura.playkit.PKController;
+import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
@@ -30,6 +31,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 
+import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
@@ -62,6 +64,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class KalturaPlayer {
 
@@ -73,6 +76,7 @@ public abstract class KalturaPlayer {
     public static final String OKHTTP = "okhttp";
 
     static boolean playerConfigRetrieved;
+
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
     private static final String KALTURA_PLAYLIST_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
     public static ErrorElement KalturaPlayerNotInitializedError = new ErrorElement("KalturaPlayerNotInitializedError", KALTURA_PLAYER_INIT_EXCEPTION, 777);
@@ -123,6 +127,7 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
+
         messageBus = new MessageBus();
         this.referrer = buildReferrer(context, initOptions.referrer);
         populatePartnersValues();
@@ -156,6 +161,19 @@ public abstract class KalturaPlayer {
             serviceURL =  serviceURL + File.separator;
         }
         return serviceURL;
+    }
+
+    protected static void initializeDrm(Context context) {
+        MediaSupport.initializeDrm(context, (supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed, provisionError) -> {
+            String provisionPerformedStatus = "succeeded";
+            if (provisionPerformed) {
+                if (provisionError != null) {
+                    provisionPerformedStatus = "failed";
+                }
+            }
+            log.d("DRM initialized; supportedDrmSchemes: " + supportedDrmSchemes + " isHardwareDrmSupported = " + isHardwareDrmSupported + " provisionPerformedStatus = " + provisionPerformedStatus);
+        });
+
     }
 
     private static String buildReferrer(Context context, String referrer) {
