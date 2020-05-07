@@ -76,9 +76,6 @@ public abstract class KalturaPlayer {
     public static final String OKHTTP = "okhttp";
 
     static boolean playerConfigRetrieved;
-    static boolean isHardwareDrmSupported;
-    static boolean isProvisionError;
-    static Set<PKDrmParams.Scheme> supportedDrmSchemes;
 
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
     private static final String KALTURA_PLAYLIST_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
@@ -167,13 +164,9 @@ public abstract class KalturaPlayer {
     }
 
     protected static void initializeDrm(Context context) {
-        if (supportedDrmSchemes == null) {
-            MediaSupport.initializeDrm(context, (supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed, provisionError) -> {
-                KalturaPlayer.isHardwareDrmSupported = isHardwareDrmSupported;
-                KalturaPlayer.supportedDrmSchemes = supportedDrmSchemes;
-                KalturaPlayer.isProvisionError = (provisionError == null) ? false : true;
-            });
-        }
+        MediaSupport.initializeDrm(context, (supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed, provisionError) -> {
+        });
+
     }
 
     private static String buildReferrer(Context context, String referrer) {
@@ -934,18 +927,6 @@ public abstract class KalturaPlayer {
                 listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError);
             }
         }.start();
-    }
-
-    public Boolean isHardwareDrmSupported() {
-        return isHardwareDrmSupported;
-    }
-
-    public Boolean isDrmProvisionError() {
-        return isProvisionError;
-    }
-
-    public Set<PKDrmParams.Scheme> getSupportedDrmSchemes() {
-        return supportedDrmSchemes;
     }
 
     private boolean isValidOVPPlayer() {
