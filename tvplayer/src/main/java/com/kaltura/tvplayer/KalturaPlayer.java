@@ -56,6 +56,7 @@ import com.kaltura.tvplayer.playlist.PKPlaylistType;
 import com.kaltura.tvplayer.playlist.PlaylistController;
 
 import com.kaltura.tvplayer.playlist.PlaylistEvent;
+import com.kaltura.tvplayer.playlist.ProviderPlaylistOptions;
 import com.kaltura.tvplayer.utils.ConfigResolver;
 import com.kaltura.tvplayer.utils.NetworkUtils;
 
@@ -703,26 +704,10 @@ public abstract class KalturaPlayer {
             return;
 
         runAfterRetrieve(
-                () -> {
-                    final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
-                    provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
-                        if (error != null) {
-                            return;
-                        }
-                        PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, playlist, PKPlaylistType.OVP_ID);
-                        playlistController.setPlaylistOptions(playlistOptions);
-                        controllerListener.onPlaylistControllerComplete(playlistController, null);
-                        setPlaylistController(playlistController);
-                        if (messageBus != null) {
-                            messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
-                        }
-                        playlistController.playItem(playlistOptions.startIndex, autoPlay);
-                    }));
-                },
+                () -> loadPlaylistHelper(playlistOptions, controllerListener, PKPlaylistType.OVP_ID),
                 () -> controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError)
         );
     }
-
 
     public void loadPlaylist(@NonNull OVPPlaylistOptions playlistOptions, @NonNull final OnPlaylistControllerListener controllerListener) {
 
@@ -737,22 +722,7 @@ public abstract class KalturaPlayer {
         }
 
         runAfterRetrieve(
-                () -> {
-                    final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
-                    provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
-                        if (error != null) {
-                            return;
-                        }
-                        PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, playlist, PKPlaylistType.OVP_LIST);
-                        playlistController.setPlaylistOptions(playlistOptions);
-                        controllerListener.onPlaylistControllerComplete(playlistController, null);
-                        setPlaylistController(playlistController);
-                        if (messageBus != null) {
-                            messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
-                        }
-                        playlistController.playItem(playlistOptions.startIndex, autoPlay);
-                    }));
-                },
+                () -> loadPlaylistHelper(playlistOptions, controllerListener, PKPlaylistType.OVP_LIST),
                 () -> controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError)
         );
     }
@@ -769,26 +739,27 @@ public abstract class KalturaPlayer {
             return;
         }
 
-
         runAfterRetrieve(
-                () -> {
-                    final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
-                    provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
-                        if (error != null) {
-                            return;
-                        }
-                        PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, playlist, PKPlaylistType.OTT_LIST);
-                        playlistController.setPlaylistOptions(playlistOptions);
-                        controllerListener.onPlaylistControllerComplete(playlistController, null);
-                        setPlaylistController(playlistController);
-                        if (messageBus != null) {
-                            messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
-                        }
-                        playlistController.playItem(playlistOptions.startIndex, autoPlay);
-                    }));
-                },
+                () -> loadPlaylistHelper(playlistOptions, controllerListener, PKPlaylistType.OTT_LIST),
                 () -> controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError)
         );
+    }
+
+    private void loadPlaylistHelper(@NonNull ProviderPlaylistOptions playlistOptions, @NonNull OnPlaylistControllerListener controllerListener, PKPlaylistType playlistType) {
+        final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
+        provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
+            if (error != null) {
+                return;
+            }
+            PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, playlist, playlistType);
+            playlistController.setPlaylistOptions(playlistOptions);
+            controllerListener.onPlaylistControllerComplete(playlistController, null);
+            setPlaylistController(playlistController);
+            if (messageBus != null) {
+                messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+            }
+            playlistController.playItem(playlistOptions.startIndex, autoPlay);
+        }));
     }
 
     public void loadPlaylist(@NonNull BasicPlaylistOptions playlistOptions, @NonNull final OnPlaylistControllerListener controllerListener) {
