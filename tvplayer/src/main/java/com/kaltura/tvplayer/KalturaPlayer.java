@@ -745,23 +745,6 @@ public abstract class KalturaPlayer {
         );
     }
 
-    private void loadPlaylistHelper(@NonNull ProviderPlaylistOptions playlistOptions, @NonNull OnPlaylistControllerListener controllerListener, PKPlaylistType playlistType) {
-        final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
-        provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
-            if (error != null) {
-                return;
-            }
-            PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, playlist, playlistType);
-            playlistController.setPlaylistOptions(playlistOptions);
-            controllerListener.onPlaylistControllerComplete(playlistController, null);
-            setPlaylistController(playlistController);
-            if (messageBus != null) {
-                messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
-            }
-            playlistController.playItem(playlistOptions.startIndex, autoPlay);
-        }));
-    }
-
     public void loadPlaylist(@NonNull BasicPlaylistOptions playlistOptions, @NonNull final OnPlaylistControllerListener controllerListener) {
 
         if (!isValidBasicPlayer())
@@ -800,6 +783,23 @@ public abstract class KalturaPlayer {
         playlistController.playItem(playlistOptions.startIndex, autoPlay);
     }
 
+    private void loadPlaylistHelper(@NonNull ProviderPlaylistOptions playlistOptions, @NonNull OnPlaylistControllerListener controllerListener, PKPlaylistType playlistType) {
+        final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
+        provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
+            if (error != null) {
+                return;
+            }
+            PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, playlist, playlistType);
+            playlistController.setPlaylistOptions(playlistOptions);
+            controllerListener.onPlaylistControllerComplete(playlistController, null);
+            setPlaylistController(playlistController);
+            if (messageBus != null) {
+                messageBus.post(new PlaylistEvent.PlaylistStarted(playlist));
+            }
+            playlistController.playItem(playlistOptions.startIndex, autoPlay);
+        }));
+    }
+
     public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
 
         if (!isValidOTTPlayer())
@@ -808,10 +808,7 @@ public abstract class KalturaPlayer {
         prepareLoadMedia(mediaOptions);
 
         runAfterRetrieve(
-                () -> {
-                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
-                    provider.load(response -> mediaLoadCompleted(response, listener));
-                },
+                () -> loadMediaHelper(mediaOptions, listener),
                 () -> listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError));
     }
 
@@ -823,12 +820,14 @@ public abstract class KalturaPlayer {
         prepareLoadMedia(mediaOptions);
 
         runAfterRetrieve(
-                () -> {
-                    final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
-                    provider.load(response -> mediaLoadCompleted(response, listener));
-                },
+                () -> loadMediaHelper(mediaOptions, listener),
                 () -> listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError)
         );
+    }
+
+    private void loadMediaHelper(@NonNull MediaOptions mediaOptions, @NonNull OnEntryLoadListener listener) {
+        final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
+        provider.load(response -> mediaLoadCompleted(response, listener));
     }
 
     private boolean isValidOVPPlayer() {
