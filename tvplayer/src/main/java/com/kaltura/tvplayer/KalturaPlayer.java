@@ -2,9 +2,10 @@ package com.kaltura.tvplayer;
 
 import android.content.Context;
 import android.net.Uri;
-import android.os.CountDownTimer;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,8 +69,8 @@ public abstract class KalturaPlayer {
     private static final PKLog log = PKLog.get("KalturaPlayer");
 
     public static final String DEFAULT_OVP_SERVER_URL = "https://cdnapisec.kaltura.com/";
-    public static final int COUNT_DOWN_TOTAL = 5000;
-    public static final int COUNT_DOWN_INTERVAL = 100;
+    private static final int RETRIEVE_WAIT_TIMEOUT = 5000;
+    private static final int RETRIEVE_WAIT_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
 
     static boolean playerConfigRetrieved;
@@ -112,6 +113,16 @@ public abstract class KalturaPlayer {
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
     private PlaylistController playlistController;
+
+    private HandlerThread retrieveWaitThread;
+    private Handler retrieveWaitHandler;
+    {
+        retrieveWaitThread = new HandlerThread("RetrieveWaitThread");
+        retrieveWaitThread.start(); // quit() when done waiting
+        retrieveWaitHandler = new Handler(retrieveWaitThread.getLooper());
+
+        // retrieveWaitThread and retrieveWaitHandler are set to null when they are no longer needed.
+    }
 
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
@@ -691,16 +702,8 @@ public abstract class KalturaPlayer {
         if (!isValidOVPPlayer())
             return;
 
-        new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                if (playerConfigRetrieved || (initOptions != null && initOptions.tvPlayerParams != null)) {
-                    cancel();
-                    log.d("OVP loadPlaylist by id Done");
-                    if (playerConfigRetrieved) {
-                        initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
-                    }
-                    populatePartnersValues();
+        runAfterRetrieve(
+                () -> {
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
                         if (error != null) {
@@ -715,15 +718,9 @@ public abstract class KalturaPlayer {
                         }
                         playlistController.playItem(playlistOptions.startIndex, autoPlay);
                     }));
-                }
-            }
-
-            @Override
-            public void onFinish() {
-                log.e("OVP loadPlaylist by id KalturaPlayerNotInitializedError");
-                controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError);
-            }
-        }.start();
+                },
+                () -> controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError)
+        );
     }
 
 
@@ -739,16 +736,8 @@ public abstract class KalturaPlayer {
             return;
         }
 
-        new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                if (playerConfigRetrieved || (initOptions != null && initOptions.tvPlayerParams != null)) {
-                    cancel();
-                    log.d("OVP loadPlaylist Done");
-                    if (playerConfigRetrieved) {
-                        initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
-                    }
-                    populatePartnersValues();
+        runAfterRetrieve(
+                () -> {
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
                         if (error != null) {
@@ -763,15 +752,9 @@ public abstract class KalturaPlayer {
                         }
                         playlistController.playItem(playlistOptions.startIndex, autoPlay);
                     }));
-                }
-            }
-
-            @Override
-            public void onFinish() {
-                log.e("OVP loadPlaylist KalturaPlaylistInitializedError");
-                controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError);
-            }
-        }.start();
+                },
+                () -> controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError)
+        );
     }
 
     public void loadPlaylist(@NonNull OTTPlaylistOptions playlistOptions, @NonNull final OnPlaylistControllerListener controllerListener) {
@@ -785,16 +768,10 @@ public abstract class KalturaPlayer {
             }
             return;
         }
-        new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                if (playerConfigRetrieved || (initOptions != null && initOptions.tvPlayerParams != null)) {
-                    cancel();
-                    log.d("OTT loadPlaylist Done");
-                    if (playerConfigRetrieved) {
-                        initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
-                    }
-                    populatePartnersValues();
+
+
+        runAfterRetrieve(
+                () -> {
                     final PlaylistProvider provider = playlistOptions.buildPlaylistProvider(getServerUrl(), getPartnerId(), playlistOptions.ks);
                     provider.load(response -> playlistLoadCompleted(response, (playlist, error) -> {
                         if (error != null) {
@@ -809,15 +786,9 @@ public abstract class KalturaPlayer {
                         }
                         playlistController.playItem(playlistOptions.startIndex, autoPlay);
                     }));
-                }
-            }
-
-            @Override
-            public void onFinish() {
-                log.e("OTT loadPlaylist KalturaPlayerNotInitializedError");
-                controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError);
-            }
-        }.start();
+                },
+                () -> controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError)
+        );
     }
 
     public void loadPlaylist(@NonNull BasicPlaylistOptions playlistOptions, @NonNull final OnPlaylistControllerListener controllerListener) {
@@ -865,27 +836,12 @@ public abstract class KalturaPlayer {
 
         prepareLoadMedia(mediaOptions);
 
-        new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                if (playerConfigRetrieved || (initOptions != null && initOptions.tvPlayerParams != null)) {
-                    cancel();
-                    log.d("OTT loadMedia Done");
-                    if (playerConfigRetrieved) {
-                        initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
-                    }
-                    populatePartnersValues();
+        runAfterRetrieve(
+                () -> {
                     final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
                     provider.load(response -> mediaLoadCompleted(response, listener));
-                }
-            }
-
-            @Override
-            public void onFinish() {
-                log.e("KalturaPlayerNotInitializedError");
-                listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError);
-            }
-        }.start();
+                },
+                () -> listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError));
     }
 
     public void loadMedia(@NonNull OVPMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
@@ -895,27 +851,13 @@ public abstract class KalturaPlayer {
 
         prepareLoadMedia(mediaOptions);
 
-        new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                if (playerConfigRetrieved || (initOptions != null && initOptions.tvPlayerParams != null)) {
-                    cancel();
-                    log.d("OVP loadMedia Done");
-                    if (playerConfigRetrieved) {
-                        initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
-                    }
-                    populatePartnersValues();
+        runAfterRetrieve(
+                () -> {
                     final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
                     provider.load(response -> mediaLoadCompleted(response, listener));
-                }
-            }
-
-            @Override
-            public void onFinish() {
-                log.e("KalturaPlayerNotInitializedError");
-                listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError);
-            }
-        }.start();
+                },
+                () -> listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError)
+        );
     }
 
     private boolean isValidOVPPlayer() {
@@ -1019,6 +961,54 @@ public abstract class KalturaPlayer {
             }
         }
         return  new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
+    }
+
+    private boolean runIfReady(Runnable onReady) {
+        if (playerConfigRetrieved || (initOptions != null && initOptions.tvPlayerParams != null)) {
+            log.d("READY!");
+            if (playerConfigRetrieved) {
+                initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(getTvPlayerType(), initOptions.partnerId));
+            }
+            populatePartnersValues();
+            onReady.run();
+            return true;
+        }
+        return false;
+    }
+
+    private void runAfterRetrieve(Runnable onReady, Runnable onTimeout) {
+
+        if (runIfReady(onReady)) {
+            return;
+        }
+
+        final long startTime = SystemClock.elapsedRealtime();
+
+        retrieveWaitHandler.post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (runIfReady(onReady)) {
+                    retrieveWaitThread.quit();
+                    retrieveWaitThread = null;
+                    retrieveWaitHandler = null;
+
+                } else {
+                    log.d("Not ready yet " + (SystemClock.elapsedRealtime() - startTime));
+
+                    if (SystemClock.elapsedRealtime() - startTime < RETRIEVE_WAIT_TIMEOUT) {
+                        // Try again in 100ms
+                        retrieveWaitHandler.postDelayed(this, RETRIEVE_WAIT_INTERVAL);
+                    } else {
+                        log.e("Timed out waiting for retrieve");
+                        onTimeout.run();
+                        retrieveWaitThread.quit();
+                        retrieveWaitThread = null;
+                        retrieveWaitHandler = null;
+                    }
+                }
+            }
+        });
     }
 
     public interface OnEntryLoadListener {
