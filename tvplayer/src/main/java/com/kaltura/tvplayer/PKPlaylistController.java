@@ -290,7 +290,7 @@ public class PKPlaylistController implements PlaylistController {
     private boolean isValidPlaylistIndex(int index) {
         boolean isValidIndex;
         int playlistSize = playlist.getMediaListSize();
-        isValidIndex = index >= 0 && index < playlistSize;
+        isValidIndex = index >= 0 && index < playlistSize && playlist.getMediaList().get(index) != null;
         if (!isValidIndex) {
             String errorMessage = "Invalid playlist index = " + index + " size = " + playlistSize;
             String errorCode = "InvalidPlaylistIndex";
