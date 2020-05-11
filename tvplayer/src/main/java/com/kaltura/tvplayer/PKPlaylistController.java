@@ -168,7 +168,7 @@ public class PKPlaylistController implements PlaylistController {
         }
         String mediaId = getCacheMediaId(CacheMediaType.Current);
 
-        if (loadedMediasMap.containsKey(mediaId)) {
+        if (loadedMediasMap.containsKey(mediaId) && loadedMediasMap.get(mediaId) != null) {
             kalturaPlayer.setMedia(loadedMediasMap.get(mediaId));
             return;
         }
