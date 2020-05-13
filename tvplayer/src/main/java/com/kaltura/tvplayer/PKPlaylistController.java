@@ -186,6 +186,7 @@ public class PKPlaylistController implements PlaylistController {
     private void playItemOVP(int index) {
 
         OVPMediaOptions ovpMediaOptions;
+        PKPlaylistMedia pkPlaylistMedia = playlist.getMediaList().get(index);
         if (playlistOptions instanceof OVPPlaylistOptions) {
             OVPPlaylistOptions ovpPlaylistOptions = (OVPPlaylistOptions) playlistOptions;
             ovpMediaOptions = getNextMediaOptions(index, ovpPlaylistOptions);
@@ -203,9 +204,12 @@ public class PKPlaylistController implements PlaylistController {
             }
         } else { // PlaylistId case
             OVPPlaylistIdOptions ovpPlaylistIdOptions = (OVPPlaylistIdOptions) playlistOptions;
+            if (pkPlaylistMedia == null) {
+                return; // error cannot play item
+            }
             OVPMediaAsset ovpMediaAsset = new OVPMediaAsset();
-            ovpMediaAsset.setEntryId(playlist.getMediaList().get(index).getId());
-            ovpMediaAsset.setKs((playlist.getMediaList().get(index).getKs() != null) ? playlist.getMediaList().get(index).getKs() : playlist.getKs());
+            ovpMediaAsset.setEntryId(pkPlaylistMedia.getId());
+            ovpMediaAsset.setKs((pkPlaylistMedia.getKs() != null) ? pkPlaylistMedia.getKs() : playlist.getKs());
             ovpMediaAsset.setReferrer(kalturaPlayer.getInitOptions().referrer);
 
             ovpMediaOptions = new OVPMediaOptions(ovpMediaAsset);
@@ -220,7 +224,7 @@ public class PKPlaylistController implements PlaylistController {
                 }
                 kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoadMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
             } else {
-                if (playlist.getMediaList() != null && !playlist.getMediaList().isEmpty() && playlist.getMediaList().get(index) != null) {
+                if (playlist.getMediaList() != null && !playlist.getMediaList().isEmpty() && pkPlaylistMedia != null) {
                     loadedMediasMap.put(getCacheMediaId(CacheMediaType.Current), entry);
                     log.d("OVPMedia onEntryLoadComplete entry = " + entry.getId());
                 } else {
