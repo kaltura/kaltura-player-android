@@ -623,10 +623,15 @@ public class PKPlaylistController implements PlaylistController {
         } else if (cacheMediaType == CacheMediaType.Prev) {
             mediaListIndex -= 1;
         }
+        
+        PKPlaylistMedia pkPlaylistMedia = playlist.getMediaList().get(mediaListIndex);
+        if (pkPlaylistMedia == null) {
+            return "";
+        }
 
-        String mediaId = playlist.getMediaList().get(mediaListIndex).getId();
+        String mediaId = pkPlaylistMedia.getId();
         if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
-            mediaId = playlist.getMediaList().get(mediaListIndex).getMetadata().get("entryId");
+            mediaId = pkPlaylistMedia.getMetadata().get("entryId");
         }
         return mediaId;
     }
