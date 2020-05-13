@@ -651,7 +651,7 @@ public abstract class KalturaPlayer {
         this.playlistController = playlistController;
     }
 
-    // Called by implementation of loadMedia().
+    // Called by implementation of loadMedia()
     private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
 
         final PKMediaEntry entry = response.getResponse();
