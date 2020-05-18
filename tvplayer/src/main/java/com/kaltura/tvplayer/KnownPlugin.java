@@ -6,6 +6,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKPlugin;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
+import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -16,7 +17,7 @@ enum KnownPlugin {
     kava("com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin", KavaAnalyticsPlugin.factory),
 
     // Kaltura Phoenix MediaHit/MediaMark
-    phoenixBookmarks("com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin", KavaAnalyticsPlugin.factory),
+    phoenixBookmarks("com.kaltura.playkit.plugins.ott.PhoenixAnalyticsPlugin", PhoenixAnalyticsPlugin.factory),
 
     // IMA
     ima("com.kaltura.playkit.plugins.ima.IMAPlugin"),
@@ -78,8 +79,11 @@ enum KnownPlugin {
         }
     }
 
-    static void registerAll(Context context) {
+    static void registerAll(Context context, boolean isOTTPlayer) {
         for (KnownPlugin plugin : values()) {
+            if (plugin == KnownPlugin.phoenixBookmarks && !isOTTPlayer) {
+                continue;
+            }
             plugin.register(context);
         }
     }

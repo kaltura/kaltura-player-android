@@ -433,7 +433,7 @@ public abstract class KalturaPlayer {
     }
 
     protected void registerCommonPlugins(Context context) {
-        KnownPlugin.registerAll(context);
+        KnownPlugin.registerAll(context, isOTTPlayer());
     }
 
     public void setKS(String ks) {
@@ -988,19 +988,12 @@ public abstract class KalturaPlayer {
         // Plugin registration is static and only done once, but requires a Context.
         if (!pluginsRegistered) {
             registerCommonPlugins(context);
-            if (isOTTPlayer()) {
-                registerPluginsOTT(context);
-            }
             pluginsRegistered = true;
         }
     }
 
     private boolean isOTTPlayer() {
         return Type.ott.equals(tvPlayerType);
-    }
-
-    private void registerPluginsOTT(Context context) {
-        PlayKitManager.registerPlugins(context, PhoenixAnalyticsPlugin.factory);
     }
 
     private void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
