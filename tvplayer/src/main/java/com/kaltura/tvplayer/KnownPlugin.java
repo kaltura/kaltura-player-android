@@ -26,8 +26,7 @@ enum KnownPlugin {
     fbads("com.kaltura.playkit.plugins.fbads.fbinstream.FBInstreamPlugin"),
     // Youbora
     youbora("com.kaltura.playkit.plugins.youbora.YouboraPlugin");
-
-
+    
     private static final PKLog log = PKLog.get("KnownPlugin");
 
     public final String className;
