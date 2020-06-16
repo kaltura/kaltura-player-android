@@ -670,9 +670,21 @@ public abstract class KalturaPlayer {
     private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
 
         final PKMediaEntry entry = response.getResponse();
+        final ErrorElement loadError = response.getError();
         mainHandler.post(() -> {
             if (entry != null) {
                 setMedia(entry);
+            }
+            if (loadError != null) {
+                log.e(loadError.getMessage());
+                if (getMessageBus() == null) {
+                    return;
+                }
+                String errMsg = loadError.getMessage();
+                if (TextUtils.equals(errMsg,"Asset not found")) {
+                    errMsg  = loadError.getName() + " " + loadError.getCode() + " " + loadError.getMessage();
+                }
+                getMessageBus().post(new KalturaPlayerEvent.LoadMediaError(loadError));
             }
             onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
         });
