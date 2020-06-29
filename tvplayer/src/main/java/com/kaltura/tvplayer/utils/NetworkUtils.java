@@ -27,6 +27,7 @@ import okhttp3.ResponseBody;
 import static com.kaltura.playkit.Utils.toBase64;
 
 public class NetworkUtils {
+    
     private static final PKLog log = PKLog.get("NetworkUtils");
     private static OkHttpClient client = new OkHttpClient();
     public static final String KALTURA_PLAYER = "com.kaltura.player";
