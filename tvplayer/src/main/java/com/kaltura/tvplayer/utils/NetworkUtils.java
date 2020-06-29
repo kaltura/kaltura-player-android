@@ -50,7 +50,7 @@ public class NetworkUtils {
         params.put("service", "Configurations");
         params.put("action", "serveByDevice");
         params.put("partnerId", String.valueOf(partnerId));
-        params.put("applicationName", KALTURA_PLAYER);
+        params.put("applicationName", KALTURA_PLAYER + "." + partnerId);
         params.put("clientVersion", "4");
         params.put("platform", "Android");
         params.put("tag",  "tag");
