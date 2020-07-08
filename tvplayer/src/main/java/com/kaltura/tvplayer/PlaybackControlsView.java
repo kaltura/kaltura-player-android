@@ -14,6 +14,7 @@ import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
 import com.kaltura.playkit.ads.AdController;
 import com.kaltura.playkit.plugins.ads.AdEvent;
+import com.kaltura.playkit.plugins.ads.AdPositionType;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.Formatter;
@@ -181,11 +182,22 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         this.player = player;
         this.player.addListener(this, PlayerEvent.stateChanged, event -> {
             PlayerEvent.StateChanged stateChanged = event;
+            AdController adController = player.getController(AdController.class);
+            if (adController != null && player.getCurrentPosition() > 0 && player.getCurrentPosition() >= player.getDuration() && (adController.isAdDisplayed() || adController.getAdInfo() != null && adController.getAdInfo().getAdPositionType() == AdPositionType.POST_ROLL)) {
+                return;
+            }
+
             setPlayerState(stateChanged.newState);
         });
 
         this.player.addListener(this, AdEvent.cuepointsChanged, event -> {
             if (playerState == null) {
+                setPlayerState(PlayerState.IDLE);
+            }
+        });
+
+        this.player.addListener(this, AdEvent.allAdsCompleted, event -> {
+            if (player != null && player.getCurrentPosition() > 0 && player.getCurrentPosition() >= player.getDuration()) {
                 setPlayerState(PlayerState.IDLE);
             }
         });
@@ -200,6 +212,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     }
 
     public void setPlayerState(PlayerState playerState) {
+        log.d("setPlayerState " + playerState.name());
         this.playerState = playerState;
         updateProgress();
     }
@@ -221,10 +234,11 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     }
 
     public void destroy() {
-        if (player != null)
+        if (player != null) {
             player.removeListeners(this);
             player.destroy();
             player = null;
+        }
     }
 
     public void togglePlayPauseClick() {
