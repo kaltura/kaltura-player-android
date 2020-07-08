@@ -44,9 +44,10 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private TextView tvCurTime, tvTime, tvLiveIndicator;
 
     private boolean dragging = false;
-
+    private boolean adTagHasPostroll;
 
     private Runnable updateProgressAction = () -> updateProgress();
+
 
     public PlaybackControlsView(Context context) {
         this(context, null);
@@ -182,21 +183,26 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         this.player = player;
         this.player.addListener(this, PlayerEvent.stateChanged, event -> {
             PlayerEvent.StateChanged stateChanged = event;
-            AdController adController = player.getController(AdController.class);
-            if (adController != null && player.getCurrentPosition() > 0 && player.getCurrentPosition() >= player.getDuration() && (adController.isAdDisplayed() || adController.getAdInfo() != null && adController.getAdInfo().getAdPositionType() == AdPositionType.POST_ROLL)) {
+            log.d("stateChanged newState = " + event.newState);
+            if (setIdleStateAfterPostroll(player, stateChanged)) {
                 return;
             }
-
             setPlayerState(stateChanged.newState);
         });
 
         this.player.addListener(this, AdEvent.cuepointsChanged, event -> {
+            log.d("cuepointsChanged");
+            if (event.cuePoints != null) {
+                adTagHasPostroll = event.cuePoints.hasPostRoll();
+            }
+
             if (playerState == null) {
                 setPlayerState(PlayerState.IDLE);
             }
         });
 
         this.player.addListener(this, AdEvent.allAdsCompleted, event -> {
+            log.d("allAdsCompleted");
             if (player != null && player.getCurrentPosition() > 0 && player.getCurrentPosition() >= player.getDuration()) {
                 setPlayerState(PlayerState.IDLE);
             }
@@ -209,6 +215,30 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         this.player.addListener(this, PlayerEvent.canPlay, event -> {
             isError = false;
         });
+    }
+
+    private boolean setIdleStateAfterPostroll(KalturaPlayer player, PlayerEvent.StateChanged stateChanged) {
+
+        boolean setIdleStateAfterPostroll = false;
+        if (stateChanged.newState != PlayerState.IDLE) {
+            return setIdleStateAfterPostroll;
+        }
+
+        if (player == null) {
+            return setIdleStateAfterPostroll;
+        }
+
+        AdController adController = player.getController(AdController.class);
+        if (adController == null) {
+            return setIdleStateAfterPostroll;
+        }
+
+        if (player.getCurrentPosition() > 0 &&
+                player.getCurrentPosition() >= player.getDuration() &&
+                (adController.isAdDisplayed() || adTagHasPostroll)) {
+            setIdleStateAfterPostroll = true;
+        }
+        return setIdleStateAfterPostroll;
     }
 
     public void setPlayerState(PlayerState playerState) {
