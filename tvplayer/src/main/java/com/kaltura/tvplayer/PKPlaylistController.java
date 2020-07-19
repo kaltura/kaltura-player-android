@@ -163,6 +163,7 @@ public class PKPlaylistController implements PlaylistController {
         }
 
         boolean isValidIndex = isValidPlaylistIndex(index);
+        currentPlayingIndex = index;
         if (!isValidIndex) {
             return;
         }
@@ -173,7 +174,6 @@ public class PKPlaylistController implements PlaylistController {
             return;
         }
 
-        currentPlayingIndex = index;
         if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ovp) {
             playItemOVP(index);
         } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
