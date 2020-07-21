@@ -37,18 +37,21 @@ These plugins are written in very efficient and customised way to make sure that
  		
  		`Player player = PlayKitManager.loadPlayer(this, pluginConfig);`
  		
- 		Now you can modify and various features of player using player's settings api, `player.getSettings()` [Please check this to know more](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)  	&#x261f;&#x261f;&#x261f;
+ 		Now you can modify and various features of player using player's settings api, `player.getSettings()` 
+ 		
+ 		[Please check this to know more](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)  	&#x261f;&#x261f;&#x261f;
  		
 6. **Add Player listeners:** [Please check this](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L916)
 
 	It helps to get Player and its plugins' events to handle application's UI controls like, on `pause` player event you want to change the UI of player to pause ico and turn to play icon on `play` event.
  
 7. Add your application's UI to `playerview`. For this simply define your layout in [xml layout](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/res/layout/activity_main.xml#L106)
+
+	```
+	FrameLayout layout = (FrameLayout) findViewById(R.id.player_view);
+	layout.addView(player.getView());
+	```
  
-	 	```
-	 	FrameLayout layout = (FrameLayout) findViewById(R.id.player_view);
-	 	layout.addView(player.getView());
-	 	```
  		
 8. **Non Kaltura Customers:**  
  		
