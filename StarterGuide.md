@@ -161,6 +161,7 @@ To reset call:`setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(Integer.MAX
 
 
 &#x2601;&#x2601;&#x2601;
+
 **&#x25ba;Key points to remember**
 
 1. Sometimes, developers face issue where they see that player is still alive and eventually may find any memory leak.   
