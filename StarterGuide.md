@@ -9,7 +9,7 @@ Before delving into setting up player in your app. We have a list to check.
 In case, if you are not Kaltura customer then also no need to get worried, 
 Checkout our [Samples](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/BasicSamples)
 
-Kaltura player internally uses [Playkit](https://github.com/kaltura/playkit-android), [Kava Analytics](https://github.com/kaltura/playkit-android-kava), [Download To Go(Offline Downloads)] (https://github.com/kaltura/playkit-dtg-android) and [Providers(Only for Kaltura customers)](https://github.com/kaltura/playkit-android-providers)
+Kaltura player internally uses [Playkit](https://github.com/kaltura/playkit-android), [Kava Analytics](https://github.com/kaltura/playkit-android-kava), [Download To Go(Offline Downloads)](https://github.com/kaltura/playkit-dtg-android) and [Providers(Only for Kaltura customers)](https://github.com/kaltura/playkit-android-providers)
 
 Apart from *Playkit*, to other libraries; we call them *Plugins*. [To Know More check this](https://kaltura.github.io/playkit/#components)
 
@@ -37,7 +37,7 @@ These plugins are written in very efficient and customised way to make sure that
  		
  		`Player player = PlayKitManager.loadPlayer(this, pluginConfig);`
  		
- 		Now you can modify and various features of player using player's settings api, `player.getSettings()` [Please check this to know more](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)
+ 		Now you can modify and various features of player using player's settings api, `player.getSettings()` [Please check this to know more](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)  	&#x261f;&#x261f;&#x261f;
  		
 6. **Add Player listeners:** [Please check this](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L916)
 
@@ -52,13 +52,13 @@ These plugins are written in very efficient and customised way to make sure that
  		
 8. **Non Kaltura Customers:**  
  		
- 	 	Here you go check out the following snippet,
+ Here you go check out the following snippet,
  		
- 		```
-	 	List<PKDrmParams> pkDrmDataList = new ArrayList<>();
-	   String licenseUri = "DRM License URL";
-	   PKDrmParams pkDrmParams = new PKDrmParams(licenseUri, 		PKDrmParams.Scheme.WidevineCENC);
-	   pkDrmDataList.add(pkDrmParams);
+ ```
+	 	  List<PKDrmParams> pkDrmDataList = new ArrayList<>();
+	     String licenseUri = "DRM License URL";
+	     PKDrmParams pkDrmParams = new PKDrmParams(licenseUri, PKDrmParams.Scheme.WidevineCENC);
+	     pkDrmDataList.add(pkDrmParams);
 
         List<PKMediaSource> mediaSourceList = new ArrayList<>();
         PKMediaSource pkMediaSource = new PKMediaSource();
@@ -86,8 +86,8 @@ These plugins are written in very efficient and customised way to make sure that
         layout.addView(player.getView());
 
         controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
-        controlsView.setPlayer(player);
- 		```
+        controlsView.setPlayer(player); ```
+ 	
  		
 9. Now prepare the player using the mediaConfig which you prepared.
 
@@ -102,3 +102,50 @@ These plugins are written in very efficient and customised way to make sure that
 
 12. You can update the plugins on the change media, [Check it out](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L532)
 
+
+&#x261f;&#x261f;&#x261f;
+
+***PlayerSettings:*** We are providing more details about the few settings to give more flexibility to the Player. For more details, [Check it out](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)
+
+- In case, if you want to provide customized referrer instead of default referrer in the manifest. Use if after Step-5
+
+	`KalturaPlaybackRequestAdapter.install(player, "app://PlaykitTestApp");`
+
+- In case, if you want to provide customized referrer instead of default referrer for DRM License request Adapter. Use if after Step-5
+
+	`KalturaUDRMLicenseRequestAdapter.install(player, "app://PlaykitTestApp");`
+	
+- `setAllowCrossProtocolRedirect`: Decide if *player should do cross protocol redirect or not*. By default it will be always set to `false`.
+
+- `allowClearLead`: If you want the player to use the initial clear chunks; by using this flag, player will play the *initial clear chunks available in manifest*.
+
+- `enableDecoderFallback`: In case, if the device is not able to initialize the decoders then this flag if it is set to `true` will allow the player to use *low priority decoders.*
+
+- `setSecureSurface`: Decide if player should use secure rendering on the surface. Known limitation - when `useTextureView` set to `true` and `isSurfaceSecured` set to `true` *secure rendering will have no effect*.
+
+- `setABRSettings`: Adaptive bitrate settings. [Check it out](https://github.com/kaltura/playkit-android/blob/dev/playkit/src/main/java/com/kaltura/playkit/player/ABRSettings.java)
+
+- `forceSinglePlayerEngine`*Useful when you use IMA ads*: Default value is `false`. In general, we prepare the content player when Ad Starts; but settings this flag `true` will force the playe not prepare with Ads. Useful for the devices where the low/less decoders.
+
+- `setCustomLoadControlStrategy`: Load control strategy. [Check it out](https://github.com/kaltura/playkit-android/blob/dev/playkit/src/main/java/com/kaltura/playkit/player/LoadControlBuffers.java)
+
+- `setMaxVideoSize`: Sets the maximum allowed video width and height.To set the maximum allowed video bitrate to sd resolution call:`setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(anySize).setMaxVideoHeight(anySize)`
+To reset call:`setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(Integer.MAX_VALUE).setMaxVideoHeight(Integer.MAX_VALUE)`
+
+- `setMaxVideoBitrate`: Sets the maximum allowed video bitrate. Maximum allowed video bitrate in bits per second.
+
+
+&#x2668;&#x2668;&#x2668;
+
+**Additional Information**
+
+1. If you are facing build conflicts, please check [this](https://kaltura.github.io/playkit/guide/android/migration/v3.6.0.html#plugin-interface)
+2. If you want to check DRM info of Android device, [use our app](https://play.google.com/store/apps/details?id=com.kaltura.kalturadeviceinfo)
+3. We have some know limitations. [Check it out](https://kaltura.github.io/playkit/guide/android/core/drm.html#known-limitations)
+4. To know more about Player and Additional events. *For Step-6* [Check it out](https://kaltura.github.io/playkit/guide/android/core/events.html)
+5. [Check the proguard configuration](https://kaltura.github.io/playkit/guide/android/core/proguard.html)
+6. We have **warmup** feature. It helps to give quicker playback. [Check it out](https://kaltura.github.io/playkit/guide/android/core/http.html)
+7. Profiling the player. [Check it out](https://kaltura.github.io/playkit/guide/android/core/profiler.html)
+8. **Google Play Services Security Provider**. [Check it out](https://kaltura.github.io/playkit/guide/android/google/security-provider.html)
+9. Check out about our [Offline-Manager](https://kaltura.github.io/playkit/guide/android/core/offline-manager.html) which is a successor of Dowload-To-Go.
+10. Learn more about [Download-To-Go(Offline Downloader)](https://kaltura.github.io/playkit/guide/android/dtg/)
