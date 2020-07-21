@@ -53,40 +53,36 @@ These plugins are written in very efficient and customised way to make sure that
 8. **Non Kaltura Customers:**  
  		
  Here you go check out the following snippet,
- 		
- ```
-	 	  List<PKDrmParams> pkDrmDataList = new ArrayList<>();
-	     String licenseUri = "DRM License URL";
-	     PKDrmParams pkDrmParams = new PKDrmParams(licenseUri, PKDrmParams.Scheme.WidevineCENC);
-	     pkDrmDataList.add(pkDrmParams);
-
-        List<PKMediaSource> mediaSourceList = new ArrayList<>();
-        PKMediaSource pkMediaSource = new PKMediaSource();
-        pkMediaSource.setUrl("Media URL");
-        pkMediaSource.setMediaFormat(PKMediaFormat.dash);
-
-        pkMediaSource.setDrmData(pkDrmDataList);
-
-        PKMediaEntry  pkMediaEntry = new PKMediaEntry();
-        
-        mediaSourceList.add(pkMediaSource);
-        
-        pkMediaEntry.setSources(mediaSourceList);
-
-        PKMediaConfig config = new PKMediaConfig();
-        config.setMediaEntry(pkMediaEntry);
-
-        PKPluginConfigs pluginConfigs = new PKPluginConfigs();
-
-        player = PlayKitManager.loadPlayer(this, pluginConfigs);
-
-        player.getSettings().setAllowCrossProtocolRedirect(true);
-
-        FrameLayout layout = (FrameLayout) findViewById(R.id.player_view);
-        layout.addView(player.getView());
-
-        controlsView = (PlaybackControlsView) this.findViewById(R.id.playerControls);
-        controlsView.setPlayer(player); ```
+ 
+ 	```
+		List<PKDrmParams> pkDrmDataList = new ArrayList<>();
+		String licenseUri = "DRM License URL";
+		PKDrmParams pkDrmParams = new PKDrmParams(licenseUri, PKDrmParams.Scheme.WidevineCENC);
+		pkDrmDataList.add(pkDrmParams);
+		
+		List<PKMediaSource> mediaSourceList = new ArrayList<>();
+		PKMediaSource pkMediaSource = new PKMediaSource();
+		pkMediaSource.setUrl("Media URL");
+		pkMediaSource.setMediaFormat(PKMediaFormat.dash);
+		
+		pkMediaSource.setDrmData(pkDrmDataList);
+		
+		PKMediaEntry  pkMediaEntry = new PKMediaEntry();
+		        
+		mediaSourceList.add(pkMediaSource);
+		        
+		pkMediaEntry.setSources(mediaSourceList);
+		
+		PKMediaConfig config = new PKMediaConfig();
+		config.setMediaEntry(pkMediaEntry);
+		
+		PKPluginConfigs pluginConfigs = new PKPluginConfigs();
+		
+		player = PlayKitManager.loadPlayer(this, pluginConfigs);
+		
+		player.getSettings().setAllowCrossProtocolRedirect(true);
+ 	```
+	 	  
  	
  		
 9. Now prepare the player using the mediaConfig which you prepared.
