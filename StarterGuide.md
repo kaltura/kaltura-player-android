@@ -1,10 +1,10 @@
-###Kaltura Player Design Checklist
+### Kaltura Player Design Checklist
 
 Before delving into setting up player in your app. We have a list to check.
 
-[Kaltura-Player] (https://kaltura.github.io/playkit/guide/android/migration/KalturaPlayer.html) - If you are a Kaltura customer then you should check 
-[OTT Customer] (https://github.com/kaltura/kaltura-player-android-samples/tree/develop/OTTSamples)
-[OVP Customer] (https://github.com/kaltura/kaltura-player-android-samples/tree/develop/OVPSamples)
+[Kaltura-Player](https://kaltura.github.io/playkit/guide/android/migration/KalturaPlayer.html) - If you are a Kaltura customer then you should check 
+[OTT Customer](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/OTTSamples)
+[OVP Customer](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/OVPSamples)
 
 In case, if you are not Kaltura customer then also no need to get worried, 
 Checkout our [Samples](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/BasicSamples)
@@ -17,7 +17,7 @@ Moving on there is another way to use player; so for that instead of using Kaltu
 
 These plugins are written in very efficient and customised way to make sure that the applications need to write very less code to make the functionality to work.
 
-####Using Playkit and Plugins Standalone
+#### Using Playkit and Plugins Standalone
 
 1. You can use our customized Log levels. [Check this Page](https://kaltura.github.io/playkit/guide/android/core/logging.html) [ Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L117)
 2. You need to check if the device supports DRM or not. If you are lookging to play DRM protected content. [Check this page](https://kaltura.github.io/playkit/guide/android/core/drm.html) [ Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L318)
@@ -27,7 +27,7 @@ These plugins are written in very efficient and customised way to make sure that
 
  - **OVP Customer:** This uses our OVP backend. You need to pass, OVP partner Id, OVP BE url, OVP Kaltura Session(KS) and EntryId [Please check this sample code](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L443)
 
- ######For both OTT/OVP customers, you will get the call back after calling to the respective BE, [get callback](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L298)
+ ###### For both OTT/OVP customers, you will get the call back after calling to the respective BE, [get callback](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L298)
  
 5. You need to create MediaSource, MediaEntry and DRMParams manually.
 
