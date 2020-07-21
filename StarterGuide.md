@@ -160,6 +160,27 @@ To reset call:`setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(Integer.MAX
 - `setMaxVideoBitrate`: Sets the maximum allowed video bitrate. Maximum allowed video bitrate in bits per second.
 
 
+&#x2601;&#x2601;&#x2601;
+**&#x25ba;Key points to remember**
+
+1. Sometimes, developers face issue where they see that player is still alive and eventually may find any memory leak.   
+&#x279f; To solve this, make sure you destroy the player and remove the player listeners while destorying the activity/fragment. [Check it out](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L907)
+
+2. Make sure to call [`player.onApplicationPaused()`](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L895) in `onPause()` of call [`player.onApplicationResumed()`](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L1141) 
+
+3. How to handle Internet connection/disconnection.   
+&#x279f; Make sure that you check the internet before preparing the player. There shall be a case where internet can go off where player will retry for defined times[ It sends `Load_Error` in this case that is why it is *Recoverable* ] then it eventually will throw `Source_Error`[ It is *Fatal* error ]
+
+4. We throw various Player Errors [check it out](https://github.com/kaltura/playkit-android/blob/dev/playkit/src/main/java/com/kaltura/playkit/player/PKPlayerErrorType.java).  
+&#x279f; Application can get it in `PKError` object. We provide `Severity`, `message`, `exception`, `errorType` and `errorCategory`. 
+`Severity` is `Recoverable` and some are `Fatal`. 
+We send [`PKErrorCategory`](https://github.com/kaltura/playkit-android/blob/dev/playkit/src/main/java/com/kaltura/playkit/PKErrorCategory.java), which can be `Load` and `Play`
+
+5. Checkout out [FullDemo](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L916) to understand more about Events. 
+
+6. Checkout out working and well maintained fully functional samples of [Playkit and its Plugins](https://github.com/kaltura/playkit-android-samples/tree/develop/FullDemo) and [Kaltura Player Sample](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/AdvancedSamples/TestApp)
+
+
 &#x2668;&#x2668;&#x2668;
 
 **&#x25ba;Additional Information**
@@ -179,5 +200,5 @@ To reset call:`setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(Integer.MAX
 13. If you are a Kaltura customer then you must be using our Backend so you can check our `GetPlaybackContext` API using the [OVP Endpoint check](https://kaltura.github.io/playkit/tools/gpc) and [OTT Endpoint check](https://kaltura.github.io/playkit/tools/gpc-ott)
 14. Know more about our [Phoenix Media Provider](https://kaltura.github.io/playkit/guide/common/ott-media-provider.html)
 15. Know more about [OVP Basics](https://kaltura.github.io/playkit/guide/common/ovp-basics.html)
-16. Check out our awesome and continuosly updated samples, [Kaltura Player Samples](https://github.com/kaltura/kaltura-player-android-samples) and [Playkit Sample with Plugins](https://github.com/kaltura/playkit-android-samples)
+16. If you want to understand more about the individual functionalities like, Subtitles, IMA Ads, Chromecast, Analytics. Please check [Playkit and its Plugins](https://github.com/kaltura/playkit-android-samples) and [Kaltura Player Sample](https://github.com/kaltura/kaltura-player-android-samples).
 
