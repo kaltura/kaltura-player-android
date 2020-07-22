@@ -43,7 +43,7 @@ We have defined Steps to check and use the following while integrating to your a
  		
  Now you can modify and various features of player using player's settings api, `player.getSettings()` 
  		
- [Please check this to know more about Settings](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)  &#x271d;
+ [Please check this to know more about Settings](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)
  
  **Non Kaltura customers:** Please check 8th point.
  		
@@ -60,12 +60,12 @@ We have defined Steps to check and use the following while integrating to your a
  		
 8. **Non Kaltura Customers:**  
  		
- Here you go check out the following snippet,
+ Here you go check out the following snippet
  
- 	```
+ ```
 		List<PKDrmParams> pkDrmDataList = new ArrayList<>();
 		String licenseUri = "DRM License URL";
-		PKDrmParams pkDrmParams = new PKDrmParams(licenseUri, PKDrmParams.Scheme.WidevineCENC);
+		PKDrmParams pkDrmParams = new PKDrmParams(licenseUri,PKDrmParams.Scheme.WidevineCENC);
 		pkDrmDataList.add(pkDrmParams);
 		
 		List<PKMediaSource> mediaSourceList = new ArrayList<>();
@@ -89,7 +89,7 @@ We have defined Steps to check and use the following while integrating to your a
 		player = PlayKitManager.loadPlayer(this, pluginConfigs);
 		
 		player.getSettings().setAllowCrossProtocolRedirect(true);
- 	```
+ ```
 	 	  
  	
  		
@@ -115,7 +115,7 @@ We have defined Steps to check and use the following while integrating to your a
 
 2. Like the way, we configured the plugins, need to configure that. [Check it out](https://github.com/kaltura/kaltura-player-android-samples/blob/78c1f6b4f3898c301d394947061b4a458ab284ea/AdvancedSamples/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.kt#L674)
 
-3. You need to create an object of `PlayerInitOptions`, this is same like `PlayerSettings`&#x271d;
+3. You need to create an object of `PlayerInitOptions`, this is same like `PlayerSettings`
 
 4. Create KalturaPlayer based on your requirement [Check it out](https://github.com/kaltura/kaltura-player-android-samples/blob/78c1f6b4f3898c301d394947061b4a458ab284ea/AdvancedSamples/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.kt#L306)
 
@@ -133,8 +133,6 @@ We have defined Steps to check and use the following while integrating to your a
 
 
 --
-
-&#x271d;
 
 ***&#x25ba;PlayerSettings:*** We are providing more details about the few settings to give more flexibility to the Player. For more details, [Check it out](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)
 
