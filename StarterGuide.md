@@ -43,7 +43,7 @@ We have defined Steps to check and use the following while integrating to your a
  		
  Now you can modify and various features of player using player's settings api, `player.getSettings()` 
  		
- [Please check this to know more about Settings](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)  &#x271d;&#x271d;&#x271d;
+ [Please check this to know more about Settings](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)  &#x271d;
  
  **Non Kaltura customers:** Please check 8th point.
  		
