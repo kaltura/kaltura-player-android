@@ -1,6 +1,8 @@
-## Kaltura Player Design Checklist
+<p>
+<h2 style="text-align:center" >Kaltura Player Design Checklist</h2>
+</p>
 
-Before delving into setting up player in your app. We have a list to check.
+Before delving into setting up player in your app or if you are currently using our player; we want to you to please go through this simple doc where we have explained the key features of player and will talk about critical points to remember. We tried explaining this based on our prior experience with customers.
 
 [Kaltura-Player](https://kaltura.github.io/playkit/guide/android/migration/KalturaPlayer.html) - If you are a Kaltura customer then you should check 
 [OTT Customer](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/OTTSamples)
@@ -17,7 +19,11 @@ Moving on there is another way to use player; so for that instead of using Kaltu
 
 These plugins are written in very efficient and customised way to make sure that the applications need to write very less code to make the functionality to work.
 
-### &#x25ba;Using Playkit and Plugins Standalone
+<p>
+<h3 style="text-align:center">&#x25ba;Using Playkit and Plugins Standalone</h3>
+</p>
+
+We have defined Steps to check and use the following while integrating to your application.
 
 1. You can use our customized Log levels. [Check this Page](https://kaltura.github.io/playkit/guide/android/core/logging.html) [ Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L117)
 2. You need to check if the device supports DRM or not. If you are lookging to play DRM protected content. [Check this page](https://kaltura.github.io/playkit/guide/android/core/drm.html) [ Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L318)
@@ -29,17 +35,17 @@ These plugins are written in very efficient and customised way to make sure that
 
  ###### For both OTT/OVP customers, you will get the call back after calling to the respective BE, [get callback](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L298)
  
-5. You need to create MediaSource, MediaEntry and DRMParams manually.
+5. You need to create MediaSource, MediaEntry.
 
- - **OTT/OVP Customers:**
+ **OTT/OVP Customers:** You will get `PKMediaEntry` in the callback of 3rd step. Now you need to create `PKMediaConfig`. [Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L304)
+ 		
+	`Player player = PlayKitManager.loadPlayer(this, pluginConfig);`
+ 		
+ Now you can modify and various features of player using player's settings api, `player.getSettings()` 
+ 		
+ [Please check this to know more about Settings](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)  &#x271d;&#x271d;&#x271d;
  
- 		You will get `PKMediaEntry` in the callback of 3rd step. Now you need to create `PKMediaConfig`. 
- 		
- 		`Player player = PlayKitManager.loadPlayer(this, pluginConfig);`
- 		
- 		Now you can modify and various features of player using player's settings api, `player.getSettings()` 
- 		
- 		[Please check this to know more](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)  &#x271d;&#x271d;&#x271d;
+ **Non Kaltura customers:** Please check 8th point.
  		
 6. **Add Player listeners:** [Please check this](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L916)
 
@@ -101,14 +107,15 @@ These plugins are written in very efficient and customised way to make sure that
 12. You can update the plugins on the change media, [Check it out](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L532)
 
 
-
-### &#x25ba;Using Kaltura Player and Plugins Standalone
+<p>
+<h3 style="text-align:center">&#x25ba;Using Kaltura Player and Plugins Standalone</h3>
+</p>
 
 1. As we know that **Kaltura-Player** uses [Playkit](https://github.com/kaltura/playkit-android), [Kava Analytics](https://github.com/kaltura/playkit-android-kava), [Download To Go(Offline Downloads)](https://github.com/kaltura/playkit-dtg-android) and [Providers(Only for Kaltura customers)](https://github.com/kaltura/playkit-android-providers). It has three Players ***Basic Player***, **OTT Player** and **OVP Player**.
 
 2. Like the way, we configured the plugins, need to configure that. [Check it out](https://github.com/kaltura/kaltura-player-android-samples/blob/78c1f6b4f3898c301d394947061b4a458ab284ea/AdvancedSamples/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.kt#L674)
 
-3. You need to create an object of `PlayerInitOptions`, this is same like `PlayerSettings`&#x271d;&#x271d;&#x271d;
+3. You need to create an object of `PlayerInitOptions`, this is same like `PlayerSettings`&#x271d;
 
 4. Create KalturaPlayer based on your requirement [Check it out](https://github.com/kaltura/kaltura-player-android-samples/blob/78c1f6b4f3898c301d394947061b4a458ab284ea/AdvancedSamples/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.kt#L306)
 
@@ -127,8 +134,7 @@ These plugins are written in very efficient and customised way to make sure that
 
 --
 
-
-&#x271d;&#x271d;&#x271d;
+&#x271d;
 
 ***&#x25ba;PlayerSettings:*** We are providing more details about the few settings to give more flexibility to the Player. For more details, [Check it out](https://kaltura.github.io/playkit/guide/android/core/player-settings.html)
 
@@ -160,31 +166,37 @@ To reset call:`setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(Integer.MAX
 - `setMaxVideoBitrate`: Sets the maximum allowed video bitrate. Maximum allowed video bitrate in bits per second.
 
 
-&#x2601;&#x2601;&#x2601;
+<p>
+<h3 style="text-align:center">&#x2601; Key points to remember</h3>
+</p>
 
-**&#x25ba;Key points to remember**
+1. You need to check if the device supports DRM or not. If you are lookging to play DRM protected content. An application that uses DRM should call the following API as early as possible (if applicable, in the splash screen):
 
-1. Sometimes, developers face issue where they see that player is still alive and eventually may find any memory leak.   
+	`MediaSupport.initializeDrm(Context, DrmInitCallback)`
+	
+	Calling this function makes sure that the DRM subsystem (in particular, Widevine) is ready before playback starts. In some cases, devices have to be provisioned to use Widevine, a process that involves connecting to a Google service over the network. [Check this out to know more](https://kaltura.github.io/playkit/guide/android/core/drm.html) [Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L117)
+
+2. Sometimes, developers face issue where they see that player is still alive and eventually may find any memory leak.   
 &#x279f; To solve this, make sure you destroy the player and remove the player listeners while destorying the activity/fragment. [Check it out](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L907)
 
-2. Make sure to call [`player.onApplicationPaused()`](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L895) in `onPause()` of call [`player.onApplicationResumed()`](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L1141) 
+3. Make sure to call [`player.onApplicationPaused()`](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L895) in `onPause()` of call [`player.onApplicationResumed()`](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L1141) 
 
-3. How to handle Internet connection/disconnection.   
+4. How to handle Internet connection/disconnection.   
 &#x279f; Make sure that you check the internet before preparing the player. There shall be a case where internet can go off where player will retry for defined times[ It sends `Load_Error` in this case that is why it is *Recoverable* ] then it eventually will throw `Source_Error`[ It is *Fatal* error ]
 
-4. We throw various Player Errors [check it out](https://github.com/kaltura/playkit-android/blob/dev/playkit/src/main/java/com/kaltura/playkit/player/PKPlayerErrorType.java).  
+5. We throw various Player Errors [check it out](https://github.com/kaltura/playkit-android/blob/dev/playkit/src/main/java/com/kaltura/playkit/player/PKPlayerErrorType.java).  
 &#x279f; Application can get it in `PKError` object. We provide `Severity`, `message`, `exception`, `errorType` and `errorCategory`. 
 `Severity` is `Recoverable` and some are `Fatal`. 
 We send [`PKErrorCategory`](https://github.com/kaltura/playkit-android/blob/dev/playkit/src/main/java/com/kaltura/playkit/PKErrorCategory.java), which can be `Load` and `Play`
 
-5. Checkout out [FullDemo](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L916) to understand more about Events. 
+6. Checkout out [FullDemo](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L916) to understand more about Events. 
 
-6. Checkout out working and well maintained fully functional samples of [Playkit and its Plugins](https://github.com/kaltura/playkit-android-samples/tree/develop/FullDemo) and [Kaltura Player Sample](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/AdvancedSamples/TestApp)
+7. Checkout out working and well maintained fully functional samples of [Playkit and its Plugins](https://github.com/kaltura/playkit-android-samples/tree/develop/FullDemo) and [Kaltura Player Sample](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/AdvancedSamples/TestApp)
 
 
-&#x2668;&#x2668;&#x2668;
-
-**&#x25ba;Additional Information**
+<p>
+<h3 style="text-align:center">&#x2668; Important Information</h3>
+</p>
 
 1. If you are facing build conflicts, please check [this](https://kaltura.github.io/playkit/guide/android/migration/v3.6.0.html#plugin-interface)
 2. If you want to check DRM info of Android device, [use our app](https://play.google.com/store/apps/details?id=com.kaltura.kalturadeviceinfo)
