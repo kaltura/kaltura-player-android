@@ -65,6 +65,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -198,14 +199,20 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 if (listener != null) {
                     final List<Download> downloads = downloadManager.getCurrentDownloads();
                     for (Download download : downloads) {
-                        if (download.state != Download.STATE_DOWNLOADING) continue;
+                        if (download.state != Download.STATE_DOWNLOADING) {
+                            continue;
+                        }
 
                         final float percentDownloaded = download.getPercentDownloaded();
                         final long bytesDownloaded = download.getBytesDownloaded();
                         final long totalSize = percentDownloaded > 0 ? (long) (100f * bytesDownloaded / percentDownloaded) : -1;
-
+                        if (download.request.id.startsWith("prefetch_")) {
+                            log.d("XXXX " + bytesDownloaded / 1000000);
+                            if (bytesDownloaded / 1000000 >= 2) { //2mb
+                                downloadManager.setStopReason(download.request.id, StopReason.prefetchDone.toExoCode()); // prefetchDone
+                            }
+                        }
                         final String assetId = download.request.id;
-
                         listener.onDownloadProgress(assetId, bytesDownloaded, totalSize, percentDownloaded);
                     }
 
@@ -265,7 +272,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             // Progressive
             case mp4:
             case mp3:
-                downloadHelper = DownloadHelper.forProgressive(uri);
+                downloadHelper = DownloadHelper.forProgressive(appContext, uri);
                 break;
 
             default:
@@ -381,21 +388,35 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void pauseDownloads() {
-        // Pause all downloads.
-        DownloadService.sendPauseDownloads(
-                appContext,
-                ExoDownloadService.class,
-                /* foreground= */ false);
+        // Pause all non prefetch downloads.
+
+        List<Download> downloads = downloadManager.getCurrentDownloads();
+        for (Download download : downloads) {
+           if (download.state == Download.STATE_DOWNLOADING || download.state == Download.STATE_QUEUED) {
+               pauseAssetDownload(download.request.id);
+           }
+        }
+//        DownloadService.sendPauseDownloads(
+//                appContext,
+//                ExoDownloadService.class,
+//                /* foreground= */ false);
 
     }
 
     @Override
     public void resumeDownloads() {
-        // Resume all downloads.
-        DownloadService.sendResumeDownloads(
-                appContext,
-                ExoDownloadService.class,
-                /* foreground= */ false);
+        // Resume all non prefetch downloads.
+
+        List<Download> downloads = downloadManager.getCurrentDownloads();
+        for (Download download : downloads) {
+            if (download.state == Download.STATE_STOPPED && download.state != StopReason.prefetchDone.toExoCode() || download.state == Download.STATE_QUEUED) {
+                resumeAssetDownload(download.request.id);
+            }
+        }
+//        DownloadService.sendResumeDownloads(
+//                appContext,
+//                ExoDownloadService.class,
+//                /* foreground= */ false);
     }
 
     @NonNull
@@ -458,15 +479,17 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return assetInfoList;
     }
 
-    @NonNull
     @Override
     public PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) throws IOException {
 
         final Download download = downloadManager.getDownloadIndex().getDownload(assetId);
 
-        if (download == null || download.state != Download.STATE_COMPLETED) {
-            return null;
+        if (download == null ||
+                (download.state == Download.STATE_STOPPED && download.stopReason != StopReason.prefetchDone.toExoCode()) ||
+                (download.state != Download.STATE_COMPLETED && download.state != Download.STATE_STOPPED)) {
+           return null;
         }
+
 
         final CacheDataSourceFactory dataSourceFactory = new CacheDataSourceFactory(downloadCache, httpDataSourceFactory);
         final MediaSource mediaSource = DownloadHelper.createMediaSource(download.request, dataSourceFactory);
@@ -536,13 +559,20 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     @Override
     public boolean removeAsset(@NonNull String assetId) {
         try {
-            final byte[] drmInitData = getDrmInitData(assetId);
-            if (drmInitData == null) {
-                log.e("removeAsset failed");
-                return false;
+            final Pair<PKMediaSource, PKDrmParams> pair = pendingDrmRegistration.get(assetId);
+            boolean isDRM = true;
+            if (pair == null || pair.first == null || pair.second == null) {
+                isDRM = false;
+            }
+            if (isDRM) {
+                final byte[] drmInitData = getDrmInitData(assetId);
+                if (drmInitData == null) {
+                    log.e("removeAsset failed");
+                    return false;
+                }
+                lam.unregisterAsset(assetId, drmInitData);
             }
 
-            lam.unregisterAsset(assetId, drmInitData);
             DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
             removeAssetSourceId(assetId);
 
@@ -616,6 +646,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     private byte[] getDrmInitData(CacheDataSourceFactory dataSourceFactory, String contentUri) throws IOException, InterruptedException {
+        if (PKMediaFormat.valueOfUrl(contentUri) != PKMediaFormat.dash ) {
+            return null;
+        }
+
+        if (!contentUri.contains(".mpd")) {
+            return null;
+        }
         final CacheDataSource cacheDataSource = dataSourceFactory.createDataSource();
         final DashManifest dashManifest = DashUtil.loadManifest(cacheDataSource, Uri.parse(contentUri));
         final DrmInitData drmInitData = DashUtil.loadDrmInitData(cacheDataSource, dashManifest.getPeriod(0));

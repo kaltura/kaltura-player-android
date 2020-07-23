@@ -9,6 +9,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
+import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,7 +25,7 @@ public abstract class OfflineManager {
     protected String referrer;
 
     public static @NonNull OfflineManager getInstance(Context context) {
-        return DTGOfflineManager.getInstance(context);
+        return ExoOfflineManager.getInstance(context); // DTGOfflineManager.getInstance(context);
     }
 
     public void setKalturaParams(KalturaPlayer.Type type, int partnerId) {
@@ -88,7 +89,7 @@ public abstract class OfflineManager {
     /**
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
      * the entry, load the source metadata, select tracks based on the prefs, call the listener. If the asset requires
-     * KS, make sure to set {@link MediaOptions#ks}.
+     * KS, make sure to set {@link MediaOptions}.
      * Before calling this method, the partner id and the server URL must be set by {@link #setKalturaParams(KalturaPlayer.Type, int)}
      * and {@link #setKalturaServerUrl(String)}, respectively.
      *
@@ -186,7 +187,7 @@ public abstract class OfflineManager {
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
 
     public enum AssetDownloadState {
-        none, prepared, started, completed, failed, removing, paused
+        none, prepared, started, prefetched, completed, failed, removing, paused
     }
 
     public enum TrackType {

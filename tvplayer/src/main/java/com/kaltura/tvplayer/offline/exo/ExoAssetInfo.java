@@ -51,11 +51,11 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
             }
             this.estimatedSize = estimatedSizeBytes;
         }
-        state = toAssetState(download.state);
+        state = toAssetState(download);
     }
 
-    private static OfflineManager.AssetDownloadState toAssetState(@Download.State int exoState) {
-        switch (exoState) {
+    private static OfflineManager.AssetDownloadState toAssetState(Download download) {
+        switch (download.state) {
             case Download.STATE_COMPLETED:
                 return OfflineManager.AssetDownloadState.completed;
             case Download.STATE_DOWNLOADING:
@@ -69,6 +69,9 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
             case Download.STATE_RESTARTING:
                 return OfflineManager.AssetDownloadState.started;  // TODO: is this the same?
             case Download.STATE_STOPPED:
+                if (download.stopReason == StopReason.prefetchDone.toExoCode()) {
+                    return OfflineManager.AssetDownloadState.prefetched;
+                }
                 return OfflineManager.AssetDownloadState.paused;
         }
         return null;
