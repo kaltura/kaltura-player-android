@@ -2,6 +2,7 @@ package com.kaltura.tvplayer;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -703,7 +704,7 @@ public abstract class KalturaPlayer {
         if (!isValidOVPPlayer())
             return;
 
-        runAfterRetrieve(
+        runAfterLoadConfig(
                 () -> loadPlaylistHelper(playlistOptions, controllerListener, PKPlaylistType.OVP_ID),
                 () -> controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError)
         );
@@ -721,7 +722,7 @@ public abstract class KalturaPlayer {
             return;
         }
 
-        runAfterRetrieve(
+        runAfterLoadConfig(
                 () -> loadPlaylistHelper(playlistOptions, controllerListener, PKPlaylistType.OVP_LIST),
                 () -> controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError)
         );
@@ -739,7 +740,7 @@ public abstract class KalturaPlayer {
             return;
         }
 
-        runAfterRetrieve(
+        runAfterLoadConfig(
                 () -> loadPlaylistHelper(playlistOptions, controllerListener, PKPlaylistType.OTT_LIST),
                 () -> controllerListener.onPlaylistControllerComplete(null, KalturaPlaylistInitializedError)
         );
@@ -807,7 +808,8 @@ public abstract class KalturaPlayer {
 
         prepareLoadMedia(mediaOptions);
 
-        runAfterRetrieve(
+        runAfterLoadConfig(
+                "OTT loadMedia",
                 () -> loadMediaHelper(mediaOptions, listener),
                 () -> listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError));
     }
@@ -819,7 +821,7 @@ public abstract class KalturaPlayer {
 
         prepareLoadMedia(mediaOptions);
 
-        runAfterRetrieve(
+        runAfterLoadConfig(
                 () -> loadMediaHelper(mediaOptions, listener),
                 () -> listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError)
         );
@@ -933,22 +935,22 @@ public abstract class KalturaPlayer {
         return  new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
     }
 
-    private boolean runIfReady(Runnable onReady) {
+    private boolean runIfReady(String logActionName, Runnable onReady) {
         if (playerConfigRetrieved || (initOptions != null && initOptions.tvPlayerParams != null)) {
-            log.d("READY!");
             if (playerConfigRetrieved) {
                 initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(getTvPlayerType(), initOptions.partnerId));
             }
             populatePartnersValues();
             onReady.run();
+            log.d(logActionName + ": success after player config was ready");
             return true;
         }
         return false;
     }
 
-    private void runAfterRetrieve(Runnable onReady, Runnable onTimeout) {
+    private void runAfterLoadConfig(String logActionName, Runnable onReady, Runnable onTimeout) {
 
-        if (runIfReady(onReady)) {
+        if (runIfReady(logActionName, onReady)) {
             return;
         }
 
@@ -958,10 +960,8 @@ public abstract class KalturaPlayer {
 
             @Override
             public void run() {
-                if (runIfReady(onReady)) {
-                    retrieveWaitThread.quit();
-                    retrieveWaitThread = null;
-                    retrieveWaitHandler = null;
+                if (runIfReady(logActionName, onReady)) {
+                    quitConfigWaitThread();
 
                 } else {
                     log.d("Not ready yet " + (SystemClock.elapsedRealtime() - startTime));
@@ -972,13 +972,21 @@ public abstract class KalturaPlayer {
                     } else {
                         log.e("Timed out waiting for retrieve");
                         onTimeout.run();
-                        retrieveWaitThread.quit();
-                        retrieveWaitThread = null;
-                        retrieveWaitHandler = null;
+                        quitConfigWaitThread();
                     }
                 }
             }
         });
+    }
+
+    private void quitConfigWaitThread() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            retrieveWaitThread.quitSafely();
+        } else {
+            retrieveWaitThread.quit();  // Less safe, but we have a very small percentage of
+        }
+        retrieveWaitThread = null;
+        retrieveWaitHandler = null;
     }
 
     public interface OnEntryLoadListener {
