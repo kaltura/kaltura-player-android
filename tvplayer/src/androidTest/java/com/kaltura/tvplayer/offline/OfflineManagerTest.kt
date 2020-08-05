@@ -77,6 +77,10 @@ class OfflineManagerTest {
             downloadLatch?.countDown()
         }
 
+        override fun onAssetPrefetched(assetId: String) {
+            toast("asset $assetId Prefetch finished")
+        }
+
         override fun onAssetDownloadComplete(assetId: String) {
             toast("download of $assetId has finished")
             downloadError = null

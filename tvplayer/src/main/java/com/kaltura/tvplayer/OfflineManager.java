@@ -266,6 +266,7 @@ public abstract class OfflineManager {
         void onAssetDownloadComplete(@NonNull String assetId);
         void onAssetDownloadPending(@NonNull String assetId);
         void onAssetDownloadPaused(@NonNull String assetId);
+        void onAssetPrefetched(@NonNull String assetId);
         void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus);
         void onRegisterError(@NonNull String assetId, @NonNull Exception error);
     }
