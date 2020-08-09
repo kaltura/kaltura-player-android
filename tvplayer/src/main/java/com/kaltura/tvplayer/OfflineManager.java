@@ -10,6 +10,8 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
+import com.kaltura.tvplayer.prefetch.PrefetchConfig;
+import com.kaltura.tvplayer.prefetch.PrefetchEvent;
 
 import java.io.IOException;
 import java.util.List;
@@ -79,12 +81,17 @@ public abstract class OfflineManager {
      * based on the prefs, call the listener.
      *
      * @param mediaEntry
-     * @param prefs
+     * @param selectionPrefs
      * @param prepareCallback
      */
     public abstract void prepareAsset(@NonNull PKMediaEntry mediaEntry,
-                                      @NonNull SelectionPrefs prefs,
+                                      @NonNull SelectionPrefs selectionPrefs,
                                       @NonNull PrepareCallback prepareCallback);
+
+
+    public abstract void prefetchAsset(@NonNull PKMediaEntry mediaEntry,
+                                      @NonNull PrefetchConfig prefetchConfig,
+                                      @NonNull PrefetchCallback prefetchCallback);
 
     /**
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
@@ -94,15 +101,19 @@ public abstract class OfflineManager {
      * and {@link #setKalturaServerUrl(String)}, respectively.
      *
      * @param mediaOptions
-     * @param prefs
+     * @param selectionPrefs
      * @param prepareCallback
      * @throws IllegalStateException if partner id and/or server URL were not set.
      */
     public abstract void prepareAsset(@NonNull MediaOptions mediaOptions,
-                                      @NonNull SelectionPrefs prefs,
+                                      @NonNull SelectionPrefs selectionPrefs,
                                       @NonNull PrepareCallback prepareCallback)
             throws IllegalStateException;
 
+    public abstract void prefetchAsset(@NonNull MediaOptions mediaOptions,
+                                      @NonNull PrefetchConfig prefetchConfig,
+                                       @NonNull PrefetchCallback prefetchCallback)
+            throws IllegalStateException;
     /**
      * Add a prepared asset to the db and start downloading it.
      */
@@ -252,6 +263,55 @@ public abstract class OfflineManager {
         default void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {}
     }
 
+    public interface PrefetchCallback extends MediaEntryCallback {
+        /**
+         * Called when the asset is Prefetched
+         * @param assetId
+         * @param assetInfo
+         * @param selected
+         */
+        void onPrefetched(@NonNull String assetId, @NonNull AssetInfo assetInfo, @Nullable Map<TrackType, List<Track>> selected);
+
+        /**
+         * Called when asset prefetch has failed for some reason.
+         * Must be handled by all applications.
+         * @param assetId
+         * @param error
+         */
+        void onPrefetchError(@NonNull String assetId, @NonNull Exception error);
+
+        /**
+         * Called when loading a {@link PKMediaEntry} object from the backend has succeeded. It allows the app to
+         * inspect and possibly modify the entry before it is actually prepared for download.
+         * This method is only called when using {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}
+         * and doesn't have to handled by apps that don't use this variant of prepareAsset().
+         * @param assetId
+         * @param mediaEntry
+         */
+        @Override
+        default void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry) {}
+
+        /**
+         * Called when loading a {@link PKMediaEntry} object from the backend has failed.
+         * This method is only called when using {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}
+         * and doesn't have to handled by apps that don't use this variant of prepareAsset(). Apps that DO use it,
+         * MUST handle it because the preparation process halts if it's called.
+         * @param error
+         */
+        @Override
+        default void onMediaEntryLoadError(@NonNull Exception error) {}
+
+        /**
+         * Called when prepareAsset() has selected a specific {@link PKMediaSource} from the provided or loaded
+         * {@link PKMediaEntry}.
+         * If drmParams is not null, it contains the selected DRM parameters for the source.
+         * @param assetId
+         * @param source
+         * @param drmParams
+         */
+        default void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {}
+    }
+
     /**
      * Invoked while downloading an asset; use with {@link #setDownloadProgressListener(DownloadProgressListener)}.
      */
@@ -354,6 +414,10 @@ public abstract class OfflineManager {
         EAC3
     }
 
+    public enum DownloadType {
+        PREFETCH,
+        FULL
+    }
 
     /**
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
@@ -380,6 +444,9 @@ public abstract class OfflineManager {
         public abstract void release();
 
         @NonNull
+        public abstract DownloadType getDownloadType();
+
+        @NonNull
         public abstract String getAssetId();
 
         @NonNull
@@ -388,6 +455,8 @@ public abstract class OfflineManager {
         public abstract long getEstimatedSize();
 
         public abstract long getBytesDownloaded();
+
+        public abstract PrefetchConfig getPrefetchConfig();
     }
 
     public static class AssetDownloadException extends Exception {

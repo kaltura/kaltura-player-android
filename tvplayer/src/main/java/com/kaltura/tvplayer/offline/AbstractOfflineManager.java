@@ -13,6 +13,7 @@ import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.OfflineManager;
+import com.kaltura.tvplayer.prefetch.PrefetchConfig;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -63,7 +64,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
-    public final void prepareAsset(@NonNull MediaOptions mediaOptions, @NonNull SelectionPrefs prefs,
+    public final void prepareAsset(@NonNull MediaOptions mediaOptions, @NonNull SelectionPrefs selectionPrefs,
                                    @NonNull PrepareCallback prepareCallback) throws IllegalStateException {
 
         if (kalturaPartnerId == null || kalturaServerUrl == null) {
@@ -76,9 +77,30 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
                 prepareCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
-                prepareAsset(mediaEntry, prefs, prepareCallback);
+                prepareAsset(mediaEntry, selectionPrefs, prepareCallback);
             } else {
                 prepareCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
+            }
+        }));
+    }
+
+    @Override
+    public final void prefetchAsset(@NonNull MediaOptions mediaOptions, @NonNull PrefetchConfig prefetchConfig,
+                                   @NonNull PrefetchCallback prefetchCallback) throws IllegalStateException {
+
+        if (kalturaPartnerId == null || kalturaServerUrl == null) {
+            throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
+        }
+
+        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId);
+
+        mediaEntryProvider.load(response -> postEvent(() -> {
+            if (response.isSuccess()) {
+                final PKMediaEntry mediaEntry = response.getResponse();
+                prefetchCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
+                prefetchAsset(mediaEntry, prefetchConfig, prefetchCallback);
+            } else {
+                prefetchCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
             }
         }));
     }

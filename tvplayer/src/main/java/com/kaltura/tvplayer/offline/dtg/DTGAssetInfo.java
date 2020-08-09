@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
+import com.kaltura.tvplayer.prefetch.PrefetchConfig;
 
 class DTGAssetInfo extends OfflineManager.AssetInfo {
 
@@ -54,6 +55,12 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
 
     @NonNull
     @Override
+    public OfflineManager.DownloadType getDownloadType() {
+        return OfflineManager.DownloadType.FULL;
+    }
+
+    @NonNull
+    @Override
     public String getAssetId() {
         return itemId;
     }
@@ -72,6 +79,11 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
     @Override
     public long getBytesDownloaded() {
         return bytesDownloaded;
+    }
+
+    @Override
+    public PrefetchConfig getPrefetchConfig() {
+        return null;
     }
 
 }
