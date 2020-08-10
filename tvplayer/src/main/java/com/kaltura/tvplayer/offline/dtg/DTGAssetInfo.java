@@ -13,13 +13,14 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
     final private AssetDownloadState state;
     final private long estimatedSize;
     final private long bytesDownloaded;
+    final private float percentDownloaded;
     final DownloadItem downloadItem;
 
     DTGAssetInfo(DownloadItem item, AssetDownloadState state) {
         this.itemId = item.getItemId();
         this.bytesDownloaded = item.getDownloadedSizeBytes();
         this.estimatedSize = item.getEstimatedSizeBytes();
-
+        this.percentDownloaded = item.getEstimatedCompletionPercent();
         this.downloadItem = item;
 
         if (state == null) {
@@ -79,6 +80,11 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
     @Override
     public long getBytesDownloaded() {
         return bytesDownloaded;
+    }
+
+    @Override
+    public float getPercentDownloaded() {
+        return percentDownloaded;
     }
 
     @Override

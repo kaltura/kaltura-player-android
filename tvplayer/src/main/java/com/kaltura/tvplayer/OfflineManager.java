@@ -483,6 +483,9 @@ public abstract class OfflineManager {
 
         public abstract long getBytesDownloaded();
 
+        public abstract float getPercentDownloaded();
+
+        @Nullable
         public abstract PrefetchConfig getPrefetchConfig();
     }
 

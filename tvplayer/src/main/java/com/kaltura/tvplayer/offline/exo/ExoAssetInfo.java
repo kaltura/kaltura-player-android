@@ -78,7 +78,6 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
             estimatedSize = download.contentLength;
         } else {
             long estimatedSizeBytes;
-
             if (jsonObject != null && jsonObject.has("estimatedSizeBytes")) {
                 estimatedSizeBytes = jsonObject.get("estimatedSizeBytes").getAsLong();
             } else {
@@ -145,6 +144,11 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
     @Override
     public long getBytesDownloaded() {
         return bytesDownloaded;
+    }
+
+    @Override
+    public float getPercentDownloaded() {
+        return percentDownloaded;
     }
 
     @Override
