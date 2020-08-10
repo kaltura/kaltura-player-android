@@ -15,7 +15,7 @@
 //import com.kaltura.tvplayer.OTTMediaOptions;
 //import com.kaltura.tvplayer.OVPMediaOptions;
 //import com.kaltura.tvplayer.OfflineManager;
-//import com.kaltura.tvplayer.prefetch.PrefetchConfig;
+//import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 //import com.kaltura.tvplayer.prefetch.PrefetchController;
 //
 //import java.io.IOException;

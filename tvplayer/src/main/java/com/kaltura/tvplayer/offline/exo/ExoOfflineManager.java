@@ -62,7 +62,6 @@ import com.kaltura.playkit.utils.NativeCookieJarBridge;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
-import com.kaltura.tvplayer.prefetch.PrefetchConfig;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,8 +70,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import okhttp3.OkHttpClient;
 
 
 // NOTE: this and related classes are not currently in use. OfflineManager.getInstance() always

@@ -9,7 +9,6 @@ import com.google.gson.JsonParser;
 import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadHelper;
 import com.kaltura.tvplayer.OfflineManager;
-import com.kaltura.tvplayer.prefetch.PrefetchConfig;
 
 class ExoAssetInfo extends OfflineManager.AssetInfo {
 

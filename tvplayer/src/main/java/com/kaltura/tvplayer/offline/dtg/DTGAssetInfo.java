@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
-import com.kaltura.tvplayer.prefetch.PrefetchConfig;
+import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 class DTGAssetInfo extends OfflineManager.AssetInfo {
 

@@ -8,9 +8,8 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.tvplayer.config.TVPlayerParams;
-import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
-import com.kaltura.tvplayer.prefetch.PrefetchConfig;
+import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 import com.kaltura.tvplayer.prefetch.PrefetchEvent;
 
 import java.io.IOException;

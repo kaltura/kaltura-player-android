@@ -1,4 +1,4 @@
-package com.kaltura.tvplayer.prefetch;
+package com.kaltura.tvplayer.offline.exo;
 
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.OfflineManager;

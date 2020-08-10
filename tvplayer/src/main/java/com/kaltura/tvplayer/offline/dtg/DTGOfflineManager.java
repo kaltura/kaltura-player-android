@@ -19,7 +19,7 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.drm.SimpleDashParser;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
-import com.kaltura.tvplayer.prefetch.PrefetchConfig;
+import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.io.File;
 import java.io.FileNotFoundException;

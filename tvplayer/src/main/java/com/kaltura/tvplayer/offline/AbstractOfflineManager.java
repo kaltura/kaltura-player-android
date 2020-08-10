@@ -13,7 +13,7 @@ import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.OfflineManager;
-import com.kaltura.tvplayer.prefetch.PrefetchConfig;
+import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.io.IOException;
 import java.util.HashMap;
