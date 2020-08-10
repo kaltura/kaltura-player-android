@@ -11,19 +11,16 @@ import com.kaltura.android.exoplayer2.offline.DownloadHelper;
 import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.prefetch.PrefetchConfig;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 class ExoAssetInfo extends OfflineManager.AssetInfo {
 
-    private OfflineManager.DownloadType downloadType;
     private final String assetId;
     private final OfflineManager.AssetDownloadState state;
     private final float percentDownloaded;
     private final long estimatedSize;
     private final long bytesDownloaded;
-    private final PrefetchConfig prefetchConfig;
-    private final Gson gson = new Gson();
+    OfflineManager.DownloadType downloadType;
+    PrefetchConfig prefetchConfig;
+    private static final Gson gson = new Gson();
 
     @Nullable
     final DownloadHelper downloadHelper;  // Only used during preparation

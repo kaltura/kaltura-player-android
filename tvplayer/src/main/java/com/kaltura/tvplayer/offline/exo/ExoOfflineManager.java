@@ -9,6 +9,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -55,7 +56,6 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Utils;
-import com.kaltura.playkit.player.ExoPlayerWrapper;
 import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.utils.NativeCookieJarBridge;
@@ -67,10 +67,9 @@ import com.kaltura.tvplayer.prefetch.PrefetchConfig;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
@@ -371,92 +370,17 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     @Override
     public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull PrefetchConfig prefetchConfig, @NonNull PrefetchCallback prefetchCallback) {
 
-        SourceSelector selector = new SourceSelector(mediaEntry, preferredMediaFormat);
-        //drmSessionManager = null;
-        deferredDrmSessionManager = null;
-        final String assetId = mediaEntry.getId();
-        final PKMediaSource source = selector.getSelectedSource();
-        final PKDrmParams drmData = selector.getSelectedDrmParams();
-        final PKMediaFormat mediaFormat = source.getMediaFormat();
-        final String url = source.getUrl();
-        final Uri uri = Uri.parse(url);
-
-        final DownloadHelper downloadHelper;
-
-        postEvent(() -> prefetchCallback.onSourceSelected(assetId, source, drmData));
-        DefaultTrackSelector.Parameters defaultTrackSelectorParameters =  DownloadHelper.getDefaultTrackSelectorParameters(appContext);
-        switch (mediaFormat) {
-            // DASH: clear or with Widevine
-            case dash:
-                if (drmData != null && drmData.getScheme() != null) {
-                    final DrmCallback drmCallback = new DrmCallback(httpDataSourceFactory, null); // TODO license adapter usage?
-                    //drmSessionManager = buildDrmSessionManager(drmData);
-                    deferredDrmSessionManager = new DeferredDrmSessionManager(new Handler(Looper.getMainLooper()), drmCallback, error -> {
-                        log.e("XXX onPrepareError drm call failed");
-                        postEvent(() -> prefetchCallback.onPrefetchError(assetId, new IllegalArgumentException("XXX drm call failed")));
-                    }, true);
-                    deferredDrmSessionManager.setMediaSource(source);
-                    downloadHelper = DownloadHelper.forDash(uri, httpDataSourceFactory,
-                            new DefaultRenderersFactory(appContext), deferredDrmSessionManager, defaultTrackSelectorParameters);
-                } else {
-                    downloadHelper = DownloadHelper.forDash(uri, httpDataSourceFactory,
-                            new DefaultRenderersFactory(appContext), DrmSessionManager.getDummyDrmSessionManager(), defaultTrackSelectorParameters);
-                }
-                break;
-
-            // HLS: clear/aes only
-            case hls:
-                downloadHelper = DownloadHelper.forHls(uri, httpDataSourceFactory,
-                        new DefaultRenderersFactory(appContext), DrmSessionManager.getDummyDrmSessionManager(), defaultTrackSelectorParameters);
-                break;
-
-            // Progressive
-            case mp4:
-            case mp3:
-                downloadHelper = DownloadHelper.forProgressive(appContext, uri);
-                break;
-
-            default:
-                postEvent(() -> prefetchCallback.onPrefetchError(assetId, new IllegalArgumentException("Unsupported media format " + mediaFormat)));
-                return;
-        }
-
-        downloadHelper.prepare(new DownloadHelper.Callback() {
+        prepareAsset(mediaEntry, prefetchConfig.getSelectionPrefs(), new PrepareCallback() {
             @Override
-            public void onPrepared(DownloadHelper helper) {
-
-                //prefetchConfig
-                if (prefetchConfig.getSelectionPrefs().textLanguages != null && !prefetchConfig.getSelectionPrefs().textLanguages.isEmpty()) {
-                    //helper.addTextLanguagesToSelection(true, "fr");
-                    helper.addTextLanguagesToSelection(true, prefetchConfig.getSelectionPrefs().textLanguages.toArray(new String[0]));
-                }
-                if (prefetchConfig.getSelectionPrefs().audioLanguages != null && !prefetchConfig.getSelectionPrefs().audioLanguages.isEmpty()) {
-                    //helper.addAudioLanguagesToSelection("en");
-                    helper.addAudioLanguagesToSelection(prefetchConfig.getSelectionPrefs().audioLanguages.toArray(new String[0]));
-                }
-                if (prefetchConfig.getSelectionPrefs().videoBitrate == null && prefetchConfig.getSelectionPrefs().allAudioLanguages && prefetchConfig.getSelectionPrefs().allTextLanguages) {
-                    downloadAllTracks(helper, downloadHelper, prefetchConfig.getSelectionPrefs());
-                } else {
-                    downloadAllVideoTracks(helper, downloadHelper, prefetchConfig.getSelectionPrefs());
-                }
-
-                long selectedSize = estimateTotalSize(helper, estimatedHlsAudioBitrate);
-                final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.PREFETCH, assetId, prefetchConfig, AssetDownloadState.none, selectedSize, -1, helper);
-                if (mediaFormat == PKMediaFormat.dash && drmData != null) {
-                    pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
-                }
-
-                saveAssetSourceId(assetId, source.getId());
+            public void onPrepared(@NonNull String assetId, @NonNull AssetInfo assetInfo, @Nullable Map<TrackType, List<Track>> selected) {
+                ((ExoAssetInfo)assetInfo).downloadType = DownloadType.PREFETCH;
+                ((ExoAssetInfo)assetInfo).prefetchConfig = prefetchConfig;
                 startAssetDownload(assetInfo);
-                //postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
             }
 
             @Override
-            public void onPrepareError(DownloadHelper helper, IOException error) {
-                if (error != null) {
-                    log.e("onPrepareError", error);
-                }
-                helper.release();
+            public void onPrepareError(@NonNull String assetId, @NonNull Exception error) {
+                log.e("onPrefetchError");
                 postEvent(() -> prefetchCallback.onPrefetchError(assetId, error));
             }
         });
@@ -741,7 +665,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         JsonObject data = new JsonObject();
-        byte[] bytes = null;
+        byte[] bytes;
             data.addProperty("estimatedSizeBytes", exoAssetInfo.getEstimatedSize());
             if (exoAssetInfo.getDownloadType() == DownloadType.PREFETCH && exoAssetInfo.getPrefetchConfig() != null) {
                 data.addProperty("prefetchConfig", gson.toJson(exoAssetInfo.getPrefetchConfig(), PrefetchConfig.class));
