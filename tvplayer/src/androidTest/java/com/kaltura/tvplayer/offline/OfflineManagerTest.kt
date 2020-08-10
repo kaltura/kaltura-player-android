@@ -67,12 +67,12 @@ class OfflineManagerTest {
             toast("drm register of asset $assetId is successful")
         }
 
-        override fun onRegisterError(assetId: String, error: Exception) {
-            toast("drm register of asset $assetId is failed: $error")
+        override fun onRegisterError(assetId: String, downloadType: OfflineManager.DownloadType, error: Exception) {
+            toast("drm register of asset $assetId, ${downloadType.name} has failed: $error")
         }
 
-        override fun onAssetDownloadFailed(assetId: String, error: Exception) {
-            toast("download of $assetId has failed: $error")
+        override fun onAssetDownloadFailed(assetId: String, downloadType: OfflineManager.DownloadType, error: Exception) {
+            toast("download of $assetId, ${downloadType.name} has failed: $error")
             downloadError = error
             downloadLatch?.countDown()
         }

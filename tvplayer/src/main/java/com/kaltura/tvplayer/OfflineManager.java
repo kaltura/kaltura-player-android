@@ -318,12 +318,12 @@ public abstract class OfflineManager {
     public interface AssetStateListener {
         void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo);
         void onAssetRemoved(@NonNull String assetId);
-        void onAssetDownloadFailed(@NonNull String assetId, @NonNull Exception error);
+        void onAssetDownloadFailed(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error);
         void onAssetDownloadComplete(@NonNull String assetId, @NonNull DownloadType downloadType);
         void onAssetDownloadPending(@NonNull String assetId);
         void onAssetDownloadPaused(@NonNull String assetId);
         void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus);
-        void onRegisterError(@NonNull String assetId, @NonNull Exception error);
+        void onRegisterError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error);
     }
 
     public interface ManagerStartCallback {

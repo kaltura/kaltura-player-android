@@ -44,12 +44,12 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     private static final AssetStateListener noopListener = new AssetStateListener() {
         @Override public void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo) {}
         @Override public void onAssetRemoved(@NonNull String assetId) {}
-        @Override public void onAssetDownloadFailed(@NonNull String assetId, @NonNull Exception error) {}
+        @Override public void onAssetDownloadFailed(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error) {}
         @Override public void onAssetDownloadComplete(@NonNull String assetId, @NonNull DownloadType downloadType) {}
         @Override public void onAssetDownloadPending(@NonNull String assetId) {}
         @Override public void onAssetDownloadPaused(@NonNull String assetId) {}
         @Override public void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus) {}
-        @Override public void onRegisterError(@NonNull String assetId, @NonNull Exception error) {}
+        @Override public void onRegisterError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error) {}
     };
 
     public AbstractOfflineManager(Context context) {
@@ -242,13 +242,13 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
             if (drmInitData == null) {
-                postEvent(() -> getListener().onRegisterError(assetId, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
+                postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
                 return;
             }
             lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
-            postEvent(() -> getListener().onRegisterError(assetId, e));
+            postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, e));
         }
     }
 }

@@ -120,19 +120,26 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             final String assetId = download.request.id;
             final AssetStateListener listener = getListener();
 
+            final String dataJson = Util.fromUtf8Bytes(download.request.data);
+            PrefetchConfig prefetchConfig = extractPrefetchConfig(dataJson);
+            DownloadType downloadType = DownloadType.FULL;
+            if (prefetchConfig != null) {
+                downloadType = DownloadType.PREFETCH;
+            }
+
             switch (download.state) {
                 case Download.STATE_COMPLETED:
                     log.d("STATE_COMPLETED: " + assetId);
-                    maybeRegisterDrmAsset(assetId, REGISTER_ASSET_NOW);
-                    listener.onAssetDownloadComplete(assetId, DownloadType.FULL);
+                    maybeRegisterDrmAsset(assetId, downloadType, REGISTER_ASSET_NOW);
+                    listener.onAssetDownloadComplete(assetId, downloadType);
                     break;
                 case Download.STATE_DOWNLOADING:
                     log.d("STATE_DOWNLOADING: " + assetId);
-                    maybeRegisterDrmAsset(assetId, REGISTER_ASSET_AFTER_5_SEC);
+                    maybeRegisterDrmAsset(assetId, downloadType, REGISTER_ASSET_AFTER_5_SEC);
                     break;
                 case Download.STATE_FAILED:
                     log.d("STATE_FAILED: " + assetId);
-                    listener.onAssetDownloadFailed(assetId, new AssetDownloadException("Failed for unknown reason"));
+                    listener.onAssetDownloadFailed(assetId, downloadType, new AssetDownloadException("Failed for unknown reason"));
                     break;
                 case Download.STATE_QUEUED:
                     log.d("STATE_QUEUED: " + assetId);
@@ -151,8 +158,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     if (StopReason.fromExoReason(download.stopReason) == StopReason.pause) {
                         listener.onAssetDownloadPaused(assetId);
                     } else if (StopReason.fromExoReason(download.stopReason) == StopReason.prefetchDone) {
-                        maybeRegisterDrmAsset(assetId, REGISTER_ASSET_NOW);
-                        listener.onAssetDownloadComplete(assetId, DownloadType.PREFETCH);
+                        maybeRegisterDrmAsset(assetId, downloadType, REGISTER_ASSET_NOW);
+                        listener.onAssetDownloadComplete(assetId, downloadType);
                     }
             }
         }
@@ -226,21 +233,12 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                         final long totalSize = percentDownloaded > 0 ? (long) (100f * bytesDownloaded / percentDownloaded) : -1;
                         final String dataJson = Util.fromUtf8Bytes(download.request.data);
 
-                        String prefetchConfigStr = null;
-                        JsonObject jsonObject = new JsonParser().parse(dataJson).getAsJsonObject();
-
-                        if (jsonObject.has("prefetchConfig")) {
-                            prefetchConfigStr = jsonObject.get("prefetchConfig").getAsString();
-                        }
-
-                        if (prefetchConfigStr != null) {
-                            PrefetchConfig prefetchConfig = gson.fromJson(prefetchConfigStr, PrefetchConfig.class);
-                            if (prefetchConfig != null && prefetchConfig.getAssetPrefetchSize() > 0) {
+                        PrefetchConfig prefetchConfig = extractPrefetchConfig(dataJson);
+                        if (prefetchConfig != null && prefetchConfig.getAssetPrefetchSize() > 0) {
                                 log.d("XXX Downloaded: " + bytesDownloaded / 1000000 + " Mb");
                                 if (bytesDownloaded / 1000000 >= prefetchConfig.getAssetPrefetchSize()) { // default 2mb
                                     downloadManager.setStopReason(download.request.id, StopReason.prefetchDone.toExoCode()); // prefetchDone
                                 }
-                            }
                         }
                         final String assetId = download.request.id;
                         listener.onDownloadProgress(assetId, bytesDownloaded, totalSize, percentDownloaded);
@@ -253,9 +251,23 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         });
     }
 
-    private void maybeRegisterDrmAsset(String assetId, int delayMillis) {
+    private PrefetchConfig extractPrefetchConfig(String dataJson) {
+        String prefetchConfigStr = null;
+        JsonObject jsonObject = new JsonParser().parse(dataJson).getAsJsonObject();
+
+        if (jsonObject.has("prefetchConfig")) {
+            prefetchConfigStr = jsonObject.get("prefetchConfig").getAsString();
+        }
+
+        if (prefetchConfigStr != null) {
+            return gson.fromJson(prefetchConfigStr, PrefetchConfig.class);
+        }
+        return null;
+    }
+
+    private void maybeRegisterDrmAsset(String assetId, DownloadType downloadType, int delayMillis) {
         bgHandler.postDelayed(() -> {
-            registerDrmAsset(assetId);
+            registerDrmAsset(assetId, downloadType);
         }, delayMillis);
     }
 
@@ -741,7 +753,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
 
-    private void registerDrmAsset(String assetId) {
+    private void registerDrmAsset(String assetId, DownloadType downloadType) {
 
         if (assetId == null) {
             return;
@@ -770,10 +782,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             pendingDrmRegistration.remove(assetId);
 
         } catch (IOException | InterruptedException e) {
-            postEvent(() -> listener.onRegisterError(assetId, e));
+            postEvent(() -> listener.onRegisterError(assetId, downloadType, e));
 
         } catch (LocalAssetsManager.RegisterException e) {
-            postEvent(() -> listener.onRegisterError(assetId, e));
+            postEvent(() -> listener.onRegisterError(assetId, downloadType, e));
         }
     }
 

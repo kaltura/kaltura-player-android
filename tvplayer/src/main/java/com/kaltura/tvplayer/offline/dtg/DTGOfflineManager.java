@@ -72,7 +72,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         @Override
         public void onDownloadFailure(DownloadItem item, Exception error) {
-            postEvent(() -> getListener().onAssetDownloadFailed(item.getItemId(), error));
+            postEvent(() -> getListener().onAssetDownloadFailed(item.getItemId(), DownloadType.FULL, error));
         }
     };
 
@@ -228,7 +228,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 log.w("registerDrmAsset: file not found (non-fatal)");
             } else {
                 log.e("registerDrmAsset: file not found");
-                postEvent(() -> getListener().onRegisterError(assetId, new FileNotFoundException(localFile.getAbsolutePath())));
+                postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, new FileNotFoundException(localFile.getAbsolutePath())));
             }
 
             return;
@@ -243,7 +243,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             pendingDrmRegistration.remove(assetId);
 
         } catch (IOException | LocalAssetsManager.RegisterException e) {
-            postEvent(() -> getListener().onRegisterError(assetId, e));
+            postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, e));
         }
     }
 
