@@ -90,8 +90,8 @@ public abstract class OfflineManager {
 
 
     public abstract void prefetchAsset(@NonNull PKMediaEntry mediaEntry,
-                                      @NonNull PrefetchConfig prefetchConfig,
-                                      @NonNull PrefetchCallback prefetchCallback);
+                                       @NonNull PrefetchConfig prefetchConfig,
+                                       @NonNull PrefetchCallback prefetchCallback);
 
     /**
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
@@ -111,7 +111,7 @@ public abstract class OfflineManager {
             throws IllegalStateException;
 
     public abstract void prefetchAsset(@NonNull MediaOptions mediaOptions,
-                                      @NonNull PrefetchConfig prefetchConfig,
+                                       @NonNull PrefetchConfig prefetchConfig,
                                        @NonNull PrefetchCallback prefetchCallback)
             throws IllegalStateException;
     /**
