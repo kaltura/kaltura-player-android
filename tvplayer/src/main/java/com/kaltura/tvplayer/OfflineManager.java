@@ -8,9 +8,9 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.tvplayer.config.TVPlayerParams;
+import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
-import com.kaltura.tvplayer.prefetch.PrefetchEvent;
 
 import java.io.IOException;
 import java.util.List;
@@ -74,6 +74,10 @@ public abstract class OfflineManager {
      */
     public abstract void resumeDownloads();
 
+    /**
+     * Cancel currently downloading assets.
+     */
+    public abstract void cancelDownloads();
 
     /**
      * Prepare an asset for download. Select the best source from the entry, load the source metadata, select tracks
@@ -215,6 +219,8 @@ public abstract class OfflineManager {
     public abstract void setPreferredMediaFormat(@Nullable PKMediaFormat preferredMediaFormat);
 
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
+
+    public abstract Prefetch getPrefetchManager();
 
     public enum AssetDownloadState {
         none, prepared, started, prefetched, completed, failed, removing, paused

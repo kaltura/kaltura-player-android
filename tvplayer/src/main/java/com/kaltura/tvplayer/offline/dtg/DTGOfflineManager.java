@@ -19,6 +19,7 @@ import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.drm.SimpleDashParser;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
+import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.io.File;
@@ -120,6 +121,18 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     @Override
     public void resumeDownloads() {
         cm.resumeDownloads();
+    }
+
+    @Override
+    public void cancelDownloads() {
+        List<DownloadItem> downloadItemsInProgress = cm.getDownloads(DownloadState.IN_PROGRESS);
+        if (downloadItemsInProgress == null) {
+            return;
+        }
+
+        for (DownloadItem downloadItem : downloadItemsInProgress) {
+            removeAsset(downloadItem.getItemId());
+        }
     }
 
     @Override
@@ -353,5 +366,10 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         final String playbackURL = cm.getPlaybackURL(assetId);
         final PKMediaSource localMediaSource = lam.getLocalMediaSource(assetId, playbackURL);
         return new PKMediaEntry().setId(assetId).setSources(Collections.singletonList(localMediaSource));
+    }
+
+    @Override
+    public Prefetch getPrefetchManager() {
+        return null; // NOT IMPLEMENTED
     }
 }

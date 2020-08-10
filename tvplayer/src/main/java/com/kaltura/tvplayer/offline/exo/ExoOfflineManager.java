@@ -62,6 +62,7 @@ import com.kaltura.playkit.utils.NativeCookieJarBridge;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
+import com.kaltura.tvplayer.offline.Prefetch;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,6 +85,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private static Gson gson = new Gson();
 
     private static ExoOfflineManager instance;
+    private PrefetchManager prefetchManager;
 
     //private final String userAgent = Util.getUserAgent(appContext, "ExoDownload");
     private final String userAgent = Utils.getUserAgent(appContext) + " ExoDownloadPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
@@ -176,7 +178,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         }
     };
-
 
     @NonNull
     private Handler createBgHandler() {
@@ -395,7 +396,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         });
     }
 
-    private void downloadAllTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs prefs) {
+    private void downloadAllTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
 
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(0);
         for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
@@ -414,14 +415,14 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     downloadHelper.addTrackSelectionForSingleRenderer(
                             periodIndex,
                             rendererIndex,
-                            buildExoParameters(prefs),
+                            buildExoParameters(selectionPrefs),
                             selectionOverrides);
                 }
             }
         }
     }
 
-    private void downloadAllVideoTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs prefs) {
+    private void downloadAllVideoTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
 
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(0);
         for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
@@ -440,7 +441,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     downloadHelper.addTrackSelectionForSingleRenderer(
                             periodIndex,
                             rendererIndex,
-                            buildExoParameters(prefs),
+                            buildExoParameters(selectionPrefs),
                             selectionOverrides);
                 }
             }
@@ -486,30 +487,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return selectedSize;
     }
 
-//    @Nullable
-//    private DrmSessionManager<FrameworkMediaCrypto> buildDrmSessionManager(PKDrmParams drmData) {
-//        if (drmData == null) {
-//            return null;
-//        }
-//
-//        if (drmData.getScheme() != PKDrmParams.Scheme.WidevineCENC) {
-//            throw new IllegalArgumentException("Unsupported DRM Scheme " + drmData.getScheme());
-//        }
-//
-//        final HttpMediaDrmCallback mediaDrmCallback = new HttpMediaDrmCallback(drmData.getLicenseUri(), httpDataSourceFactory);
-//        DefaultDrmSessionManager drmSessionManager = null;
-//
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
-//            drmSessionManager = new DefaultDrmSessionManager.Builder()
-//                    .setUuidAndExoMediaDrmProvider(MediaSupport.WIDEVINE_UUID, FrameworkMediaDrm.DEFAULT_PROVIDER)
-//                    .build(mediaDrmCallback);
-//        } else {
-//            drmSessionManager = new DefaultDrmSessionManager.Builder().build(mediaDrmCallback);
-//        }
-//        return drmSessionManager;
-//     }
 
-    private DefaultTrackSelector.Parameters buildExoParameters(SelectionPrefs prefs) {
+    private DefaultTrackSelector.Parameters buildExoParameters(SelectionPrefs selectionPrefs) {
         //MappingTrackSelector.MappedTrackInfo mappedTrackInfo = downloadHelper.getMappedTrackInfo(/* periodIndex= */ 0);
         //return new DefaultTrackSelector.ParametersBuilder(appContext).setMaxVideoSizeSd().build();
         return DefaultTrackSelector.Parameters.getDefaults(appContext);   // TODO: 2019-07-31
@@ -545,11 +524,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 pauseAssetDownload(download.request.id);
             }
         }
-//        DownloadService.sendPauseDownloads(
-//                appContext,
-//                ExoDownloadService.class,
-//                /* foreground= */ false);
-
     }
 
     @Override
@@ -562,10 +536,20 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 resumeAssetDownload(download.request.id);
             }
         }
-//        DownloadService.sendResumeDownloads(
-//                appContext,
-//                ExoDownloadService.class,
-//                /* foreground= */ false);
+    }
+
+    @Override
+    public void cancelDownloads() {
+        List<AssetInfo> assetInfoList = getAssetsInState(AssetDownloadState.started);
+        if (assetInfoList == null) {
+            return;
+        }
+
+        for (AssetInfo assetInfo : assetInfoList) {
+            if (assetInfo.getState() == AssetDownloadState.started) {
+                removeAsset(assetInfo.getAssetId());
+            }
+        }
     }
 
     @NonNull
@@ -650,6 +634,14 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             localMediaSource.setUrl(download.request.uri.toString());
         }
         return new PKMediaEntry().setId(assetId).setSources(Collections.singletonList(localMediaSource));
+    }
+
+    @Override
+    public Prefetch getPrefetchManager() {
+        if (prefetchManager == null) {
+            prefetchManager = new PrefetchManager(this);
+        }
+        return prefetchManager;
     }
 
     @Override
