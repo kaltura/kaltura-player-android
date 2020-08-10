@@ -1,5 +1,6 @@
 package com.kaltura.tvplayer.prefetch;
 
+import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.OfflineManager;
 
 
@@ -8,6 +9,7 @@ public class PrefetchConfig {
     int maxItemCountInCache = 50;
     int maxCacheSize = 100; // in MB
     int assetPrefetchSize = 2; // in MB
+    long assetPrefetchDuration = 20 * Consts.MILLISECONDS_MULTIPLIER; //20 seconds
     boolean emptyCashOnPlayerDestroy = true;
     boolean emptyCacheIfFull = true; // remove first one by time stamp?
     OfflineManager.SelectionPrefs selectionPrefs;
@@ -19,6 +21,11 @@ public class PrefetchConfig {
 
     public PrefetchConfig setMaxCacheSize(int maxCacheSize) {
         this.maxCacheSize = maxCacheSize;
+        return this;
+    }
+
+    public PrefetchConfig setAssetPrefetchDuration(long assetPrefetchDuration) {
+        this.assetPrefetchDuration = assetPrefetchDuration;
         return this;
     }
 
@@ -52,6 +59,10 @@ public class PrefetchConfig {
 
     public int getAssetPrefetchSize() {
         return assetPrefetchSize;
+    }
+
+    public long getAssetPrefetchDuration() {
+        return assetPrefetchDuration;
     }
 
     public boolean isEmptyCashOnPlayerDestroy() {
