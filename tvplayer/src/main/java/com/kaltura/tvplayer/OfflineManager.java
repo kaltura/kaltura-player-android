@@ -290,7 +290,7 @@ public abstract class OfflineManager {
      * app has used {@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)}, it MUST also handle
      * {@link #onMediaEntryLoadError(Exception)}.
      */
-    public interface PrefetchCallback extends MediaEntryCallback {
+    public interface PrefetchCallback extends PrepareCallback {
         /**
          * Called when the asset is prefetched
          * @param assetId
@@ -306,37 +306,6 @@ public abstract class OfflineManager {
          * @param error
          */
         void onPrefetchError(@NonNull String assetId, @NonNull Exception error);
-
-        /**
-         * Called when loading a {@link PKMediaEntry} object from the backend has succeeded. It allows the app to
-         * inspect and possibly modify the entry before it is actually prepared for download.
-         * This method is only called when using {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}
-         * and doesn't have to handled by apps that don't use this variant of prepareAsset().
-         * @param assetId
-         * @param mediaEntry
-         */
-        @Override
-        default void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry) {}
-
-        /**
-         * Called when loading a {@link PKMediaEntry} object from the backend has failed.
-         * This method is only called when using {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}
-         * and doesn't have to handled by apps that don't use this variant of prepareAsset(). Apps that DO use it,
-         * MUST handle it because the preparation process halts if it's called.
-         * @param error
-         */
-        @Override
-        default void onMediaEntryLoadError(@NonNull Exception error) {}
-
-        /**
-         * Called when prepareAsset() has selected a specific {@link PKMediaSource} from the provided or loaded
-         * {@link PKMediaEntry}.
-         * If drmParams is not null, it contains the selected DRM parameters for the source.
-         * @param assetId
-         * @param source
-         * @param drmParams
-         */
-        default void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {}
     }
 
     /**
