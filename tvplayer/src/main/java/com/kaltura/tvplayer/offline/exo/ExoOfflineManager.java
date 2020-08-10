@@ -666,11 +666,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         JsonObject data = new JsonObject();
         byte[] bytes;
-            data.addProperty("estimatedSizeBytes", exoAssetInfo.getEstimatedSize());
-            if (exoAssetInfo.getDownloadType() == DownloadType.PREFETCH && exoAssetInfo.getPrefetchConfig() != null) {
-                data.addProperty("prefetchConfig", gson.toJson(exoAssetInfo.getPrefetchConfig(), PrefetchConfig.class));
-            }
-            bytes = data.toString().getBytes();
+        data.addProperty("estimatedSizeBytes", exoAssetInfo.getEstimatedSize());
+        if (exoAssetInfo.getDownloadType() == DownloadType.PREFETCH && exoAssetInfo.getPrefetchConfig() != null) {
+            data.addProperty("prefetchConfig", gson.toJson(exoAssetInfo.getPrefetchConfig(), PrefetchConfig.class));
+        }
+        bytes = data.toString().getBytes();
 //XXX
         final DownloadRequest downloadRequest = helper.getDownloadRequest(assetInfo.getAssetId(), bytes);
 
