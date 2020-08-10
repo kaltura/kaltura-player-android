@@ -124,7 +124,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 case Download.STATE_COMPLETED:
                     log.d("STATE_COMPLETED: " + assetId);
                     maybeRegisterDrmAsset(assetId, REGISTER_ASSET_NOW);
-                    listener.onAssetDownloadComplete(assetId);
+                    listener.onAssetDownloadComplete(assetId, DownloadType.FULL);
                     break;
                 case Download.STATE_DOWNLOADING:
                     log.d("STATE_DOWNLOADING: " + assetId);
@@ -152,7 +152,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                         listener.onAssetDownloadPaused(assetId);
                     } else if (StopReason.fromExoReason(download.stopReason) == StopReason.prefetchDone) {
                         maybeRegisterDrmAsset(assetId, REGISTER_ASSET_NOW);
-                        listener.onAssetPrefetched(assetId);
+                        listener.onAssetDownloadComplete(assetId, DownloadType.PREFETCH);
                     }
             }
         }

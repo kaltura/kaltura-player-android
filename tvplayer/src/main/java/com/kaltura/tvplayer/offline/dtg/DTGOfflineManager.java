@@ -39,7 +39,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         @Override
         public void onDownloadComplete(DownloadItem item) {
             final String assetId = item.getItemId();
-            postEvent(() -> getListener().onAssetDownloadComplete(assetId));
+            postEvent(() -> getListener().onAssetDownloadComplete(assetId, DownloadType.FULL));
 
             registerDrmAsset(assetId, false);
         }

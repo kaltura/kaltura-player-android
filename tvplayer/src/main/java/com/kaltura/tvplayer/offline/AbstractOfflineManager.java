@@ -45,10 +45,9 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         @Override public void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo) {}
         @Override public void onAssetRemoved(@NonNull String assetId) {}
         @Override public void onAssetDownloadFailed(@NonNull String assetId, @NonNull Exception error) {}
-        @Override public void onAssetDownloadComplete(@NonNull String assetId) {}
+        @Override public void onAssetDownloadComplete(@NonNull String assetId, @NonNull DownloadType downloadType) {}
         @Override public void onAssetDownloadPending(@NonNull String assetId) {}
         @Override public void onAssetDownloadPaused(@NonNull String assetId) {}
-        @Override public void onAssetPrefetched(@NonNull String assetId) {}
         @Override public void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus) {}
         @Override public void onRegisterError(@NonNull String assetId, @NonNull Exception error) {}
     };
