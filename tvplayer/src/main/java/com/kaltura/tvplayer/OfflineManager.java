@@ -89,6 +89,14 @@ public abstract class OfflineManager {
                                       @NonNull PrepareCallback prepareCallback);
 
 
+    /**
+     * Prefetch an asset. Select the best source from the entry, load the source metadata, select tracks
+     * based on the prefetchConfig, call the listener.
+     *
+     * @param mediaEntry
+     * @param prefetchConfig
+     * @param prefetchCallback
+     */
     public abstract void prefetchAsset(@NonNull PKMediaEntry mediaEntry,
                                        @NonNull PrefetchConfig prefetchConfig,
                                        @NonNull PrefetchCallback prefetchCallback);
@@ -110,6 +118,18 @@ public abstract class OfflineManager {
                                       @NonNull PrepareCallback prepareCallback)
             throws IllegalStateException;
 
+    /**
+     * Prefetch an asset. Connect to Kaltura Backend to load entry metadata, select the best source from
+     * the entry, load the source metadata, select tracks based on the prefetchConfig, call the listener. If the asset requires
+     * KS, make sure to set {@link MediaOptions}.
+     * Before calling this method, the partner id and the server URL must be set by {@link #setKalturaParams(KalturaPlayer.Type, int)}
+     * and {@link #setKalturaServerUrl(String)}, respectively.
+     *
+     * @param mediaOptions
+     * @param prefetchConfig
+     * @param prefetchCallback
+     * @throws IllegalStateException if partner id and/or server URL were not set.
+     */
     public abstract void prefetchAsset(@NonNull MediaOptions mediaOptions,
                                        @NonNull PrefetchConfig prefetchConfig,
                                        @NonNull PrefetchCallback prefetchCallback)
@@ -263,9 +283,16 @@ public abstract class OfflineManager {
         default void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {}
     }
 
+    /**
+     * Event callbacks invoked during asset info loading ({@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)})
+     * or {@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)}).
+     * The app MUST handle at least {@link #onPrefetched(String, AssetInfo, Map)}  and {@link #onPrefetchError(String, Exception)}. If the
+     * app has used {@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)}, it MUST also handle
+     * {@link #onMediaEntryLoadError(Exception)}.
+     */
     public interface PrefetchCallback extends MediaEntryCallback {
         /**
-         * Called when the asset is Prefetched
+         * Called when the asset is prefetched
          * @param assetId
          * @param assetInfo
          * @param selected
