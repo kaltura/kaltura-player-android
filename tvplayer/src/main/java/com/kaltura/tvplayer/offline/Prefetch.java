@@ -11,8 +11,8 @@ public interface Prefetch {
 
     boolean isPrefetched(String assetId);
 
-    void prefetchByMediaOptions(List<MediaOptions> mediaOptions, PrefetchConfig prefetchConfig); // prepare + start + register
-    void prefetchByMediaEntry(List<PKMediaEntry> mediaEntryList, PrefetchConfig prefetchConfig); // prepare + start + register
+    void prefetchByMediaOptionsList(List<MediaOptions> mediaOptions, PrefetchConfig prefetchConfig); // prepare + start + register
+    void prefetchByMediaEntryList(List<PKMediaEntry> mediaEntryList, PrefetchConfig prefetchConfig); // prepare + start + register
 
     List<OfflineManager.AssetInfo> getAllAssets();
     void removeAsset(String assetId);  //  for both prefetch state and downloading state

@@ -27,7 +27,7 @@ public class PrefetchManager implements Prefetch {
     }
 
     @Override
-    public void prefetchByMediaOptions(List<MediaOptions> mediaOptionsList, PrefetchConfig prefetchConfig) {
+    public void prefetchByMediaOptionsList(List<MediaOptions> mediaOptionsList, PrefetchConfig prefetchConfig) {
         log.d("prefetchByMediaOptions");
 
         if (mediaOptionsList == null) {
@@ -49,7 +49,7 @@ public class PrefetchManager implements Prefetch {
     }
 
     @Override
-    public void prefetchByMediaEntry(List<PKMediaEntry> mediaEntryList, PrefetchConfig prefetchConfig) {
+    public void prefetchByMediaEntryList(List<PKMediaEntry> mediaEntryList, PrefetchConfig prefetchConfig) {
         log.d("prefetchByMediaEntry");
 
         if (mediaEntryList == null) {
