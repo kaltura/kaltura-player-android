@@ -142,11 +142,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     break;
                 case Download.STATE_QUEUED:
                     log.d("STATE_QUEUED: " + assetId);
-                    listener.onAssetDownloadPending(assetId);
+                    listener.onAssetDownloadPending(assetId, downloadType);
                     break;
                 case Download.STATE_REMOVING:
                     log.d("STATE_REMOVING: " + assetId);
-                    listener.onAssetRemoved(assetId);
+                    listener.onAssetRemoved(assetId, downloadType);
                     break;
                 case Download.STATE_RESTARTING:
                     log.d("STATE_RESTARTING: " + assetId);
@@ -155,7 +155,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 case Download.STATE_STOPPED:
                     log.d("STATE_STOPPED: " + assetId);
                     if (StopReason.fromExoReason(download.stopReason) == StopReason.pause) {
-                        listener.onAssetDownloadPaused(assetId);
+                        listener.onAssetDownloadPaused(assetId, downloadType);
                     } else if (StopReason.fromExoReason(download.stopReason) == StopReason.prefetchDone) {
                         maybeRegisterDrmAsset(assetId, downloadType, REGISTER_ASSET_NOW);
                         listener.onAssetDownloadComplete(assetId, downloadType);
@@ -165,7 +165,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         @Override
         public void onDownloadRemoved(DownloadManager downloadManager, Download download) {
-            getListener().onAssetRemoved(download.request.id);
+            final String dataJson = Util.fromUtf8Bytes(download.request.data);
+            PrefetchConfig prefetchConfig = extractPrefetchConfig(dataJson);
+            DownloadType downloadType = DownloadType.FULL;
+            if (prefetchConfig != null) {
+                downloadType = DownloadType.PREFETCH;
+            }
+            getListener().onAssetRemoved(download.request.id, downloadType);
         }
 
         @Override

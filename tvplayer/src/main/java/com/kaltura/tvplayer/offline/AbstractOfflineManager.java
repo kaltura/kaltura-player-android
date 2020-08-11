@@ -8,6 +8,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.dtg.DownloadItem;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
@@ -42,12 +43,12 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     private static final AssetStateListener noopListener = new AssetStateListener() {
-        @Override public void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo) {}
-        @Override public void onAssetRemoved(@NonNull String assetId) {}
+        @Override public void onStateChanged(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull AssetInfo assetInfo) {}
+        @Override public void onAssetRemoved(@NonNull String assetId, @NonNull DownloadType downloadType) {}
         @Override public void onAssetDownloadFailed(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error) {}
         @Override public void onAssetDownloadComplete(@NonNull String assetId, @NonNull DownloadType downloadType) {}
-        @Override public void onAssetDownloadPending(@NonNull String assetId) {}
-        @Override public void onAssetDownloadPaused(@NonNull String assetId) {}
+        @Override public void onAssetDownloadPending(@NonNull String assetId, @NonNull DownloadType downloadType) {}
+        @Override public void onAssetDownloadPaused(@NonNull String assetId, @NonNull DownloadType downloadType) {}
         @Override public void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus) {}
         @Override public void onRegisterError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error) {}
     };

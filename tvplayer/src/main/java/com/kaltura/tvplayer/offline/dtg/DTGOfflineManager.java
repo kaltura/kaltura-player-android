@@ -61,14 +61,14 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         public void onDownloadStart(DownloadItem item) {
             final String assetId = item.getItemId();
 
-            postEvent(() -> getListener().onStateChanged(assetId, new DTGAssetInfo(item, AssetDownloadState.started)));
+            postEvent(() -> getListener().onStateChanged(assetId, DownloadType.FULL, new DTGAssetInfo(item, AssetDownloadState.started)));
 
             postEventDelayed(() -> registerDrmAsset(assetId, true), 10000);
         }
 
         @Override
         public void onDownloadPause(DownloadItem item) {
-            postEvent(() -> getListener().onAssetDownloadPaused(item.getItemId()));
+            postEvent(() -> getListener().onAssetDownloadPaused(item.getItemId(), DownloadType.FULL));
         }
 
         @Override

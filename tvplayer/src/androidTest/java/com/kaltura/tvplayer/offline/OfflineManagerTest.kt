@@ -47,19 +47,19 @@ class OfflineManagerTest {
     var downloadError: Exception? = null
 
     val listener = object : OfflineManager.AssetStateListener {
-        override fun onStateChanged(assetId: String, assetInfo: OfflineManager.AssetInfo) {
+        override fun onStateChanged(assetId: String, downloadType: OfflineManager.DownloadType, assetInfo: OfflineManager.AssetInfo) {
             toast("State changed for asset $assetId")
         }
 
-        override fun onAssetRemoved(assetId: String) {
+        override fun onAssetRemoved(assetId: String, downloadType: OfflineManager.DownloadType) {
             toast("Asset $assetId removed")
         }
 
-        override fun onAssetDownloadPending(assetId: String) {
+        override fun onAssetDownloadPending(assetId: String,  downloadType: OfflineManager.DownloadType) {
             toast("asset $assetId is waiting for download")
         }
 
-        override fun onAssetDownloadPaused(assetId: String) {
+        override fun onAssetDownloadPaused(assetId: String,  downloadType: OfflineManager.DownloadType) {
             toast("asset $assetId download finished")
         }
 
