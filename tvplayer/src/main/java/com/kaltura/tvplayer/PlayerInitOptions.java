@@ -7,6 +7,7 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
@@ -49,6 +50,7 @@ public class PlayerInitOptions {
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
     public VideoCodecSettings videoCodecSettings;
+    public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
     public PKMaxVideoSize maxVideoSize;
@@ -256,6 +258,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setVideoCodecSettings(VideoCodecSettings videoCodecSettings) {
         if (videoCodecSettings != null) {
             this.videoCodecSettings = videoCodecSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setAudioCodecSettings(AudioCodecSettings audioCodecSettings) {
+        if (audioCodecSettings != null) {
+            this.audioCodecSettings = audioCodecSettings;
         }
         return this;
     }

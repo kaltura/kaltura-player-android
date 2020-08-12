@@ -343,6 +343,10 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setPreferredVideoCodecSettings(initOptions.videoCodecSettings);
         }
 
+        if (initOptions.audioCodecSettings != null) {
+            pkPlayer.getSettings().setPreferredAudioCodecSettings(initOptions.audioCodecSettings);
+        }
+
         if (initOptions.isTunneledAudioPlayback != null) {
             pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.isTunneledAudioPlayback);
         }
