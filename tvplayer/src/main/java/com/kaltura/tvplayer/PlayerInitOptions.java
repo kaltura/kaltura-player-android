@@ -274,28 +274,28 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize) {
+    public PlayerInitOptions setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
         if (maxVideoSize != null) {
             this.maxVideoSize = maxVideoSize;
         }
         return this;
     }
 
-    public PlayerInitOptions setMaxVideoBitrate(@NonNull Integer maxVideoBitrate) {
+    public PlayerInitOptions setMaxVideoBitrate(Integer maxVideoBitrate) {
         if (maxVideoBitrate != null) {
             this.maxVideoBitrate = maxVideoBitrate;
         }
         return this;
     }
 
-    public PlayerInitOptions setMaxAudioBitrate(@NonNull Integer maxAudioBitrate) {
+    public PlayerInitOptions setMaxAudioBitrate(Integer maxAudioBitrate) {
         if (maxAudioBitrate != null) {
             this.maxAudioBitrate = maxAudioBitrate;
         }
         return this;  
     }
 
-    public PlayerInitOptions  SetMaxAudioChannelCount(Integer maxAudioChannelCount) {
+    public PlayerInitOptions setMaxAudioChannelCount(Integer maxAudioChannelCount) {
         if (maxAudioChannelCount != null) {
             this.maxAudioChannelCount = maxAudioChannelCount;
         }

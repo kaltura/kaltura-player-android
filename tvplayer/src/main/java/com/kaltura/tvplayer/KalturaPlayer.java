@@ -21,6 +21,7 @@ import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PKPluginConfigs;
@@ -30,6 +31,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 
+import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
@@ -73,6 +75,7 @@ public abstract class KalturaPlayer {
     public static final String OKHTTP = "okhttp";
 
     static boolean playerConfigRetrieved;
+
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
     private static final String KALTURA_PLAYLIST_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
     public static ErrorElement KalturaPlayerNotInitializedError = new ErrorElement("KalturaPlayerNotInitializedError", KALTURA_PLAYER_INIT_EXCEPTION, 777);
@@ -123,6 +126,7 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
+
         messageBus = new MessageBus();
         this.referrer = buildReferrer(context, initOptions.referrer);
         populatePartnersValues();
@@ -156,6 +160,19 @@ public abstract class KalturaPlayer {
             serviceURL =  serviceURL + File.separator;
         }
         return serviceURL;
+    }
+
+    protected static void initializeDrm(Context context) {
+        MediaSupport.initializeDrm(context, (supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed, provisionError) -> {
+            String provisionPerformedStatus = "succeeded";
+            if (provisionPerformed) {
+                if (provisionError != null) {
+                    provisionPerformedStatus = "failed";
+                }
+            }
+            log.d("DRM initialized; supportedDrmSchemes: " + supportedDrmSchemes + " isHardwareDrmSupported = " + isHardwareDrmSupported + " provisionPerformedStatus = " + provisionPerformedStatus);
+        });
+
     }
 
     private static String buildReferrer(Context context, String referrer) {
@@ -228,7 +245,7 @@ public abstract class KalturaPlayer {
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
-        if (Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId)) {
+        if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName()) && Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId)) {
             NetworkUtils.sendKavaImpression(context);
         }
     }
@@ -419,7 +436,7 @@ public abstract class KalturaPlayer {
     }
 
     protected void registerCommonPlugins(Context context) {
-        KnownPlugin.registerAll(context);
+        KnownPlugin.registerAll(context, isOTTPlayer());
     }
 
     public void setKS(String ks) {
@@ -546,6 +563,22 @@ public abstract class KalturaPlayer {
         return pkPlayer.getBufferedPosition();
     }
 
+    public long getCurrentProgramTime() {
+        return pkPlayer.getCurrentProgramTime();
+    }
+
+    public float getPlaybackRate() {
+        return pkPlayer.getPlaybackRate();
+    }
+
+    public PKMediaFormat getMediaFormat() {
+        return pkPlayer.getMediaFormat();
+    }
+
+    public float getPositionInWindowMs() {
+        return pkPlayer.getPositionInWindowMs();
+    }
+    
     public void setVolume(float volume) {
         pkPlayer.setVolume(volume);
     }
@@ -637,7 +670,7 @@ public abstract class KalturaPlayer {
         this.playlistController = playlistController;
     }
 
-    // Called by implementation of loadMedia().
+    // Called by implementation of loadMedia()
     private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
 
         final PKMediaEntry entry = response.getResponse();
@@ -974,19 +1007,12 @@ public abstract class KalturaPlayer {
         // Plugin registration is static and only done once, but requires a Context.
         if (!pluginsRegistered) {
             registerCommonPlugins(context);
-            if (isOTTPlayer()) {
-                registerPluginsOTT(context);
-            }
             pluginsRegistered = true;
         }
     }
 
     private boolean isOTTPlayer() {
         return Type.ott.equals(tvPlayerType);
-    }
-
-    private void registerPluginsOTT(Context context) {
-        PlayKitManager.registerPlugins(context, PhoenixAnalyticsPlugin.factory);
     }
 
     private void addKalturaPluginConfigs(PKPluginConfigs combinedPluginConfigs) {
