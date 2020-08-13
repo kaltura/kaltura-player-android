@@ -162,11 +162,11 @@ To reset call:`setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(Integer.MAX
 - `setMaxVideoBitrate`: Sets the maximum allowed video bitrate. Maximum allowed video bitrate in bits per second.
 
 - `setPreferredVideoCodecSettings`: Set Preferred codec for video track. If the video has multiple codes (Ex: HEVC, AVC, AV1, VP9, VP8). 
-`player.getSettings().setPreferredVideoCodecSettings(new VideoCodecSettings().setVideoCodecPriorityList(Collections.singletonList(PKVideoCodec.HEVC)));
+`player.getSettings().setPreferredVideoCodecSettings(new VideoCodecSettings().setCodecPriorityList(Collections.singletonList(PKVideoCodec.HEVC)));
 `
 
 - `setPreferredAudioCodecSettings`: Set Preferred codec for audio track. If the video has multiple codes (Ex: AAC, AC3, E_AC3, OPUS).
-`player.getSettings().setPreferredAudioCodecSettings(new AudioCodecSettings().setAudioCodecPriorityList(Collections.singletonList(AAC)));
+`player.getSettings().setPreferredAudioCodecSettings(new AudioCodecSettings().setCodecPriorityList(Collections.singletonList(PKAudioCodec.AAC)));
 `
 
 	In both the above preferred codec Settings, you can pass your custom preferred list Singleton. There are other setters as well for Codec Settings,
@@ -175,11 +175,11 @@ To reset call:`setMaxVideoSize(new PKMaxVideoSize().setMaxVideoWidth(Integer.MAX
 	
 		`allowSoftwareDecoder` to allow the player to user software decoder if hardware decoder is not at all available, by default it is `false`.
 	
-		`allowVideoMixedMimeTypeAdaptiveness` if it is true then it will override your preferred codec list. It will add all the video codec in the tracks. If media has multiple codec available for video.
+		`allowMixedCodecAdaptiveness` if it is true then it will override your preferred codec list. It will add all the video codec in the tracks. If media has multiple codec available for video.
 		
 	* `AudioCodecSettings`
 	
-		`allowAudioMixedMimeTypes` if it is true then it will override your preferred codec list. It will add all the audio codec in the tracks. If media has multiple codec available for audio.
+		`allowMixedCodecs` if it is true then it will override your preferred codec list. It will add all the audio codec in the tracks. If media has multiple codec available for audio.
 
 
 <p>
