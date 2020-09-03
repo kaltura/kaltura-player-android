@@ -2,17 +2,17 @@ package com.kaltura.tvplayer;
 
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.C;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
-import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
@@ -49,6 +49,8 @@ public class PlayerInitOptions {
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
+    public VideoCodecSettings videoCodecSettings;
+    public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
     public PKMaxVideoSize maxVideoSize;
@@ -249,6 +251,20 @@ public class PlayerInitOptions {
     public PlayerInitOptions useTextureView(Boolean useTextureView) {
         if (useTextureView != null) {
             this.useTextureView = useTextureView;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setVideoCodecSettings(VideoCodecSettings videoCodecSettings) {
+        if (videoCodecSettings != null) {
+            this.videoCodecSettings = videoCodecSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setAudioCodecSettings(AudioCodecSettings audioCodecSettings) {
+        if (audioCodecSettings != null) {
+            this.audioCodecSettings = audioCodecSettings;
         }
         return this;
     }

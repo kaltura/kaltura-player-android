@@ -339,6 +339,14 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().useTextureView(initOptions.useTextureView);
         }
 
+        if (initOptions.videoCodecSettings != null) {
+            pkPlayer.getSettings().setPreferredVideoCodecSettings(initOptions.videoCodecSettings);
+        }
+
+        if (initOptions.audioCodecSettings != null) {
+            pkPlayer.getSettings().setPreferredAudioCodecSettings(initOptions.audioCodecSettings);
+        }
+
         if (initOptions.isTunneledAudioPlayback != null) {
             pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.isTunneledAudioPlayback);
         }
