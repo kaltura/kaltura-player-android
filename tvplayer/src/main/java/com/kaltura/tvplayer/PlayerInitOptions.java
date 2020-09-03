@@ -269,7 +269,6 @@ public class PlayerInitOptions {
         return this;
     }
 
-
     public PlayerInitOptions setTunneledAudioPlayback(Boolean isTunneledAudioPlayback) {
         if (isTunneledAudioPlayback != null) {
             this.isTunneledAudioPlayback = isTunneledAudioPlayback;
