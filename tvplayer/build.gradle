@@ -29,15 +29,15 @@ android {
 
 dependencies {
 
-    api 'com.kaltura:playkit-android:dev-SNAPSHOT'
-    api 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
-    api 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
-    api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT'
+//    api 'com.kaltura:playkit-android:dev-SNAPSHOT'
+//    api 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
+//    api 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
+//    api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT'
 
-//    api project(":playkit")
-//    api project(":providers")
-//    api project(":kava")
-//    api project(":dtglib")
+    api project(":playkit")
+    api project(":providers")
+    api project(":kava")
+    api project(":dtglib")
 
     implementation "androidx.work:work-runtime:2.1.0"
     implementation 'androidx.annotation:annotation:1.1.0'
