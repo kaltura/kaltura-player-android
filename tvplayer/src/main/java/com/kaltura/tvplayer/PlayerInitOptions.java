@@ -51,7 +51,7 @@ public class PlayerInitOptions {
     public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
-    public Boolean preferInternalSubtitles;
+    public Boolean preferInternalSubtitles = true;
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
