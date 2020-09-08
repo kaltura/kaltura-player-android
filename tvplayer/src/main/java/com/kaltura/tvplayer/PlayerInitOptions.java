@@ -1,7 +1,5 @@
 package com.kaltura.tvplayer;
 
-import androidx.annotation.NonNull;
-
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
@@ -53,7 +51,7 @@ public class PlayerInitOptions {
     public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
-    public Boolean preferInternal;
+    public Boolean preferInternalSubtitles;
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
@@ -286,7 +284,7 @@ public class PlayerInitOptions {
 
     public PlayerInitOptions setSubtitlePreference(Boolean preferInternal) {
         if (preferInternal != null) {
-            this.preferInternal = preferInternal;
+            this.preferInternalSubtitles = preferInternal;
         }
         return this;
     }

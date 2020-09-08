@@ -355,8 +355,8 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.handleAudioBecomingNoisyEnabled);
         }
 
-        if (initOptions.preferInternal != null) {
-            pkPlayer.getSettings().setSubtitlePreference(initOptions.preferInternal);
+        if (initOptions.preferInternalSubtitles != null) {
+            pkPlayer.getSettings().setSubtitlePreference(initOptions.preferInternalSubtitles);
         }
 
         if (initOptions.maxVideoSize != null) {
