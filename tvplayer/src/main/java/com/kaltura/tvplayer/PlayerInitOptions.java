@@ -53,6 +53,7 @@ public class PlayerInitOptions {
     public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
+    public Boolean preferInternal;
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
@@ -279,6 +280,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setHandleAudioBecomingNoisy(Boolean handleAudioBecomingNoisyEnabled) {
         if (handleAudioBecomingNoisyEnabled != null) {
             this.handleAudioBecomingNoisyEnabled = handleAudioBecomingNoisyEnabled;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setSubtitlePreference(Boolean preferInternal) {
+        if (preferInternal != null) {
+            this.preferInternal = preferInternal;
         }
         return this;
     }
