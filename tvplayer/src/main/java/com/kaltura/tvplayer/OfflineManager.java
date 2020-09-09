@@ -7,6 +7,7 @@ import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
+import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 
@@ -184,6 +185,8 @@ public abstract class OfflineManager {
     public abstract void setPreferredMediaFormat(@Nullable PKMediaFormat preferredMediaFormat);
 
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
+
+    public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 
     public enum AssetDownloadState {
         none, prepared, started, completed, failed, removing, paused
