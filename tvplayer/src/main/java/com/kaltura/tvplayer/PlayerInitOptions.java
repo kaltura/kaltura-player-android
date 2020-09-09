@@ -282,9 +282,9 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setSubtitlePreference(Boolean preferInternal) {
-        if (preferInternal != null) {
-            this.preferInternalSubtitles = preferInternal;
+    public PlayerInitOptions setSubtitlePreference(Boolean preferInternalSubtitles) {
+        if (preferInternalSubtitles != null) {
+            this.preferInternalSubtitles = preferInternalSubtitles;
         }
         return this;
     }
