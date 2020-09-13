@@ -7,6 +7,11 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.offline.DownloadHelper;
+import com.kaltura.android.exoplayer2.source.TrackGroup;
+import com.kaltura.android.exoplayer2.source.TrackGroupArray;
+import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.dtg.DownloadItem.TrackSelector;
@@ -21,6 +26,8 @@ import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -201,6 +208,41 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         dtgItem.loadMetadata();
     }
 
+    private void downloadAllTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
+
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(0);
+        for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
+            downloadHelper.clearTrackSelections(periodIndex);
+            for (int rendererIndex = 0; rendererIndex < 3 ; rendererIndex++) { // 0, 1, 2 run only over video audio and text tracks
+                List<DefaultTrackSelector.SelectionOverride> selectionOverrides = new ArrayList<>();
+                TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
+
+                for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
+                    //run through the all tracks in current trackGroup.
+                    TrackGroup trackGroup = trackGroupArray.get(groupIndex);
+                    for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
+                        selectionOverrides.add(new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex));
+                    }
+
+                    downloadHelper.addTrackSelectionForSingleRenderer(
+                            periodIndex,
+                            rendererIndex,
+                            buildExoParameters(selectionPrefs),
+                            selectionOverrides);
+                }
+            }
+        }
+    }
+
+    private DefaultTrackSelector.Parameters buildExoParameters(SelectionPrefs selectionPrefs) {
+        //MappingTrackSelector.MappedTrackInfo mappedTrackInfo = downloadHelper.getMappedTrackInfo(/* periodIndex= */ 0);
+        //return new DefaultTrackSelector.ParametersBuilder(appContext).setMaxVideoSizeSd().build();
+        return DefaultTrackSelector.Parameters.getDefaults(appContext);   // TODO: 2019-07-31
+        //return new DefaultTrackSelector.ParametersBuilder(appContext).build();
+        //return DownloadHelper.getDefaultTrackSelectorParameters(appContext);
+        //return  DefaultTrackSelector.Parameters.DEFAULT_WITHOUT_CONTEXT.buildUpon().setForceHighestSupportedBitrate(true).build();
+    }
+
     @Override
     public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull PrefetchConfig prefetchConfig, @NonNull PrefetchCallback prefetchCallback) {
         log.e("DTG prefetchAsset is not supported");
@@ -301,6 +343,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         final File localFile = cm.getLocalFile(assetId);
         if (localFile == null) {
             log.e("removeAsset: asset not found");
+            postEvent(() -> getListener().onAssetRemoveError(assetId, DownloadType.FULL, new IllegalArgumentException("AssetId: " + assetId + " not found")));
             return false;
         }
 
@@ -360,6 +403,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         return list;
     }
 
+    @NotNull
     @NonNull
     @Override
     public PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) {

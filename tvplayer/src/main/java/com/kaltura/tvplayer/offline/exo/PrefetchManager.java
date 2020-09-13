@@ -39,9 +39,7 @@ public class PrefetchManager implements Prefetch {
             // prepare + start
             if (mediaOptions instanceof OTTMediaOptions) {
                 isOTTMedia = true;
-            } else if (mediaOptions instanceof OVPMediaOptions) {
-                isOTTMedia = false;
-            } else {
+            } else if (!(mediaOptions instanceof OVPMediaOptions)) {
                 return;
             }
             offlineManager.prefetchAsset(isOTTMedia ? (OTTMediaOptions) mediaOptions : (OVPMediaOptions) mediaOptions, prefetchConfig, getPrefetchCallback());
@@ -71,7 +69,7 @@ public class PrefetchManager implements Prefetch {
     public boolean isPrefetched(String assetId) {
         log.d("isPrefetched");
         OfflineManager.AssetInfo assetInfo = offlineManager.getAssetInfo(assetId);
-        return assetInfo != null && (assetInfo.getState() == OfflineManager.AssetDownloadState.prefetched || assetInfo.getState() == OfflineManager.AssetDownloadState.completed);
+        return assetInfo != null && assetInfo.getState() == OfflineManager.AssetDownloadState.prefetched;
     }
 
     @Override

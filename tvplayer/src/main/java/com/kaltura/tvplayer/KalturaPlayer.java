@@ -954,19 +954,13 @@ public abstract class KalturaPlayer {
     private boolean isValidOVPPlayer() {
         if (Type.basic.equals(tvPlayerType)) {
             return false;
-        } else if (Type.ott.equals(tvPlayerType)) {
-            return false;
-        }
-        return true;
+        } else return !Type.ott.equals(tvPlayerType);
     }
 
     private boolean isValidOTTPlayer() {
         if (Type.basic.equals(tvPlayerType)) {
             return false;
-        } else if (Type.ovp.equals(tvPlayerType)) {
-            return false;
-        }
-        return true;
+        } else return !Type.ovp.equals(tvPlayerType);
     }
 
     private boolean isValidBasicPlayer() {

@@ -9,6 +9,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 import com.kaltura.tvplayer.offline.Prefetch;
+import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
@@ -26,7 +27,8 @@ public abstract class OfflineManager {
     protected String referrer;
 
     public static @NonNull OfflineManager getInstance(Context context) {
-        return ExoOfflineManager.getInstance(context); // DTGOfflineManager.getInstance(context);
+        return ExoOfflineManager.getInstance(context);
+        //return  DTGOfflineManager.getInstance(context);
     }
 
     public void setKalturaParams(KalturaPlayer.Type type, int partnerId) {
@@ -323,8 +325,10 @@ public abstract class OfflineManager {
     public interface AssetStateListener {
         void onStateChanged(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull AssetInfo assetInfo);
         void onAssetRemoved(@NonNull String assetId, @NonNull DownloadType downloadType);
+        void onAssetRemoveError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error);
         void onAssetDownloadFailed(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error);
         void onAssetDownloadComplete(@NonNull String assetId, @NonNull DownloadType downloadType);
+        void onAssetPrefetchComplete(@NonNull String assetId, @NonNull DownloadType downloadType);
         void onAssetDownloadPending(@NonNull String assetId, @NonNull DownloadType downloadType);
         void onAssetDownloadPaused(@NonNull String assetId, @NonNull DownloadType downloadType);
         void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus);
@@ -415,6 +419,7 @@ public abstract class OfflineManager {
     }
 
     public enum DownloadType {
+        UNKNOWM,
         PREFETCH,
         FULL
     }
@@ -423,6 +428,7 @@ public abstract class OfflineManager {
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
+
         @Nullable public Integer videoBitrate;
         @Nullable public Map<TrackCodec, Integer> codecVideoBitrates;
         @Nullable public List<TrackCodec> videoCodecs;
@@ -437,6 +443,7 @@ public abstract class OfflineManager {
         public boolean allAudioLanguages;
         public boolean allTextLanguages;
         public boolean allowInefficientCodecs;
+        public OfflineManager.DownloadType downloadType = DownloadType.FULL;
     }
 
     public static abstract class AssetInfo {

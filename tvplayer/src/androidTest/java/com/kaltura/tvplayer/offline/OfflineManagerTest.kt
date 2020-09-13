@@ -55,6 +55,14 @@ class OfflineManagerTest {
             toast("Asset $assetId removed")
         }
 
+        override fun onAssetRemoveError(
+            assetId: String,
+            downloadType: OfflineManager.DownloadType,
+            error: java.lang.Exception
+        ) {
+            toast("Error Asset $assetId WAS NOT removed")
+        }
+
         override fun onAssetDownloadPending(assetId: String,  downloadType: OfflineManager.DownloadType) {
             toast("asset $assetId is waiting for download")
         }
@@ -82,6 +90,13 @@ class OfflineManagerTest {
             downloadError = null
             downloadLatch?.countDown()
         }
+
+        override fun onAssetPrefetchComplete(
+            assetId: String,
+            downloadType: OfflineManager.DownloadType
+        ) {
+            toast("prefetch of $assetId has finished") 
+        }
     }
 
     @Before
@@ -95,7 +110,7 @@ class OfflineManagerTest {
     private fun startPlayer(assetId: String, expectedDuration: Long) {
         val intent = Intent(context, PlayActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            data = Uri.parse(assetId ?: return)
+            data = Uri.parse(assetId)
             putExtra("expectedDuration", expectedDuration)
         }
 

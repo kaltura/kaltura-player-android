@@ -7,7 +7,6 @@ import com.kaltura.playkit.providers.ott.PhoenixPlaylistProvider;
 import com.kaltura.tvplayer.OTTMediaOptions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class OTTPlaylistOptions extends ProviderPlaylistOptions {

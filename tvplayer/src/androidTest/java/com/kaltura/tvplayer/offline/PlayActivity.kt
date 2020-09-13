@@ -61,7 +61,7 @@ class PlayActivity : AppCompatActivity() {
         }
 
         // Check duration
-        player.addListener(this, PlayerEvent.durationChanged) {
+        player.addListener(this, durationChanged) {
             assertEquals(intent.getLongExtra("expectedDuration", 0), it.duration)
         }
 

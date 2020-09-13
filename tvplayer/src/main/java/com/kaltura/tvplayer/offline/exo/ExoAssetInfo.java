@@ -62,8 +62,7 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
         if (jsonObject != null && jsonObject.has("prefetchConfig")) {
             String prefetchConfigStr = jsonObject.get("prefetchConfig").getAsString();
             if (prefetchConfigStr != null) {
-                PrefetchConfig prefetchConfigFromJson = gson.fromJson(prefetchConfigStr, PrefetchConfig.class);
-                prefetchConfig = prefetchConfigFromJson;
+                prefetchConfig = gson.fromJson(prefetchConfigStr, PrefetchConfig.class);;
             } else {
                 this.prefetchConfig = null;
             }
