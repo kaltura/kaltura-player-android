@@ -163,14 +163,14 @@ public abstract class KalturaPlayer {
     }
 
     protected static void initializeDrm(Context context) {
-        MediaSupport.initializeDrm(context, (pkDeviceSupportInfo, provisionError) -> {
+        MediaSupport.initializeDrm(context, (pkDeviceCapabilitiesInfo, provisionError) -> {
             String provisionPerformedStatus = "succeeded";
-            if (pkDeviceSupportInfo.isProvisionPerformed()) {
+            if (pkDeviceCapabilitiesInfo.isProvisionPerformed()) {
                 if (provisionError != null) {
                     provisionPerformedStatus = "failed";
                 }
             }
-            log.d("DRM initialized; supportedDrmSchemes: " + pkDeviceSupportInfo.getSupportedDrmSchemes() + " isHardwareDrmSupported = " + pkDeviceSupportInfo.isHardwareDrmSupported() + " provisionPerformedStatus = " + provisionPerformedStatus);
+            log.d("DRM initialized; supportedDrmSchemes: " + pkDeviceCapabilitiesInfo.getSupportedDrmSchemes() + " isHardwareDrmSupported = " + pkDeviceCapabilitiesInfo.isHardwareDrmSupported() + " provisionPerformedStatus = " + provisionPerformedStatus);
         });
 
     }
