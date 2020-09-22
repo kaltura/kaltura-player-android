@@ -5,10 +5,12 @@ import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
@@ -45,8 +47,11 @@ public class PlayerInitOptions {
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
+    public VideoCodecSettings videoCodecSettings;
+    public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
+    public Boolean preferInternalSubtitles;
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
@@ -249,6 +254,20 @@ public class PlayerInitOptions {
         return this;
     }
 
+    public PlayerInitOptions setVideoCodecSettings(VideoCodecSettings videoCodecSettings) {
+        if (videoCodecSettings != null) {
+            this.videoCodecSettings = videoCodecSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setAudioCodecSettings(AudioCodecSettings audioCodecSettings) {
+        if (audioCodecSettings != null) {
+            this.audioCodecSettings = audioCodecSettings;
+        }
+        return this;
+    }
+
     public PlayerInitOptions setTunneledAudioPlayback(Boolean isTunneledAudioPlayback) {
         if (isTunneledAudioPlayback != null) {
             this.isTunneledAudioPlayback = isTunneledAudioPlayback;
@@ -259,6 +278,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setHandleAudioBecomingNoisy(Boolean handleAudioBecomingNoisyEnabled) {
         if (handleAudioBecomingNoisyEnabled != null) {
             this.handleAudioBecomingNoisyEnabled = handleAudioBecomingNoisyEnabled;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setSubtitlePreference(Boolean preferInternalSubtitles) {
+        if (preferInternalSubtitles != null) {
+            this.preferInternalSubtitles = preferInternalSubtitles;
         }
         return this;
     }

@@ -163,14 +163,14 @@ public abstract class KalturaPlayer {
     }
 
     protected static void initializeDrm(Context context) {
-        MediaSupport.initializeDrm(context, (supportedDrmSchemes, isHardwareDrmSupported, provisionPerformed, provisionError) -> {
+        MediaSupport.initializeDrm(context, (pkDeviceSupportInfo, provisionError) -> {
             String provisionPerformedStatus = "succeeded";
-            if (provisionPerformed) {
+            if (pkDeviceSupportInfo.isProvisionPerformed()) {
                 if (provisionError != null) {
                     provisionPerformedStatus = "failed";
                 }
             }
-            log.d("DRM initialized; supportedDrmSchemes: " + supportedDrmSchemes + " isHardwareDrmSupported = " + isHardwareDrmSupported + " provisionPerformedStatus = " + provisionPerformedStatus);
+            log.d("DRM initialized; supportedDrmSchemes: " + pkDeviceSupportInfo.getSupportedDrmSchemes() + " isHardwareDrmSupported = " + pkDeviceSupportInfo.isHardwareDrmSupported() + " provisionPerformedStatus = " + provisionPerformedStatus);
         });
 
     }
@@ -339,12 +339,24 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().useTextureView(initOptions.useTextureView);
         }
 
+        if (initOptions.videoCodecSettings != null) {
+            pkPlayer.getSettings().setPreferredVideoCodecSettings(initOptions.videoCodecSettings);
+        }
+
+        if (initOptions.audioCodecSettings != null) {
+            pkPlayer.getSettings().setPreferredAudioCodecSettings(initOptions.audioCodecSettings);
+        }
+
         if (initOptions.isTunneledAudioPlayback != null) {
             pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.isTunneledAudioPlayback);
         }
 
         if (initOptions.handleAudioBecomingNoisyEnabled != null) {
             pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.handleAudioBecomingNoisyEnabled);
+        }
+
+        if (initOptions.preferInternalSubtitles != null) {
+            pkPlayer.getSettings().setSubtitlePreference(initOptions.preferInternalSubtitles);
         }
 
         if (initOptions.maxVideoSize != null) {
