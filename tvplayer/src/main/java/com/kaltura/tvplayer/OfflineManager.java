@@ -3,6 +3,9 @@ package com.kaltura.tvplayer;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.kaltura.android.exoplayer2.database.DatabaseProvider;
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -14,6 +17,7 @@ import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -190,6 +194,12 @@ public abstract class OfflineManager {
      * @return asset info or null if not found.
      */
     public abstract @Nullable AssetInfo getAssetInfo(@NonNull String assetId);
+
+    public abstract @Nullable File getDownloadDirectory();
+
+    public abstract @Nullable Cache getDownloadCache();
+
+    public abstract @Nullable DatabaseProvider getDatabaseProvider();
 
     /**
      * Get list of {@link AssetInfo} objects for all assets in the given state.

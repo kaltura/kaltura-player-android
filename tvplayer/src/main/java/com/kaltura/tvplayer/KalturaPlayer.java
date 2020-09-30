@@ -115,10 +115,12 @@ public abstract class KalturaPlayer {
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
     private PlaylistController playlistController;
+    private OfflineManager offlineManager;
 
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
         this.context = context;
+        offlineManager = OfflineManager.getInstance(context);
         this.tvPlayerType = tvPlayerType;
         this.initOptions = initOptions;
         this.preload = initOptions.preload != null ? initOptions.preload : true;
@@ -422,6 +424,9 @@ public abstract class KalturaPlayer {
             this.prepareState = PrepareState.not_prepared;
             PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
             updateKalturaPluginConfigs(combinedPluginConfigs);
+            if (offlineManager != null && offlineManager.getDownloadCache() != null) {
+                pkPlayer.setDownloadCache(offlineManager.getDownloadCache());
+            }
             prepare();
         }
     }

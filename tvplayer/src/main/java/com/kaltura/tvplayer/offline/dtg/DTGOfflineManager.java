@@ -7,11 +7,13 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.android.exoplayer2.database.DatabaseProvider;
 import com.kaltura.android.exoplayer2.offline.DownloadHelper;
 import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.dtg.DownloadItem.TrackSelector;
@@ -363,6 +365,24 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             return null;
         }
         return new DTGAssetInfo(item, null);
+    }
+
+    @Nullable
+    @Override
+    public File getDownloadDirectory() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Cache getDownloadCache() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public DatabaseProvider getDatabaseProvider() {
+        return null;
     }
 
     @NonNull
