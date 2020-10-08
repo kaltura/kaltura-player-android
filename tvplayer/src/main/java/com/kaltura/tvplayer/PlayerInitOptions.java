@@ -3,6 +3,7 @@ package com.kaltura.tvplayer;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
@@ -52,7 +53,8 @@ public class PlayerInitOptions {
     public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
-    public Boolean preferInternalSubtitles;
+    public PKSubtitlePreference pkSubtitlePreference;
+    
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
@@ -284,9 +286,9 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setSubtitlePreference(Boolean preferInternalSubtitles) {
-        if (preferInternalSubtitles != null) {
-            this.preferInternalSubtitles = preferInternalSubtitles;
+    public PlayerInitOptions setSubtitlePreference(PKSubtitlePreference pkSubtitlePreference) {
+        if (pkSubtitlePreference != null) {
+            this.pkSubtitlePreference = pkSubtitlePreference;
         }
         return this;
     }
