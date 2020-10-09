@@ -286,9 +286,9 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setSubtitlePreference(PKSubtitlePreference pkSubtitlePreference) {
-        if (pkSubtitlePreference != null) {
-            this.subtitlePreference = pkSubtitlePreference;
+    public PlayerInitOptions setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
+        if (subtitlePreference != null) {
+            this.subtitlePreference = subtitlePreference;
         }
         return this;
     }
