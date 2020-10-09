@@ -53,7 +53,7 @@ public class PlayerInitOptions {
     public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
-    public PKSubtitlePreference pkSubtitlePreference;
+    public PKSubtitlePreference subtitlePreference;
     
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
@@ -288,7 +288,7 @@ public class PlayerInitOptions {
 
     public PlayerInitOptions setSubtitlePreference(PKSubtitlePreference pkSubtitlePreference) {
         if (pkSubtitlePreference != null) {
-            this.pkSubtitlePreference = pkSubtitlePreference;
+            this.subtitlePreference = pkSubtitlePreference;
         }
         return this;
     }
