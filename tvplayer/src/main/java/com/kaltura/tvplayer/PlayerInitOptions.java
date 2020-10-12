@@ -53,6 +53,7 @@ public class PlayerInitOptions {
     public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
+    public Boolean handleAudioFocus;
     public PKSubtitlePreference subtitlePreference;
     
     public PKMaxVideoSize maxVideoSize;
@@ -282,6 +283,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setHandleAudioBecomingNoisy(Boolean handleAudioBecomingNoisyEnabled) {
         if (handleAudioBecomingNoisyEnabled != null) {
             this.handleAudioBecomingNoisyEnabled = handleAudioBecomingNoisyEnabled;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setHandleAudioFocus(Boolean handleAudioFocus) {
+        if (handleAudioFocus != null) {
+            this.handleAudioFocus = handleAudioFocus;
         }
         return this;
     }

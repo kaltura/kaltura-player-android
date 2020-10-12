@@ -352,7 +352,11 @@ public abstract class KalturaPlayer {
         }
 
         if (initOptions.handleAudioBecomingNoisyEnabled != null) {
-            pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.handleAudioBecomingNoisyEnabled);
+            pkPlayer.getSettings().setHandleAudioBecomingNoisy(initOptions.handleAudioBecomingNoisyEnabled);
+        }
+
+        if (initOptions.handleAudioFocus != null) {
+            pkPlayer.getSettings().setHandleAudioFocus(initOptions.handleAudioFocus);
         }
 
         if (initOptions.subtitlePreference != null) {
