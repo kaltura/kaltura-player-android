@@ -354,11 +354,15 @@ public abstract class KalturaPlayer {
         }
 
         if (initOptions.handleAudioBecomingNoisyEnabled != null) {
-            pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.handleAudioBecomingNoisyEnabled);
+            pkPlayer.getSettings().setHandleAudioBecomingNoisy(initOptions.handleAudioBecomingNoisyEnabled);
         }
 
-        if (initOptions.preferInternalSubtitles != null) {
-            pkPlayer.getSettings().setSubtitlePreference(initOptions.preferInternalSubtitles);
+        if (initOptions.handleAudioFocus != null) {
+            pkPlayer.getSettings().setHandleAudioFocus(initOptions.handleAudioFocus);
+        }
+
+        if (initOptions.subtitlePreference != null) {
+            pkPlayer.getSettings().setSubtitlePreference(initOptions.subtitlePreference);
         }
 
         if (initOptions.maxVideoSize != null) {
@@ -375,6 +379,10 @@ public abstract class KalturaPlayer {
 
         if (initOptions.maxAudioChannelCount != null) {
             pkPlayer.getSettings().setMaxAudioChannelCount(initOptions.maxAudioChannelCount);
+        }
+
+        if (initOptions.multicastSettings != null) {
+            pkPlayer.getSettings().setMulticastSettings(initOptions.multicastSettings);
         }
     }
 

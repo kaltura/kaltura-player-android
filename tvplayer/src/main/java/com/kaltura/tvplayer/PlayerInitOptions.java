@@ -3,10 +3,12 @@ package com.kaltura.tvplayer;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
@@ -51,11 +53,14 @@ public class PlayerInitOptions {
     public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
-    public Boolean preferInternalSubtitles;
+    public Boolean handleAudioFocus;
+    public PKSubtitlePreference subtitlePreference;
+    
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
     public Integer maxAudioChannelCount;
+    public MulticastSettings multicastSettings;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -282,9 +287,16 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setSubtitlePreference(Boolean preferInternalSubtitles) {
-        if (preferInternalSubtitles != null) {
-            this.preferInternalSubtitles = preferInternalSubtitles;
+    public PlayerInitOptions setHandleAudioFocus(Boolean handleAudioFocus) {
+        if (handleAudioFocus != null) {
+            this.handleAudioFocus = handleAudioFocus;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
+        if (subtitlePreference != null) {
+            this.subtitlePreference = subtitlePreference;
         }
         return this;
     }
@@ -313,6 +325,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setMaxAudioChannelCount(Integer maxAudioChannelCount) {
         if (maxAudioChannelCount != null) {
             this.maxAudioChannelCount = maxAudioChannelCount;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMulticastSettings(MulticastSettings multicastSettings) {
+        if (multicastSettings != null) {
+            this.multicastSettings = multicastSettings;
         }
         return this;
     }
