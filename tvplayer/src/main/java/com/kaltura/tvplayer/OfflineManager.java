@@ -32,8 +32,8 @@ public abstract class OfflineManager {
     protected String referrer;
 
     public static @NonNull OfflineManager getInstance(Context context) {
-        return ExoOfflineManager.getInstance(context);
-        //return  DTGOfflineManager.getInstance(context);
+        //return ExoOfflineManager.getInstance(context);
+        return  DTGOfflineManager.getInstance(context);
     }
 
     public void setKalturaParams(KalturaPlayer.Type type, int partnerId) {
