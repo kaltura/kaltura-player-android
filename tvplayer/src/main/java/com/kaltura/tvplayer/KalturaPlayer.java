@@ -433,7 +433,7 @@ public abstract class KalturaPlayer {
             PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
             updateKalturaPluginConfigs(combinedPluginConfigs);
             if (offlineManager != null && offlineManager.getDownloadCache() != null) {
-                pkPlayer.setDownloadCache(offlineManager.getDownloadCache());
+                //pkPlayer.setDownloadCache(offlineManager.getDownloadCache());
             }
             prepare();
         }
