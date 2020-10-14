@@ -238,12 +238,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 Executors.newFixedThreadPool(/* nThreads= */ THREAD_POOL_SIZE)
         );
 
+        downloadManager.setRequirements(new Requirements(Requirements.NETWORK|Requirements.DEVICE_STORAGE_NOT_LOW));
         downloadManager.setMaxParallelDownloads(MAX_PARALLEL_DOWNLOADS);
-
-        downloadManager.setRequirements(new Requirements(Requirements.NETWORK));
-        downloadManager.setRequirements(new Requirements(Requirements.DEVICE_STORAGE_NOT_LOW));
-
-        downloadManager.setMaxParallelDownloads(MIN_RETRY_COUNT);
+        downloadManager.setMinRetryCount(MIN_RETRY_COUNT);
         downloadManager.addListener(exoListener);
 
         postEvent(new Runnable() {
