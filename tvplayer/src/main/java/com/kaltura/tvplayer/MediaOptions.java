@@ -3,7 +3,6 @@ package com.kaltura.tvplayer;
 import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.player.PKExternalSubtitle;
-import com.kaltura.playkit.providers.BaseMediaAsset;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.playlist.CountDownOptions;
 

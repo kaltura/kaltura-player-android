@@ -53,8 +53,9 @@ public class PlayerInitOptions {
     public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
+    public Boolean handleAudioFocus;
     public PKSubtitlePreference subtitlePreference;
-    
+
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
@@ -128,7 +129,7 @@ public class PlayerInitOptions {
     public PlayerInitOptions setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         if (preferredMediaFormat != null) {
             this.preferredMediaFormat = preferredMediaFormat;
-        } 
+        }
         return this;
     }
 
@@ -286,6 +287,13 @@ public class PlayerInitOptions {
         return this;
     }
 
+    public PlayerInitOptions setHandleAudioFocus(Boolean handleAudioFocus) {
+        if (handleAudioFocus != null) {
+            this.handleAudioFocus = handleAudioFocus;
+        }
+        return this;
+    }
+
     public PlayerInitOptions setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
         if (subtitlePreference != null) {
             this.subtitlePreference = subtitlePreference;
@@ -311,7 +319,7 @@ public class PlayerInitOptions {
         if (maxAudioBitrate != null) {
             this.maxAudioBitrate = maxAudioBitrate;
         }
-        return this;  
+        return this;
     }
 
     public PlayerInitOptions setMaxAudioChannelCount(Integer maxAudioChannelCount) {
