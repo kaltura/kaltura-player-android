@@ -8,7 +8,6 @@ import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
-import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
@@ -60,7 +59,6 @@ public class PlayerInitOptions {
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
     public Integer maxAudioChannelCount;
-    public MulticastSettings multicastSettings;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -328,11 +326,6 @@ public class PlayerInitOptions {
         }
         return this;
     }
-
-    public PlayerInitOptions setMulticastSettings(MulticastSettings multicastSettings) {
-        if (multicastSettings != null) {
-            this.multicastSettings = multicastSettings;
-        }
-        return this;
-    }
 }
+
+
