@@ -217,11 +217,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         );
 
         downloadManager.setMaxParallelDownloads(MAX_PARALLEL_DOWNLOADS);
-
-        downloadManager.setRequirements(new Requirements(Requirements.NETWORK));
-        downloadManager.setRequirements(new Requirements(Requirements.DEVICE_STORAGE_NOT_LOW));
-
-        downloadManager.setMaxParallelDownloads(MIN_RETRY_COUNT);
+        downloadManager.setRequirements(new Requirements(Requirements.NETWORK|Requirements.DEVICE_STORAGE_NOT_LOW));
+        downloadManager.setMinRetryCount(MIN_RETRY_COUNT);
         downloadManager.addListener(exoListener);
 
         postEvent(new Runnable() {
@@ -551,7 +548,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private DefaultTrackSelector.Parameters buildExoParameters(SelectionPrefs selectionPrefs) {
         return DefaultTrackSelector.Parameters.getDefaults(appContext);   // TODO: 2019-07-31
-
     }
 
     public static ExoOfflineManager getInstance(Context context) {
