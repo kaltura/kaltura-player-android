@@ -163,14 +163,14 @@ public abstract class KalturaPlayer {
     }
 
     protected static void initializeDrm(Context context) {
-        MediaSupport.initializeDrm(context, (pkDeviceSupportInfo, provisionError) -> {
+        MediaSupport.initializeDrm(context, (pkDeviceCapabilitiesInfo, provisionError) -> {
             String provisionPerformedStatus = "succeeded";
-            if (pkDeviceSupportInfo.isProvisionPerformed()) {
+            if (pkDeviceCapabilitiesInfo.isProvisionPerformed()) {
                 if (provisionError != null) {
                     provisionPerformedStatus = "failed";
                 }
             }
-            log.d("DRM initialized; supportedDrmSchemes: " + pkDeviceSupportInfo.getSupportedDrmSchemes() + " isHardwareDrmSupported = " + pkDeviceSupportInfo.isHardwareDrmSupported() + " provisionPerformedStatus = " + provisionPerformedStatus);
+            log.d("DRM initialized; supportedDrmSchemes: " + pkDeviceCapabilitiesInfo.getSupportedDrmSchemes() + " isHardwareDrmSupported = " + pkDeviceCapabilitiesInfo.isHardwareDrmSupported() + " provisionPerformedStatus = " + provisionPerformedStatus);
         });
 
     }
@@ -352,7 +352,11 @@ public abstract class KalturaPlayer {
         }
 
         if (initOptions.handleAudioBecomingNoisyEnabled != null) {
-            pkPlayer.getSettings().setTunneledAudioPlayback(initOptions.handleAudioBecomingNoisyEnabled);
+            pkPlayer.getSettings().setHandleAudioBecomingNoisy(initOptions.handleAudioBecomingNoisyEnabled);
+        }
+
+        if (initOptions.handleAudioFocus != null) {
+            pkPlayer.getSettings().setHandleAudioFocus(initOptions.handleAudioFocus);
         }
 
         if (initOptions.subtitlePreference != null) {
@@ -373,10 +377,6 @@ public abstract class KalturaPlayer {
 
         if (initOptions.maxAudioChannelCount != null) {
             pkPlayer.getSettings().setMaxAudioChannelCount(initOptions.maxAudioChannelCount);
-        }
-
-        if (initOptions.multicastSettings != null) {
-            pkPlayer.getSettings().setMulticastSettings(initOptions.multicastSettings);
         }
     }
 
@@ -590,7 +590,7 @@ public abstract class KalturaPlayer {
     public float getPositionInWindowMs() {
         return pkPlayer.getPositionInWindowMs();
     }
-    
+
     public void setVolume(float volume) {
         pkPlayer.setVolume(volume);
     }
@@ -970,19 +970,17 @@ public abstract class KalturaPlayer {
     private boolean isValidOVPPlayer() {
         if (Type.basic.equals(tvPlayerType)) {
             return false;
-        } else if (Type.ott.equals(tvPlayerType)) {
-            return false;
+        } else {
+            return !Type.ott.equals(tvPlayerType);
         }
-        return true;
     }
 
     private boolean isValidOTTPlayer() {
         if (Type.basic.equals(tvPlayerType)) {
             return false;
-        } else if (Type.ovp.equals(tvPlayerType)) {
-            return false;
+        } else {
+            return !Type.ovp.equals(tvPlayerType);
         }
-        return true;
     }
 
     private boolean isValidBasicPlayer() {
