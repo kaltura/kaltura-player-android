@@ -6,9 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+
+import com.kaltura.android.exoplayer2.Timeline;
+import com.kaltura.android.exoplayer2.ui.DefaultTimeBar;
+import com.kaltura.android.exoplayer2.ui.TimeBar;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
@@ -23,7 +27,7 @@ import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.DvrLive;
 import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Live;
 
 
-public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeekBarChangeListener {
+public class PlaybackControlsView extends LinearLayout {
 
     private static final PKLog log = PKLog.get("PlaybackControlsView");
     private static final int PROGRESS_BAR_MAX = 100;
@@ -37,13 +41,14 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
     private Formatter formatter;
     private StringBuilder formatBuilder;
 
-
     private ImageButton playPauseToggle;
-    private SeekBar seekBar;
+    private DefaultTimeBar seekBar;
     private TextView tvCurTime, tvTime, tvLiveIndicator;
 
     private boolean dragging = false;
     private boolean adTagHasPostroll;
+
+    private ComponentListener componentListener;
 
     private Runnable updateProgressAction = () -> updateProgress();
 
@@ -61,6 +66,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         LayoutInflater.from(context).inflate(R.layout.playback_layout, this);
         formatBuilder = new StringBuilder();
         formatter = new Formatter(formatBuilder, Locale.getDefault());
+        componentListener = new ComponentListener();
         initPlaybackControls();
     }
 
@@ -81,8 +87,8 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
 //                togglePlayPauseClick();
 //            }
 //        });
-        seekBar = this.findViewById(R.id.mediacontroller_progress);
-        seekBar.setOnSeekBarChangeListener(this);
+        seekBar = this.findViewById(R.id.kexo_progress);
+        seekBar.addListener(componentListener);
 
         tvCurTime = this.findViewById(R.id.time_current);
         tvTime = this.findViewById(R.id.time);
@@ -120,7 +126,8 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
             }
             if (!dragging && position != Consts.POSITION_UNSET && duration != Consts.TIME_UNSET) {
                 tvCurTime.setText(stringForTime(position));
-                seekBar.setProgress(progressBarValue(position));
+                seekBar.setPosition(position);
+                seekBar.setDuration(duration);
             }
 
             if (player != null && player.getMediaEntry() != null && player.getMediaEntry().getMediaType().equals(DvrLive)) {
@@ -134,7 +141,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 tvLiveIndicator.setVisibility(GONE);
             }
 
-            seekBar.setSecondaryProgress(progressBarValue(bufferedPosition));
+            seekBar.setBufferedPosition(bufferedPosition);
         }
 
         // Remove scheduled updates.
@@ -142,6 +149,52 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         // Schedule an update if necessary.
         if (playerState != PlayerState.IDLE) {
             postDelayed(updateProgressAction, UPDATE_TIME_INTERVAL);
+        }
+    }
+
+    /**
+     * Component Listener for Default time bar from ExoPlayer UI
+     */
+    private final class ComponentListener
+            implements com.kaltura.android.exoplayer2.Player.EventListener, TimeBar.OnScrubListener, OnClickListener {
+
+        @Override
+        public void onScrubStart(TimeBar timeBar, long position) {
+            dragging = true;
+        }
+
+        @Override
+        public void onScrubMove(TimeBar timeBar, long position) {
+            if (player != null) {
+                tvCurTime.setText(stringForTime(position));
+            }
+        }
+
+        @Override
+        public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
+            dragging = false;
+            if (player != null) {
+                player.seekTo(position);
+            }
+        }
+
+        @Override
+        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            updateProgress();
+        }
+
+        @Override
+        public void onPositionDiscontinuity(@com.kaltura.android.exoplayer2.Player.DiscontinuityReason int reason) {
+            updateProgress();
+        }
+
+        @Override
+        public void onTimelineChanged(Timeline timeline, @Nullable Object manifest, @com.kaltura.android.exoplayer2.Player.TimelineChangeReason int reason) {
+            updateProgress();
+        }
+
+        @Override
+        public void onClick(View view) {
         }
     }
 
@@ -249,7 +302,7 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
         return playPauseToggle;
     }
 
-    public SeekBar getSeekBar() {
+    public DefaultTimeBar getSeekBar() {
         return seekBar;
     }
 
@@ -297,23 +350,6 @@ public class PlaybackControlsView extends LinearLayout implements SeekBar.OnSeek
                 setPauseImage();
             }
         }
-    }
-
-    @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        if (fromUser) {
-            tvCurTime.setText(stringForTime(positionValue(progress)));
-        }
-    }
-
-    public void onStartTrackingTouch(SeekBar seekBar) {
-        dragging = true;
-    }
-
-    @Override
-    public void onStopTrackingTouch(SeekBar seekBar) {
-        dragging = false;
-        player.seekTo(positionValue(seekBar.getProgress()));
     }
 
     public void release() {
