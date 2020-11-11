@@ -25,8 +25,10 @@ enum KnownPlugin {
     // Faceboook
     fbads("com.kaltura.playkit.plugins.fbads.fbinstream.FBInstreamPlugin"),
     // Youbora
-    youbora("com.kaltura.playkit.plugins.youbora.YouboraPlugin");
-    
+    youbora("com.kaltura.playkit.plugins.youbora.YouboraPlugin"),
+    // Broadpeak
+    broadpeak("com.kaltura.playkit.plugins.broadpeak.BroadpeakPlugin");
+
     private static final PKLog log = PKLog.get("KnownPlugin");
 
     public final String className;
