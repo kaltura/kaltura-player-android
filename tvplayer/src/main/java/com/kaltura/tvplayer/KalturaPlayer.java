@@ -687,13 +687,10 @@ public abstract class KalturaPlayer {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
-            pkPlayer.applyMediaEntryInterceptors(entry, error ->
+            pkPlayer.applyMediaEntryInterceptors(entry, () ->
                     mainHandler.post(() -> {
                         setMedia(entry);
-                        if (error == null)
-                            onEntryLoadListener.onEntryLoadComplete(entry, null);
-                        else
-                            onEntryLoadListener.onEntryLoadComplete(null, new ErrorElement(error.message, 400));
+                        onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
                     }));
         } else {
             onEntryLoadListener.onEntryLoadComplete(null, response.getError());
