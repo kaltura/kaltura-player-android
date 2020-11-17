@@ -601,6 +601,10 @@ public abstract class KalturaPlayer {
         return pkPlayer.isPlaying();
     }
 
+    public boolean isLive() {
+        return pkPlayer.isLive();
+    }
+
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         pkPlayer.addListener(groupId, type, listener);
     }
