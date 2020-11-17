@@ -16,11 +16,13 @@ import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.MessageBus;
+import com.kaltura.playkit.OnMediaInterceptorListener;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaEntryInterceptor;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
@@ -687,7 +689,7 @@ public abstract class KalturaPlayer {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
-            pkPlayer.applyMediaEntryInterceptors(entry, () ->
+            applyMediaEntryInterceptors(entry, () ->
                     mainHandler.post(() -> {
                         setMedia(entry);
                         onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
@@ -695,6 +697,26 @@ public abstract class KalturaPlayer {
         } else {
             onEntryLoadListener.onEntryLoadComplete(null, response.getError());
         }
+    }
+
+    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, OnMediaInterceptorListener listener) {
+        List<PKMediaEntryInterceptor> localInterceptors = pkPlayer.getLoadedPluginsOfType(PKMediaEntryInterceptor.class);
+        applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
+    }
+
+    private void applyMediaEntryInterceptor(List<PKMediaEntryInterceptor> localInterceptors,
+                                            PKMediaEntry mediaEntry,
+                                            OnMediaInterceptorListener listener) {
+        if (localInterceptors.size() == 0) {
+            listener.onApplyMediaCompleted();
+            return;
+        }
+
+        PKMediaEntryInterceptor interceptor = localInterceptors.get(0);
+        interceptor.apply(mediaEntry, () -> {
+            localInterceptors.remove(0);
+            applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
+        });
     }
 
     private void playlistLoadCompleted(final ResultElement<PKPlaylist> response, final OnPlaylistLoadListener onPlaylistLoadListener) {
