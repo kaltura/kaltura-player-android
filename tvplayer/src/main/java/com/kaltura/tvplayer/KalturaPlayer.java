@@ -355,6 +355,10 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setHandleAudioBecomingNoisy(initOptions.handleAudioBecomingNoisyEnabled);
         }
 
+        if (initOptions.wakeMode != null) {
+            pkPlayer.getSettings().setWakeMode(initOptions.wakeMode);
+        }
+
         if (initOptions.handleAudioFocus != null) {
             pkPlayer.getSettings().setHandleAudioFocus(initOptions.handleAudioFocus);
         }
