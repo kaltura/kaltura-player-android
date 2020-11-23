@@ -294,6 +294,13 @@ public class PlayerInitOptions {
         return this;
     }
 
+    public PlayerInitOptions setWakeMode(PKWakeMode wakeMode) {
+        if (wakeMode != null) {
+            this.wakeMode = wakeMode;
+        }
+        return this;
+    }
+
     public PlayerInitOptions setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
         if (subtitlePreference != null) {
             this.subtitlePreference = subtitlePreference;
