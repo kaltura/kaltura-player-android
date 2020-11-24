@@ -29,14 +29,10 @@ android {
 
 dependencies {
 
-    api 'com.github.kaltura:playkit-android:15f71464ea1af2501387cc43e499fdcb3c9cdc45'
-    api 'com.kaltura.playkit:playkitproviders:4.10.0',{
-        exclude group: 'com.kaltura.playkit', module: 'playkit'
-    }
-    api 'com.kaltura.playkit:kavaplugin:4.10.0',{
-        exclude group: 'com.kaltura.playkit', module: 'playkit'
-    }
-    api 'com.kaltura.dtg:dtglib:2.6.4'
+    api 'com.kaltura:playkit-android:dev-SNAPSHOT'
+    api 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
+    api 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
+    api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT'
 
 //    api project(":playkit")
 //    api project(":providers")
