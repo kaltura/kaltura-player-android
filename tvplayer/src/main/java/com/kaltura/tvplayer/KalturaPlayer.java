@@ -16,13 +16,11 @@ import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.MessageBus;
-import com.kaltura.playkit.OnMediaInterceptorListener;
 import com.kaltura.playkit.PKController;
 import com.kaltura.playkit.PKEvent;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaConfig;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaEntryInterceptor;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
@@ -704,15 +702,15 @@ public abstract class KalturaPlayer {
     }
 
     public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, OnMediaInterceptorListener listener) {
-        List<PKMediaEntryInterceptor> localInterceptors = pkPlayer.getLoadedPluginsOfType(PKMediaEntryInterceptor.class);
+        List<PKMediaEntryInterceptor> localInterceptors = pkPlayer.getLoadedPluginsByType(PKMediaEntryInterceptor.class);
         applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
     }
 
     private void applyMediaEntryInterceptor(List<PKMediaEntryInterceptor> localInterceptors,
                                             PKMediaEntry mediaEntry,
                                             OnMediaInterceptorListener listener) {
-        if (localInterceptors.size() == 0) {
-            listener.onApplyMediaCompleted();
+        if (localInterceptors.isEmpty()) {
+            listener.onComplete();
             return;
         }
 
