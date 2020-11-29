@@ -6,6 +6,7 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -53,6 +54,7 @@ public class PlayerInitOptions {
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
     public Boolean handleAudioFocus;
+    public PKWakeMode wakeMode;
     public PKSubtitlePreference subtitlePreference;
 
     public PKMaxVideoSize maxVideoSize;
@@ -288,6 +290,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setHandleAudioFocus(Boolean handleAudioFocus) {
         if (handleAudioFocus != null) {
             this.handleAudioFocus = handleAudioFocus;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setWakeMode(PKWakeMode wakeMode) {
+        if (wakeMode != null) {
+            this.wakeMode = wakeMode;
         }
         return this;
     }
