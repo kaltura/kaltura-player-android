@@ -705,14 +705,14 @@ public abstract class KalturaPlayer {
         }
     }
 
-    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, OnMediaInterceptorListener listener) {
+    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, PKMediaEntryInterceptor.Listener listener) {
         List<PKMediaEntryInterceptor> localInterceptors = pkPlayer.getLoadedPluginsByType(PKMediaEntryInterceptor.class);
         applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
     }
 
     private void applyMediaEntryInterceptor(List<PKMediaEntryInterceptor> localInterceptors,
                                             PKMediaEntry mediaEntry,
-                                            OnMediaInterceptorListener listener) {
+                                            PKMediaEntryInterceptor.Listener listener) {
         if (localInterceptors.isEmpty()) {
             listener.onComplete();
             return;
