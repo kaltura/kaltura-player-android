@@ -1,5 +1,7 @@
 package com.kaltura.tvplayer;
 
+import android.text.TextUtils;
+
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.providers.ovp.OVPMediaAsset;
@@ -13,18 +15,19 @@ public class OVPMediaOptions extends MediaOptions {
         this.ovpMediaAsset = ovpMediaAsset;
     }
 
-    public OVPMediaOptions(String entryId, String ks, String referrer) {
-        this.ovpMediaAsset = new OVPMediaAsset();
-        this.ovpMediaAsset.setEntryId(entryId);
-        this.ovpMediaAsset.setReferrer(referrer);
+    public OVPMediaOptions(String entryId, String referenceId, String ks, String referrer) {
+        ovpMediaAsset = new OVPMediaAsset();
+        ovpMediaAsset.setEntryId(entryId);
+        ovpMediaAsset.setReferenceId(referenceId);
+        ovpMediaAsset.setReferrer(referrer);
     }
 
     public OVPMediaOptions(String entryId, String ks) {
-        this(entryId,ks, null);
+        this(entryId, null, ks, null);
     }
 
     public OVPMediaOptions(String entryId) {
-        this(entryId, null, null);
+        this(entryId, null, null, null);
     }
 
     public OVPMediaAsset getOvpMediaAsset() {
@@ -35,6 +38,13 @@ public class OVPMediaOptions extends MediaOptions {
         return useApiCaptions;
     }
 
+    public OVPMediaOptions setReferenceId (String referenceId) {
+        if (ovpMediaAsset != null) {
+            ovpMediaAsset.setReferenceId(referenceId);
+        }
+        return this;
+    }
+
     public OVPMediaOptions setUseApiCaptions (boolean useApiCaptions) {
         this.useApiCaptions = useApiCaptions;
         return this;
@@ -43,7 +53,7 @@ public class OVPMediaOptions extends MediaOptions {
     @Override
     public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId) {
         return new KalturaOvpMediaProvider(serverUrl, partnerId, ovpMediaAsset.getKs())
-                .setEntryId(ovpMediaAsset.getEntryId()).setUseApiCaptions(this.useApiCaptions).setReferrer(ovpMediaAsset.getReferrer());
+                .setEntryId(ovpMediaAsset.getEntryId()).setReferenceId(ovpMediaAsset.getReferenceId()).setUseApiCaptions(this.useApiCaptions).setReferrer(ovpMediaAsset.getReferrer());
     }
 }
 
