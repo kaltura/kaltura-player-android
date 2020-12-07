@@ -1,7 +1,5 @@
 package com.kaltura.tvplayer;
 
-import android.text.TextUtils;
-
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.ovp.KalturaOvpMediaProvider;
 import com.kaltura.playkit.providers.ovp.OVPMediaAsset;
