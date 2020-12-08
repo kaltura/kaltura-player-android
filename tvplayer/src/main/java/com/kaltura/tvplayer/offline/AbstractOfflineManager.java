@@ -153,6 +153,13 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
+    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        if (lam != null) {
+            lam.setLicenseRequestAdapter(licenseRequestAdapter);
+        }
+    }
+    
+    @Override
     public void setDownloadProgressListener(DownloadProgressListener listener) {
         this.downloadProgressListener = listener;
     }
