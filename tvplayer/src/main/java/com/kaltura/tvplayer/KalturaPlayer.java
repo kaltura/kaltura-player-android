@@ -1032,7 +1032,6 @@ public abstract class KalturaPlayer {
                 if (TextUtils.isEmpty(mediaKS)) {
                     ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().setKs(initOptions.ks);
                 }
-
             }
         } else if (isValidOTTPlayer()) {
             if (((OTTMediaOptions) mediaOptions).getOttMediaAsset() != null) {
