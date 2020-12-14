@@ -48,7 +48,7 @@ public class OVPMediaOptions extends MediaOptions {
         this.useApiCaptions = useApiCaptions;
         return this;
     }
-    
+
     @Override
     public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId) {
         return new KalturaOvpMediaProvider(serverUrl, partnerId, ovpMediaAsset.getKs())
