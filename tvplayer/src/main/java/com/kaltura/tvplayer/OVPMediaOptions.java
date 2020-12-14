@@ -48,7 +48,6 @@ public class OVPMediaOptions extends MediaOptions {
         this.useApiCaptions = useApiCaptions;
         return this;
     }
-
     
     @Override
     public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId) {
