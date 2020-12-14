@@ -16,6 +16,7 @@ public class OVPMediaOptions extends MediaOptions {
     public OVPMediaOptions(String entryId, String referenceId, String ks, String referrer) {
         ovpMediaAsset = new OVPMediaAsset();
         ovpMediaAsset.setEntryId(entryId);
+        ovpMediaAsset.setKs(ks);
         ovpMediaAsset.setReferenceId(referenceId);
         ovpMediaAsset.setReferrer(referrer);
     }
@@ -47,7 +48,7 @@ public class OVPMediaOptions extends MediaOptions {
         this.useApiCaptions = useApiCaptions;
         return this;
     }
-
+    
     @Override
     public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId) {
         return new KalturaOvpMediaProvider(serverUrl, partnerId, ovpMediaAsset.getKs())

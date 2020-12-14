@@ -1029,10 +1029,17 @@ public abstract class KalturaPlayer {
         if (isValidOVPPlayer()) {
             if (((OVPMediaOptions) mediaOptions).getOvpMediaAsset() != null) {
                 mediaKS = ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().getKs();
+                if (TextUtils.isEmpty(mediaKS)) {
+                    ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().setKs(initOptions.ks);
+                }
+
             }
         } else if (isValidOTTPlayer()) {
             if (((OTTMediaOptions) mediaOptions).getOttMediaAsset() != null) {
                 mediaKS = ((OTTMediaOptions) mediaOptions).getOttMediaAsset().getKs();
+                if (TextUtils.isEmpty(mediaKS)) {
+                    ((OTTMediaOptions) mediaOptions).getOttMediaAsset().setKs(initOptions.ks);
+                }
             }
         }
         if (!TextUtils.isEmpty(mediaKS)) {
