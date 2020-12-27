@@ -142,7 +142,7 @@ public abstract class KalturaPlayer {
 
     private boolean kavaPartnerIdIsMissing(PlayerInitOptions initOptions) {
         return (initOptions.tvPlayerParams == null ||
-                (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams && ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId == null));
+                (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams && ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId == null));
     }
 
     protected static String safeServerUrl(Type tvPlayerType, String url, String defaultUrl) {
@@ -159,7 +159,7 @@ public abstract class KalturaPlayer {
         }
 
         if (serviceURL != null && !serviceURL.endsWith(File.separator)) {
-            serviceURL =  serviceURL + File.separator;
+            serviceURL = serviceURL + File.separator;
         }
         return serviceURL;
     }
@@ -357,6 +357,10 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setHandleAudioBecomingNoisy(initOptions.handleAudioBecomingNoisyEnabled);
         }
 
+        if (initOptions.wakeMode != null) {
+            pkPlayer.getSettings().setWakeMode(initOptions.wakeMode);
+        }
+
         if (initOptions.handleAudioFocus != null) {
             pkPlayer.getSettings().setHandleAudioFocus(initOptions.handleAudioFocus);
         }
@@ -379,10 +383,6 @@ public abstract class KalturaPlayer {
 
         if (initOptions.maxAudioChannelCount != null) {
             pkPlayer.getSettings().setMaxAudioChannelCount(initOptions.maxAudioChannelCount);
-        }
-
-        if (initOptions.multicastSettings != null) {
-            pkPlayer.getSettings().setMulticastSettings(initOptions.multicastSettings);
         }
     }
 
@@ -409,7 +409,7 @@ public abstract class KalturaPlayer {
 
         ViewGroup.LayoutParams params = pkPlayer.getView().getLayoutParams();
         if (params != null) {
-            params.width  = playerWidth;
+            params.width = playerWidth;
             params.height = playerHeight;
             pkPlayer.getView().setLayoutParams(params);
         }
@@ -534,7 +534,7 @@ public abstract class KalturaPlayer {
             pkPlayer.destroy();
         }
 
-        if (playlistController  != null) {
+        if (playlistController != null) {
             playlistController.release();
             playlistController = null;
         }
@@ -553,13 +553,13 @@ public abstract class KalturaPlayer {
         if (prepareState == PrepareState.not_prepared) {
             prepare();
         }
-        if(pkPlayer != null) {
+        if (pkPlayer != null) {
             pkPlayer.play();
         }
     }
 
     public void pause() {
-        if(pkPlayer != null) {
+        if (pkPlayer != null) {
             pkPlayer.pause();
         }
     }
@@ -599,13 +599,17 @@ public abstract class KalturaPlayer {
     public float getPositionInWindowMs() {
         return pkPlayer.getPositionInWindowMs();
     }
-    
+
     public void setVolume(float volume) {
         pkPlayer.setVolume(volume);
     }
 
     public boolean isPlaying() {
         return pkPlayer.isPlaying();
+    }
+
+    public boolean isLive() {
+        return pkPlayer.isLive();
     }
 
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
@@ -669,7 +673,7 @@ public abstract class KalturaPlayer {
     }
 
     public int getPartnerId() {
-        return (initOptions.partnerId != null) ?  initOptions.partnerId : 0;
+        return (initOptions.partnerId != null) ? initOptions.partnerId : 0;
     }
 
     public String getKS() {
@@ -695,11 +699,34 @@ public abstract class KalturaPlayer {
     private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
 
         final PKMediaEntry entry = response.getResponse();
-        mainHandler.post(() -> {
-            if (entry != null) {
-                setMedia(entry);
-            }
-            onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
+        if (entry != null) {
+            applyMediaEntryInterceptors(entry, () ->
+                    mainHandler.post(() -> {
+                        setMedia(entry);
+                        onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
+                    }));
+        } else {
+            onEntryLoadListener.onEntryLoadComplete(null, response.getError());
+        }
+    }
+
+    public void applyMediaEntryInterceptors(PKMediaEntry mediaEntry, PKMediaEntryInterceptor.Listener listener) {
+        List<PKMediaEntryInterceptor> localInterceptors = pkPlayer.getLoadedPluginsByType(PKMediaEntryInterceptor.class);
+        applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
+    }
+
+    private void applyMediaEntryInterceptor(List<PKMediaEntryInterceptor> localInterceptors,
+                                            PKMediaEntry mediaEntry,
+                                            PKMediaEntryInterceptor.Listener listener) {
+        if (localInterceptors.isEmpty()) {
+            listener.onComplete();
+            return;
+        }
+
+        PKMediaEntryInterceptor interceptor = localInterceptors.get(0);
+        interceptor.apply(mediaEntry, () -> {
+            localInterceptors.remove(0);
+            applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
         });
     }
 
@@ -736,8 +763,8 @@ public abstract class KalturaPlayer {
             this.partnerId = initOptions.partnerId;
             if (Type.ott.equals(tvPlayerType)) {
                 this.ovpPartnerId = (initOptions.tvPlayerParams != null &&
-                        ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId != null &&
-                        ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId > 0) ? ((PhoenixTVPlayerParams)initOptions.tvPlayerParams).ovpPartnerId : null;
+                        ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId != null &&
+                        ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId > 0) ? ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId : null;
             } else {
                 this.ovpPartnerId = initOptions.partnerId;
             }
@@ -895,7 +922,7 @@ public abstract class KalturaPlayer {
         }
 
         List<PKPlaylistMedia> playlistMediaEntryList = new ArrayList<>();
-        for (int i = 0; i < playlistOptions.basicMediaOptionsList.size() ; i++) {
+        for (int i = 0; i < playlistOptions.basicMediaOptionsList.size(); i++) {
             playlistMediaEntryList.add(new BasicMediaOptions(playlistOptions.basicMediaOptionsList.get(i).getPKMediaEntry()));
         }
 
@@ -904,7 +931,7 @@ public abstract class KalturaPlayer {
                 .setName(playlistOptions.playlistMetadata.getName())
                 .setDescription(playlistOptions.playlistMetadata.getDescription())
                 .setThumbnailUrl(playlistOptions.playlistMetadata.getThumbnailUrl());
-        ((PKBasicPlaylist)basicPlaylist).setBasicMediaOptionsList(playlistMediaEntryList);
+        ((PKBasicPlaylist) basicPlaylist).setBasicMediaOptionsList(playlistMediaEntryList);
 
         PlaylistController playlistController = new PKPlaylistController(KalturaPlayer.this, basicPlaylist, PKPlaylistType.BASIC_LIST);
         playlistController.setPlaylistOptions(playlistOptions);
@@ -979,13 +1006,17 @@ public abstract class KalturaPlayer {
     private boolean isValidOVPPlayer() {
         if (Type.basic.equals(tvPlayerType)) {
             return false;
-        } else return !Type.ott.equals(tvPlayerType);
+        } else {
+            return !Type.ott.equals(tvPlayerType);
+        }
     }
 
     private boolean isValidOTTPlayer() {
         if (Type.basic.equals(tvPlayerType)) {
             return false;
-        } else return !Type.ovp.equals(tvPlayerType);
+        } else {
+            return !Type.ovp.equals(tvPlayerType);
+        }
     }
 
     private boolean isValidBasicPlayer() {
@@ -1003,10 +1034,16 @@ public abstract class KalturaPlayer {
         if (isValidOVPPlayer()) {
             if (((OVPMediaOptions) mediaOptions).getOvpMediaAsset() != null) {
                 mediaKS = ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().getKs();
+                if (TextUtils.isEmpty(mediaKS)) {
+                    ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().setKs(initOptions.ks);
+                }
             }
         } else if (isValidOTTPlayer()) {
             if (((OTTMediaOptions) mediaOptions).getOttMediaAsset() != null) {
                 mediaKS = ((OTTMediaOptions) mediaOptions).getOttMediaAsset().getKs();
+                if (TextUtils.isEmpty(mediaKS)) {
+                    ((OTTMediaOptions) mediaOptions).getOttMediaAsset().setKs(initOptions.ks);
+                }
             }
         }
         if (!TextUtils.isEmpty(mediaKS)) {
@@ -1057,13 +1094,13 @@ public abstract class KalturaPlayer {
 
     private PhoenixAnalyticsConfig getPhoenixAnalyticsConfig() {
         String name = PhoenixAnalyticsPlugin.factory.getName();
-        if (getInitOptions() != null ) {
+        if (getInitOptions() != null) {
             PKPluginConfigs pkPluginConfigs = getInitOptions().pluginConfigs;
             if (pkPluginConfigs != null && pkPluginConfigs.hasConfig(name)) {
                 return (PhoenixAnalyticsConfig) pkPluginConfigs.getPluginConfig(name);
             }
         }
-        return  new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
+        return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
     }
 
     public interface OnEntryLoadListener {

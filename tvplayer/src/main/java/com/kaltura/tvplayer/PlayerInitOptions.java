@@ -6,9 +6,9 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
-import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
@@ -54,13 +54,13 @@ public class PlayerInitOptions {
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
     public Boolean handleAudioFocus;
+    public PKWakeMode wakeMode;
     public PKSubtitlePreference subtitlePreference;
-    
+
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
     public Integer maxAudioChannelCount;
-    public MulticastSettings multicastSettings;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -129,7 +129,7 @@ public class PlayerInitOptions {
     public PlayerInitOptions setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         if (preferredMediaFormat != null) {
             this.preferredMediaFormat = preferredMediaFormat;
-        } 
+        }
         return this;
     }
 
@@ -294,6 +294,13 @@ public class PlayerInitOptions {
         return this;
     }
 
+    public PlayerInitOptions setWakeMode(PKWakeMode wakeMode) {
+        if (wakeMode != null) {
+            this.wakeMode = wakeMode;
+        }
+        return this;
+    }
+
     public PlayerInitOptions setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
         if (subtitlePreference != null) {
             this.subtitlePreference = subtitlePreference;
@@ -319,7 +326,7 @@ public class PlayerInitOptions {
         if (maxAudioBitrate != null) {
             this.maxAudioBitrate = maxAudioBitrate;
         }
-        return this;  
+        return this;
     }
 
     public PlayerInitOptions setMaxAudioChannelCount(Integer maxAudioChannelCount) {
@@ -328,11 +335,6 @@ public class PlayerInitOptions {
         }
         return this;
     }
-
-    public PlayerInitOptions setMulticastSettings(MulticastSettings multicastSettings) {
-        if (multicastSettings != null) {
-            this.multicastSettings = multicastSettings;
-        }
-        return this;
-    }
 }
+
+
