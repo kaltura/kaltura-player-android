@@ -635,6 +635,10 @@ public abstract class KalturaPlayer {
         pkPlayer.seekTo(position);
     }
 
+    public void seekToLiveDefaultPosition() {
+        pkPlayer.seekToLiveDefaultPosition();
+    }
+
     public AdController getAdController() {
         return pkPlayer.getController(AdController.class);
     }
