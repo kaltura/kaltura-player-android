@@ -631,7 +631,7 @@ public abstract class KalturaPlayer {
         pkPlayer.seekTo(position);
     }
 
-    public void  seekToLiveDefaultPosition() {
+    public void seekToLiveDefaultPosition() {
         pkPlayer.seekToLiveDefaultPosition();
     }
 
