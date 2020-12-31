@@ -1113,4 +1113,5 @@ public abstract class KalturaPlayer {
     public interface OnPlaylistControllerListener {
         void onPlaylistControllerComplete(PlaylistController playlistController, ErrorElement error);
     }
+    
 }
