@@ -1119,4 +1119,3 @@ public abstract class KalturaPlayer {
     }
 }
 
-
