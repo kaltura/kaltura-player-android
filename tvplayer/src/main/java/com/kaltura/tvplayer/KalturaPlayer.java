@@ -607,6 +607,10 @@ public abstract class KalturaPlayer {
         return pkPlayer.isLive();
     }
 
+    public long getCurrentLiveOffset() {
+        return pkPlayer.getCurrentLiveOffset();
+    }
+
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         pkPlayer.addListener(groupId, type, listener);
     }
@@ -1114,3 +1118,4 @@ public abstract class KalturaPlayer {
         void onPlaylistControllerComplete(PlaylistController playlistController, ErrorElement error);
     }
 }
+
