@@ -90,6 +90,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         super(context);
 
         cm = ContentManager.getInstance(context);
+        cm.getSettings().crossProtocolRedirectEnabled = true;
     }
 
     @Override

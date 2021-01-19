@@ -1,18 +1,18 @@
 package com.kaltura.tvplayer;
 
-import androidx.annotation.NonNull;
-
-import com.kaltura.android.exoplayer2.C;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestParams;
+import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
-import com.kaltura.playkit.Player;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.PKWakeMode;
+import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
@@ -49,8 +49,14 @@ public class PlayerInitOptions {
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
+    public VideoCodecSettings videoCodecSettings;
+    public AudioCodecSettings audioCodecSettings;
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
+    public Boolean handleAudioFocus;
+    public PKWakeMode wakeMode;
+    public PKSubtitlePreference subtitlePreference;
+
     public PKMaxVideoSize maxVideoSize;
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
@@ -123,7 +129,7 @@ public class PlayerInitOptions {
     public PlayerInitOptions setPreferredMediaFormat(PKMediaFormat preferredMediaFormat) {
         if (preferredMediaFormat != null) {
             this.preferredMediaFormat = preferredMediaFormat;
-        } 
+        }
         return this;
     }
 
@@ -253,6 +259,20 @@ public class PlayerInitOptions {
         return this;
     }
 
+    public PlayerInitOptions setVideoCodecSettings(VideoCodecSettings videoCodecSettings) {
+        if (videoCodecSettings != null) {
+            this.videoCodecSettings = videoCodecSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setAudioCodecSettings(AudioCodecSettings audioCodecSettings) {
+        if (audioCodecSettings != null) {
+            this.audioCodecSettings = audioCodecSettings;
+        }
+        return this;
+    }
+
     public PlayerInitOptions setTunneledAudioPlayback(Boolean isTunneledAudioPlayback) {
         if (isTunneledAudioPlayback != null) {
             this.isTunneledAudioPlayback = isTunneledAudioPlayback;
@@ -267,31 +287,54 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setMaxVideoSize(@NonNull PKMaxVideoSize maxVideoSize) {
+    public PlayerInitOptions setHandleAudioFocus(Boolean handleAudioFocus) {
+        if (handleAudioFocus != null) {
+            this.handleAudioFocus = handleAudioFocus;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setWakeMode(PKWakeMode wakeMode) {
+        if (wakeMode != null) {
+            this.wakeMode = wakeMode;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setSubtitlePreference(PKSubtitlePreference subtitlePreference) {
+        if (subtitlePreference != null) {
+            this.subtitlePreference = subtitlePreference;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
         if (maxVideoSize != null) {
             this.maxVideoSize = maxVideoSize;
         }
         return this;
     }
 
-    public PlayerInitOptions setMaxVideoBitrate(@NonNull Integer maxVideoBitrate) {
+    public PlayerInitOptions setMaxVideoBitrate(Integer maxVideoBitrate) {
         if (maxVideoBitrate != null) {
             this.maxVideoBitrate = maxVideoBitrate;
         }
         return this;
     }
 
-    public PlayerInitOptions setMaxAudioBitrate(@NonNull Integer maxAudioBitrate) {
+    public PlayerInitOptions setMaxAudioBitrate(Integer maxAudioBitrate) {
         if (maxAudioBitrate != null) {
             this.maxAudioBitrate = maxAudioBitrate;
         }
-        return this;  
+        return this;
     }
 
-    public PlayerInitOptions  SetMaxAudioChannelCount(Integer maxAudioChannelCount) {
+    public PlayerInitOptions setMaxAudioChannelCount(Integer maxAudioChannelCount) {
         if (maxAudioChannelCount != null) {
             this.maxAudioChannelCount = maxAudioChannelCount;
         }
         return this;
     }
 }
+
+

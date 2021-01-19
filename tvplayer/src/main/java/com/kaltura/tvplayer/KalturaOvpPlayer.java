@@ -22,12 +22,12 @@ public class KalturaOvpPlayer extends KalturaPlayer {
     }
 
     public static void initialize(Context context, int partnerId, @Nullable String serverUrl) {
-
+        KalturaPlayer.initializeDrm(context);
         PlayerConfigManager.retrieve(context, Type.ovp, partnerId, serverUrl, (config, error, freshness) -> {
             if (error != null) {
                 log.e("initialize KalturaPlayerType failed");
             } else {
-                playerConfigRetrieved = true;
+                KalturaPlayer.playerConfigRetrieved = true;
             }
         });
     }

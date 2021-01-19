@@ -143,6 +143,4 @@ public class PlaylistEvent implements PKEvent {
     public Enum eventType() {
         return this.type;
     }
-
-
 }

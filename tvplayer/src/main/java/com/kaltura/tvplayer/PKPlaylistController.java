@@ -163,17 +163,17 @@ public class PKPlaylistController implements PlaylistController {
         }
 
         boolean isValidIndex = isValidPlaylistIndex(index);
+        currentPlayingIndex = index;
         if (!isValidIndex) {
             return;
         }
         String mediaId = getCacheMediaId(CacheMediaType.Current);
 
-        if (loadedMediasMap.containsKey(mediaId)) {
+        if (loadedMediasMap.containsKey(mediaId) && loadedMediasMap.get(mediaId) != null) {
             kalturaPlayer.setMedia(loadedMediasMap.get(mediaId));
             return;
         }
 
-        currentPlayingIndex = index;
         if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ovp) {
             playItemOVP(index);
         } else if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
@@ -186,6 +186,7 @@ public class PKPlaylistController implements PlaylistController {
     private void playItemOVP(int index) {
 
         OVPMediaOptions ovpMediaOptions;
+        PKPlaylistMedia pkPlaylistMedia = playlist.getMediaList().get(index);
         if (playlistOptions instanceof OVPPlaylistOptions) {
             OVPPlaylistOptions ovpPlaylistOptions = (OVPPlaylistOptions) playlistOptions;
             ovpMediaOptions = getNextMediaOptions(index, ovpPlaylistOptions);
@@ -203,9 +204,12 @@ public class PKPlaylistController implements PlaylistController {
             }
         } else { // PlaylistId case
             OVPPlaylistIdOptions ovpPlaylistIdOptions = (OVPPlaylistIdOptions) playlistOptions;
+            if (pkPlaylistMedia == null) {
+                return; // error cannot play item
+            }
             OVPMediaAsset ovpMediaAsset = new OVPMediaAsset();
-            ovpMediaAsset.setEntryId(playlist.getMediaList().get(index).getId());
-            ovpMediaAsset.setKs((playlist.getMediaList().get(index).getKs() != null) ? playlist.getMediaList().get(index).getKs() : playlist.getKs());
+            ovpMediaAsset.setEntryId(pkPlaylistMedia.getId());
+            ovpMediaAsset.setKs((pkPlaylistMedia.getKs() != null) ? pkPlaylistMedia.getKs() : playlist.getKs());
             ovpMediaAsset.setReferrer(kalturaPlayer.getInitOptions().referrer);
 
             ovpMediaOptions = new OVPMediaOptions(ovpMediaAsset);
@@ -220,7 +224,7 @@ public class PKPlaylistController implements PlaylistController {
                 }
                 kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistLoadMediaError(index, new ErrorElement(loadError.getMessage(), loadError.getCode())));
             } else {
-                if (playlist.getMediaList() != null && !playlist.getMediaList().isEmpty() && playlist.getMediaList().get(index) != null) {
+                if (playlist.getMediaList() != null && !playlist.getMediaList().isEmpty() && pkPlaylistMedia != null) {
                     loadedMediasMap.put(getCacheMediaId(CacheMediaType.Current), entry);
                     log.d("OVPMedia onEntryLoadComplete entry = " + entry.getId());
                 } else {
@@ -290,7 +294,7 @@ public class PKPlaylistController implements PlaylistController {
     private boolean isValidPlaylistIndex(int index) {
         boolean isValidIndex;
         int playlistSize = playlist.getMediaListSize();
-        isValidIndex = index >= 0 && index < playlistSize;
+        isValidIndex = index >= 0 && index < playlistSize && playlist.getMediaList().get(index) != null;
         if (!isValidIndex) {
             String errorMessage = "Invalid playlist index = " + index + " size = " + playlistSize;
             String errorCode = "InvalidPlaylistIndex";
@@ -623,10 +627,15 @@ public class PKPlaylistController implements PlaylistController {
         } else if (cacheMediaType == CacheMediaType.Prev) {
             mediaListIndex -= 1;
         }
+        
+        PKPlaylistMedia pkPlaylistMedia = playlist.getMediaList().get(mediaListIndex);
+        if (pkPlaylistMedia == null) {
+            return "";
+        }
 
-        String mediaId = playlist.getMediaList().get(mediaListIndex).getId();
+        String mediaId = pkPlaylistMedia.getId();
         if (kalturaPlayer.getTvPlayerType() == KalturaPlayer.Type.ott) {
-            mediaId = playlist.getMediaList().get(mediaListIndex).getMetadata().get("entryId");
+            mediaId = pkPlaylistMedia.getMetadata().get("entryId");
         }
         return mediaId;
     }

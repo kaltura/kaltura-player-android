@@ -13,6 +13,7 @@ public class KalturaBasicPlayer extends KalturaPlayer {
     }
 
     public static KalturaBasicPlayer create(Context context, PlayerInitOptions initOptions) {
+        KalturaPlayer.initializeDrm(context);
         return new KalturaBasicPlayer(context, initOptions);
     }
 }

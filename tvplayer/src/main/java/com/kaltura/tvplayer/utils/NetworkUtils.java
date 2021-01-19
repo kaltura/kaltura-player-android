@@ -27,6 +27,7 @@ import okhttp3.ResponseBody;
 import static com.kaltura.playkit.Utils.toBase64;
 
 public class NetworkUtils {
+    
     private static final PKLog log = PKLog.get("NetworkUtils");
     private static OkHttpClient client = new OkHttpClient();
     public static final String KALTURA_PLAYER = "com.kaltura.player";
@@ -50,7 +51,7 @@ public class NetworkUtils {
         params.put("service", "Configurations");
         params.put("action", "serveByDevice");
         params.put("partnerId", String.valueOf(partnerId));
-        params.put("applicationName", KALTURA_PLAYER);
+        params.put("applicationName", KALTURA_PLAYER + "." + partnerId);
         params.put("clientVersion", "4");
         params.put("platform", "Android");
         params.put("tag",  "tag");
