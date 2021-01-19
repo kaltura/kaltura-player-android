@@ -1,10 +1,10 @@
 package com.kaltura.tvplayer;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.dtg.DownloadRequestParams;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
@@ -181,7 +181,6 @@ public abstract class OfflineManager {
      * @return DRM license status - {@link DrmStatus}.
      */
     public abstract @NonNull DrmStatus getDrmStatus(@NonNull String assetId);
-
 
     public abstract void setKs(@Nullable String ks);
 

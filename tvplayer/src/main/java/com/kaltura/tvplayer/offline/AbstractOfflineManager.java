@@ -28,10 +28,9 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
     protected DownloadProgressListener downloadProgressListener;
+    protected OfflineManagerSettings offlineManagerSettings;
     private AssetStateListener assetStateListener;
     private String ks;
-    protected OfflineManagerSettings offlineManagerSettings;
-
     private final Handler eventHandler;
 
     protected void postEvent(Runnable event) {
