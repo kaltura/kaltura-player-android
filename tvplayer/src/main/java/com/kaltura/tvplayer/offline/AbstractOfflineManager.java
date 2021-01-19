@@ -27,19 +27,10 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
-    protected int maxDownloadRetries = 5;
-    protected int httpTimeoutMillis = 15000;
-    protected int maxConcurrentDownloads = 4;
-    protected String applicationName = "";
-    protected boolean createNoMediaFileInDownloadsDir = true;
-    protected int defaultHlsAudioBitrateEstimation = 64000;
-    protected long freeDiskSpaceRequiredBytes = 400 * 1024 * 1024; // default 400MB
-    protected DownloadRequestParams.Adapter downloadRequestAdapter;
-    protected DownloadRequestParams.Adapter chunksUrlAdapter;
-    protected  boolean crossProtocolRedirectEnabled;
     protected DownloadProgressListener downloadProgressListener;
     private AssetStateListener assetStateListener;
     private String ks;
+    protected OfflineManagerSettings offlineManagerSettings;
 
     private final Handler eventHandler;
 
@@ -64,7 +55,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     public AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
-
 
         HandlerThread handlerThread = new HandlerThread("OfflineManagerEvents");
         handlerThread.start();
@@ -163,54 +153,8 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         estimatedHlsAudioBitrate = bitrate;
     }
 
-    @Override
-    public void setMaxDownloadRetries(int maxDownloadRetries) {
-        this.maxDownloadRetries = maxDownloadRetries;
-    }
-
-    @Override
-    public void setHttpTimeoutMillis(int httpTimeoutMillis) {
-        this.httpTimeoutMillis = httpTimeoutMillis;
-    }
-
-    @Override
-    public void setMaxConcurrentDownloads(int maxConcurrentDownloads) {
-        this.maxConcurrentDownloads = maxConcurrentDownloads;
-    }
-
-    @Override
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
-    }
-
-    @Override
-    public void setCreateNoMediaFileInDownloadsDir(boolean createNoMediaFileInDownloadsDir) {
-        this.createNoMediaFileInDownloadsDir = createNoMediaFileInDownloadsDir;
-    }
-
-    @Override
-    public void setDefaultHlsAudioBitrateEstimation(int defaultHlsAudioBitrateEstimation) {
-        this.defaultHlsAudioBitrateEstimation = defaultHlsAudioBitrateEstimation;
-    }
-
-    @Override
-    public void setFreeDiskSpaceRequiredBytes(long freeDiskSpaceRequiredBytes) {
-        this.freeDiskSpaceRequiredBytes = freeDiskSpaceRequiredBytes;
-    }
-
-    @Override
-    public void setDownloadRequestAdapter(DownloadRequestParams.Adapter downloadRequestAdapter) {
-        this.downloadRequestAdapter = downloadRequestAdapter;
-    }
-
-    @Override
-    public void setChunksUrlAdapter(DownloadRequestParams.Adapter chunksUrlAdapter) {
-        this.chunksUrlAdapter = chunksUrlAdapter;
-    }
-
-    @Override
-    public void setCrossProtocolRedirectEnabled(boolean crossProtocolRedirectEnabled) {
-        this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+    public void setOfflineManagerSettings(OfflineManagerSettings offlineManagerSettings) {
+        this.offlineManagerSettings = offlineManagerSettings;
     }
 
     public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {

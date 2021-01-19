@@ -11,6 +11,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
+import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 
 import java.io.IOException;
@@ -188,26 +189,7 @@ public abstract class OfflineManager {
 
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
 
-    // ContentManager.Settings
-    public abstract void setMaxDownloadRetries(int maxDownloadRetries);
-
-    public  abstract void setHttpTimeoutMillis(int httpTimeoutMillis);
-
-    public abstract void setMaxConcurrentDownloads(int maxConcurrentDownloads);
-
-    public abstract void setApplicationName(String applicationName);
-
-    public abstract void setCreateNoMediaFileInDownloadsDir(boolean createNoMediaFileInDownloadsDir);
-
-    public abstract void setDefaultHlsAudioBitrateEstimation(int defaultHlsAudioBitrateEstimation);
-
-    public abstract void setFreeDiskSpaceRequiredBytes(long freeDiskSpaceRequiredBytes);
-
-    public abstract void setDownloadRequestAdapter(DownloadRequestParams.Adapter downloadRequestAdapter);
-
-    public abstract void setChunksUrlAdapter(DownloadRequestParams.Adapter chunksUrlAdapter);
-
-    public abstract void setCrossProtocolRedirectEnabled(boolean crossProtocolRedirectEnabled);
+    public abstract void setOfflineManagerSettings(@NonNull OfflineManagerSettings offlineManagerSettings);
 
     public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 

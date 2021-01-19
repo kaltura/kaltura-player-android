@@ -90,21 +90,23 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         super(context);
 
         cm = ContentManager.getInstance(context);
-        cm.getSettings().crossProtocolRedirectEnabled = true;
     }
 
     @Override
     public void start(ManagerStartCallback callback) throws IOException {
-        cm.getSettings().maxDownloadRetries = maxDownloadRetries;
-        cm.getSettings().httpTimeoutMillis = httpTimeoutMillis;
-        cm.getSettings().maxConcurrentDownloads = maxConcurrentDownloads;
-        cm.getSettings().applicationName = applicationName;
-        cm.getSettings().createNoMediaFileInDownloadsDir = createNoMediaFileInDownloadsDir;
-        cm.getSettings().defaultHlsAudioBitrateEstimation = defaultHlsAudioBitrateEstimation;
-        cm.getSettings().freeDiskSpaceRequiredBytes = freeDiskSpaceRequiredBytes;
-        cm.getSettings().downloadRequestAdapter = downloadRequestAdapter;
-        cm.getSettings().chunksUrlAdapter = chunksUrlAdapter;
-        cm.getSettings().crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+
+        if (offlineManagerSettings != null) {
+            cm.getSettings().maxDownloadRetries = offlineManagerSettings.getMaxDownloadRetries();
+            cm.getSettings().httpTimeoutMillis = offlineManagerSettings.getHttpTimeoutMillis();
+            cm.getSettings().maxConcurrentDownloads = offlineManagerSettings.getMaxConcurrentDownloads();
+            cm.getSettings().applicationName = offlineManagerSettings.getApplicationName();
+            cm.getSettings().createNoMediaFileInDownloadsDir = offlineManagerSettings.isCreateNoMediaFileInDownloadsDir();
+            cm.getSettings().defaultHlsAudioBitrateEstimation = offlineManagerSettings.getDefaultHlsAudioBitrateEstimation();
+            cm.getSettings().freeDiskSpaceRequiredBytes = offlineManagerSettings.getFreeDiskSpaceRequiredBytes();
+            cm.getSettings().downloadRequestAdapter = offlineManagerSettings.getDownloadRequestAdapter();
+            cm.getSettings().chunksUrlAdapter = offlineManagerSettings.getChunksUrlAdapter();
+            cm.getSettings().crossProtocolRedirectEnabled = offlineManagerSettings.isCrossProtocolRedirectEnabled();
+        }
 
         cm.addDownloadStateListener(dtgListener);
         cm.start(() -> {
