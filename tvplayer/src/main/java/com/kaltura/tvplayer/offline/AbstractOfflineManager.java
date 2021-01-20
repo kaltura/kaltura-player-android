@@ -152,6 +152,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         estimatedHlsAudioBitrate = bitrate;
     }
 
+    @Override
     public void setOfflineManagerSettings(OfflineManagerSettings offlineManagerSettings) {
         this.offlineManagerSettings = offlineManagerSettings;
     }
