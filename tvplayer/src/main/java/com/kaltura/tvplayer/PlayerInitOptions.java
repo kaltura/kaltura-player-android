@@ -39,6 +39,7 @@ public class PlayerInitOptions {
     public Boolean vrPlayerEnabled;
     public Boolean isVideoViewHidden;
     public Boolean forceSinglePlayerEngine;
+    public Boolean forceWidevineL3Playback;
     public SubtitleStyleSettings setSubtitleStyle;
     public PKAspectRatioResizeMode aspectRatioResizeMode;
     public PKRequestParams.Adapter contentRequestAdapter;
@@ -185,6 +186,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions forceSinglePlayerEngine(Boolean forceSinglePlayerEngine) {
         if (forceSinglePlayerEngine != null) {
             this.forceSinglePlayerEngine = forceSinglePlayerEngine;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions forceWidevineL3Playback(Boolean forceWidevineL3Playback) {
+        if (forceWidevineL3Playback != null) {
+            this.forceWidevineL3Playback = forceWidevineL3Playback;
         }
         return this;
     }
