@@ -188,6 +188,8 @@ public abstract class OfflineManager {
 
     public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 
+    public abstract void forceWidevineL3Playback(boolean forceWidevineL3Playback);
+
     public enum AssetDownloadState {
         none, prepared, started, completed, failed, removing, paused
     }

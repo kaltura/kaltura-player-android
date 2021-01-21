@@ -27,6 +27,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
     protected DownloadProgressListener downloadProgressListener;
+    protected boolean forceWidevineL3Playback = false;
     private AssetStateListener assetStateListener;
     private String ks;
 
@@ -53,8 +54,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     public AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
-
-
         HandlerThread handlerThread = new HandlerThread("OfflineManagerEvents");
         handlerThread.start();
         eventHandler = new Handler(handlerThread.getLooper());
@@ -158,7 +157,12 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             lam.setLicenseRequestAdapter(licenseRequestAdapter);
         }
     }
-    
+
+    @Override
+    public void forceWidevineL3Playback(boolean forceWidevineL3Playback) {
+        this.forceWidevineL3Playback = forceWidevineL3Playback;
+    }
+
     @Override
     public void setDownloadProgressListener(DownloadProgressListener listener) {
         this.downloadProgressListener = listener;
@@ -190,7 +194,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         if (drmInitData == null) {
             return DrmStatus.clear;
         }
-        final LocalAssetsManager.AssetStatus assetStatus = lam.getDrmStatus(assetId, drmInitData);
+        final LocalAssetsManager.AssetStatus assetStatus = lam.getDrmStatus(assetId, drmInitData, forceWidevineL3Playback);
 
         if (assetStatus == null || !assetStatus.registered) {
             return DrmStatus.unknown;
@@ -230,7 +234,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 postEvent(() -> getListener().onRegisterError(assetId, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
                 return;
             }
-            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData);
+            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData, forceWidevineL3Playback);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
             postEvent(() -> getListener().onRegisterError(assetId, e));
