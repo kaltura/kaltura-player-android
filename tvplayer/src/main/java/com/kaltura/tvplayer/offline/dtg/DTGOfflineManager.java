@@ -108,6 +108,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void stop() {
+        forceWidevineL3PlaybackMap.clear();
         cm.stop();
     }
 
@@ -122,7 +123,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void prepareAsset(@NonNull PKMediaEntry mediaEntry, @NonNull SelectionPrefs prefs, @NonNull PrepareCallback prepareCallback) {
+    public void prepareAsset(@NonNull PKMediaEntry mediaEntry, @NonNull SelectionPrefs prefs, @NonNull PrepareCallback prepareCallback, boolean forceWidevineL3Playback) {
         SourceSelector selector = new SourceSelector(mediaEntry, preferredMediaFormat);
 
         final String assetId = mediaEntry.getId();
@@ -168,6 +169,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 } else {
                     postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(item, AssetDownloadState.prepared), null));
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
+                    forceWidevineL3PlaybackMap.put(assetId, forceWidevineL3Playback);
                 }
                 cm.removeDownloadStateListener(this);
             }
@@ -231,7 +233,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         try {
             final byte[] widevineInitData = getWidevineInitData(localFile);
 
-            lam.registerWidevineDashAsset(assetId, licenseUri, widevineInitData, forceWidevineL3Playback);
+            lam.registerWidevineDashAsset(assetId, licenseUri, widevineInitData, isForceWidevineL3Playback(assetId));
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, widevineInitData)));
 
             pendingDrmRegistration.remove(assetId);
@@ -288,6 +290,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         final byte[] drmInitData = getWidevineInitDataOrNull(localFile);
         lam.unregisterAsset(assetId, drmInitData);
         cm.removeItem(assetId);
+        forceWidevineL3PlaybackMap.remove(assetId);
         removeAssetSourceId(assetId);
 
         return true;

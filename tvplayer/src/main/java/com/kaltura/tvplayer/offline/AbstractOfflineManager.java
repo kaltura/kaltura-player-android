@@ -23,11 +23,11 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     protected final Context appContext;
     protected final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
+    protected final Map<String, Boolean> forceWidevineL3PlaybackMap = new HashMap<>();
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
     protected DownloadProgressListener downloadProgressListener;
-    protected boolean forceWidevineL3Playback = false;
     private AssetStateListener assetStateListener;
     private String ks;
 
@@ -62,7 +62,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     @Override
     public final void prepareAsset(@NonNull MediaOptions mediaOptions, @NonNull SelectionPrefs prefs,
-                                   @NonNull PrepareCallback prepareCallback) throws IllegalStateException {
+                                   @NonNull PrepareCallback prepareCallback, boolean forceWidevineL3Playback) throws IllegalStateException {
 
         if (kalturaPartnerId == null || kalturaServerUrl == null) {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
@@ -74,7 +74,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
                 prepareCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
-                prepareAsset(mediaEntry, prefs, prepareCallback);
+                prepareAsset(mediaEntry, prefs, prepareCallback, forceWidevineL3Playback);
             } else {
                 prepareCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
             }
@@ -159,11 +159,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
-    public void forceWidevineL3Playback(boolean forceWidevineL3Playback) {
-        this.forceWidevineL3Playback = forceWidevineL3Playback;
-    }
-
-    @Override
     public void setDownloadProgressListener(DownloadProgressListener listener) {
         this.downloadProgressListener = listener;
     }
@@ -194,7 +189,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         if (drmInitData == null) {
             return DrmStatus.clear;
         }
-        final LocalAssetsManager.AssetStatus assetStatus = lam.getDrmStatus(assetId, drmInitData, forceWidevineL3Playback);
+        final LocalAssetsManager.AssetStatus assetStatus = lam.getDrmStatus(assetId, drmInitData, isForceWidevineL3Playback(assetId));
 
         if (assetStatus == null || !assetStatus.registered) {
             return DrmStatus.unknown;
@@ -205,6 +200,12 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         }
 
         return DrmStatus.withDrm(assetStatus.licenseDuration, assetStatus.totalDuration);
+    }
+
+    protected boolean isForceWidevineL3Playback(String assetId) {
+        return  assetId != null &&
+                forceWidevineL3PlaybackMap.containsKey(assetId) &&
+                (forceWidevineL3PlaybackMap.get(assetId) != null && forceWidevineL3PlaybackMap.get(assetId).booleanValue());
     }
 
     @NonNull
@@ -234,7 +235,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 postEvent(() -> getListener().onRegisterError(assetId, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
                 return;
             }
-            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData, forceWidevineL3Playback);
+            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData, isForceWidevineL3Playback(assetId));
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
             postEvent(() -> getListener().onRegisterError(assetId, e));
