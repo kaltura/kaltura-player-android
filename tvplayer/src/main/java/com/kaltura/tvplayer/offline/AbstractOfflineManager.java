@@ -23,7 +23,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     protected final Context appContext;
     protected final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
-    protected final Map<String, Boolean> forceWidevineL3PlaybackMap = new HashMap<>();
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
@@ -172,6 +171,11 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         return sharedPrefs.getString(sharedPrefsKey(assetId), null);
     }
 
+    private boolean loadAssetForceWidevineL3Status(String assetId) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        return sharedPrefs.getBoolean(assetId, false);
+    }
+
     private SharedPreferences sharedPrefs() {
         return appContext.getSharedPreferences("KalturaOfflineManager", Context.MODE_PRIVATE);
     }
@@ -181,8 +185,17 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         sharedPrefs.edit().putString(sharedPrefsKey(assetId), sourceId).apply();
     }
 
+    protected void saveAssetForceWidevineL3Status(String assetId, boolean forceWidevineL3Playback) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        sharedPrefs.edit().putBoolean(assetId, forceWidevineL3Playback).apply();
+    }
+
     protected void removeAssetSourceId(String assetId) {
         sharedPrefs().edit().remove(sharedPrefsKey(assetId)).apply();
+    }
+
+    protected void removeAssetForceWidevineL3Status(String assetId) {
+        sharedPrefs().edit().remove(assetId).apply();
     }
 
     protected @NonNull DrmStatus getDrmStatus(@NonNull String assetId, @Nullable byte[] drmInitData) {
@@ -203,9 +216,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     protected boolean isForceWidevineL3Playback(String assetId) {
-        return  assetId != null &&
-                forceWidevineL3PlaybackMap.containsKey(assetId) &&
-                (forceWidevineL3PlaybackMap.get(assetId) != null && forceWidevineL3PlaybackMap.get(assetId).booleanValue());
+        return  assetId != null && loadAssetForceWidevineL3Status(assetId);
     }
 
     @NonNull

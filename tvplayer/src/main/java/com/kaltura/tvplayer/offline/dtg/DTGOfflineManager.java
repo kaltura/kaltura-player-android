@@ -108,7 +108,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void stop() {
-        forceWidevineL3PlaybackMap.clear();
         cm.stop();
     }
 
@@ -169,7 +168,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 } else {
                     postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(item, AssetDownloadState.prepared), null));
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
-                    forceWidevineL3PlaybackMap.put(assetId, forceWidevineL3Playback);
+                    saveAssetForceWidevineL3Status(assetId, forceWidevineL3Playback);
                 }
                 cm.removeDownloadStateListener(this);
             }
@@ -232,7 +231,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         try {
             final byte[] widevineInitData = getWidevineInitData(localFile);
-
+            log.e("Gourav from DTGOfflineManager");
             lam.registerWidevineDashAsset(assetId, licenseUri, widevineInitData, isForceWidevineL3Playback(assetId));
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, widevineInitData)));
 
@@ -290,7 +289,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         final byte[] drmInitData = getWidevineInitDataOrNull(localFile);
         lam.unregisterAsset(assetId, drmInitData);
         cm.removeItem(assetId);
-        forceWidevineL3PlaybackMap.remove(assetId);
+        removeAssetForceWidevineL3Status(assetId);
         removeAssetSourceId(assetId);
 
         return true;
