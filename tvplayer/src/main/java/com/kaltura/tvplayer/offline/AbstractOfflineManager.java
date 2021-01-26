@@ -62,7 +62,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     @Override
     public final void prepareAsset(@NonNull MediaOptions mediaOptions, @NonNull SelectionPrefs prefs,
-                                   @NonNull PrepareCallback prepareCallback, boolean forceWidevineL3Playback) throws IllegalStateException {
+                                   @NonNull PrepareCallback prepareCallback) throws IllegalStateException {
 
         if (kalturaPartnerId == null || kalturaServerUrl == null) {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
@@ -74,7 +74,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
                 prepareCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
-                prepareAsset(mediaEntry, prefs, prepareCallback, forceWidevineL3Playback);
+                prepareAsset(mediaEntry, prefs, prepareCallback);
             } else {
                 prepareCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
             }

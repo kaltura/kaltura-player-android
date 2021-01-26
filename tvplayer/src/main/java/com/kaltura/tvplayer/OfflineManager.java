@@ -84,8 +84,7 @@ public abstract class OfflineManager {
      */
     public abstract void prepareAsset(@NonNull PKMediaEntry mediaEntry,
                                       @NonNull SelectionPrefs prefs,
-                                      @NonNull PrepareCallback prepareCallback,
-                                      boolean forceWidevineL3Playback);
+                                      @NonNull PrepareCallback prepareCallback);
 
     /**
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
@@ -101,8 +100,7 @@ public abstract class OfflineManager {
      */
     public abstract void prepareAsset(@NonNull MediaOptions mediaOptions,
                                       @NonNull SelectionPrefs prefs,
-                                      @NonNull PrepareCallback prepareCallback,
-                                      boolean forceWidevineL3Playback)
+                                      @NonNull PrepareCallback prepareCallback)
             throws IllegalStateException;
 
     /**
@@ -372,7 +370,7 @@ public abstract class OfflineManager {
 
         @Nullable public List<String> audioLanguages;
         @Nullable public List<String> textLanguages;
-
+        public boolean forceWidevineL3Playback;
         public boolean allAudioLanguages;
         public boolean allTextLanguages;
         public boolean allowInefficientCodecs;

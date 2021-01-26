@@ -1,6 +1,8 @@
 package com.kaltura.tvplayer.offline.dtg;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -39,7 +41,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         public void onDownloadComplete(DownloadItem item) {
             final String assetId = item.getItemId();
             postEvent(() -> getListener().onAssetDownloadComplete(assetId));
-
             registerDrmAsset(assetId, false);
         }
 
@@ -61,7 +62,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
             postEvent(() -> getListener().onStateChanged(assetId, new DTGAssetInfo(item, AssetDownloadState.started)));
 
-            postEventDelayed(() -> registerDrmAsset(assetId, true), 10000);
+            //postEventDelayed(() -> registerDrmAsset(assetId, true), 10000);
         }
 
         @Override
@@ -123,7 +124,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void prepareAsset(@NonNull PKMediaEntry mediaEntry, @NonNull SelectionPrefs prefs, @NonNull PrepareCallback prepareCallback, boolean forceWidevineL3Playback) {
+    public void prepareAsset(@NonNull PKMediaEntry mediaEntry, @NonNull SelectionPrefs prefs, @NonNull PrepareCallback prepareCallback) {
         SourceSelector selector = new SourceSelector(mediaEntry, preferredMediaFormat);
 
         final String assetId = mediaEntry.getId();
@@ -169,7 +170,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 } else {
                     postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(item, AssetDownloadState.prepared), null));
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
-                    forceWidevineL3PlaybackMap.put(assetId, forceWidevineL3Playback);
+                    forceWidevineL3PlaybackMap.put(assetId, prefs.forceWidevineL3Playback);
                 }
                 cm.removeDownloadStateListener(this);
             }
