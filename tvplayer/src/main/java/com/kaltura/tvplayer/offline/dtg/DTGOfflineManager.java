@@ -230,7 +230,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         try {
             final byte[] widevineInitData = getWidevineInitData(localFile);
-            log.e("Gourav from DTGOfflineManager");
             lam.registerWidevineDashAsset(assetId, licenseUri, widevineInitData, isForceWidevineL3Playback(assetId));
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, widevineInitData)));
 

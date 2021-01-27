@@ -87,7 +87,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
         }
 
-        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider("https://rest-as.ott.kaltura.com/v5_2_8/api_v3/", kalturaPartnerId);
+        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId);
 
         mediaEntryProvider.load(response -> postEvent(() -> {
             if (response.isSuccess()) {
