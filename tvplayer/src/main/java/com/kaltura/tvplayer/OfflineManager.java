@@ -360,16 +360,17 @@ public abstract class OfflineManager {
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
-        @Nullable public Integer videoBitrate;
         @Nullable public Map<TrackCodec, Integer> codecVideoBitrates;
         @Nullable public List<TrackCodec> videoCodecs;
         @Nullable public List<TrackCodec> audioCodecs;
 
+        @Nullable public Integer videoBitrate;
         @Nullable public Integer videoHeight;
         @Nullable public Integer videoWidth;
 
         @Nullable public List<String> audioLanguages;
         @Nullable public List<String> textLanguages;
+
         public boolean forceWidevineL3Playback;
         public boolean allAudioLanguages;
         public boolean allTextLanguages;

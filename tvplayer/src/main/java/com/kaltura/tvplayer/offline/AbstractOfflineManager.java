@@ -8,6 +8,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.gson.Gson;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
@@ -166,6 +167,14 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         return "assetSourceId:" + assetId;
     }
 
+    private String sharedPrefsKeyWidevineL3(String assetId) {
+        return "forceWidevineL3:" + assetId;
+    }
+
+    private String sharedPrefsKeyPkDrmParams(String assetId) {
+        return "pkDrmParams:" + assetId;
+    }
+
     private String loadAssetSourceId(String assetId) {
         final SharedPreferences sharedPrefs = sharedPrefs();
         return sharedPrefs.getString(sharedPrefsKey(assetId), null);
@@ -173,7 +182,17 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     private boolean loadAssetForceWidevineL3Status(String assetId) {
         final SharedPreferences sharedPrefs = sharedPrefs();
-        return sharedPrefs.getBoolean(assetId, false);
+        return sharedPrefs.getBoolean(sharedPrefsKeyWidevineL3(assetId), false);
+    }
+
+    protected PKDrmParams loadAssetPkDrmParams(String assetId) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        String pkDrmParams = sharedPrefs.getString(sharedPrefsKeyPkDrmParams(assetId), null);
+        if (pkDrmParams != null) {
+            Gson pkDrmParamsGson = new Gson();
+            return pkDrmParamsGson.fromJson(pkDrmParams , PKDrmParams.class);
+        }
+        return null;
     }
 
     private SharedPreferences sharedPrefs() {
@@ -187,7 +206,14 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     protected void saveAssetForceWidevineL3Status(String assetId, boolean forceWidevineL3Playback) {
         final SharedPreferences sharedPrefs = sharedPrefs();
-        sharedPrefs.edit().putBoolean(assetId, forceWidevineL3Playback).apply();
+        sharedPrefs.edit().putBoolean(sharedPrefsKeyWidevineL3(assetId), forceWidevineL3Playback).apply();
+    }
+
+    protected void saveAssetPkDrmParams(String assetId, PKDrmParams pkDrmParams) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        Gson pkDrmParamsGson = new Gson();
+        String drmParams = pkDrmParamsGson.toJson(pkDrmParams);
+        sharedPrefs.edit().putString(sharedPrefsKeyPkDrmParams(assetId), drmParams).apply();
     }
 
     protected void removeAssetSourceId(String assetId) {
@@ -195,7 +221,11 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     protected void removeAssetForceWidevineL3Status(String assetId) {
-        sharedPrefs().edit().remove(assetId).apply();
+        sharedPrefs().edit().remove(sharedPrefsKeyWidevineL3(assetId)).apply();
+    }
+
+    protected void removeAssetPkDrmParams(String assetId) {
+        sharedPrefs().edit().remove(sharedPrefsKeyPkDrmParams(assetId)).apply();
     }
 
     protected @NonNull DrmStatus getDrmStatus(@NonNull String assetId, @Nullable byte[] drmInitData) {
@@ -216,7 +246,8 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     protected boolean isForceWidevineL3Playback(String assetId) {
-        return assetId != null && loadAssetForceWidevineL3Status(assetId);
+        boolean p =   assetId != null && loadAssetForceWidevineL3Status(assetId);
+        return p;
     }
 
     @NonNull
