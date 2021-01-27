@@ -61,7 +61,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     @Override
     public final void prepareAsset(@NonNull MediaOptions mediaOptions, @NonNull SelectionPrefs prefs,
-                                   @NonNull PrepareCallback prepareCallback, boolean forceWidevineL3Playback) throws IllegalStateException {
+                                   @NonNull PrepareCallback prepareCallback) throws IllegalStateException {
 
         if (kalturaPartnerId == null || kalturaServerUrl == null) {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
@@ -73,7 +73,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
                 prepareCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
-                prepareAsset(mediaEntry, prefs, prepareCallback, forceWidevineL3Playback);
+                prepareAsset(mediaEntry, prefs, prepareCallback);
             } else {
                 prepareCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
             }
@@ -87,7 +87,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
         }
 
-        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId);
+        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider("https://rest-as.ott.kaltura.com/v5_2_8/api_v3/", kalturaPartnerId);
 
         mediaEntryProvider.load(response -> postEvent(() -> {
             if (response.isSuccess()) {
@@ -216,7 +216,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     protected boolean isForceWidevineL3Playback(String assetId) {
-        return  assetId != null && loadAssetForceWidevineL3Status(assetId);
+        return assetId != null && loadAssetForceWidevineL3Status(assetId);
     }
 
     @NonNull

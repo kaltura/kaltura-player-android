@@ -39,7 +39,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         public void onDownloadComplete(DownloadItem item) {
             final String assetId = item.getItemId();
             postEvent(() -> getListener().onAssetDownloadComplete(assetId));
-
             registerDrmAsset(assetId, false);
         }
 
@@ -122,7 +121,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void prepareAsset(@NonNull PKMediaEntry mediaEntry, @NonNull SelectionPrefs prefs, @NonNull PrepareCallback prepareCallback, boolean forceWidevineL3Playback) {
+    public void prepareAsset(@NonNull PKMediaEntry mediaEntry, @NonNull SelectionPrefs prefs, @NonNull PrepareCallback prepareCallback) {
         SourceSelector selector = new SourceSelector(mediaEntry, preferredMediaFormat);
 
         final String assetId = mediaEntry.getId();
@@ -168,7 +167,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 } else {
                     postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(item, AssetDownloadState.prepared), null));
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
-                    saveAssetForceWidevineL3Status(assetId, forceWidevineL3Playback);
+                    saveAssetForceWidevineL3Status(assetId, prefs.forceWidevineL3Playback);
                 }
                 cm.removeDownloadStateListener(this);
             }
