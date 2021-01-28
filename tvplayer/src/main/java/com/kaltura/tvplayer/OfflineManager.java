@@ -186,6 +186,8 @@ public abstract class OfflineManager {
 
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
 
+    public abstract void setForceWidevineL3Playback(boolean forceWidevineL3Playback);
+
     public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 
     public enum AssetDownloadState {
@@ -371,7 +373,6 @@ public abstract class OfflineManager {
         @Nullable public List<String> audioLanguages;
         @Nullable public List<String> textLanguages;
 
-        public boolean forceWidevineL3Playback;
         public boolean allAudioLanguages;
         public boolean allTextLanguages;
         public boolean allowInefficientCodecs;

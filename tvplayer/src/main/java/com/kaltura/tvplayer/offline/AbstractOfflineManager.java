@@ -2,14 +2,17 @@ package com.kaltura.tvplayer.offline;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.kaltura.playkit.*;
+import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.MediaOptions;
@@ -18,6 +21,8 @@ import com.kaltura.tvplayer.OfflineManager;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public abstract class AbstractOfflineManager extends OfflineManager {
     private static final PKLog log = PKLog.get("AbstractOfflineManager");
@@ -27,6 +32,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
     protected int estimatedHlsAudioBitrate;
+    protected boolean forceWidevineL3Playback;
     protected DownloadProgressListener downloadProgressListener;
     private AssetStateListener assetStateListener;
     private String ks;
@@ -149,6 +155,17 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     @Override
     public void setEstimatedHlsAudioBitrate(int bitrate) {
         estimatedHlsAudioBitrate = bitrate;
+    }
+
+    @Override
+    public void setForceWidevineL3Playback(boolean forceWidevineL3Playback) {
+        this.forceWidevineL3Playback = forceWidevineL3Playback;
+        if (forceWidevineL3Playback) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                Executor executor = Executors.newSingleThreadExecutor();
+                executor.execute(() -> MediaSupport.provisionWidevineL3());
+            }
+        }
     }
 
     @Override
