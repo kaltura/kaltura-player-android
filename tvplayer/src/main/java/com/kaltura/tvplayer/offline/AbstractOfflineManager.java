@@ -183,10 +183,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         return "assetSourceId:" + assetId;
     }
 
-    private String sharedPrefsKeyWidevineL3(String assetId) {
-        return "forceWidevineL3:" + assetId;
-    }
-
     private String sharedPrefsKeyPkDrmParams(String assetId) {
         return "pkDrmParams:" + assetId;
     }
@@ -194,11 +190,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     private String loadAssetSourceId(String assetId) {
         final SharedPreferences sharedPrefs = sharedPrefs();
         return sharedPrefs.getString(sharedPrefsKey(assetId), null);
-    }
-
-    private boolean loadAssetForceWidevineL3Status(String assetId) {
-        final SharedPreferences sharedPrefs = sharedPrefs();
-        return sharedPrefs.getBoolean(sharedPrefsKeyWidevineL3(assetId), false);
     }
 
     protected PKDrmParams loadAssetPkDrmParams(String assetId) {
@@ -219,11 +210,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         sharedPrefs.edit().putString(sharedPrefsKey(assetId), sourceId).apply();
     }
 
-    protected void saveAssetForceWidevineL3Status(String assetId, boolean forceWidevineL3Playback) {
-        final SharedPreferences sharedPrefs = sharedPrefs();
-        sharedPrefs.edit().putBoolean(sharedPrefsKeyWidevineL3(assetId), forceWidevineL3Playback).apply();
-    }
-
     protected void saveAssetPkDrmParams(String assetId, PKDrmParams pkDrmParams) {
         final SharedPreferences sharedPrefs = sharedPrefs();
         String drmParams = new Gson().toJson(pkDrmParams);
@@ -234,10 +220,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         sharedPrefs().edit().remove(sharedPrefsKey(assetId)).apply();
     }
 
-    protected void removeAssetForceWidevineL3Status(String assetId) {
-        sharedPrefs().edit().remove(sharedPrefsKeyWidevineL3(assetId)).apply();
-    }
-
     protected void removeAssetPkDrmParams(String assetId) {
         sharedPrefs().edit().remove(sharedPrefsKeyPkDrmParams(assetId)).apply();
     }
@@ -246,7 +228,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         if (drmInitData == null) {
             return DrmStatus.clear;
         }
-        final LocalAssetsManager.AssetStatus assetStatus = lam.getDrmStatus(assetId, drmInitData, isForceWidevineL3Playback(assetId));
+        final LocalAssetsManager.AssetStatus assetStatus = lam.getDrmStatus(assetId, drmInitData, forceWidevineL3Playback);
 
         if (assetStatus == null || !assetStatus.registered) {
             return DrmStatus.unknown;
@@ -257,10 +239,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         }
 
         return DrmStatus.withDrm(assetStatus.licenseDuration, assetStatus.totalDuration);
-    }
-
-    protected boolean isForceWidevineL3Playback(String assetId) {
-        return assetId != null && loadAssetForceWidevineL3Status(assetId);
     }
 
     @NonNull
@@ -290,7 +268,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 postEvent(() -> getListener().onRegisterError(assetId, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
                 return;
             }
-            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData, isForceWidevineL3Playback(assetId));
+            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData, forceWidevineL3Playback);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
             postEvent(() -> getListener().onRegisterError(assetId, e));
