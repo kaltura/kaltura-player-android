@@ -163,7 +163,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         if (forceWidevineL3Playback) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 Executor executor = Executors.newSingleThreadExecutor();
-                executor.execute(() -> MediaSupport.provisionWidevineL3());
+                executor.execute(MediaSupport::provisionWidevineL3);
             }
         }
     }
@@ -263,8 +263,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     protected boolean isForceWidevineL3Playback(String assetId) {
-        boolean p =   assetId != null && loadAssetForceWidevineL3Status(assetId);
-        return p;
+        return assetId != null && loadAssetForceWidevineL3Status(assetId);
     }
 
     @NonNull
