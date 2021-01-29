@@ -205,8 +205,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         final SharedPreferences sharedPrefs = sharedPrefs();
         String pkDrmParams = sharedPrefs.getString(sharedPrefsKeyPkDrmParams(assetId), null);
         if (pkDrmParams != null) {
-            Gson pkDrmParamsGson = new Gson();
-            return pkDrmParamsGson.fromJson(pkDrmParams , PKDrmParams.class);
+            return new Gson().fromJson(pkDrmParams, PKDrmParams.class);
         }
         return null;
     }
@@ -227,8 +226,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     protected void saveAssetPkDrmParams(String assetId, PKDrmParams pkDrmParams) {
         final SharedPreferences sharedPrefs = sharedPrefs();
-        Gson pkDrmParamsGson = new Gson();
-        String drmParams = pkDrmParamsGson.toJson(pkDrmParams);
+        String drmParams = new Gson().toJson(pkDrmParams);
         sharedPrefs.edit().putString(sharedPrefsKeyPkDrmParams(assetId), drmParams).apply();
     }
 

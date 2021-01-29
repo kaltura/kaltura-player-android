@@ -167,7 +167,9 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 } else {
                     postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(item, AssetDownloadState.prepared), null));
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
-                    saveAssetPkDrmParams(assetId, drmData);
+                    if (drmData != null) {
+                        saveAssetPkDrmParams(assetId, drmData);
+                    }
                     saveAssetForceWidevineL3Status(assetId, forceWidevineL3Playback);
                 }
                 cm.removeDownloadStateListener(this);
