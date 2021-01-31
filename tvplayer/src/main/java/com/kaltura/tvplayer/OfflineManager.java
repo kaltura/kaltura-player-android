@@ -367,7 +367,6 @@ public abstract class OfflineManager {
         @Nullable public List<TrackCodec> audioCodecs;
               
         @Nullable public Integer videoBitrate;
-
         @Nullable public Integer videoHeight;
         @Nullable public Integer videoWidth;
 
