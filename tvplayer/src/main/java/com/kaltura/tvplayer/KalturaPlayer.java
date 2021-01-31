@@ -418,6 +418,7 @@ public abstract class KalturaPlayer {
         this.view = pkPlayer.getView();
     }
 
+    
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry, getKS());
 
