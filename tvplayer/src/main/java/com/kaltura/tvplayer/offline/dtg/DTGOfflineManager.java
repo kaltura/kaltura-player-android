@@ -39,7 +39,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         public void onDownloadComplete(DownloadItem item) {
             final String assetId = item.getItemId();
             postEvent(() -> getListener().onAssetDownloadComplete(assetId));
-
             registerDrmAsset(assetId, false);
         }
 
@@ -61,7 +60,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
             postEvent(() -> getListener().onStateChanged(assetId, new DTGAssetInfo(item, AssetDownloadState.started)));
 
-            postEventDelayed(() -> registerDrmAsset(assetId, true), 10000);
+            postEventDelayed(() -> registerDrmAsset(assetId, true), 4000);
         }
 
         @Override
@@ -168,6 +167,9 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 } else {
                     postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(item, AssetDownloadState.prepared), null));
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
+                    if (drmData != null) {
+                        saveAssetPkDrmParams(assetId, drmData);
+                    }
                 }
                 cm.removeDownloadStateListener(this);
             }
@@ -201,12 +203,20 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             return;
         }
 
+        final PKDrmParams drmData;
+
         final Pair<PKMediaSource, PKDrmParams> pair = pendingDrmRegistration.get(assetId);
         if (pair == null || pair.first == null || pair.second == null) {
-            return; // no DRM or already processed
+            PKDrmParams pkDrmParams = loadAssetPkDrmParams(assetId);
+            if (pkDrmParams == null) {
+                // not a DRM media or already processed
+                return;
+            } else {
+                drmData = pkDrmParams;
+            }
+        } else {
+            drmData = pair.second;
         }
-
-        final PKDrmParams drmData = pair.second;
 
         final String licenseUri = drmData.getLicenseUri();
 
@@ -230,11 +240,11 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         try {
             final byte[] widevineInitData = getWidevineInitData(localFile);
-
-            lam.registerWidevineDashAsset(assetId, licenseUri, widevineInitData);
+            lam.registerWidevineDashAsset(assetId, licenseUri, widevineInitData, forceWidevineL3Playback);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, widevineInitData)));
 
             pendingDrmRegistration.remove(assetId);
+            removeAssetPkDrmParams(assetId);
 
         } catch (IOException | LocalAssetsManager.RegisterException e) {
             postEvent(() -> getListener().onRegisterError(assetId, e));
@@ -289,7 +299,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         lam.unregisterAsset(assetId, drmInitData);
         cm.removeItem(assetId);
         removeAssetSourceId(assetId);
-
+        removeAssetPkDrmParams(assetId);
         return true;
     }
 

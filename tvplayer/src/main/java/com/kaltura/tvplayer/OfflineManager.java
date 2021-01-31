@@ -186,6 +186,8 @@ public abstract class OfflineManager {
 
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
 
+    public abstract void setForceWidevineL3Playback(boolean forceWidevineL3Playback);
+
     public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 
     public enum AssetDownloadState {
@@ -360,11 +362,11 @@ public abstract class OfflineManager {
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
-        @Nullable public Integer videoBitrate;
         @Nullable public Map<TrackCodec, Integer> codecVideoBitrates;
         @Nullable public List<TrackCodec> videoCodecs;
         @Nullable public List<TrackCodec> audioCodecs;
-
+              
+        @Nullable public Integer videoBitrate;
         @Nullable public Integer videoHeight;
         @Nullable public Integer videoWidth;
 
