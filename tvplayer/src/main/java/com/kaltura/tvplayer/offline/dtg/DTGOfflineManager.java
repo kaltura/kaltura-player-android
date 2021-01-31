@@ -209,7 +209,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         if (pair == null || pair.first == null || pair.second == null) {
             PKDrmParams pkDrmParams = loadAssetPkDrmParams(assetId);
             if (pkDrmParams == null) {
-                // no DRM or already processed
+                // not a DRM media or already processed
                 return;
             } else {
                 drmData = pkDrmParams;
