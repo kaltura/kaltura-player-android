@@ -1,17 +1,14 @@
 package com.kaltura.tvplayer;
 
 import android.content.Context;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
-import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 
 import java.io.IOException;
@@ -182,13 +179,14 @@ public abstract class OfflineManager {
      */
     public abstract @NonNull DrmStatus getDrmStatus(@NonNull String assetId);
 
+
     public abstract void setKs(@Nullable String ks);
 
     public abstract void setPreferredMediaFormat(@Nullable PKMediaFormat preferredMediaFormat);
 
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
 
-    public abstract void setOfflineManagerSettings(@NonNull OfflineManagerSettings offlineManagerSettings);
+    public abstract void setForceWidevineL3Playback(boolean forceWidevineL3Playback);
 
     public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 
@@ -364,11 +362,11 @@ public abstract class OfflineManager {
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
-        @Nullable public Integer videoBitrate;
         @Nullable public Map<TrackCodec, Integer> codecVideoBitrates;
         @Nullable public List<TrackCodec> videoCodecs;
         @Nullable public List<TrackCodec> audioCodecs;
-
+              
+        @Nullable public Integer videoBitrate;
         @Nullable public Integer videoHeight;
         @Nullable public Integer videoWidth;
 
