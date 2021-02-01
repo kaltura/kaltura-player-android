@@ -9,6 +9,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
+import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 
 import java.io.IOException;
@@ -187,6 +188,8 @@ public abstract class OfflineManager {
     public abstract void setEstimatedHlsAudioBitrate(int bitrate);
 
     public abstract void setForceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+    public abstract void setOfflineManagerSettings(@NonNull OfflineManagerSettings offlineManagerSettings);
 
     public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 

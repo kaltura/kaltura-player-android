@@ -33,6 +33,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected int estimatedHlsAudioBitrate;
     protected boolean forceWidevineL3Playback;
     protected DownloadProgressListener downloadProgressListener;
+    protected OfflineManagerSettings offlineManagerSettings;
     private AssetStateListener assetStateListener;
     private String ks;
 
@@ -165,6 +166,11 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 executor.execute(MediaSupport::provisionWidevineL3);
             }
         }
+    }
+
+    @Override
+    public void setOfflineManagerSettings(OfflineManagerSettings offlineManagerSettings) {
+        this.offlineManagerSettings = offlineManagerSettings;
     }
 
     @Override
