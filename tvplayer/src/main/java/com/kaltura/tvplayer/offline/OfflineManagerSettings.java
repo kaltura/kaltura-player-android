@@ -11,7 +11,7 @@ public class OfflineManagerSettings {
     private long freeDiskSpaceRequiredBytes = 400 * 1024 * 1024; // default 400MB
     private String applicationName = "";
     private boolean createNoMediaFileInDownloadsDir = true;
-    private boolean crossProtocolRedirectEnabled;
+    private boolean crossProtocolRedirectEnabled = true;
     private DownloadRequestParams.Adapter downloadRequestAdapter;
     private DownloadRequestParams.Adapter chunksUrlAdapter;
 
