@@ -10,7 +10,7 @@ import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
-import com.kaltura.playkit.player.PKLlLiveConfiguration;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
@@ -48,7 +48,7 @@ public class PlayerInitOptions {
     public LoadControlBuffers loadControlBuffers;
     public ABRSettings abrSettings;
     public VRSettings vrSettings;
-    public PKLlLiveConfiguration pkLlLiveConfiguration;
+    public PKLowLatencyConfig pkLowLatencyConfig;
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
@@ -178,9 +178,9 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setLlLiveConfiguration(PKLlLiveConfiguration pkLlLiveConfiguration) {
-        if (pkLlLiveConfiguration != null) {
-            this.pkLlLiveConfiguration = pkLlLiveConfiguration;
+    public PlayerInitOptions setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        if (pkLowLatencyConfig != null) {
+            this.pkLowLatencyConfig = pkLowLatencyConfig;
         }
         return this;
     }

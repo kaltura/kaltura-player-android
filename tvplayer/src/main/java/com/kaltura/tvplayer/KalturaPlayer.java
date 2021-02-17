@@ -323,8 +323,8 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
         
-        if (initOptions.pkLlLiveConfiguration != null) {
-            pkPlayer.getSettings().setLlLiveConfiguration(initOptions.pkLlLiveConfiguration);
+        if (initOptions.pkLowLatencyConfig != null) {
+            pkPlayer.getSettings().setPKLowLatencyConfig(initOptions.pkLowLatencyConfig);
         }
 
         if (initOptions.forceSinglePlayerEngine != null) {
