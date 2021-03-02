@@ -9,6 +9,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
+import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 
 import java.io.IOException;
@@ -57,7 +58,6 @@ public abstract class OfflineManager {
      * @param listener
      */
     public abstract void setDownloadProgressListener(@Nullable DownloadProgressListener listener);
-
 
     public abstract void start(@Nullable ManagerStartCallback callback) throws IOException;
 
@@ -184,9 +184,14 @@ public abstract class OfflineManager {
 
     public abstract void setPreferredMediaFormat(@Nullable PKMediaFormat preferredMediaFormat);
 
-    public abstract void setEstimatedHlsAudioBitrate(int bitrate);
-
     public abstract void setForceWidevineL3Playback(boolean forceWidevineL3Playback);
+
+    /**
+     * Settings, may be set for downloading the assets.
+     * This setter only has effect if called before {@link #start(ManagerStartCallback)} )}.
+     * @param offlineManagerSettings
+     */
+    public abstract void setOfflineManagerSettings(@NonNull OfflineManagerSettings offlineManagerSettings);
 
     public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
 
