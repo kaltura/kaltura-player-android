@@ -30,9 +30,9 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
-    protected int estimatedHlsAudioBitrate;
     protected boolean forceWidevineL3Playback;
     protected DownloadProgressListener downloadProgressListener;
+    protected OfflineManagerSettings offlineManagerSettings;
     private AssetStateListener assetStateListener;
     private String ks;
 
@@ -152,11 +152,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
-    public void setEstimatedHlsAudioBitrate(int bitrate) {
-        estimatedHlsAudioBitrate = bitrate;
-    }
-
-    @Override
     public void setForceWidevineL3Playback(boolean forceWidevineL3Playback) {
         this.forceWidevineL3Playback = forceWidevineL3Playback;
         if (forceWidevineL3Playback) {
@@ -165,6 +160,11 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 executor.execute(MediaSupport::provisionWidevineL3);
             }
         }
+    }
+
+    @Override
+    public void setOfflineManagerSettings(OfflineManagerSettings offlineManagerSettings) {
+        this.offlineManagerSettings = offlineManagerSettings;
     }
 
     @Override

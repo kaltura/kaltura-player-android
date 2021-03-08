@@ -89,11 +89,24 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         super(context);
 
         cm = ContentManager.getInstance(context);
-        cm.getSettings().crossProtocolRedirectEnabled = true;
     }
 
     @Override
     public void start(ManagerStartCallback callback) throws IOException {
+
+        if (offlineManagerSettings != null) {
+            cm.getSettings().maxDownloadRetries = offlineManagerSettings.getMaxDownloadRetries();
+            cm.getSettings().httpTimeoutMillis = offlineManagerSettings.getHttpTimeoutMillis();
+            cm.getSettings().maxConcurrentDownloads = offlineManagerSettings.getMaxConcurrentDownloads();
+            cm.getSettings().applicationName = offlineManagerSettings.getApplicationName();
+            cm.getSettings().createNoMediaFileInDownloadsDir = offlineManagerSettings.isCreateNoMediaFileInDownloadsDir();
+            cm.getSettings().defaultHlsAudioBitrateEstimation = offlineManagerSettings.getDefaultHlsAudioBitrateEstimation();
+            cm.getSettings().freeDiskSpaceRequiredBytes = offlineManagerSettings.getFreeDiskSpaceRequiredBytes();
+            cm.getSettings().downloadRequestAdapter = offlineManagerSettings.getDownloadRequestAdapter();
+            cm.getSettings().chunksUrlAdapter = offlineManagerSettings.getChunksUrlAdapter();
+            cm.getSettings().crossProtocolRedirectEnabled = offlineManagerSettings.isCrossProtocolRedirectEnabled();
+        }
+
         cm.addDownloadStateListener(dtgListener);
         cm.start(() -> {
             log.d("Started DTG");
