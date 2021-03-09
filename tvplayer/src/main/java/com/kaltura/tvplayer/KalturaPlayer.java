@@ -31,6 +31,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
@@ -502,6 +503,18 @@ public abstract class KalturaPlayer {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
     }
 
+    public void updateABRSettings(@NonNull ABRSettings abrSettings) {
+        if (pkPlayer != null && abrSettings != null) {
+            pkPlayer.updateABRSettings(abrSettings);
+        }
+    }
+
+    public void resetABRSettings() {
+        if (pkPlayer != null) {
+            pkPlayer.resetABRSettings();
+        }
+    }
+
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (pkPlayer != null) {
             pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
@@ -707,11 +720,15 @@ public abstract class KalturaPlayer {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
-            applyMediaEntryInterceptors(entry, () ->
+            applyMediaEntryInterceptors(entry, new PKMediaEntryInterceptor.Listener() {
+                @Override
+                public void onComplete() {
                     mainHandler.post(() -> {
-                        setMedia(entry);
+                        KalturaPlayer.this.setMedia(entry);
                         onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
-                    }));
+                    });
+                }
+            });
         } else {
             onEntryLoadListener.onEntryLoadComplete(null, response.getError());
         }
@@ -731,9 +748,12 @@ public abstract class KalturaPlayer {
         }
 
         PKMediaEntryInterceptor interceptor = localInterceptors.get(0);
-        interceptor.apply(mediaEntry, () -> {
-            localInterceptors.remove(0);
-            applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
+        interceptor.apply(mediaEntry, new PKMediaEntryInterceptor.Listener() {
+            @Override
+            public void onComplete() {
+                localInterceptors.remove(0);
+                KalturaPlayer.this.applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
+            }
         });
     }
 
