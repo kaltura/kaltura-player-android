@@ -720,10 +720,11 @@ public abstract class KalturaPlayer {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
-            applyMediaEntryInterceptors(entry, () -> mainHandler.post(() -> {
-                setMedia(entry);
-                onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
-            }));
+            applyMediaEntryInterceptors(entry, () ->
+                    mainHandler.post(() -> {
+                        setMedia(entry);
+                        onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
+                    }));
         } else {
             onEntryLoadListener.onEntryLoadComplete(null, response.getError());
         }
@@ -745,7 +746,7 @@ public abstract class KalturaPlayer {
         PKMediaEntryInterceptor interceptor = localInterceptors.get(0);
         interceptor.apply(mediaEntry, () -> {
             localInterceptors.remove(0);
-            KalturaPlayer.this.applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
+            applyMediaEntryInterceptor(localInterceptors, mediaEntry, listener);
         });
     }
 
