@@ -35,6 +35,7 @@ import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
@@ -442,7 +443,6 @@ public abstract class KalturaPlayer {
         }
     }
 
-
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
         externalSubtitles = null;
         if (startPosition != null) {
@@ -509,6 +509,12 @@ public abstract class KalturaPlayer {
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (pkPlayer != null) {
             pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
+        }
+    }
+
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        if (pkPlayer != null && pkLowLatencyConfig != null) {
+            pkPlayer.updatePKLowLatencyConfig(pkLowLatencyConfig);
         }
     }
 
