@@ -31,6 +31,7 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
@@ -500,6 +501,18 @@ public abstract class KalturaPlayer {
 
     private void updateInternalPluginConfig(@NonNull String pluginName, @Nullable Object pluginConfig) {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
+    }
+
+    public void updateABRSettings(@NonNull ABRSettings abrSettings) {
+        if (pkPlayer != null && abrSettings != null) {
+            pkPlayer.updateABRSettings(abrSettings);
+        }
+    }
+
+    public void resetABRSettings() {
+        if (pkPlayer != null) {
+            pkPlayer.resetABRSettings();
+        }
     }
 
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
