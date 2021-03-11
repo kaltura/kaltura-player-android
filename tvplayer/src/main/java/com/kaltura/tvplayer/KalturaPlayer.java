@@ -144,6 +144,7 @@ public abstract class KalturaPlayer {
         return (initOptions.tvPlayerParams == null ||
                 (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams && ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId == null));
     }
+    
 
     protected static String safeServerUrl(Type tvPlayerType, String url, String defaultUrl) {
         String serviceURL = url;
