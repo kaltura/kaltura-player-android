@@ -31,10 +31,12 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
@@ -323,6 +325,10 @@ public abstract class KalturaPlayer {
         if (initOptions.vrSettings != null) {
             pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
+        
+        if (initOptions.pkLowLatencyConfig != null) {
+            pkPlayer.getSettings().setPKLowLatencyConfig(initOptions.pkLowLatencyConfig);
+        }
 
         if (initOptions.forceSinglePlayerEngine != null) {
             pkPlayer.getSettings().forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
@@ -439,7 +445,6 @@ public abstract class KalturaPlayer {
         }
     }
 
-
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
         externalSubtitles = null;
         if (startPosition != null) {
@@ -503,9 +508,27 @@ public abstract class KalturaPlayer {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
     }
 
+    public void updateABRSettings(@NonNull ABRSettings abrSettings) {
+        if (pkPlayer != null && abrSettings != null) {
+            pkPlayer.updateABRSettings(abrSettings);
+        }
+    }
+
+    public void resetABRSettings() {
+        if (pkPlayer != null) {
+            pkPlayer.resetABRSettings();
+        }
+    }
+
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (pkPlayer != null) {
             pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
+        }
+    }
+
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        if (pkPlayer != null && pkLowLatencyConfig != null) {
+            pkPlayer.updatePKLowLatencyConfig(pkLowLatencyConfig);
         }
     }
 
