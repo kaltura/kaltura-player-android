@@ -639,7 +639,7 @@ public abstract class KalturaPlayer {
         return pkPlayer.getCurrentLiveOffset();
     }
 
-    public ThumbnailInfo getThumbnailInfo(long positionMS) { return pkPlayer.getThumbnailInfo(positionMS); }
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) { return pkPlayer.getThumbnailInfo(positionMS); }
     
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         pkPlayer.addListener(groupId, type, listener);
