@@ -34,6 +34,8 @@ enum KnownPlugin {
     public final String className;
     public final PKPlugin.Factory factory;
 
+    private boolean registered;
+
     KnownPlugin(String className, PKPlugin.Factory factory) {
         this.className = className;
         this.factory = factory;
@@ -43,7 +45,7 @@ enum KnownPlugin {
         this(className, null);
     }
 
-    protected static void registerPluginByName(Context context, String pluginClassName) {
+    void registerPluginByName(Context context, String pluginClassName) {
         try {
             Class pluginClass = Class.forName(pluginClassName);
             final Field factoryField = pluginClass.getField("factory");
