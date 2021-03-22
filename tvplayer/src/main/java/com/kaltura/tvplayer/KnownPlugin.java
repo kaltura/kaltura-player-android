@@ -27,7 +27,9 @@ enum KnownPlugin {
     // Youbora
     youbora("com.kaltura.playkit.plugins.youbora.YouboraPlugin"),
     // Broadpeak
-    broadpeak("com.kaltura.playkit.plugins.broadpeak.BroadpeakPlugin");
+    broadpeak("com.kaltura.playkit.plugins.broadpeak.BroadpeakPlugin"),
+    // Smartswitch
+    smartswitch("com.kaltura.playkit.plugins.smartswitch.SmartSwitchPlugin");
 
     private static final PKLog log = PKLog.get("KnownPlugin");
 
