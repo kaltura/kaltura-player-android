@@ -2,6 +2,7 @@ package com.kaltura.tvplayer;
 
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.PKRequestConfiguration;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
@@ -49,6 +50,7 @@ public class PlayerInitOptions {
     public ABRSettings abrSettings;
     public VRSettings vrSettings;
     public PKLowLatencyConfig pkLowLatencyConfig;
+    public PKRequestConfiguration pkRequestConfiguration;
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
@@ -122,6 +124,11 @@ public class PlayerInitOptions {
         return this;
     }
 
+    /**
+     * This method is deprecated.
+     * Please use {@link com.kaltura.playkit.PKRequestConfiguration} to set crossProtocolRedirect
+     */
+    @Deprecated
     public PlayerInitOptions setAllowCrossProtocolEnabled(Boolean allowCrossProtocolEnabled) {
         if (allowCrossProtocolEnabled != null) {
             this.allowCrossProtocolEnabled = allowCrossProtocolEnabled;
@@ -181,6 +188,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
         if (pkLowLatencyConfig != null) {
             this.pkLowLatencyConfig = pkLowLatencyConfig;
+        }
+        return this;
+    }
+    
+    public PlayerInitOptions setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration) {
+        if (pkRequestConfiguration != null) {
+            this.pkRequestConfiguration = pkRequestConfiguration;
         }
         return this;
     }
