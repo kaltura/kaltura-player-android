@@ -16,11 +16,11 @@ def getSnapshotRepositoryUrl() {
 }
 
 def getRepositoryUsername() {
-    return hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : ""
+    return System.getenv("NEXUS_USERNAME")
 }
 
 def getRepositoryPassword() {
-    return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
+    return System.getenv("NEXUS_PASSWORD")
 }
 
 afterEvaluate { project ->
@@ -75,7 +75,7 @@ afterEvaluate { project ->
     signing {
         allprojects { ext."signing.keyId" = System.getenv("MAVEN_KEYID") }
         allprojects { ext."signing.password" = System.getenv("MAVEN_PASSWORD") }
-        allprojects { ext."signing.secretKeyRingFile" = System.getenv("MAVEN_SECRING_PATH_DUMMY") }
+        allprojects { ext."signing.secretKeyRingFile" = System.getenv("MAVEN_SECRING_PATH") }
 
         required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
         sign configurations.archives
