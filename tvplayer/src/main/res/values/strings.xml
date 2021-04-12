@@ -2,4 +2,7 @@
     <string name="app_name">Kaltura Player</string>
     <string name="download_notification_channel">Download</string>
     <string name="live">Live</string>
+    <string name="icon_play_next">icon_play_next</string>
+    <string name="toggleplaypausebutton">togglePlayPauseButton</string>
+    <string name="icon_play_prev">icon_play_prev</string>
 </resources>
