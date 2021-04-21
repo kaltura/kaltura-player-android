@@ -756,6 +756,12 @@ public abstract class KalturaPlayer {
             return;
         }
 
+        String broadpeakPlugin = KnownPlugin.broadpeak.name();
+
+        if (initOptions.pluginConfigs.hasConfig(broadpeakPlugin)) {
+            updateInternalPluginConfig(broadpeakPlugin, initOptions.pluginConfigs.getPluginConfig(broadpeakPlugin));
+        }
+
         PKMediaEntryInterceptor interceptor = localInterceptors.get(0);
         interceptor.apply(mediaEntry, () -> {
             localInterceptors.remove(0);
@@ -1121,6 +1127,9 @@ public abstract class KalturaPlayer {
     private void updateKalturaPluginConfigs(PKPluginConfigs combined) {
         log.d("updateKalturaPluginConfigs");
         for (Map.Entry<String, Object> plugin : combined) {
+            if (plugin.getKey().equals(KnownPlugin.broadpeak.name())) {
+                continue;
+            }
             updateInternalPluginConfig(plugin.getKey(), plugin.getValue());
         }
     }
