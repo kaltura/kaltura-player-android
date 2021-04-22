@@ -757,7 +757,6 @@ public abstract class KalturaPlayer {
         }
 
         String broadpeakPlugin = KnownPlugin.broadpeak.name();
-
         if (initOptions.pluginConfigs.hasConfig(broadpeakPlugin)) {
             updateInternalPluginConfig(broadpeakPlugin, initOptions.pluginConfigs.getPluginConfig(broadpeakPlugin));
         }
