@@ -201,6 +201,9 @@ public class PKPlaylistController implements PlaylistController {
                 if (ovpMediaAsset.getReferrer() == null) {
                     ovpMediaAsset.setReferrer(kalturaPlayer.getInitOptions().referrer);
                 }
+                if (ovpMediaAsset.getRedirectFromEntryId() == null) {
+                    ovpMediaAsset.setRedirectFromEntryId(kalturaPlayer.getInitOptions().redirectFromEntryId);
+                }
             }
         } else { // PlaylistId case
             OVPPlaylistIdOptions ovpPlaylistIdOptions = (OVPPlaylistIdOptions) playlistOptions;
@@ -211,6 +214,7 @@ public class PKPlaylistController implements PlaylistController {
             ovpMediaAsset.setEntryId(pkPlaylistMedia.getId());
             ovpMediaAsset.setKs((pkPlaylistMedia.getKs() != null) ? pkPlaylistMedia.getKs() : playlist.getKs());
             ovpMediaAsset.setReferrer(kalturaPlayer.getInitOptions().referrer);
+            ovpMediaAsset.setRedirectFromEntryId(kalturaPlayer.getInitOptions().redirectFromEntryId);
 
             ovpMediaOptions = new OVPMediaOptions(ovpMediaAsset);
             ovpMediaOptions.setUseApiCaptions(ovpPlaylistIdOptions.useApiCaptions);

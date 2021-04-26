@@ -27,6 +27,7 @@ public class PlayerInitOptions {
     public Boolean autoplay = true;
     public Boolean preload = true;
     public String referrer;
+    public Boolean redirectFromEntryId = true;
     public PKTrackConfig.Mode audioLanguageMode;
     public String audioLanguage;
     public PKTrackConfig.Mode textLanguageMode;
@@ -102,6 +103,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setReferrer(String referrer) {
         if (referrer != null) {
             this.referrer = referrer;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setRedirectFromEntryId(Boolean redirectFromEntryId) {
+        if (redirectFromEntryId != null) {
+            this.redirectFromEntryId = redirectFromEntryId;
         }
         return this;
     }
