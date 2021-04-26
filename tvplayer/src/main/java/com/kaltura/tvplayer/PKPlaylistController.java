@@ -214,7 +214,7 @@ public class PKPlaylistController implements PlaylistController {
             ovpMediaAsset.setEntryId(pkPlaylistMedia.getId());
             ovpMediaAsset.setKs((pkPlaylistMedia.getKs() != null) ? pkPlaylistMedia.getKs() : playlist.getKs());
             ovpMediaAsset.setReferrer(kalturaPlayer.getInitOptions().referrer);
-            ovpMediaAsset.setRedirectFromEntryId(kalturaPlayer.getInitOptions().redirectFromEntryId);
+            ovpMediaAsset.setRedirectFromEntryId(kalturaPlayer.getInitOptions().redirectFromEntryId != null ? kalturaPlayer.getInitOptions().redirectFromEntryId : true);
 
             ovpMediaOptions = new OVPMediaOptions(ovpMediaAsset);
             ovpMediaOptions.setUseApiCaptions(ovpPlaylistIdOptions.useApiCaptions);
