@@ -48,14 +48,14 @@ public abstract class OfflineManager {
     /**
      * Set the global download state listener, to be notified about state changes.
      *
-     * @param listener
+     * @param listener setAssetStateListener
      */
     public abstract void setAssetStateListener(@Nullable AssetStateListener listener);
 
     /**
      * Set the global download progress listener
      *
-     * @param listener
+     * @param listener setDownloadProgressListener
      */
     public abstract void setDownloadProgressListener(@Nullable DownloadProgressListener listener);
 
@@ -78,9 +78,9 @@ public abstract class OfflineManager {
      * Prepare an asset for download. Select the best source from the entry, load the source metadata, select tracks
      * based on the prefs, call the listener.
      *
-     * @param mediaEntry
-     * @param prefs
-     * @param prepareCallback
+     * @param mediaEntry PKMediaEntry
+     * @param prefs SelectionPrefs
+     * @param prepareCallback PrepareCallback
      */
     public abstract void prepareAsset(@NonNull PKMediaEntry mediaEntry,
                                       @NonNull SelectionPrefs prefs,
@@ -89,13 +89,13 @@ public abstract class OfflineManager {
     /**
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
      * the entry, load the source metadata, select tracks based on the prefs, call the listener. If the asset requires
-     * KS, make sure to set {@link MediaOptions#ks}.
+     * KS, make sure to set ks.
      * Before calling this method, the partner id and the server URL must be set by {@link #setKalturaParams(KalturaPlayer.Type, int)}
      * and {@link #setKalturaServerUrl(String)}, respectively.
      *
-     * @param mediaOptions
-     * @param prefs
-     * @param prepareCallback
+     * @param mediaOptions MediaOptions
+     * @param prefs SelectionPrefs
+     * @param prepareCallback PrepareCallback
      * @throws IllegalStateException if partner id and/or server URL were not set.
      */
     public abstract void prepareAsset(@NonNull MediaOptions mediaOptions,
@@ -105,27 +105,28 @@ public abstract class OfflineManager {
 
     /**
      * Add a prepared asset to the db and start downloading it.
+     * @param assetInfo AssetInfo
      */
     public abstract void startAssetDownload(@NonNull AssetInfo assetInfo);
 
     /**
      * Pause downloading an asset. Resume by calling {@link #resumeAssetDownload(String)}.
      *
-     * @param assetId
+     * @param assetId String
      */
     public abstract void pauseAssetDownload(@NonNull String assetId);
 
     /**
      * Resume a download that was paused by {@link #pauseAssetDownload(String)}.
      *
-     * @param assetId
+     * @param assetId String
      */
     public abstract void resumeAssetDownload(@NonNull String assetId);
 
     /**
      * Remove asset with all its data.
      *
-     * @param assetId
+     * @param assetId String
      * @return false if asset is not found, true otherwise.
      */
     public abstract boolean removeAsset(@NonNull String assetId);
@@ -134,9 +135,8 @@ public abstract class OfflineManager {
     /**
      * Renew an asset's license.
      *
-     * @param assetId
-     * @param drmParams
-     * @return false if asset is not found, true otherwise.
+     * @param assetId String
+     * @param drmParams PKDrmParams
      */
     public abstract void renewDrmAssetLicense(@NonNull String assetId,
                                               @NonNull PKDrmParams drmParams);
@@ -149,7 +149,7 @@ public abstract class OfflineManager {
     /**
      * Find asset by id.
      *
-     * @param assetId
+     * @param assetId String
      * @return asset info or null if not found.
      */
     public abstract @Nullable AssetInfo getAssetInfo(@NonNull String assetId);
@@ -157,16 +157,17 @@ public abstract class OfflineManager {
     /**
      * Get list of {@link AssetInfo} objects for all assets in the given state.
      *
-     * @param state
-     * @return
+     * @param state AssetDownloadState
+     * @return AssetInfo list
      */
     public abstract @NonNull List<AssetInfo> getAssetsInState(@NonNull AssetDownloadState state);
 
     /**
      * Get an offline-playable PKMediaEntry object.
      *
-     * @param assetId
-     * @return
+     * @param assetId String
+     * @return PKMediaEntry
+     * @throws IOException io exception
      */
     public abstract @NonNull PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) throws IOException;
 
@@ -174,7 +175,7 @@ public abstract class OfflineManager {
     /**
      * Check the license status of an asset.
      *
-     * @param assetId
+     * @param assetId String
      * @return DRM license status - {@link DrmStatus}.
      */
     public abstract @NonNull DrmStatus getDrmStatus(@NonNull String assetId);
@@ -189,7 +190,7 @@ public abstract class OfflineManager {
     /**
      * Settings, may be set for downloading the assets.
      * This setter only has effect if called before {@link #start(ManagerStartCallback)} )}.
-     * @param offlineManagerSettings
+     * @param offlineManagerSettings OfflineManagerSettings
      */
     public abstract void setOfflineManagerSettings(@NonNull OfflineManagerSettings offlineManagerSettings);
 
@@ -215,17 +216,17 @@ public abstract class OfflineManager {
          * Called when the asset is ready to be downloaded. The app should either call {@link #startAssetDownload(AssetInfo)}
          * to start the download or call {@link AssetInfo#release()} if it elected NOT to download the prepared asset.
          * Must be handled by all applications.
-         * @param assetId
-         * @param assetInfo
-         * @param selected
+         * @param assetId String
+         * @param assetInfo AssetInfo
+         * @param selected trascks
          */
         void onPrepared(@NonNull String assetId, @NonNull AssetInfo assetInfo, @Nullable Map<TrackType, List<Track>> selected);
 
         /**
          * Called when asset preparation has failed for some reason.
          * Must be handled by all applications.
-         * @param assetId
-         * @param error
+         * @param assetId String
+         * @param error Exception
          */
         void onPrepareError(@NonNull String assetId, @NonNull Exception error);
 
@@ -234,8 +235,8 @@ public abstract class OfflineManager {
          * inspect and possibly modify the entry before it is actually prepared for download.
          * This method is only called when using {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}
          * and doesn't have to handled by apps that don't use this variant of prepareAsset().
-         * @param assetId
-         * @param mediaEntry
+         * @param assetId String
+         * @param mediaEntry PKMediaEntry
          */
         @Override
         default void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry) {}
@@ -245,7 +246,7 @@ public abstract class OfflineManager {
          * This method is only called when using {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}
          * and doesn't have to handled by apps that don't use this variant of prepareAsset(). Apps that DO use it,
          * MUST handle it because the preparation process halts if it's called.
-         * @param error
+         * @param error Exception
          */
         @Override
         default void onMediaEntryLoadError(@NonNull Exception error) {}
@@ -254,9 +255,9 @@ public abstract class OfflineManager {
          * Called when prepareAsset() has selected a specific {@link PKMediaSource} from the provided or loaded
          * {@link PKMediaEntry}.
          * If drmParams is not null, it contains the selected DRM parameters for the source.
-         * @param assetId
-         * @param source
-         * @param drmParams
+         * @param assetId String
+         * @param source PKMediaSource
+         * @param drmParams PKDrmParams
          */
         default void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {}
     }
