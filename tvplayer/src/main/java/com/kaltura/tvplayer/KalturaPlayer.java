@@ -77,6 +77,7 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
 
+    
     static boolean playerConfigRetrieved;
 
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
