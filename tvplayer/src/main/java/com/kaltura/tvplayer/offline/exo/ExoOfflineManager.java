@@ -17,6 +17,7 @@ import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.drm.DrmSession;
 import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
 import com.kaltura.android.exoplayer2.drm.OfflineLicenseHelper;
+import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -44,7 +45,6 @@ import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.hls.HlsManifest;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
-import com.kaltura.android.exoplayer2.trackselection.TrackSelection;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
@@ -67,6 +67,7 @@ import com.kaltura.playkit.utils.NativeCookieJarBridge;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
+import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.Prefetch;
 
 import org.jetbrains.annotations.NotNull;
@@ -422,7 +423,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 deferredDrmSessionManager = new DeferredDrmSessionManager(new Handler(Looper.getMainLooper()), drmCallback, error -> {
                     log.e("XXX onPrepareError drm call failed");
                     postEvent(() -> prepareCallback.onPrepareError(assetId, new IllegalArgumentException("XXX drm call failed")));
-                }, true);
+                }, true, false); // TODO EXPOSE FORCE L3 Playback
                 deferredDrmSessionManager.setMediaSource(source);
                 downloadHelper =  DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, deferredDrmSessionManager);
             } else {
@@ -474,7 +475,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 //downloadAllAudioTracks(helper, downloadHelper, selectionPrefs);
                 //downloadAllTextTracks(helper, downloadHelper, selectionPrefs);
 
-                long selectedSize = estimateTotalSize(helper, estimatedHlsAudioBitrate);
+                long selectedSize = estimateTotalSize(helper, OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION);
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, helper);
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
@@ -625,17 +626,21 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             final int rendererCount = mappedTrackInfo.getRendererCount();
 
             for (int i = 0; i < rendererCount; i++) {
-                final List<TrackSelection> trackSelections = helper.getTrackSelections(pi, i);
-                for (TrackSelection selection : trackSelections) {
-                    final Format format = selection.getSelectedFormat();
-
-                    int bitrate = format.bitrate;
-                    if (bitrate <= 0) {
-                        if (format.sampleMimeType != null && format.sampleMimeType.startsWith("audio/")) {
-                            bitrate = hlsAudioBitrate;
+                final List<ExoTrackSelection> trackSelections = helper.getTrackSelections(pi, i);
+                for (int j = 0 ; j < trackSelections.size() ; j++) {
+                    ExoTrackSelection trackSelection = trackSelections.get(j);
+                    if (trackSelection != null) {
+                        Format format = trackSelection.getFormat(j);
+                        if (format != null) {
+                            int bitrate = format.bitrate;
+                            if (bitrate <= 0) {
+                                if (format.sampleMimeType != null && format.sampleMimeType.startsWith("audio/")) {
+                                    bitrate = hlsAudioBitrate;
+                                }
+                            }
+                            selectedSize += (bitrate * durationMs) / 1000 / 8;
                         }
                     }
-                    selectedSize += (bitrate * durationMs) / 1000 / 8;
                 }
             }
         }
@@ -962,7 +967,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final byte[] drmInitData;
         try {
             drmInitData = getDrmInitData(cacheDataSourceFactory, sourceUrl);
-            lam.registerWidevineDashAsset(assetId, licenseUri, drmInitData);
+            lam.registerWidevineDashAsset(assetId, licenseUri, drmInitData, false); // TODO Force L3 playback
             postEvent(() -> listener.onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
 
             pendingDrmRegistration.remove(assetId);

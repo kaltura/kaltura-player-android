@@ -111,7 +111,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             cm.getSettings().maxConcurrentDownloads = offlineManagerSettings.getMaxConcurrentDownloads();
             cm.getSettings().applicationName = offlineManagerSettings.getApplicationName();
             cm.getSettings().createNoMediaFileInDownloadsDir = offlineManagerSettings.isCreateNoMediaFileInDownloadsDir();
-            cm.getSettings().defaultHlsAudioBitrateEstimation = offlineManagerSettings.getDefaultHlsAudioBitrateEstimation();
+            cm.getSettings().defaultHlsAudioBitrateEstimation = offlineManagerSettings.getHlsAudioBitrateEstimation();
             cm.getSettings().freeDiskSpaceRequiredBytes = offlineManagerSettings.getFreeDiskSpaceRequiredBytes();
             cm.getSettings().downloadRequestAdapter = offlineManagerSettings.getDownloadRequestAdapter();
             cm.getSettings().chunksUrlAdapter = offlineManagerSettings.getChunksUrlAdapter();

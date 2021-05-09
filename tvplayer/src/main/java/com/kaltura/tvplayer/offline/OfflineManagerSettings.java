@@ -3,11 +3,12 @@ package com.kaltura.tvplayer.offline;
 import com.kaltura.dtg.DownloadRequestParams;
 
 public class OfflineManagerSettings {
+    public static final int DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION = 64000;
 
     private int maxDownloadRetries = 5;
     private int httpTimeoutMillis = 15000;
     private int maxConcurrentDownloads = 4;
-    private int defaultHlsAudioBitrateEstimation = 64000;
+    private int hlsAudioBitrateEstimation = DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION;
     private long freeDiskSpaceRequiredBytes = 400 * 1024 * 1024; // default 400MB
     private String applicationName = "";
     private boolean createNoMediaFileInDownloadsDir = true;
@@ -60,12 +61,12 @@ public class OfflineManagerSettings {
         return this;
     }
 
-    public int getDefaultHlsAudioBitrateEstimation() {
-        return defaultHlsAudioBitrateEstimation;
+    public int getHlsAudioBitrateEstimation() {
+        return hlsAudioBitrateEstimation;
     }
 
-    public OfflineManagerSettings setDefaultHlsAudioBitrateEstimation(int defaultHlsAudioBitrateEstimation) {
-        this.defaultHlsAudioBitrateEstimation = defaultHlsAudioBitrateEstimation;
+    public OfflineManagerSettings setHlsAudioBitrateEstimation(int hlsAudioBitrateEstimation) {
+        this.hlsAudioBitrateEstimation = hlsAudioBitrateEstimation;
         return this;
     }
 
@@ -104,4 +105,6 @@ public class OfflineManagerSettings {
         this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
         return this;
     }
+    
+    
 }
