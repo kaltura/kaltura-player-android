@@ -2,13 +2,16 @@ package com.kaltura.tvplayer.offline;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.gson.Gson;
 import com.kaltura.playkit.*;
+import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.MediaOptions;
@@ -18,6 +21,8 @@ import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public abstract class AbstractOfflineManager extends OfflineManager {
     private static final PKLog log = PKLog.get("AbstractOfflineManager");
@@ -26,8 +31,9 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     protected final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
-    protected int estimatedHlsAudioBitrate;
+    protected boolean forceWidevineL3Playback;
     protected DownloadProgressListener downloadProgressListener;
+    protected OfflineManagerSettings offlineManagerSettings;
     private AssetStateListener assetStateListener;
     private String ks;
 
@@ -56,8 +62,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     public AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
-
-
         HandlerThread handlerThread = new HandlerThread("OfflineManagerEvents");
         handlerThread.start();
         eventHandler = new Handler(handlerThread.getLooper());
@@ -172,8 +176,19 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
-    public void setEstimatedHlsAudioBitrate(int bitrate) {
-        estimatedHlsAudioBitrate = bitrate;
+    public void setForceWidevineL3Playback(boolean forceWidevineL3Playback) {
+        this.forceWidevineL3Playback = forceWidevineL3Playback;
+        if (forceWidevineL3Playback) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                Executor executor = Executors.newSingleThreadExecutor();
+                executor.execute(MediaSupport::provisionWidevineL3);
+            }
+        }
+    }
+
+    @Override
+    public void setOfflineManagerSettings(OfflineManagerSettings offlineManagerSettings) {
+        this.offlineManagerSettings = offlineManagerSettings;
     }
 
     @Override
@@ -182,7 +197,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
             lam.setLicenseRequestAdapter(licenseRequestAdapter);
         }
     }
-    
+
     @Override
     public void setDownloadProgressListener(DownloadProgressListener listener) {
         this.downloadProgressListener = listener;
@@ -192,9 +207,22 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         return "assetSourceId:" + assetId;
     }
 
+    private String sharedPrefsKeyPkDrmParams(String assetId) {
+        return "pkDrmParams:" + assetId;
+    }
+
     private String loadAssetSourceId(String assetId) {
         final SharedPreferences sharedPrefs = sharedPrefs();
         return sharedPrefs.getString(sharedPrefsKey(assetId), null);
+    }
+
+    protected PKDrmParams loadAssetPkDrmParams(String assetId) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        String pkDrmParams = sharedPrefs.getString(sharedPrefsKeyPkDrmParams(assetId), null);
+        if (pkDrmParams != null) {
+            return new Gson().fromJson(pkDrmParams, PKDrmParams.class);
+        }
+        return null;
     }
 
     private SharedPreferences sharedPrefs() {
@@ -206,15 +234,25 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         sharedPrefs.edit().putString(sharedPrefsKey(assetId), sourceId).apply();
     }
 
+    protected void saveAssetPkDrmParams(String assetId, PKDrmParams pkDrmParams) {
+        final SharedPreferences sharedPrefs = sharedPrefs();
+        String drmParams = new Gson().toJson(pkDrmParams);
+        sharedPrefs.edit().putString(sharedPrefsKeyPkDrmParams(assetId), drmParams).apply();
+    }
+
     protected void removeAssetSourceId(String assetId) {
         sharedPrefs().edit().remove(sharedPrefsKey(assetId)).apply();
+    }
+
+    protected void removeAssetPkDrmParams(String assetId) {
+        sharedPrefs().edit().remove(sharedPrefsKeyPkDrmParams(assetId)).apply();
     }
 
     protected @NonNull DrmStatus getDrmStatus(@NonNull String assetId, @Nullable byte[] drmInitData) {
         if (drmInitData == null) {
             return DrmStatus.clear;
         }
-        final LocalAssetsManager.AssetStatus assetStatus = lam.getDrmStatus(assetId, drmInitData);
+        final LocalAssetsManager.AssetStatus assetStatus = lam.getDrmStatus(assetId, drmInitData, forceWidevineL3Playback);
 
         if (assetStatus == null || !assetStatus.registered) {
             return DrmStatus.unknown;
@@ -254,7 +292,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
                 return;
             }
-            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData);
+            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData, forceWidevineL3Playback);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
             postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, e));

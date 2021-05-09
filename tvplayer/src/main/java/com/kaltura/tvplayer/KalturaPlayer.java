@@ -31,11 +31,14 @@ import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
 
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
@@ -324,9 +327,21 @@ public abstract class KalturaPlayer {
         if (initOptions.vrSettings != null) {
             pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
+        
+        if (initOptions.pkLowLatencyConfig != null) {
+            pkPlayer.getSettings().setPKLowLatencyConfig(initOptions.pkLowLatencyConfig);
+        }
+
+        if (initOptions.pkRequestConfiguration != null) {
+            pkPlayer.getSettings().setPKRequestConfig(initOptions.pkRequestConfiguration);
+        }
 
         if (initOptions.forceSinglePlayerEngine != null) {
             pkPlayer.getSettings().forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
+        }
+
+        if (initOptions.forceWidevineL3Playback != null) {
+            pkPlayer.getSettings().forceWidevineL3Playback(initOptions.forceWidevineL3Playback);
         }
 
         if (initOptions.cea608CaptionsEnabled != null) {
@@ -439,7 +454,6 @@ public abstract class KalturaPlayer {
         }
     }
 
-
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
         externalSubtitles = null;
         if (startPosition != null) {
@@ -503,9 +517,27 @@ public abstract class KalturaPlayer {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
     }
 
+    public void updateABRSettings(@NonNull ABRSettings abrSettings) {
+        if (pkPlayer != null && abrSettings != null) {
+            pkPlayer.updateABRSettings(abrSettings);
+        }
+    }
+
+    public void resetABRSettings() {
+        if (pkPlayer != null) {
+            pkPlayer.resetABRSettings();
+        }
+    }
+
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (pkPlayer != null) {
             pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
+        }
+    }
+
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        if (pkPlayer != null && pkLowLatencyConfig != null) {
+            pkPlayer.updatePKLowLatencyConfig(pkLowLatencyConfig);
         }
     }
 
@@ -612,6 +644,12 @@ public abstract class KalturaPlayer {
         return pkPlayer.isLive();
     }
 
+    public long getCurrentLiveOffset() {
+        return pkPlayer.getCurrentLiveOffset();
+    }
+
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) { return pkPlayer.getThumbnailInfo(positionMS); }
+    
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         pkPlayer.addListener(groupId, type, listener);
     }
@@ -725,6 +763,11 @@ public abstract class KalturaPlayer {
         if (localInterceptors.isEmpty()) {
             listener.onComplete();
             return;
+        }
+
+        String broadpeakPlugin = KnownPlugin.broadpeak.name();
+        if (initOptions.pluginConfigs.hasConfig(broadpeakPlugin)) {
+            updateInternalPluginConfig(broadpeakPlugin, initOptions.pluginConfigs.getPluginConfig(broadpeakPlugin));
         }
 
         PKMediaEntryInterceptor interceptor = localInterceptors.get(0);
@@ -1092,6 +1135,9 @@ public abstract class KalturaPlayer {
     private void updateKalturaPluginConfigs(PKPluginConfigs combined) {
         log.d("updateKalturaPluginConfigs");
         for (Map.Entry<String, Object> plugin : combined) {
+            if (plugin.getKey().equals(KnownPlugin.broadpeak.name())) {
+                continue;
+            }
             updateInternalPluginConfig(plugin.getKey(), plugin.getValue());
         }
     }
@@ -1119,3 +1165,4 @@ public abstract class KalturaPlayer {
         void onPlaylistControllerComplete(PlaylistController playlistController, ErrorElement error);
     }
 }
+

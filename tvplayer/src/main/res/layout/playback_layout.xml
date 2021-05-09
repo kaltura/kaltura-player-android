@@ -20,11 +20,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginEnd="80dp"
-        android:layout_marginRight="80dp"
         android:layout_centerInParent="true"
-        android:layout_toLeftOf="@+id/toggleButton"
+        android:layout_toStartOf="@+id/toggleButton"
         android:src="@drawable/exo_icon_previous"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        android:contentDescription="@string/icon_play_prev" />
 
     <ImageButton
         android:id="@+id/toggleButton"
@@ -32,7 +32,7 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:background="@drawable/play"
-         />
+        android:contentDescription="@string/toggleplaypausebutton" />
 
     <ImageView
         android:id="@+id/icon_play_next"
@@ -40,11 +40,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginStart="80dp"
-        android:layout_marginLeft="80dp"
         android:layout_centerInParent="true"
         android:src="@drawable/exo_icon_next"
-        android:layout_toRightOf="@+id/toggleButton"
-        android:visibility="invisible" />
+        android:layout_toEndOf="@+id/toggleButton"
+        android:visibility="invisible"
+        android:contentDescription="@string/icon_play_next" />
 
     <LinearLayout
         android:layout_width="match_parent"
