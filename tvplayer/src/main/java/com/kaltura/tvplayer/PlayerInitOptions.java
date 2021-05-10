@@ -2,6 +2,7 @@ package com.kaltura.tvplayer;
 
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.PKRequestConfiguration;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
@@ -27,6 +28,7 @@ public class PlayerInitOptions {
     public Boolean autoplay = true;
     public Boolean preload = true;
     public String referrer;
+    public Boolean redirectFromEntryId = true;
     public PKTrackConfig.Mode audioLanguageMode;
     public String audioLanguage;
     public PKTrackConfig.Mode textLanguageMode;
@@ -49,6 +51,7 @@ public class PlayerInitOptions {
     public ABRSettings abrSettings;
     public VRSettings vrSettings;
     public PKLowLatencyConfig pkLowLatencyConfig;
+    public PKRequestConfiguration pkRequestConfiguration;
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
@@ -106,6 +109,13 @@ public class PlayerInitOptions {
         return this;
     }
 
+    public PlayerInitOptions setRedirectFromEntryId(Boolean redirectFromEntryId) {
+        if (redirectFromEntryId != null) {
+            this.redirectFromEntryId = redirectFromEntryId;
+        }
+        return this;
+    }
+
     public PlayerInitOptions setAudioLanguage(String audioLanguage, PKTrackConfig.Mode audioLanguageMode) {
         if (audioLanguage != null && audioLanguageMode != null) {
             this.audioLanguage = audioLanguage;
@@ -122,6 +132,11 @@ public class PlayerInitOptions {
         return this;
     }
 
+    /**
+     * This method is deprecated.
+     * Please use {@link com.kaltura.playkit.PKRequestConfiguration} to set crossProtocolRedirect
+     */
+    @Deprecated
     public PlayerInitOptions setAllowCrossProtocolEnabled(Boolean allowCrossProtocolEnabled) {
         if (allowCrossProtocolEnabled != null) {
             this.allowCrossProtocolEnabled = allowCrossProtocolEnabled;
@@ -181,6 +196,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
         if (pkLowLatencyConfig != null) {
             this.pkLowLatencyConfig = pkLowLatencyConfig;
+        }
+        return this;
+    }
+    
+    public PlayerInitOptions setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration) {
+        if (pkRequestConfiguration != null) {
+            this.pkRequestConfiguration = pkRequestConfiguration;
         }
         return this;
     }
@@ -353,5 +375,3 @@ public class PlayerInitOptions {
         return this;
     }
 }
-
-
