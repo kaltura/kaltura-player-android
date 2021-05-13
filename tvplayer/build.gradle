@@ -29,10 +29,10 @@ android {
 
 dependencies {
 
-    api 'com.kaltura:playkit-android:dev-SNAPSHOT'
-    api 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
-    api 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
-    api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT'
+    api 'com.kaltura.playkit:playkit:4.14.0'
+    api 'com.kaltura.playkit:playkitproviders:4.14.0'
+    api 'com.kaltura.playkit:kavaplugin:4.14.0'
+    api 'com.kaltura.dtg:dtglib:2.6.9'
 
 //    api project(":playkit")
 //    api project(":providers")
