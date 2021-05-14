@@ -128,37 +128,31 @@ public class PrefetchManager implements Prefetch {
             @Override
             public void onPrefetchError(@NonNull String assetId, @NonNull Exception error) {
                 log.d("onPrefetchError");
-
             }
 
             @Override
             public void onPrepared(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected) {
                 log.d("onPrepared");
-
             }
 
             @Override
             public void onPrepareError(@NonNull String assetId, @NonNull Exception error) {
                 log.d("onPrepareError");
-
             }
 
             @Override
             public void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry) {
                 log.d("onMediaEntryLoaded");
-
             }
 
             @Override
             public void onMediaEntryLoadError(@NonNull Exception error) {
                 log.d("onMediaEntryLoadError");
-
             }
 
             @Override
             public void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {
                 log.d("onSourceSelected");
-
             }
         };
     }

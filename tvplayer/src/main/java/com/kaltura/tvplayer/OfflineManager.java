@@ -15,6 +15,7 @@ import com.kaltura.tvplayer.config.TVPlayerParams;
 import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
+import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.io.File;
@@ -32,8 +33,8 @@ public abstract class OfflineManager {
     protected String referrer;
 
     public static @NonNull OfflineManager getInstance(Context context) {
-        //return ExoOfflineManager.getInstance(context);
-        return  DTGOfflineManager.getInstance(context);
+        return ExoOfflineManager.getInstance(context);
+        //return  DTGOfflineManager.getInstance(context);
     }
 
     public void setKalturaParams(KalturaPlayer.Type type, int partnerId) {
@@ -147,7 +148,7 @@ public abstract class OfflineManager {
      * Add a prepared asset to the db and start downloading it.
      * @param assetInfo AssetInfo
      */
-    public abstract void startAssetDownload(@NonNull AssetInfo assetInfo);
+    public abstract void startAssetDownload(@NonNull AssetInfo assetInfo) throws IllegalArgumentException;
 
     /**
      * Pause downloading an asset. Resume by calling {@link #resumeAssetDownload(String)}.
@@ -448,7 +449,7 @@ public abstract class OfflineManager {
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
-        
+
         @Nullable public Map<TrackCodec, Integer> codecVideoBitrates;
         @Nullable public List<TrackCodec> videoCodecs;
         @Nullable public List<TrackCodec> audioCodecs;

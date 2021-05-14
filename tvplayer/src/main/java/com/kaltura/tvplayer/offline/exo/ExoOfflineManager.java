@@ -17,6 +17,7 @@ import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.drm.DrmSession;
 import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
 import com.kaltura.android.exoplayer2.drm.OfflineLicenseHelper;
+import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.google.gson.Gson;
@@ -82,6 +83,9 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+
 
 // NOTE: this and related classes are not currently in use. OfflineManager.getInstance() always
 // returns an instance of DTGOfflineManager. ExoOfflineManager will be used in a future version.
@@ -108,12 +112,14 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     //private final String userAgent = Util.getUserAgent(appContext, "ExoDownload");
     private final String userAgent = Utils.getUserAgent(appContext) + " ExoDownloadPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
 
-    private final OkHttpDataSourceFactory httpDataSourceFactory = new OkHttpDataSourceFactory(PKHttpClientManager.newClientBuilder()
+
+    private final OkHttpDataSource.Factory httpDataSourceFactory = new OkHttpDataSource.Factory(PKHttpClientManager.newClientBuilder()
             .cookieJar(NativeCookieJarBridge.sharedCookieJar)
             .followRedirects(true)
             .followSslRedirects(true)
             .connectTimeout(DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-            .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS).build(), userAgent);
+            .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS).build());
+
 
     private Handler bgHandler = createBgHandler();
 
@@ -421,14 +427,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 final DrmCallback drmCallback = new DrmCallback(httpDataSourceFactory, null); // TODO license adapter usage?
                 //drmSessionManager = buildDrmSessionManager(drmData);
                 deferredDrmSessionManager = new DeferredDrmSessionManager(new Handler(Looper.getMainLooper()), drmCallback, error -> {
-                    log.e("XXX onPrepareError drm call failed");
-                    postEvent(() -> prepareCallback.onPrepareError(assetId, new IllegalArgumentException("XXX drm call failed")));
-                }, true, false); // TODO EXPOSE FORCE L3 Playback
+                    log.e("onPrepareError drm call failed");
+                    postEvent(() -> prepareCallback.onPrepareError(assetId, new IllegalArgumentException("drm call failed")));
+                }, true, forceWidevineL3Playback);
                 deferredDrmSessionManager.setMediaSource(source);
                 downloadHelper =  DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, deferredDrmSessionManager);
             } else {
             downloadHelper = DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, DrmSessionManager.getDummyDrmSessionManager());
-
         }
 
         downloadHelper.prepare(new DownloadHelper.Callback() {
@@ -630,7 +635,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 for (int j = 0 ; j < trackSelections.size() ; j++) {
                     ExoTrackSelection trackSelection = trackSelections.get(j);
                     if (trackSelection != null) {
-                        Format format = trackSelection.getFormat(j);
+                        Format format = trackSelection.getFormat(0);
                         if (format != null) {
                             int bitrate = format.bitrate;
                             if (bitrate <= 0) {
@@ -811,12 +816,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void startAssetDownload(@NonNull AssetInfo assetInfo) {
+    public void startAssetDownload(@NonNull AssetInfo assetInfo) throws IllegalArgumentException {
 
         if (!(assetInfo instanceof ExoAssetInfo)) {
             throw new IllegalArgumentException("Not an ExoAssetInfo object");
         }
-
         final ExoAssetInfo exoAssetInfo = (ExoAssetInfo) assetInfo;
 
         final DownloadHelper helper = exoAssetInfo.downloadHelper;
@@ -838,7 +842,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             data.addProperty("prefetchConfig", gson.toJson(exoAssetInfo.getPrefetchConfig(), PrefetchConfig.class));
         }
         bytes = data.toString().getBytes();
-//XXX
+
         final DownloadRequest downloadRequest = helper.getDownloadRequest(assetInfo.getAssetId(), bytes);
         downloadRequest.copyWithKeySetId(keySetId);
 
@@ -967,7 +971,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final byte[] drmInitData;
         try {
             drmInitData = getDrmInitData(cacheDataSourceFactory, sourceUrl);
-            lam.registerWidevineDashAsset(assetId, licenseUri, drmInitData, false); // TODO Force L3 playback
+            lam.registerWidevineDashAsset(assetId, licenseUri, drmInitData, forceWidevineL3Playback);
             postEvent(() -> listener.onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
 
             pendingDrmRegistration.remove(assetId);
