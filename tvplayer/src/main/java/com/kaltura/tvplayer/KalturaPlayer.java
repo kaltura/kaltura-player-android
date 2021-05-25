@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.collection.LruCache;
 
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
@@ -76,6 +77,7 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
+    public static final int CACHE_MAX_SIZE = 15;
 
     static boolean playerConfigRetrieved;
 
@@ -114,6 +116,9 @@ public abstract class KalturaPlayer {
     private List<PKExternalSubtitle> externalSubtitles;
     private View view;
     private PKMediaEntry mediaEntry;
+
+    private static LruCache<String, PKMediaEntry> entriesCache = new LruCache<>(CACHE_MAX_SIZE);
+
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
@@ -430,24 +435,48 @@ public abstract class KalturaPlayer {
     }
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
-        tokenResolver.update(mediaEntry, getKS());
+        applyMediaEntryInterceptors(mediaEntry, () ->
+                mainHandler.post(() -> {
+                    tokenResolver.update(mediaEntry, getKS());
 
-        if (externalSubtitles != null) {
-            if (mediaEntry.getExternalSubtitleList() == null) {
-                mediaEntry.setExternalSubtitleList(externalSubtitles);
-            } else {
-                mediaEntry.getExternalSubtitleList().addAll(externalSubtitles);
-            }
-        }
+                    if (externalSubtitles != null) {
+                        if (mediaEntry.getExternalSubtitleList() == null) {
+                            mediaEntry.setExternalSubtitleList(externalSubtitles);
+                        } else {
+                            mediaEntry.getExternalSubtitleList().addAll(externalSubtitles);
+                        }
+                    }
 
-        if (preload) {
-            this.mediaEntry = mediaEntry;
-            this.prepareState = PrepareState.not_prepared;
-            PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
-            updateKalturaPluginConfigs(combinedPluginConfigs);
-            prepare();
-        }
+                    if (preload) {
+                        this.mediaEntry = mediaEntry;
+                        this.prepareState = PrepareState.not_prepared;
+                        PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
+                        updateKalturaPluginConfigs(combinedPluginConfigs);
+                        prepare();
+                    }
+                }));
+
     }
+
+//    public void setMedia(@NonNull PKMediaEntry mediaEntry) {
+//        tokenResolver.update(mediaEntry, getKS());
+//
+//        if (externalSubtitles != null) {
+//            if (mediaEntry.getExternalSubtitleList() == null) {
+//                mediaEntry.setExternalSubtitleList(externalSubtitles);
+//            } else {
+//                mediaEntry.getExternalSubtitleList().addAll(externalSubtitles);
+//            }
+//        }
+//
+//        if (preload) {
+//            this.mediaEntry = mediaEntry;
+//            this.prepareState = PrepareState.not_prepared;
+//            PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
+//            updateKalturaPluginConfigs(combinedPluginConfigs);
+//            prepare();
+//        }
+//    }
 
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
         externalSubtitles = null;
@@ -737,6 +766,9 @@ public abstract class KalturaPlayer {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
+            if (initOptions.allowMediaEntryCaching && entry.getMetadata() != null && entry.getMetadata().get("mediaAssetUUID") != null) {
+                entriesCache.put(entry.getMetadata().get("mediaAssetUUID"), entry);
+            }
             applyMediaEntryInterceptors(entry, () ->
                     mainHandler.post(() -> {
                         setMedia(entry);
@@ -991,6 +1023,15 @@ public abstract class KalturaPlayer {
             return;
 
         prepareLoadMedia(mediaOptions);
+        if (initOptions.allowMediaEntryCaching) {
+            PKMediaEntry pkMediaEntry = entriesCache.get(mediaOptions.getOttMediaAsset().getUUID());
+            if (pkMediaEntry != null) {
+                log.d("OTT loadMedia from cache");
+
+                setMedia(pkMediaEntry, mediaOptions.startPosition);
+                return;
+            }
+        }
 
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
             @Override
@@ -1021,7 +1062,15 @@ public abstract class KalturaPlayer {
             return;
 
         prepareLoadMedia(mediaOptions);
+        if (initOptions.allowMediaEntryCaching) {
+            PKMediaEntry pkMediaEntry = entriesCache.get(mediaOptions.getOvpMediaAsset().getEntryId());
+            if (pkMediaEntry != null) {
+                log.d("OVP loadMedia from cache");
 
+                setMedia(pkMediaEntry, mediaOptions.startPosition);
+                return;
+            }
+        }
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
             @Override
             public void onTick(long millisUntilFinished) {

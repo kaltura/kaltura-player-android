@@ -68,6 +68,8 @@ public class PlayerInitOptions {
     public Integer maxAudioBitrate;
     public Integer maxAudioChannelCount;
 
+    public boolean allowMediaEntryCaching;
+
     public PlayerInitOptions() {
         partnerId = null;
     }
@@ -372,6 +374,11 @@ public class PlayerInitOptions {
         if (maxAudioChannelCount != null) {
             this.maxAudioChannelCount = maxAudioChannelCount;
         }
+        return this;
+    }
+
+    public PlayerInitOptions setAllowMediaEntryCaching(boolean allowMediaEntryCaching) {
+        this.allowMediaEntryCaching = allowMediaEntryCaching;
         return this;
     }
 }
