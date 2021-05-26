@@ -77,7 +77,7 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
-    public static final int CACHE_MAX_SIZE = 15;
+    public static final int MAX_MEDIA_ENTRY_CACHE_SIZE = 15;
 
     static boolean playerConfigRetrieved;
 
@@ -117,7 +117,7 @@ public abstract class KalturaPlayer {
     private View view;
     private PKMediaEntry mediaEntry;
 
-    private static LruCache<String, PKMediaEntry> entriesCache = new LruCache<>(CACHE_MAX_SIZE);
+    private static LruCache<String, PKMediaEntry> entriesCache;
 
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
@@ -134,7 +134,9 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
-
+        if (initOptions.allowMediaEntryCaching) {
+            entriesCache = new LruCache<>(initOptions.maxMediaEntryCacheSize != null ? initOptions.maxMediaEntryCacheSize : MAX_MEDIA_ENTRY_CACHE_SIZE);
+        }
         messageBus = new MessageBus();
         this.referrer = buildReferrer(context, initOptions.referrer);
         populatePartnersValues();
@@ -766,7 +768,7 @@ public abstract class KalturaPlayer {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
-            if (initOptions.allowMediaEntryCaching && entry.getMetadata() != null && entry.getMetadata().get("mediaAssetUUID") != null) {
+            if (entriesCache != null && initOptions.allowMediaEntryCaching && entry.getMetadata() != null && entry.getMetadata().get("mediaAssetUUID") != null) {
                 log.d("Add Entry to Cache: name = " + entry.getName() + " mediaId = " + entry.getId());
                 entriesCache.put(entry.getMetadata().get("mediaAssetUUID"), entry);
             }
@@ -1026,7 +1028,7 @@ public abstract class KalturaPlayer {
             return;
 
         prepareLoadMedia(mediaOptions);
-        if (initOptions.allowMediaEntryCaching) {
+        if (entriesCache != null && initOptions.allowMediaEntryCaching) {
             PKMediaEntry pkMediaEntry = entriesCache.get(mediaOptions.getOttMediaAsset().getUUID());
             if (pkMediaEntry != null) {
                 log.d("OTT loadMedia from Cache: name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());

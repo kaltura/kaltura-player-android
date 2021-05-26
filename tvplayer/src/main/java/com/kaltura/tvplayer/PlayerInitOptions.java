@@ -69,6 +69,7 @@ public class PlayerInitOptions {
     public Integer maxAudioChannelCount;
 
     public boolean allowMediaEntryCaching;
+    public Integer maxMediaEntryCacheSize;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -379,6 +380,13 @@ public class PlayerInitOptions {
 
     public PlayerInitOptions setAllowMediaEntryCaching(boolean allowMediaEntryCaching) {
         this.allowMediaEntryCaching = allowMediaEntryCaching;
+        return this;
+    }
+
+    public PlayerInitOptions setMaxMediaEntryCacheSize(Integer maxMediaEntryCacheSize) {
+        if (maxMediaEntryCacheSize != null) {
+            this.maxMediaEntryCacheSize = maxMediaEntryCacheSize;
+        }
         return this;
     }
 }
