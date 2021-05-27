@@ -1069,8 +1069,7 @@ public abstract class KalturaPlayer {
         if (initOptions.allowMediaEntryCaching) {
             PKMediaEntry pkMediaEntry = entriesCache.get(mediaOptions.getOvpMediaAsset().getEntryId());
             if (pkMediaEntry != null) {
-                log.d("OVP loadMedia from cache");
-
+                log.d("OVP loadMedia from Cache: name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
                 setMedia(pkMediaEntry, mediaOptions.startPosition);
                 return;
             }
