@@ -27,12 +27,15 @@ enum KnownPlugin {
     // Youbora
     youbora("com.kaltura.playkit.plugins.youbora.YouboraPlugin"),
     // Broadpeak
-    broadpeak("com.kaltura.playkit.plugins.broadpeak.BroadpeakPlugin");
+    broadpeak("com.kaltura.playkit.plugins.broadpeak.BroadpeakPlugin"),
+    // Smartswitch
+    smartswitch("com.kaltura.playkit.plugins.smartswitch.SmartSwitchPlugin");
 
     private static final PKLog log = PKLog.get("KnownPlugin");
 
     public final String className;
     public final PKPlugin.Factory factory;
+    private static boolean isBroadpeakPluginRegistered;
 
     KnownPlugin(String className, PKPlugin.Factory factory) {
         this.className = className;
@@ -56,6 +59,18 @@ enum KnownPlugin {
                 log.e("Plugin factory " + pluginClassName + ".factory is null");
                 return;
             }
+
+            if (KnownPlugin.broadpeak.name().equals(factory.getName())) {
+                isBroadpeakPluginRegistered = true;
+            }
+
+            if (KnownPlugin.smartswitch.name().equals(factory.getName()) && isBroadpeakPluginRegistered) {
+                isBroadpeakPluginRegistered = false;
+                log.w("SmartSwitch plugin can not be registered along with Broadpeak plugin.\n" +
+                        "You can not have both of them in Gradle dependencies.");
+                return;
+            }
+
             PlayKitManager.registerPlugins(context, factory);
 
         } catch (ClassNotFoundException e) {
