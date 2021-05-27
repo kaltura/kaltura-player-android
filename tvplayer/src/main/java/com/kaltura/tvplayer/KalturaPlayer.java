@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.collection.LruCache;
 
+import com.google.gson.Gson;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
@@ -117,7 +118,7 @@ public abstract class KalturaPlayer {
     private View view;
     private PKMediaEntry mediaEntry;
 
-    private static LruCache<String, PKMediaEntry> entriesCache;
+    private static LruCache<String, String> entriesCache;
 
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
@@ -770,7 +771,8 @@ public abstract class KalturaPlayer {
         if (entry != null) {
             if (entriesCache != null && initOptions.allowMediaEntryCaching && entry.getMetadata() != null && entry.getMetadata().get("mediaAssetUUID") != null) {
                 log.d("Add Entry to Cache: name = " + entry.getName() + " mediaId = " + entry.getId());
-                entriesCache.put(entry.getMetadata().get("mediaAssetUUID"), entry);
+                String mediaEntryJson = new Gson().toJson(entry);
+                entriesCache.put(entry.getMetadata().get("mediaAssetUUID"), mediaEntryJson);
             }
             
             applyMediaEntryInterceptors(entry, () ->
@@ -1029,11 +1031,14 @@ public abstract class KalturaPlayer {
 
         prepareLoadMedia(mediaOptions);
         if (entriesCache != null && initOptions.allowMediaEntryCaching) {
-            PKMediaEntry pkMediaEntry = entriesCache.get(mediaOptions.getOttMediaAsset().getUUID());
-            if (pkMediaEntry != null) {
-                log.d("OTT loadMedia from Cache: name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
-                setMedia(pkMediaEntry, mediaOptions.startPosition);
-                return;
+            String mediaEntryJson = entriesCache.get(mediaOptions.getOttMediaAsset().getUUID());
+            if (!TextUtils.isEmpty(mediaEntryJson)) {
+                PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
+                if (pkMediaEntry != null) {
+                    log.d("OTT loadMedia from Cache: name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
+                    setMedia(pkMediaEntry, mediaOptions.startPosition);
+                    return;
+                }
             }
         }
 
@@ -1067,13 +1072,17 @@ public abstract class KalturaPlayer {
 
         prepareLoadMedia(mediaOptions);
         if (initOptions.allowMediaEntryCaching) {
-            PKMediaEntry pkMediaEntry = entriesCache.get(mediaOptions.getOvpMediaAsset().getEntryId());
-            if (pkMediaEntry != null) {
-                log.d("OVP loadMedia from Cache: name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
-                setMedia(pkMediaEntry, mediaOptions.startPosition);
-                return;
+            String mediaEntryJson = entriesCache.get(mediaOptions.getOvpMediaAsset().getEntryId());
+            if (!TextUtils.isEmpty(mediaEntryJson)) {
+                PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
+                if (pkMediaEntry != null) {
+                    log.d("OVP loadMedia from Cache: name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
+                    setMedia(pkMediaEntry, mediaOptions.startPosition);
+                    return;
+                }
             }
         }
+
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
             @Override
             public void onTick(long millisUntilFinished) {
