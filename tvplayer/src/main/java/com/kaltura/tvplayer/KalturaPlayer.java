@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.collection.LruCache;
 
 import com.google.gson.Gson;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
@@ -64,6 +63,7 @@ import com.kaltura.tvplayer.playlist.PlaylistController;
 import com.kaltura.tvplayer.playlist.PlaylistEvent;
 import com.kaltura.tvplayer.utils.ConfigResolver;
 import com.kaltura.tvplayer.utils.NetworkUtils;
+import com.kaltura.tvplayer.utils.TimeExpiringLruCache;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -79,6 +79,8 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
     public static final int MAX_MEDIA_ENTRY_CACHE_SIZE = 15;
+    public static final int MEDIA_ENTRY_CACHE_EXPIRATION_TIME = 60000;
+
 
     static boolean playerConfigRetrieved;
 
@@ -118,7 +120,7 @@ public abstract class KalturaPlayer {
     private View view;
     private PKMediaEntry mediaEntry;
 
-    private static LruCache<String, String> entriesCache;
+    private static TimeExpiringLruCache<String, String> entriesCache;
 
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
@@ -135,8 +137,8 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
-        if (initOptions.allowMediaEntryCaching) {
-            entriesCache = new LruCache<>(initOptions.maxMediaEntryCacheSize != null ? initOptions.maxMediaEntryCacheSize : MAX_MEDIA_ENTRY_CACHE_SIZE);
+        if (initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
+            entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryLruCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryLruCacheConfig.getTimeoutMS());
         }
         messageBus = new MessageBus();
         this.referrer = buildReferrer(context, initOptions.referrer);
@@ -769,7 +771,7 @@ public abstract class KalturaPlayer {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
-            if (entriesCache != null && initOptions.allowMediaEntryCaching && entry.getMetadata() != null && entry.getMetadata().get("mediaAssetUUID") != null) {
+            if (entriesCache != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching() && entry.getMetadata() != null && entry.getMetadata().get("mediaAssetUUID") != null) {
                 log.d("Add Entry to Cache: name = " + entry.getName() + " mediaId = " + entry.getId());
                 String mediaEntryJson = new Gson().toJson(entry);
                 entriesCache.put(entry.getMetadata().get("mediaAssetUUID"), mediaEntryJson);
@@ -1030,7 +1032,7 @@ public abstract class KalturaPlayer {
             return;
 
         prepareLoadMedia(mediaOptions);
-        if (entriesCache != null && initOptions.allowMediaEntryCaching) {
+        if (entriesCache != null && initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
             String mediaEntryJson = entriesCache.get(mediaOptions.getOttMediaAsset().getUUID());
             if (!TextUtils.isEmpty(mediaEntryJson)) {
                 PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
@@ -1071,7 +1073,7 @@ public abstract class KalturaPlayer {
             return;
 
         prepareLoadMedia(mediaOptions);
-        if (initOptions.allowMediaEntryCaching) {
+        if (initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
             String mediaEntryJson = entriesCache.get(mediaOptions.getOvpMediaAsset().getEntryId());
             if (!TextUtils.isEmpty(mediaEntryJson)) {
                 PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
