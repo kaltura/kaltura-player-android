@@ -690,6 +690,12 @@ public abstract class KalturaPlayer {
         pkPlayer.seekToLiveDefaultPosition();
     }
 
+    public void clearMediaEntryLruCache() {
+        if (entriesCache != null) {
+            entriesCache.evictAll();
+        }
+    }
+
     public AdController getAdController() {
         return pkPlayer.getController(AdController.class);
     }
