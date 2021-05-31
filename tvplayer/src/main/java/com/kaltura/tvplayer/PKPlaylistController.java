@@ -220,7 +220,7 @@ public class PKPlaylistController implements PlaylistController {
             ovpMediaOptions.setUseApiCaptions(ovpPlaylistIdOptions.useApiCaptions);
         }
 
-        kalturaPlayer.loadMedia(ovpMediaOptions, (entry, loadError) -> {
+        kalturaPlayer.loadMedia(ovpMediaOptions, (mediaOptions, entry, loadError) -> {
             if (loadError != null) {
                 log.e("OVPMedia error = " + loadError.getMessage());
                 if (kalturaPlayer.getMessageBus() == null) {
@@ -256,7 +256,7 @@ public class PKPlaylistController implements PlaylistController {
             }
         }
 
-        kalturaPlayer.loadMedia(ottMediaOptions, (entry, loadError) -> {
+        kalturaPlayer.loadMedia(ottMediaOptions, (mediaOptions, entry, loadError) -> {
             if (loadError != null) {
                 log.e(loadError.getMessage());
                 if (kalturaPlayer.getMessageBus() == null) {
