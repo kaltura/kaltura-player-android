@@ -442,25 +442,8 @@ public abstract class KalturaPlayer {
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
         applyMediaEntryInterceptors(mediaEntry, () ->
                 mainHandler.post(() -> {
-                    tokenResolver.update(mediaEntry, getKS());
-
-                    if (externalSubtitles != null) {
-                        if (mediaEntry.getExternalSubtitleList() == null) {
-                            mediaEntry.setExternalSubtitleList(externalSubtitles);
-                        } else {
-                            mediaEntry.getExternalSubtitleList().addAll(externalSubtitles);
-                        }
-                    }
-
-                    if (preload) {
-                        this.mediaEntry = mediaEntry;
-                        this.prepareState = PrepareState.not_prepared;
-                        PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
-                        updateKalturaPluginConfigs(combinedPluginConfigs);
-                        prepare();
-                    }
+                    setMediaInternal(mediaEntry);
                 }));
-
     }
 
     public void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
@@ -771,12 +754,8 @@ public abstract class KalturaPlayer {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
-            if (entriesCache != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching() && entry.getMetadata() != null && entry.getMetadata().get("mediaAssetUUID") != null) {
-                log.d("Add Entry to Cache: name = " + entry.getName() + " mediaId = " + entry.getId());
-                String mediaEntryJson = new Gson().toJson(entry);
-                entriesCache.put(entry.getMetadata().get("mediaAssetUUID"), mediaEntryJson);
-            }
-            
+            insertMediaEnteryIntoCache(entry);
+
             applyMediaEntryInterceptors(entry, () ->
                     mainHandler.post(() -> {
                         setMediaInternal(entry);
@@ -784,6 +763,14 @@ public abstract class KalturaPlayer {
                     }));
         } else {
             onEntryLoadListener.onEntryLoadComplete(null, response.getError());
+        }
+    }
+
+    private void insertMediaEnteryIntoCache(PKMediaEntry entry) {
+        if (entriesCache != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching() && entry.getMetadata() != null && entry.getMetadata().get("mediaAssetUUID") != null) {
+            log.d("Add Entry to Cache: name = " + entry.getName() + " mediaId = " + entry.getId());
+            String mediaEntryJson = new Gson().toJson(entry);
+            entriesCache.put(entry.getMetadata().get("mediaAssetUUID"), mediaEntryJson);
         }
     }
 
@@ -1032,16 +1019,9 @@ public abstract class KalturaPlayer {
             return;
 
         prepareLoadMedia(mediaOptions);
-        if (entriesCache != null && initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
-            String mediaEntryJson = entriesCache.get(mediaOptions.getOttMediaAsset().getUUID());
-            if (!TextUtils.isEmpty(mediaEntryJson)) {
-                PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
-                if (pkMediaEntry != null) {
-                    log.d("OTT loadMedia from Cache: name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
-                    setMedia(pkMediaEntry, mediaOptions.startPosition);
-                    return;
-                }
-            }
+
+        if (loadMediaFromCache(mediaOptions.getOttMediaAsset().getUUID(), mediaOptions.startPosition)) {
+            return;
         }
 
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
@@ -1067,22 +1047,29 @@ public abstract class KalturaPlayer {
         }.start();
     }
 
+    private boolean loadMediaFromCache(@NonNull String mediaEntryCacheKey, Long startPositoin) {
+        if (entriesCache != null && initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
+            String mediaEntryJson = entriesCache.get(mediaEntryCacheKey);
+            if (!TextUtils.isEmpty(mediaEntryJson)) {
+                PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
+                if (pkMediaEntry != null) {
+                    log.d("LoadMedia from Cache: name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
+                    setMedia(pkMediaEntry, startPositoin);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void loadMedia(@NonNull OVPMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
 
         if (!isValidOVPPlayer())
             return;
 
         prepareLoadMedia(mediaOptions);
-        if (initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
-            String mediaEntryJson = entriesCache.get(mediaOptions.getOvpMediaAsset().getEntryId());
-            if (!TextUtils.isEmpty(mediaEntryJson)) {
-                PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
-                if (pkMediaEntry != null) {
-                    log.d("OVP loadMedia from Cache: name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
-                    setMedia(pkMediaEntry, mediaOptions.startPosition);
-                    return;
-                }
-            }
+        if (loadMediaFromCache(mediaOptions.getOvpMediaAsset().getEntryId(), mediaOptions.startPosition)) {
+            return;
         }
 
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
