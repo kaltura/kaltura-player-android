@@ -407,6 +407,9 @@ public abstract class KalturaPlayer {
         if (initOptions.maxAudioChannelCount != null) {
             pkPlayer.getSettings().setMaxAudioChannelCount(initOptions.maxAudioChannelCount);
         }
+        if (initOptions.multicastSettings != null) {
+            pkPlayer.getSettings().setMulticastSettings(initOptions.multicastSettings);
+        }
     }
 
     @NonNull
