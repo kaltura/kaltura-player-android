@@ -138,7 +138,7 @@ public abstract class KalturaPlayer {
             this.preload = true; // autoplay implies preload
         }
         if (initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
-            entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryLruCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryLruCacheConfig.getTimeoutMS());
+            entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryLruCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryLruCacheConfig.getTimeoutMs());
         }
         messageBus = new MessageBus();
         this.referrer = buildReferrer(context, initOptions.referrer);
