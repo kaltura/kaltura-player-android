@@ -1070,6 +1070,7 @@ public abstract class KalturaPlayer {
                 if (pkMediaEntry != null) {
                     log.d("LoadMedia from Cache: key = " + mediaEntryCacheKey + " name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
                     setMedia(pkMediaEntry, startPositoin);
+                    entriesCache.put(mediaEntryCacheKey, mediaEntryJson); // start timer again
                     return true;
                 }
             }
