@@ -247,7 +247,7 @@ public abstract class KalturaPlayer {
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
         if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName()) && Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId)) {
-            NetworkUtils.sendKavaImpression(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID);
+            NetworkUtils.sendKavaImpression(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
         }
     }
 
