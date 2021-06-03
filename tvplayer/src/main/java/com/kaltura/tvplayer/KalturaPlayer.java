@@ -80,8 +80,7 @@ public abstract class KalturaPlayer {
     public static final String OKHTTP = "okhttp";
     public static final int MAX_MEDIA_ENTRY_CACHE_SIZE = 15;
     public static final int MEDIA_ENTRY_CACHE_EXPIRATION_TIME = 60000;
-
-
+    
     static boolean playerConfigRetrieved;
 
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
@@ -1063,6 +1062,7 @@ public abstract class KalturaPlayer {
     }
 
     private boolean loadMediaFromCache(@NonNull String mediaEntryCacheKey, Long startPositoin) {
+
         if (entriesCache != null && initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
             String mediaEntryJson = entriesCache.get(mediaEntryCacheKey);
             if (!TextUtils.isEmpty(mediaEntryJson)) {
