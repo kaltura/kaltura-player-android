@@ -17,7 +17,7 @@ import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
-import com.kaltura.tvplayer.config.MediaEntryLruCacheConfig;
+import com.kaltura.tvplayer.config.MediaEntryCacheConfig;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
 public class PlayerInitOptions {
@@ -71,7 +71,7 @@ public class PlayerInitOptions {
     public Integer maxAudioChannelCount;
     public MulticastSettings multicastSettings;
 
-    public MediaEntryLruCacheConfig mediaEntryLruCacheConfig;
+    public MediaEntryCacheConfig mediaEntryCacheConfig;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -387,9 +387,9 @@ public class PlayerInitOptions {
         return this;
     }
 
-    public PlayerInitOptions setMediaEntryLruCacheConfig(MediaEntryLruCacheConfig mediaEntryLruCacheConfig) {
-        if (mediaEntryLruCacheConfig != null) {
-            this.mediaEntryLruCacheConfig = mediaEntryLruCacheConfig;
+    public PlayerInitOptions setMediaEntryCacheConfig(MediaEntryCacheConfig mediaEntryCacheConfig) {
+        if (mediaEntryCacheConfig != null) {
+            this.mediaEntryCacheConfig = mediaEntryCacheConfig;
         }
         return this;
     }

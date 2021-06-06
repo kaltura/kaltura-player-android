@@ -136,8 +136,8 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
-        if (initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
-            entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryLruCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryLruCacheConfig.getTimeoutMs());
+        if (initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
+            entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryCacheConfig.getTimeoutMs());
         }
         messageBus = new MessageBus();
         this.referrer = buildReferrer(context, initOptions.referrer);
@@ -781,7 +781,7 @@ public abstract class KalturaPlayer {
         } else if (mediaOptions instanceof OTTMediaOptions) {
             mediaAssetUUID = ((OTTMediaOptions) mediaOptions).getOttMediaAsset().getUUID();
         }
-        if (entriesCache != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching() && !TextUtils.isEmpty(mediaAssetUUID)) {
+        if (entriesCache != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching() && !TextUtils.isEmpty(mediaAssetUUID)) {
             log.d("Add Entry to Cache: key = " + mediaAssetUUID + " name = " + entry.getName() + " mediaId = " + entry.getId());
             String mediaEntryJson = new Gson().toJson(entry);
             entriesCache.put(mediaAssetUUID, mediaEntryJson);
@@ -1063,7 +1063,7 @@ public abstract class KalturaPlayer {
 
     private boolean loadMediaFromCache(@NonNull String mediaEntryCacheKey, Long startPositoin) {
 
-        if (entriesCache != null && initOptions.mediaEntryLruCacheConfig != null && initOptions.mediaEntryLruCacheConfig.getAllowMediaEntryCaching()) {
+        if (entriesCache != null && initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
             String mediaEntryJson = entriesCache.get(mediaEntryCacheKey);
             if (!TextUtils.isEmpty(mediaEntryJson)) {
                 PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
