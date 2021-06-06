@@ -692,7 +692,7 @@ public abstract class KalturaPlayer {
         pkPlayer.seekToLiveDefaultPosition();
     }
 
-    public void clearMediaEntryLruCache() {
+    public void clearMediaEntryCache() {
         if (entriesCache != null) {
             entriesCache.evictAll();
         }
