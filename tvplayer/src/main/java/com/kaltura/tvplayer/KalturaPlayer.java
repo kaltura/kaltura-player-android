@@ -339,8 +339,8 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setPKLowLatencyConfig(initOptions.pkLowLatencyConfig);
         }
 
-        if (initOptions.pkRequestConfiguration != null) {
-            pkPlayer.getSettings().setPKRequestConfig(initOptions.pkRequestConfiguration);
+        if (initOptions.pkRequestConfig != null) {
+            pkPlayer.getSettings().setPKRequestConfig(initOptions.pkRequestConfig);
         }
 
         if (initOptions.forceSinglePlayerEngine != null) {
