@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.gson.Gson;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
@@ -62,6 +63,7 @@ import com.kaltura.tvplayer.playlist.PlaylistController;
 import com.kaltura.tvplayer.playlist.PlaylistEvent;
 import com.kaltura.tvplayer.utils.ConfigResolver;
 import com.kaltura.tvplayer.utils.NetworkUtils;
+import com.kaltura.tvplayer.utils.TimeExpiringLruCache;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -76,7 +78,9 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
-
+    public static final int MAX_MEDIA_ENTRY_CACHE_SIZE = 15;
+    public static final int MEDIA_ENTRY_CACHE_EXPIRATION_TIME = 60000; // 1 hour
+    
     static boolean playerConfigRetrieved;
 
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
@@ -114,6 +118,9 @@ public abstract class KalturaPlayer {
     private List<PKExternalSubtitle> externalSubtitles;
     private View view;
     private PKMediaEntry mediaEntry;
+
+    private static TimeExpiringLruCache<String, String> entriesCache;
+
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
@@ -129,7 +136,9 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
-
+        if (initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
+            entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryCacheConfig.getTimeoutMs());
+        }
         messageBus = new MessageBus();
         this.referrer = buildReferrer(context, initOptions.referrer);
         populatePartnersValues();
@@ -325,7 +334,7 @@ public abstract class KalturaPlayer {
         if (initOptions.vrSettings != null) {
             pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
-        
+
         if (initOptions.pkLowLatencyConfig != null) {
             pkPlayer.getSettings().setPKLowLatencyConfig(initOptions.pkLowLatencyConfig);
         }
@@ -433,6 +442,13 @@ public abstract class KalturaPlayer {
     }
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
+        applyMediaEntryInterceptors(mediaEntry, () ->
+                mainHandler.post(() -> {
+                    setMediaInternal(mediaEntry);
+                }));
+    }
+
+    public void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry, getKS());
 
         if (externalSubtitles != null) {
@@ -647,7 +663,7 @@ public abstract class KalturaPlayer {
     }
 
     public ThumbnailInfo getThumbnailInfo(long ... positionMS) { return pkPlayer.getThumbnailInfo(positionMS); }
-    
+
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         pkPlayer.addListener(groupId, type, listener);
     }
@@ -674,6 +690,12 @@ public abstract class KalturaPlayer {
 
     public void seekToLiveDefaultPosition() {
         pkPlayer.seekToLiveDefaultPosition();
+    }
+
+    public void clearMediaEntryCache() {
+        if (entriesCache != null) {
+            entriesCache.evictAll();
+        }
     }
 
     public AdController getAdController() {
@@ -736,17 +758,33 @@ public abstract class KalturaPlayer {
     }
 
     // Called by implementation of loadMedia()
-    private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
+    private void mediaLoadCompleted(final MediaOptions mediaOptions, final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
+            insertMediaEnteryIntoCache(mediaOptions, entry);
+
             applyMediaEntryInterceptors(entry, () ->
                     mainHandler.post(() -> {
-                        setMedia(entry);
-                        onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
+                        setMediaInternal(entry);
+                        onEntryLoadListener.onEntryLoadComplete(mediaOptions, entry, response.getError());
                     }));
         } else {
-            onEntryLoadListener.onEntryLoadComplete(null, response.getError());
+            onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, response.getError());
+        }
+    }
+
+    private void insertMediaEnteryIntoCache(MediaOptions mediaOptions, PKMediaEntry entry) {
+        String mediaAssetUUID = "";
+        if (mediaOptions instanceof OVPMediaOptions) {
+            mediaAssetUUID = ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().getUUID();
+        } else if (mediaOptions instanceof OTTMediaOptions) {
+            mediaAssetUUID = ((OTTMediaOptions) mediaOptions).getOttMediaAsset().getUUID();
+        }
+        if (entriesCache != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching() && !TextUtils.isEmpty(mediaAssetUUID)) {
+            log.d("Add Entry to Cache: key = " + mediaAssetUUID + " name = " + entry.getName() + " mediaId = " + entry.getId());
+            String mediaEntryJson = new Gson().toJson(entry);
+            entriesCache.put(mediaAssetUUID, mediaEntryJson);
         }
     }
 
@@ -758,6 +796,7 @@ public abstract class KalturaPlayer {
     private void applyMediaEntryInterceptor(List<PKMediaEntryInterceptor> localInterceptors,
                                             PKMediaEntry mediaEntry,
                                             PKMediaEntryInterceptor.Listener listener) {
+
         if (localInterceptors.isEmpty()) {
             listener.onComplete();
             return;
@@ -995,6 +1034,10 @@ public abstract class KalturaPlayer {
 
         prepareLoadMedia(mediaOptions);
 
+        if (loadMediaFromCache(mediaOptions.getOttMediaAsset().getUUID(), mediaOptions.startPosition)) {
+            return;
+        }
+
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
             @Override
             public void onTick(long millisUntilFinished) {
@@ -1006,16 +1049,33 @@ public abstract class KalturaPlayer {
                     }
                     populatePartnersValues();
                     final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
-                    provider.load(response -> mediaLoadCompleted(response, listener));
+                    provider.load(response -> mediaLoadCompleted(mediaOptions, response, listener));
                 }
             }
 
             @Override
             public void onFinish() {
                 log.e("KalturaPlayerNotInitializedError");
-                listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError);
+                listener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
             }
         }.start();
+    }
+
+    private boolean loadMediaFromCache(@NonNull String mediaEntryCacheKey, Long startPositoin) {
+
+        if (entriesCache != null && initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
+            String mediaEntryJson = entriesCache.get(mediaEntryCacheKey);
+            if (!TextUtils.isEmpty(mediaEntryJson)) {
+                PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
+                if (pkMediaEntry != null) {
+                    log.d("LoadMedia from Cache: key = " + mediaEntryCacheKey + " name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
+                    setMedia(pkMediaEntry, startPositoin);
+                    entriesCache.put(mediaEntryCacheKey, mediaEntryJson); // restart cache revoke timer
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public void loadMedia(@NonNull OVPMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
@@ -1024,6 +1084,9 @@ public abstract class KalturaPlayer {
             return;
 
         prepareLoadMedia(mediaOptions);
+        if (loadMediaFromCache(mediaOptions.getOvpMediaAsset().getUUID(), mediaOptions.startPosition)) {
+            return;
+        }
 
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
             @Override
@@ -1036,14 +1099,14 @@ public abstract class KalturaPlayer {
                     }
                     populatePartnersValues();
                     final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
-                    provider.load(response -> mediaLoadCompleted(response, listener));
+                    provider.load(response -> mediaLoadCompleted(mediaOptions, response, listener));
                 }
             }
 
             @Override
             public void onFinish() {
                 log.e("KalturaPlayerNotInitializedError");
-                listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError);
+                listener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
             }
         }.start();
     }
@@ -1152,7 +1215,7 @@ public abstract class KalturaPlayer {
     }
 
     public interface OnEntryLoadListener {
-        void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
+        void onEntryLoadComplete(MediaOptions mediaOptions, PKMediaEntry entry, ErrorElement error);
     }
 
     public interface OnPlaylistLoadListener {
