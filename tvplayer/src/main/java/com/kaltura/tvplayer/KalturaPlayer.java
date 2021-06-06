@@ -76,8 +76,6 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
-    public static final int MAX_MEDIA_ENTRY_CACHE_SIZE = 15;
-    public static final int MEDIA_ENTRY_CACHE_EXPIRATION_TIME = 60000; // 1 hour
     
     static boolean playerConfigRetrieved;
 
