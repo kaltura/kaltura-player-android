@@ -139,7 +139,7 @@ public class PlayerInitOptions {
 
     /**
      * This method is deprecated.
-     * Please use {@link com.kaltura.playkit.PKRequestConfig} to set crossProtocolRedirect
+     * Please use {@link com.kaltura.playkit.PKRequestConfig} in order to set crossProtocolRedirect
      */
     @Deprecated
     public PlayerInitOptions setAllowCrossProtocolEnabled(Boolean allowCrossProtocolEnabled) {
