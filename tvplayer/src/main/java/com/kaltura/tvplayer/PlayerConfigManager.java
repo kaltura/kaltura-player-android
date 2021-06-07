@@ -98,8 +98,8 @@ public class PlayerConfigManager {
     }
 
     private static void refreshCache(Context context, KalturaPlayer.Type playerType, int partnerId, String serverUrl, final CachedConfig cachedConfig, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
-        load(context, playerType, partnerId, serverUrl, (json, error) -> {
-            if (error == null && json != null) {
+        load(context, playerType, partnerId, serverUrl, (json, errorMessage) -> {
+            if (errorMessage == null && json != null) {
                 TVPlayerParams playerParams = null;
                 if (KalturaPlayer.Type.ovp.equals(playerType)) {
                     playerParams = gson.fromJson(json, TVPlayerParams.class);
