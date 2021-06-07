@@ -83,7 +83,6 @@ public class PlayerConfigManager {
         }
         return null;
     }
-    
 
     private static void configLoaded(@Nullable OnPlayerConfigLoaded onPlayerConfigLoaded, KalturaPlayer.Type playerType, int partnerId, String serverUrl, CachedConfig cachedConfig) {
         if (onPlayerConfigLoaded != null) {
