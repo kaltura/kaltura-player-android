@@ -31,7 +31,6 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
-
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -50,6 +49,7 @@ import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.PlaylistProvider;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.NetworkUtils;
 import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.playlist.BasicMediaOptions;
 import com.kaltura.tvplayer.playlist.BasicPlaylistOptions;
@@ -59,10 +59,8 @@ import com.kaltura.tvplayer.playlist.OVPPlaylistOptions;
 import com.kaltura.tvplayer.playlist.PKBasicPlaylist;
 import com.kaltura.tvplayer.playlist.PKPlaylistType;
 import com.kaltura.tvplayer.playlist.PlaylistController;
-
 import com.kaltura.tvplayer.playlist.PlaylistEvent;
 import com.kaltura.tvplayer.utils.ConfigResolver;
-import com.kaltura.tvplayer.utils.NetworkUtils;
 import com.kaltura.tvplayer.utils.TimeExpiringLruCache;
 
 import java.io.File;
@@ -78,8 +76,6 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
-    public static final int MAX_MEDIA_ENTRY_CACHE_SIZE = 15;
-    public static final int MEDIA_ENTRY_CACHE_EXPIRATION_TIME = 60000; // 1 hour
     
     static boolean playerConfigRetrieved;
 
@@ -258,7 +254,7 @@ public abstract class KalturaPlayer {
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
         if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName()) && Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId)) {
-            NetworkUtils.sendKavaImpression(context);
+            NetworkUtils.sendKavaImpression(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
         }
     }
 
