@@ -2,7 +2,7 @@ package com.kaltura.tvplayer;
 
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
-import com.kaltura.playkit.PKRequestConfiguration;
+import com.kaltura.playkit.PKRequestConfig;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
@@ -10,12 +10,14 @@ import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
+import com.kaltura.tvplayer.config.MediaEntryCacheConfig;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
 public class PlayerInitOptions {
@@ -51,7 +53,7 @@ public class PlayerInitOptions {
     public ABRSettings abrSettings;
     public VRSettings vrSettings;
     public PKLowLatencyConfig pkLowLatencyConfig;
-    public PKRequestConfiguration pkRequestConfiguration;
+    public PKRequestConfig pkRequestConfig;
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
@@ -67,6 +69,9 @@ public class PlayerInitOptions {
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
     public Integer maxAudioChannelCount;
+    public MulticastSettings multicastSettings;
+
+    public MediaEntryCacheConfig mediaEntryCacheConfig;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -134,7 +139,7 @@ public class PlayerInitOptions {
 
     /**
      * This method is deprecated.
-     * Please use {@link com.kaltura.playkit.PKRequestConfiguration} to set crossProtocolRedirect
+     * Please use {@link com.kaltura.playkit.PKRequestConfig} in order to set crossProtocolRedirect
      */
     @Deprecated
     public PlayerInitOptions setAllowCrossProtocolEnabled(Boolean allowCrossProtocolEnabled) {
@@ -200,9 +205,9 @@ public class PlayerInitOptions {
         return this;
     }
     
-    public PlayerInitOptions setPKRequestConfig(PKRequestConfiguration pkRequestConfiguration) {
-        if (pkRequestConfiguration != null) {
-            this.pkRequestConfiguration = pkRequestConfiguration;
+    public PlayerInitOptions setPKRequestConfig(PKRequestConfig pkRequestConfig) {
+        if (pkRequestConfig != null) {
+            this.pkRequestConfig = pkRequestConfig;
         }
         return this;
     }
@@ -371,6 +376,20 @@ public class PlayerInitOptions {
     public PlayerInitOptions setMaxAudioChannelCount(Integer maxAudioChannelCount) {
         if (maxAudioChannelCount != null) {
             this.maxAudioChannelCount = maxAudioChannelCount;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMulticastSettings(MulticastSettings multicastSettings) {
+        if (multicastSettings != null) {
+            this.multicastSettings = multicastSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMediaEntryCacheConfig(MediaEntryCacheConfig mediaEntryCacheConfig) {
+        if (mediaEntryCacheConfig != null) {
+            this.mediaEntryCacheConfig = mediaEntryCacheConfig;
         }
         return this;
     }
