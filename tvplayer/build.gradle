@@ -59,6 +59,6 @@ repositories {
     mavenCentral()
 }
 
-if (hasProperty('VERSION_NAME') && !ext.libVersion.contains('dev')) {
+if (!ext.libVersion.contains('dev')) {
     apply from: './gradle-mvn-push.gradle'
 }
