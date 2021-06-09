@@ -342,7 +342,7 @@ public class PlaybackControlsView extends LinearLayout {
                 setPlayImage();
 
             } else {
-                if (player.getCurrentPosition() > 0 && player.getCurrentPosition() >= player.getDuration()) {
+                if (player.getCurrentPosition() > 0  && player.getDuration() > 0 && player.getCurrentPosition() >= player.getDuration()) {
                     player.replay();
                 } else {
                     player.play();
