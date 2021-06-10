@@ -254,7 +254,7 @@ public class PlaybackControlsView extends LinearLayout {
 
         this.player.addListener(this, AdEvent.allAdsCompleted, event -> {
             log.d("allAdsCompleted");
-            if (player != null && player.getCurrentPosition() > 0 && player.getCurrentPosition() >= player.getDuration()) {
+            if (player != null && player.getCurrentPosition() > 0 && player.getDuration() > 0 && player.getCurrentPosition() >= player.getDuration()) {
                 setPlayerState(PlayerState.IDLE);
             }
         });
@@ -284,7 +284,7 @@ public class PlaybackControlsView extends LinearLayout {
             return setIdleStateAfterPostroll;
         }
 
-        if (player.getCurrentPosition() > 0 &&
+        if (player.getCurrentPosition() > 0 && player.getDuration() > 0 &&
                 player.getCurrentPosition() >= player.getDuration() &&
                 (adController.isAdDisplayed() || adTagHasPostroll)) {
             setIdleStateAfterPostroll = true;
@@ -342,7 +342,7 @@ public class PlaybackControlsView extends LinearLayout {
                 setPlayImage();
 
             } else {
-                if (player.getCurrentPosition() > 0 && player.getCurrentPosition() >= player.getDuration()) {
+                if (player.getCurrentPosition() > 0  && player.getDuration() > 0 && player.getCurrentPosition() >= player.getDuration()) {
                     player.replay();
                 } else {
                     player.play();
