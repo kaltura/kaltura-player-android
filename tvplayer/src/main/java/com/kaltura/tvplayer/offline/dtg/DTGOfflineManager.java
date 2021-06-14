@@ -29,8 +29,6 @@ import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -446,7 +444,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         return list;
     }
 
-    @NotNull
     @NonNull
     @Override
     public PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) {

@@ -440,10 +440,14 @@ public abstract class KalturaPlayer {
     }
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
-        applyMediaEntryInterceptors(mediaEntry, () ->
-                mainHandler.post(() -> {
-                    setMediaInternal(mediaEntry);
-                }));
+        if (mediaEntry.hasSources()) {
+            applyMediaEntryInterceptors(mediaEntry, () ->
+                    mainHandler.post(() -> {
+                        setMediaInternal(mediaEntry);
+                    }));
+        } else {
+            log.e("mediaEntry does not contain any source");
+        }
     }
 
     public void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
@@ -463,7 +467,7 @@ public abstract class KalturaPlayer {
             PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
             updateKalturaPluginConfigs(combinedPluginConfigs);
             if (offlineManager != null && offlineManager.getDownloadCache() != null) {
-                //pkPlayer.setDownloadCache(offlineManager.getDownloadCache());
+                pkPlayer.setDownloadCache(offlineManager.getDownloadCache());
             }
             prepare();
         }

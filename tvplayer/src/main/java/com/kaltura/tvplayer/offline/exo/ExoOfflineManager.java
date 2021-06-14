@@ -18,6 +18,7 @@ import com.kaltura.android.exoplayer2.drm.DrmSession;
 import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
 import com.kaltura.android.exoplayer2.drm.OfflineLicenseHelper;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
+import com.kaltura.android.exoplayer2.source.MediaSource;
 import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.google.gson.Gson;
@@ -49,6 +50,7 @@ import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
+import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSourceFactory;
 import com.kaltura.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
 import com.kaltura.android.exoplayer2.upstream.cache.SimpleCache;
 import com.kaltura.android.exoplayer2.util.Util;
@@ -124,7 +126,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private Handler bgHandler = createBgHandler();
 
     private final DatabaseProvider databaseProvider;
-    private final File downloadDirectory;
+    private File downloadDirectory;
     final Cache downloadCache;
     final DownloadManager downloadManager;
 
@@ -231,7 +233,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         final File externalFilesDir = context.getExternalFilesDir(null);
         downloadDirectory = externalFilesDir != null ? externalFilesDir : context.getFilesDir();
-
+        if (downloadDirectory == null) {
+            downloadDirectory = context.getFilesDir();
+        }
         databaseProvider = new ExoDatabaseProvider(context);
 
         File downloadContentDirectory = new File(downloadDirectory, DOWNLOAD_CONTENT_DIRECTORY);
@@ -419,21 +423,22 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 }
             }
         }
+
         MediaItem mediaItem = builder.build();
         if (mediaFormat != PKMediaFormat.dash) {
             downloadHelper = DownloadHelper.forMediaItem(
                     appContext, mediaItem, new DefaultRenderersFactory(appContext), httpDataSourceFactory);
         } else if (drmData != null && drmData.getScheme() != null) {
-                final DrmCallback drmCallback = new DrmCallback(httpDataSourceFactory, null); // TODO license adapter usage?
-                //drmSessionManager = buildDrmSessionManager(drmData);
-                deferredDrmSessionManager = new DeferredDrmSessionManager(new Handler(Looper.getMainLooper()), drmCallback, error -> {
-                    log.e("onPrepareError drm call failed");
-                    postEvent(() -> prepareCallback.onPrepareError(assetId, new IllegalArgumentException("drm call failed")));
-                }, true, forceWidevineL3Playback);
-                deferredDrmSessionManager.setMediaSource(source);
-                downloadHelper =  DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, deferredDrmSessionManager);
-            } else {
-            downloadHelper = DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, DrmSessionManager.getDummyDrmSessionManager());
+            final DrmCallback drmCallback = new DrmCallback(httpDataSourceFactory, null); // TODO license adapter usage?
+            //drmSessionManager = buildDrmSessionManager(drmData);
+            deferredDrmSessionManager = new DeferredDrmSessionManager(new Handler(Looper.getMainLooper()), drmCallback, error -> {
+                log.e("onPrepareError drm call failed");
+                postEvent(() -> prepareCallback.onPrepareError(assetId, new IllegalArgumentException("drm call failed")));
+            }, true, forceWidevineL3Playback);
+            deferredDrmSessionManager.setMediaSource(source);
+            downloadHelper =  DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, deferredDrmSessionManager);
+        } else {
+            downloadHelper = DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, DrmSessionManager.DUMMY);
         }
 
         downloadHelper.prepare(new DownloadHelper.Callback() {
@@ -442,13 +447,15 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 @Nullable Format format = getFirstFormatWithDrmInitData(helper);
 
                 if (mediaItem.playbackProperties.drmConfiguration != null && mediaItem.playbackProperties.drmConfiguration.licenseUri != null) {
+
                     WidevineOfflineLicenseFetchTask widevineOfflineLicenseFetchTask = null;
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                        widevineOfflineLicenseFetchTask = new WidevineOfflineLicenseFetchTask(
-                                format,
-                                mediaItem.playbackProperties.drmConfiguration.licenseUri,
-                                httpDataSourceFactory,
-                                helper);
+                        widevineOfflineLicenseFetchTask =
+                                new WidevineOfflineLicenseFetchTask(
+                                        format,
+                                        mediaItem.playbackProperties.drmConfiguration,
+                                        httpDataSourceFactory,
+                                        helper);
                     }
                     if (widevineOfflineLicenseFetchTask != null) {
                         widevineOfflineLicenseFetchTask.execute();
@@ -472,11 +479,12 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 //helper.getDefaultTrackSelectorParameters(appContext);
 
                 if (selectionPrefs.videoBitrate == null && selectionPrefs.allAudioLanguages && selectionPrefs.allTextLanguages) {
-                    downloadAllTracks(helper, downloadHelper, selectionPrefs);
+                    //  downloadAllTracks(helper, downloadHelper, selectionPrefs);
                 } else {
-                    downloadAllVideoTracks(helper, downloadHelper, selectionPrefs);
+                    // downloadAllVideoTracks(helper, downloadHelper, selectionPrefs);
                 }
 
+                downloadDefaultTracks(helper, downloadHelper);
                 //downloadAllAudioTracks(helper, downloadHelper, selectionPrefs);
                 //downloadAllTextTracks(helper, downloadHelper, selectionPrefs);
 
@@ -505,6 +513,20 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 postEvent(() -> prepareCallback.onPrepareError(assetId, error));
             }
         });
+    }
+
+    private void downloadDefaultTracks(DownloadHelper helper, DownloadHelper downloadHelper) {
+        for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
+            downloadHelper.clearTrackSelections(periodIndex);
+            for (int i = 0; i < helper.getMappedTrackInfo(periodIndex).getRendererCount(); i++) {
+
+                downloadHelper.addTrackSelectionForSingleRenderer(
+                        periodIndex,
+                        /* rendererIndex= */ i,
+                        DownloadHelper.getDefaultTrackSelectorParameters(appContext),
+                        Collections.emptyList() );
+            }
+        }
     }
 
     @Override
@@ -581,29 +603,29 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
             //downloadHelper.clearTrackSelections(periodIndex);
             int rendererIndex = trackType;
-                List<DefaultTrackSelector.SelectionOverride> selectionOverrides = new ArrayList<>();
-                TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
+            List<DefaultTrackSelector.SelectionOverride> selectionOverrides = new ArrayList<>();
+            TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
 
-                for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
-                    //run through the all tracks in current trackGroup.
-                    TrackGroup trackGroup = trackGroupArray.get(groupIndex);
+            for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
+                //run through the all tracks in current trackGroup.
+                TrackGroup trackGroup = trackGroupArray.get(groupIndex);
 
-                    for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
-                        Format format = trackGroup.getFormat(trackIndex);
-                        if (Consts.TRACK_TYPE_VIDEO == trackType && selectionPrefs != null && selectionPrefs.videoBitrate != null && format.bitrate > selectionPrefs.videoBitrate) {
-                            if (format.bitrate > selectionPrefs.videoBitrate) {
-                                continue;
-                            }
+                for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
+                    Format format = trackGroup.getFormat(trackIndex);
+                    if (Consts.TRACK_TYPE_VIDEO == trackType && selectionPrefs != null && selectionPrefs.videoBitrate != null && format.bitrate > selectionPrefs.videoBitrate) {
+                        if (format.bitrate > selectionPrefs.videoBitrate) {
+                            continue;
                         }
-                        selectionOverrides.add(new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex));
                     }
-
-                    downloadHelper.addTrackSelectionForSingleRenderer(
-                            periodIndex,
-                            rendererIndex,
-                            buildExoParameters(selectionPrefs),
-                            selectionOverrides);
+                    selectionOverrides.add(new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex));
                 }
+
+                downloadHelper.addTrackSelectionForSingleRenderer(
+                        periodIndex,
+                        rendererIndex,
+                        buildExoParameters(selectionPrefs),
+                        selectionOverrides);
+            }
         }
     }
 
@@ -656,10 +678,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private DefaultTrackSelector.Parameters buildExoParameters(SelectionPrefs selectionPrefs) {
         //MappingTrackSelector.MappedTrackInfo mappedTrackInfo = downloadHelper.getMappedTrackInfo(/* periodIndex= */ 0);
         //return new DefaultTrackSelector.ParametersBuilder(appContext).setMaxVideoSizeSd().build();
-        return DefaultTrackSelector.Parameters.getDefaults(appContext);   // TODO: 2019-07-31
+        //return DefaultTrackSelector.Parameters.getDefaults(appContext);   // TODO: 2019-07-31
         //return new DefaultTrackSelector.ParametersBuilder(appContext).build();
         //return DownloadHelper.getDefaultTrackSelectorParameters(appContext);
-        //return  DefaultTrackSelector.Parameters.DEFAULT_WITHOUT_CONTEXT.buildUpon().setForceHighestSupportedBitrate(true).build();
+
+        return  DefaultTrackSelector.Parameters.DEFAULT_WITHOUT_CONTEXT.buildUpon().setForceHighestSupportedBitrate(true).build();
     }
 
     public static ExoOfflineManager getInstance(Context context) {
@@ -779,8 +802,16 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     @NotNull
     @Override
     public PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) throws IOException {
-
         final Download download = downloadManager.getDownloadIndex().getDownload(assetId);
+
+
+//        final CacheDataSourceFactory dataSourceFactory = new CacheDataSourceFactory(downloadCache, httpDataSourceFactory);
+//        final MediaSource mediaSource = DownloadHelper.createMediaSource(download.request, dataSourceFactory);
+//
+//        final PKMediaSource localMediaSource = lam.getLocalMediaSource(assetId, mediaSource);
+//        return new PKMediaEntry().setId(assetId).setSources(Collections.singletonList(localMediaSource));
+
+        
 
         if (download == null ||
                 (download.state == Download.STATE_STOPPED && download.stopReason != StopReason.prefetchDone.toExoCode()) ||
@@ -790,17 +821,12 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         MediaItem localMediaItem = download.request.toMediaItem();
         MediaItem.Builder builder = localMediaItem.buildUpon();
-        builder
-                .setMediaId(download.request.id)
-                .setUri(download.request.uri)
-                .setCustomCacheKey(download.request.customCacheKey)
-                .setMimeType(download.request.mimeType)
-                .setStreamKeys(download.request.streamKeys)
-                .setDrmKeySetId(keySetId);
+
+        builder.setMediaId(download.request.id)
+                .setDrmLicenseRequestHeaders(null);
 
         final PKMediaSource localMediaSource = lam.getLocalMediaSource(assetId, builder.build());
-
-
+        
         if (TextUtils.isEmpty(localMediaSource.getUrl())) {
             localMediaSource.setUrl(download.request.uri.toString());
         }
@@ -925,7 +951,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         final Uri uri = download.request.uri;
-        final CacheDataSource.Factory cacheDataSourceFactory = new CacheDataSource.Factory().setCache(downloadCache).setUpstreamDataSourceFactory(httpDataSourceFactory);
+        final CacheDataSource.Factory cacheDataSourceFactory = getCacheDataSourceFactory();
         cacheDataSourceFactory.setUpstreamPriority(C.PRIORITY_DOWNLOAD);
         return getDrmInitData(cacheDataSourceFactory, uri.toString());
     }
@@ -964,7 +990,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         final String licenseUri = drmData.getLicenseUri();
 
-        final CacheDataSource.Factory cacheDataSourceFactory = new CacheDataSource.Factory().setCache(downloadCache).setUpstreamDataSourceFactory(httpDataSourceFactory);
+        final CacheDataSource.Factory cacheDataSourceFactory = getCacheDataSourceFactory();
         cacheDataSourceFactory.setUpstreamPriority(C.PRIORITY_DOWNLOAD);
         final AssetStateListener listener = getListener();
 
@@ -982,6 +1008,15 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         } catch (LocalAssetsManager.RegisterException e) {
             postEvent(() -> listener.onRegisterError(assetId, downloadType, e));
         }
+    }
+
+    @NotNull
+    private CacheDataSource.Factory getCacheDataSourceFactory() {
+        return new CacheDataSource.Factory()
+                .setCache(downloadCache)
+                .setUpstreamDataSourceFactory(httpDataSourceFactory)
+                .setCacheWriteDataSinkFactory(null)
+                .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
     }
 
     static class RenewParams {
@@ -1028,23 +1063,23 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @RequiresApi(18)
-    private final class WidevineOfflineLicenseFetchTask extends AsyncTask<Void, Void, Void> {
+    private static final class WidevineOfflineLicenseFetchTask extends AsyncTask<Void, Void, Void> {
 
         private final Format format;
-        private final Uri licenseUri;
+        private final MediaItem.DrmConfiguration drmConfiguration;
         private final HttpDataSource.Factory httpDataSourceFactory;
         private final DownloadHelper downloadHelper;
 
-        //@Nullable private byte[] keySetId;
+        @Nullable private byte[] keySetId;
         @Nullable private DrmSession.DrmSessionException drmSessionException;
 
         public WidevineOfflineLicenseFetchTask(
                 Format format,
-                Uri licenseUri,
+                MediaItem.DrmConfiguration drmConfiguration,
                 HttpDataSource.Factory httpDataSourceFactory,
                 DownloadHelper downloadHelper) {
             this.format = format;
-            this.licenseUri = licenseUri;
+            this.drmConfiguration = drmConfiguration;
             this.httpDataSourceFactory = httpDataSourceFactory;
             this.downloadHelper = downloadHelper;
         }
@@ -1053,8 +1088,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         protected Void doInBackground(Void... voids) {
             OfflineLicenseHelper offlineLicenseHelper =
                     OfflineLicenseHelper.newWidevineInstance(
-                            licenseUri.toString(),
+                            drmConfiguration.licenseUri.toString(),
+                            drmConfiguration.forceDefaultLicenseUri,
                             httpDataSourceFactory,
+                            drmConfiguration.requestHeaders,
                             new DrmSessionEventListener.EventDispatcher());
             try {
                 keySetId = offlineLicenseHelper.downloadLicense(format);
