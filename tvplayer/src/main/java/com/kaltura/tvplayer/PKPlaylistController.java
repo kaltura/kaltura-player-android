@@ -311,8 +311,32 @@ public class PKPlaylistController implements PlaylistController {
             }
             kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistError
                     (new ErrorElement(errorMessage, errorCode)));
+            kalturaPlayer.stop();
+            if (!isRecoverOnError()) {
+                return false;
+            }
+            handleErrorEvent();
         }
         return isValidIndex;
+    }
+
+    private void handleErrorEvent() {
+        String mediaId = getCacheMediaId(CacheMediaType.Current);
+        loadedMediasMap.put(mediaId, null);
+        if (isAutoContinueEnabled()) {
+            playNext();
+        } else {
+            int playlistSize = playlist.getMediaListSize();
+            if (currentPlayingIndex + 1 < playlistSize) {
+                playItem(currentPlayingIndex + 1, false);
+            } else {
+                if (loopEnabled) {
+                    playNext();
+                } else {
+                    playPrev();
+                }
+            }
+        }
     }
 
     // incase the index that was requested to be played does not contain a valid media
@@ -620,22 +644,7 @@ public class PKPlaylistController implements PlaylistController {
                 if (!isRecoverOnError()) {
                     return;
                 }
-                String mediaId = getCacheMediaId(CacheMediaType.Current);
-                loadedMediasMap.put(mediaId, null);
-                if (isAutoContinueEnabled()) {
-                    playNext();
-                } else {
-                    int playlistSize = playlist.getMediaListSize();
-                    if (currentPlayingIndex + 1 < playlistSize) {
-                        playItem(currentPlayingIndex + 1, false);
-                    } else {
-                        if (loopEnabled) {
-                            playNext();
-                        } else {
-                            playPrev();
-                        }
-                    }
-                }
+                handleErrorEvent();
             }
         });
     }
