@@ -11,6 +11,8 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PlayerEvent;
+import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.plugins.ads.AdEvent;
 import com.kaltura.playkit.providers.ott.OTTMediaAsset;
 import com.kaltura.playkit.providers.ovp.OVPMediaAsset;
 import com.kaltura.tvplayer.playlist.BasicMediaOptions;
@@ -44,6 +46,8 @@ public class PKPlaylistController implements PlaylistController {
     private boolean playlistAutoContinue = true;
     private boolean loopEnabled;
     private boolean recoverOnError;
+    private boolean isAdPlaybackPending;
+    private boolean hasPlayerEndedEventReceived;
 
     private List<PKPlaylistMedia> origlPlaylistEntries;
     private Map<String, PKMediaEntry> loadedMediasMap; // map of the media id and it's PKMediaEntry (ovp/ott in entryId format basic any string that ws given by user as id)
@@ -529,7 +533,24 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
-            handlePlaylistMediaEnded();
+            hasPlayerEndedEventReceived = true;
+            AdController adController = kalturaPlayer.getAdController();
+            if (isAdPlaybackPending(adController)) {
+                isAdPlaybackPending = true;
+            } else {
+                hasPlayerEndedEventReceived = false;
+                isAdPlaybackPending = false;
+                handlePlaylistMediaEnded();
+            }
+        });
+
+        kalturaPlayer.addListener(this, AdEvent.allAdsCompleted, event -> {
+            log.d("allAdsCompleted received");
+            if (hasPlayerEndedEventReceived && isAdPlaybackPending) {
+                handlePlaylistMediaEnded();
+            }
+            hasPlayerEndedEventReceived = false;
+            isAdPlaybackPending = false;
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.seeking, event -> {
@@ -567,7 +588,7 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.playheadUpdated, event -> {
             //log.d("playheadUpdated received position = " + event.position + "/" + event.duration);
-            
+
             if (playlistCountDownOptions == null) {
                 CountDownOptions tmpCountDownOptions = null;
                 if (playlistOptions instanceof OVPPlaylistOptions) {
@@ -619,6 +640,11 @@ public class PKPlaylistController implements PlaylistController {
         });
     }
 
+    private boolean isAdPlaybackPending(AdController adController) {
+        return adController != null && !adController.isAllAdsCompleted() && adController.getCuePoints().hasPostRoll() &&
+                kalturaPlayer.getCurrentPosition() > 0 && kalturaPlayer.getDuration() > 0 && kalturaPlayer.getCurrentPosition() >= kalturaPlayer.getDuration();
+    }
+
     private String getCacheMediaId(CacheMediaType cacheMediaType) {
 
         if (currentPlayingIndex < 0 || currentPlayingIndex >= playlist.getMediaList().size()) {
@@ -631,7 +657,7 @@ public class PKPlaylistController implements PlaylistController {
         } else if (cacheMediaType == CacheMediaType.Prev) {
             mediaListIndex -= 1;
         }
-        
+
         PKPlaylistMedia pkPlaylistMedia = playlist.getMediaList().get(mediaListIndex);
         if (pkPlaylistMedia == null) {
             return "";
@@ -654,7 +680,7 @@ public class PKPlaylistController implements PlaylistController {
                 boolean isLastMediaInPlaylist = ((currentPlayingIndex + 1) == playlistSize);
 
                 if (isLastMediaInPlaylist && !loopEnabled) {
-                   return;
+                    return;
                 }
 
                 if (!playlistCountDownOptions.isEventSent()) {
