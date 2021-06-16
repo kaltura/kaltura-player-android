@@ -645,7 +645,6 @@ public class PKPlaylistController implements PlaylistController {
                 kalturaPlayer.getCurrentPosition() > 0 && kalturaPlayer.getDuration() > 0 && kalturaPlayer.getCurrentPosition() >= kalturaPlayer.getDuration();
     }
 
-    
     private String getCacheMediaId(CacheMediaType cacheMediaType) {
 
         if (currentPlayingIndex < 0 || currentPlayingIndex >= playlist.getMediaList().size()) {
