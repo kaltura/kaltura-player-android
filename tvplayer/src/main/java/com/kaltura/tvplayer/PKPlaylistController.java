@@ -47,7 +47,7 @@ public class PKPlaylistController implements PlaylistController {
     private boolean loopEnabled;
     private boolean recoverOnError;
     private boolean isAdPlaybackPending;
-    private boolean hasPlayerEndedEventReceived;
+    private boolean isMediaPlaybackEnded;
 
     private List<PKPlaylistMedia> origlPlaylistEntries;
     private Map<String, PKMediaEntry> loadedMediasMap; // map of the media id and it's PKMediaEntry (ovp/ott in entryId format basic any string that ws given by user as id)
@@ -533,12 +533,12 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, PlayerEvent.ended, event -> {
             log.d("ended event received");
-            hasPlayerEndedEventReceived = true;
+            isMediaPlaybackEnded = true;
             AdController adController = kalturaPlayer.getAdController();
             if (isAdPlaybackPending(adController)) {
                 isAdPlaybackPending = true;
             } else {
-                hasPlayerEndedEventReceived = false;
+                isMediaPlaybackEnded = false;
                 isAdPlaybackPending = false;
                 handlePlaylistMediaEnded();
             }
@@ -546,10 +546,10 @@ public class PKPlaylistController implements PlaylistController {
 
         kalturaPlayer.addListener(this, AdEvent.allAdsCompleted, event -> {
             log.d("allAdsCompleted received");
-            if (hasPlayerEndedEventReceived && isAdPlaybackPending) {
+            if (isMediaPlaybackEnded && isAdPlaybackPending) {
                 handlePlaylistMediaEnded();
             }
-            hasPlayerEndedEventReceived = false;
+            isMediaPlaybackEnded = false;
             isAdPlaybackPending = false;
         });
 
