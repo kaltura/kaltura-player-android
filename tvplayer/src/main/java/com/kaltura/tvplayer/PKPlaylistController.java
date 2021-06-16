@@ -46,7 +46,7 @@ public class PKPlaylistController implements PlaylistController {
     private boolean playlistAutoContinue = true;
     private boolean loopEnabled;
     private boolean recoverOnError;
-    private boolean isAdPlaybackPending;
+    private boolean isPostrollPlaybackPending;
     private boolean isMediaPlaybackEnded;
 
     private List<PKPlaylistMedia> origlPlaylistEntries;
@@ -535,22 +535,22 @@ public class PKPlaylistController implements PlaylistController {
             log.d("ended event received");
             isMediaPlaybackEnded = true;
             AdController adController = kalturaPlayer.getAdController();
-            if (isAdPlaybackPending(adController)) {
-                isAdPlaybackPending = true;
+            if (isPostrollPlaybackPending(adController)) {
+                isPostrollPlaybackPending = true;
             } else {
                 isMediaPlaybackEnded = false;
-                isAdPlaybackPending = false;
+                isPostrollPlaybackPending = false;
                 handlePlaylistMediaEnded();
             }
         });
 
         kalturaPlayer.addListener(this, AdEvent.allAdsCompleted, event -> {
             log.d("allAdsCompleted received");
-            if (isMediaPlaybackEnded && isAdPlaybackPending) {
+            if (isMediaPlaybackEnded && isPostrollPlaybackPending) {
                 handlePlaylistMediaEnded();
             }
             isMediaPlaybackEnded = false;
-            isAdPlaybackPending = false;
+            isPostrollPlaybackPending = false;
         });
 
         kalturaPlayer.addListener(this, PlayerEvent.seeking, event -> {
@@ -640,7 +640,7 @@ public class PKPlaylistController implements PlaylistController {
         });
     }
 
-    private boolean isAdPlaybackPending(AdController adController) {
+    private boolean isPostrollPlaybackPending(AdController adController) {
         return adController != null && !adController.isAllAdsCompleted() && adController.getCuePoints().hasPostRoll() &&
                 kalturaPlayer.getCurrentPosition() > 0 && kalturaPlayer.getDuration() > 0 && kalturaPlayer.getCurrentPosition() >= kalturaPlayer.getDuration();
     }
