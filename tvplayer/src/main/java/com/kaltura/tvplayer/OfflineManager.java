@@ -1,9 +1,10 @@
 package com.kaltura.tvplayer;
 
 import android.content.Context;
+import android.util.Pair;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKDrmParams;
@@ -14,7 +15,6 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
-import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
@@ -450,11 +450,22 @@ public abstract class OfflineManager {
      */
     public static class SelectionPrefs {
 
+        public enum DownloadVideoQuality {
+            LOW,
+            MEDIUM,
+            HIGH
+        }
+        @Nullable public DownloadVideoQuality downloadVideoQuality;
+        public static Pair<Integer,Integer> low = new Pair(1, 350000);
+        public static Pair<Integer,Integer> medium = new Pair(350001, 750000);
+        public static Pair<Integer,Integer> high = new Pair(750001, 16000000);
+
         @Nullable public Map<TrackCodec, Integer> codecVideoBitrates;
         @Nullable public List<TrackCodec> videoCodecs;
         @Nullable public List<TrackCodec> audioCodecs;
-              
         @Nullable public Integer videoBitrate;
+
+
         @Nullable public Integer videoHeight;
         @Nullable public Integer videoWidth;
 

@@ -192,7 +192,8 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         final DTGListener listener = new DTGListener() {
             @Override
             public void onDownloadMetadata(DownloadItem item, Exception error) {
-                if (!TextUtils.equals(item.getItemId(), assetId)) {
+                if (!TextUtils.equals(item.getItemId(), assetId))  {
+                    postEvent(() -> prepareCallback.onPrepareError(assetId, error));
                     return; // wrong item - could be a matter of timing
                 }
 
@@ -347,7 +348,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         }
 
         final DTGAssetInfo dtgAssetInfo = (DTGAssetInfo) assetInfo;
-
         dtgAssetInfo.downloadItem.startDownload();
     }
 
