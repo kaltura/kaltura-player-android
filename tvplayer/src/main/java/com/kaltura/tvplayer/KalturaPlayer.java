@@ -98,6 +98,7 @@ public abstract class KalturaPlayer {
 
     private MessageBus messageBus;
     private boolean pluginsRegistered;
+    private PKPluginConfigs combinedPluginConfigs;
     private Type tvPlayerType;
 
     private Integer partnerId;
@@ -407,16 +408,16 @@ public abstract class KalturaPlayer {
     @NonNull
     private PKPluginConfigs setupPluginsConfiguration() {
         PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
-        PKPluginConfigs combinedPluginConfigs = new PKPluginConfigs();
+        this.combinedPluginConfigs = new PKPluginConfigs();
 
         if (pluginConfigs != null) {
             for (Map.Entry<String, Object> entry : pluginConfigs) {
                 String pluginName = entry.getKey();
-                combinedPluginConfigs.setPluginConfig(pluginName, resolve(entry.getValue()));
+                this.combinedPluginConfigs.setPluginConfig(pluginName, resolve(entry.getValue()));
             }
         }
-        addKalturaPluginConfigs(combinedPluginConfigs);
-        return combinedPluginConfigs;
+        addKalturaPluginConfigs(this.combinedPluginConfigs);
+        return this.combinedPluginConfigs;
     }
 
     public View getPlayerView() {
@@ -1213,7 +1214,7 @@ public abstract class KalturaPlayer {
     }
 
     private void sendKavaImpression(String entryId) {
-        boolean isKavaPluginAvailable = getInitOptions().pluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName());
+        boolean isKavaPluginAvailable = combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName());
         if (isKavaPluginAvailable) {
             return;
         }
