@@ -76,7 +76,7 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
-    
+
     static boolean playerConfigRetrieved;
 
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
@@ -253,9 +253,6 @@ public abstract class KalturaPlayer {
         PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
-        if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName()) && Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId)) {
-            NetworkUtils.sendKavaImpression(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
-        }
     }
 
     private void updatePlayerSettings() {
@@ -473,6 +470,7 @@ public abstract class KalturaPlayer {
     }
 
     public void setMedia(PKMediaEntry entry, Long startPosition) {
+        sendKavaImpression(entry.getId());
         externalSubtitles = null;
         if (startPosition != null) {
             setStartPosition(startPosition);
@@ -1028,6 +1026,8 @@ public abstract class KalturaPlayer {
         if (!isValidOTTPlayer())
             return;
 
+        sendKavaImpression(mediaOptions.getOttMediaAsset().getAssetId());
+
         prepareLoadMedia(mediaOptions);
 
         if (loadMediaFromCache(mediaOptions.getOttMediaAsset().getUUID(), mediaOptions.startPosition)) {
@@ -1078,6 +1078,8 @@ public abstract class KalturaPlayer {
 
         if (!isValidOVPPlayer())
             return;
+
+        sendKavaImpression(mediaOptions.getOvpMediaAsset().getEntryId());
 
         prepareLoadMedia(mediaOptions);
         if (loadMediaFromCache(mediaOptions.getOvpMediaAsset().getUUID(), mediaOptions.startPosition)) {
@@ -1208,6 +1210,38 @@ public abstract class KalturaPlayer {
             }
         }
         return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
+    }
+
+    private void sendKavaImpression(String entryId) {
+        boolean isKavaPluginAvailable = getInitOptions().pluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName());
+        if (isKavaPluginAvailable) {
+            return;
+        }
+
+        int partnerId = 0;
+        populatePartnersValues();
+        
+        switch (tvPlayerType) {
+            case ott:
+                if (this.partnerId != null && this.partnerId > 0) {
+                    partnerId = this.partnerId;
+                }
+                break;
+            case ovp:
+                if (this.ovpPartnerId != null && this.ovpPartnerId > 0) {
+                    partnerId = this.ovpPartnerId;
+                }
+                break;
+        }
+
+        if (TextUtils.isEmpty(entryId) || partnerId <= 0) {
+            partnerId = NetworkUtils.DEFAULT_KAVA_PARTNER_ID;
+            entryId = KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID;
+        }
+
+        if (!isKavaPluginAvailable) {
+            NetworkUtils.sendKavaImpression(context, partnerId, entryId);
+        }
     }
 
     public interface OnEntryLoadListener {
