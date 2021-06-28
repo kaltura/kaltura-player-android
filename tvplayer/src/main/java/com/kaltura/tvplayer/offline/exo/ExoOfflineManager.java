@@ -79,6 +79,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -100,7 +101,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private static final int REGISTER_ASSET_NOW = 0;
 
     private static Gson gson = new Gson();
-
+    private static ExecutorService networkExecutor;
     private static ExoOfflineManager instance;
     private PrefetchManager prefetchManager;
     @Nullable private byte[] keySetId;
@@ -226,6 +227,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private ExoOfflineManager(Context context) {
         super(context);
 
+        networkExecutor = Executors.newSingleThreadExecutor();
         final File externalFilesDir = context.getExternalFilesDir(null);
         downloadDirectory = externalFilesDir != null ? externalFilesDir : context.getFilesDir();
         if (downloadDirectory == null) {
@@ -473,7 +475,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 //                }
                 //helper.getDefaultTrackSelectorParameters(appContext);
 
-                if (selectionPrefs.allAudioLanguages && selectionPrefs.allTextLanguages) {
+                if ((selectionPrefs.allAudioLanguages && selectionPrefs.allTextLanguages) || (selectionPrefs.textLanguages != null && !selectionPrefs.textLanguages.isEmpty()) ||  (selectionPrefs.audioLanguages != null && !selectionPrefs.audioLanguages.isEmpty())) {
                       downloadAllTracks(helper, downloadHelper, selectionPrefs);
                 } else { // if default prefs is given then
                     downloadDefaultTracks(helper, downloadHelper);
@@ -554,7 +556,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     private void downloadAllTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
-        log.d("XXX downloadAllTracks");
+        log.d("downloadAllTracks");
         MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(0);
         for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
             downloadHelper.clearTrackSelections(periodIndex);
@@ -948,47 +950,51 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public boolean removeAsset(@NonNull String assetId) {
-        log.e("removeAsset:" + assetId);
-
-        final AssetStateListener listener = getListener();
-        try {
-            AssetInfo asset = getAssetInfo(assetId);
-            if (asset == null) {
-                if (listener != null) {
-                    postEvent(() -> listener.onAssetRemoveError(assetId, DownloadType.UNKNOWM, new IllegalArgumentException("AssetId: " + assetId + " not found")));
-                }
-                return false;
-            }
-
-            final Pair<PKMediaSource, PKDrmParams> pair = pendingDrmRegistration.get(assetId);
-            boolean isDRM = true;
-            if (pair == null || pair.first == null || pair.second == null) {
-                isDRM = false;
-            }
-            if (isDRM) {
-                final byte[] drmInitData = getDrmInitData(assetId);
-                if (drmInitData == null) {
-                    log.e("removeAsset failed drmInitData == null");
-                    if (listener != null) {
-                        postEvent(() -> listener.onAssetRemoveError(assetId, asset.getDownloadType(), new IllegalArgumentException("drmInitData == null for AssetId: " + assetId)));
+        log.d("removeAsset:" + assetId);
+        final boolean[] removeAssetStatus = {true};
+        networkExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                final AssetStateListener listener = getListener();
+                try {
+                    AssetInfo asset = getAssetInfo(assetId);
+                    if (asset == null) {
+                        if (listener != null) {
+                            postEvent(() -> listener.onAssetRemoveError(assetId, DownloadType.UNKNOWM, new IllegalArgumentException("AssetId: " + assetId + " not found")));
+                        }
+                        removeAssetStatus[0] = false;
                     }
-                    return false;
+
+                    final Pair<PKMediaSource, PKDrmParams> pair = pendingDrmRegistration.get(assetId);
+                    boolean isDRM = true;
+                    if (pair == null || pair.first == null || pair.second == null) {
+                        isDRM = false;
+                    }
+                    if (isDRM) {
+                        final byte[] drmInitData = getDrmInitData(assetId);
+                        if (drmInitData == null) {
+                            log.e("removeAsset failed drmInitData == null");
+                            if (listener != null) {
+                                postEvent(() -> listener.onAssetRemoveError(assetId, asset.getDownloadType(), new IllegalArgumentException("drmInitData == null for AssetId: " + assetId)));
+                            }
+                            removeAssetStatus[0] = false;
+                        }
+                        lam.unregisterAsset(assetId, drmInitData);
+                    }
+
+                    DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
+                    removeAssetSourceId(assetId);
+
+                } catch (IOException | InterruptedException e) {
+                    log.e("removeAsset failed", e);
+                    if (listener != null) {
+                        postEvent(() -> listener.onAssetRemoveError(assetId, getAssetInfo(assetId) != null ? getAssetInfo(assetId).getDownloadType() : DownloadType.FULL, e));
+                    }
+                    removeAssetStatus[0] = false;
                 }
-                lam.unregisterAsset(assetId, drmInitData);
             }
-
-            DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
-            removeAssetSourceId(assetId);
-
-        } catch (IOException | InterruptedException e) {
-            log.e("removeAsset failed", e);
-            if (listener != null) {
-                postEvent(() -> listener.onAssetRemoveError(assetId, getAssetInfo(assetId) != null ? getAssetInfo(assetId).getDownloadType() : DownloadType.FULL, e));
-            }
-            return false;
-        }
-
-        return true;
+        });
+       return removeAssetStatus[0];
     }
 
     @Override
