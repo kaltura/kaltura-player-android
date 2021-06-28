@@ -72,6 +72,7 @@ public class PlayerInitOptions {
     public MulticastSettings multicastSettings;
 
     public MediaEntryCacheConfig mediaEntryCacheConfig;
+    public OfflineManager.OfflineProvider offlineProvider = OfflineManager.OfflineProvider.DTG;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -390,6 +391,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions setMediaEntryCacheConfig(MediaEntryCacheConfig mediaEntryCacheConfig) {
         if (mediaEntryCacheConfig != null) {
             this.mediaEntryCacheConfig = mediaEntryCacheConfig;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setOfflineProvider(OfflineManager.OfflineProvider offlineProvider) {
+        if (offlineProvider != null) {
+            this.offlineProvider = offlineProvider;
         }
         return this;
     }

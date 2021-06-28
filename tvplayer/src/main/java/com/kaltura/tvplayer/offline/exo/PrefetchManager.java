@@ -66,6 +66,11 @@ public class PrefetchManager implements Prefetch {
     }
 
     @Override
+    public OfflineManager.AssetInfo getAssetInfoByAssetId(String assetId) {
+        return offlineManager.getAssetInfo(assetId);
+    }
+
+    @Override
     public boolean isPrefetched(String assetId) {
         log.d("isPrefetched");
         OfflineManager.AssetInfo assetInfo = offlineManager.getAssetInfo(assetId);

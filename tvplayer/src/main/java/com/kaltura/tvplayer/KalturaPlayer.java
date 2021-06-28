@@ -126,7 +126,7 @@ public abstract class KalturaPlayer {
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
         this.context = context;
-        offlineManager = OfflineManager.getInstance(context);
+        offlineManager = OfflineManager.getInstance(context, initOptions.offlineProvider);
         this.tvPlayerType = tvPlayerType;
         this.initOptions = initOptions;
         this.preload = initOptions.preload != null ? initOptions.preload : true;

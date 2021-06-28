@@ -15,6 +15,7 @@ public interface Prefetch {
     void prefetchByMediaEntryList(List<PKMediaEntry> mediaEntryList, PrefetchConfig prefetchConfig); // prepare + start + register
 
     List<OfflineManager.AssetInfo> getAllAssets();
+    OfflineManager.AssetInfo getAssetInfoByAssetId(String assetId);
     void removeAsset(String assetId);  //  for both prefetch state and downloading state
     void removeAllAssets();  // for both prefetch state and downloading state
 

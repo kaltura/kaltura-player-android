@@ -15,6 +15,7 @@ import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
+import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
@@ -32,9 +33,19 @@ public abstract class OfflineManager {
     protected Integer kalturaPartnerId;
     protected String referrer;
 
-    public static @NonNull OfflineManager getInstance(Context context) {
-        return ExoOfflineManager.getInstance(context);
-        //return  DTGOfflineManager.getInstance(context);
+    public enum OfflineProvider {
+        DTG,
+        EXO
+    }
+
+    public static @NonNull OfflineManager getInstance(Context context, OfflineProvider offlineProvider) {
+        switch(offlineProvider) {
+            case EXO:
+                return ExoOfflineManager.getInstance(context);
+            case DTG:
+            default:
+                return  DTGOfflineManager.getInstance(context);
+        }
     }
 
     public void setKalturaParams(KalturaPlayer.Type type, int partnerId) {

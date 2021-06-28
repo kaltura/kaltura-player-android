@@ -375,10 +375,15 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final Uri uri = Uri.parse(url);
 
         final DownloadHelper downloadHelper;
-        if (getPrefetchManager().isPrefetched(assetId)) {
+        if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.FULL) {
             log.d("removing prefetched media before full download");
             removeAsset(assetId);
+        } else   if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.PREFETCH) {
+            log.d("media already prefetched");
+            postEvent(() -> prepareCallback.onPrepared(assetId, getPrefetchManager().getAssetInfoByAssetId(assetId), null));
+            return;
         }
+        
         postEvent(() -> prepareCallback.onSourceSelected(assetId, source, drmData));
         DefaultTrackSelector.Parameters defaultTrackSelectorParameters =  DownloadHelper.getDefaultTrackSelectorParameters(appContext);
 
@@ -527,7 +532,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull PrefetchConfig prefetchConfig, @NonNull PrefetchCallback prefetchCallback) {
-
+        prefetchConfig.getSelectionPrefs().downloadType = DownloadType.PREFETCH;
         prepareAsset(mediaEntry, prefetchConfig.getSelectionPrefs(), new PrepareCallback() {
             @Override
             public void onPrepared(@NonNull String assetId, @NonNull AssetInfo assetInfo, @Nullable Map<TrackType, List<Track>> selected) {
