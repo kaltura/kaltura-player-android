@@ -173,7 +173,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     break;
                 case Download.STATE_REMOVING:
                     log.d("STATE_REMOVING: " + assetId);
-                    listener.onAssetRemoved(assetId, downloadType);
+                    //listener.onAssetRemoveStart(assetId, downloadType);
                     break;
                 case Download.STATE_RESTARTING:
                     log.d("STATE_RESTARTING: " + assetId);
