@@ -70,8 +70,6 @@ import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.Prefetch;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -603,7 +601,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                             if (!selectionPrefs.allTextLanguages && format.language != null && (selectionPrefs.textLanguages == null || !selectionPrefs.textLanguages.contains(format.language))) {
                                 continue;
                             } else {
-                                log.d("XXX audio language =" + format.language + " bitrate =" + format.bitrate);
+                                log.d("XXX text language =" + format.language + " bitrate =" + format.bitrate);
                                 selectionOverrides.add(new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex));
                             }
                         }
@@ -811,6 +809,33 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @NonNull
     @Override
+    public List<AssetInfo> getAllAssets() {
+        final DownloadCursor downloads;
+        try {
+            downloads = downloadManager.getDownloadIndex().getDownloads(Download.STATE_DOWNLOADING,
+                    Download.STATE_QUEUED,
+                    Download.STATE_RESTARTING,
+                    Download.STATE_COMPLETED,
+                    Download.STATE_REMOVING,
+                    Download.STATE_STOPPED);
+        }
+        catch (IOException e) {
+                e.printStackTrace();
+                return Collections.emptyList();
+            }
+
+        List<AssetInfo> assetInfoList = new ArrayList<>(downloads.getCount());
+
+        while (downloads.moveToNext()) {
+            final Download download = downloads.getDownload();
+            assetInfoList.add(new ExoAssetInfo(download));
+        }
+
+        return assetInfoList;
+    }
+
+    @NonNull
+    @Override
     public List<AssetInfo> getAssetsInState(@NonNull AssetDownloadState state) {
 
         @Download.State int[] exoStates;
@@ -846,7 +871,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         List<AssetInfo> assetInfoList = new ArrayList<>(downloads.getCount());
 
-        for (downloads.moveToFirst(); downloads.moveToNext();) {
+        while (downloads.moveToNext()) {
             final Download download = downloads.getDownload();
             assetInfoList.add(new ExoAssetInfo(download));
         }
@@ -854,7 +879,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return assetInfoList;
     }
 
-    @NotNull
+    @NonNull
     @Override
     public PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) throws IOException {
         final Download download = downloadManager.getDownloadIndex().getDownload(assetId);
@@ -1069,7 +1094,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
     }
 
-    @NotNull
+    @NonNull
     private CacheDataSource.Factory getCacheDataSourceFactory() {
         return new CacheDataSource.Factory()
                 .setCache(downloadCache)

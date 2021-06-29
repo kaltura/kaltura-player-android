@@ -36,6 +36,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static com.kaltura.dtg.DownloadState.INFO_LOADED;
+
 
 public class DTGOfflineManager extends AbstractOfflineManager {
     private static final PKLog log = PKLog.get("DTGOfflineManager");
@@ -408,6 +410,44 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     @NonNull
     @Override
+    public List<AssetInfo> getAllAssets() {
+        final List<DownloadItem> downloads = cm.getDownloads(DownloadState.NEW,
+                DownloadState.INFO_LOADED,
+                DownloadState.IN_PROGRESS,
+                DownloadState.PAUSED,
+                DownloadState.COMPLETED,
+                DownloadState.FAILED);
+        final ArrayList<AssetInfo> assetInfoList = new ArrayList<>(downloads.size());
+
+        AssetDownloadState downloadState;
+        for (DownloadItem item : downloads) {
+            switch (item.getState()) {
+                case IN_PROGRESS:
+                    downloadState = AssetDownloadState.started;
+                    break;
+                case INFO_LOADED:
+                    downloadState = AssetDownloadState.prepared;
+                    break;
+                case COMPLETED:
+                    downloadState = AssetDownloadState.completed;
+                    break;
+                case FAILED:
+                    downloadState = AssetDownloadState.failed;
+                    break;
+                case PAUSED:
+                    downloadState = AssetDownloadState.paused;
+                    break;
+                default:
+                    downloadState = AssetDownloadState.none;
+            }
+            assetInfoList.add(new DTGAssetInfo(item, downloadState));
+        }
+
+        return assetInfoList;
+    }
+
+    @NonNull
+    @Override
     public List<AssetInfo> getAssetsInState(@NonNull AssetDownloadState state) {
         DownloadState dtgState;
         switch (state) {
@@ -415,7 +455,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 dtgState = DownloadState.IN_PROGRESS;
                 break;
             case prepared:
-                dtgState = DownloadState.INFO_LOADED;
+                dtgState = INFO_LOADED;
                 break;
             case completed:
                 dtgState = DownloadState.COMPLETED;
@@ -435,13 +475,13 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         final List<DownloadItem> downloads = cm.getDownloads(dtgState);
 
-        final ArrayList<AssetInfo> list = new ArrayList<>(downloads.size());
+        final ArrayList<AssetInfo> assetInfoList = new ArrayList<>(downloads.size());
 
         for (DownloadItem item : downloads) {
-            list.add(new DTGAssetInfo(item, state));
+            assetInfoList.add(new DTGAssetInfo(item, state));
         }
 
-        return list;
+        return assetInfoList;
     }
 
     @NonNull

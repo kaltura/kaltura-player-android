@@ -213,6 +213,13 @@ public abstract class OfflineManager {
     public abstract @Nullable DatabaseProvider getDatabaseProvider();
 
     /**
+     * Get list of {@link AssetInfo} objects for all assets.
+     *
+     * @return AssetInfo list
+     */
+    public abstract @NonNull List<AssetInfo> getAllAssets();
+
+    /**
      * Get list of {@link AssetInfo} objects for all assets in the given state.
      *
      * @param state AssetDownloadState
