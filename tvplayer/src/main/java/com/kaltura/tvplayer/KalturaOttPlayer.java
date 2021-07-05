@@ -13,7 +13,7 @@ public class KalturaOttPlayer extends KalturaPlayer {
     }
 
     public static KalturaOttPlayer create(Context context, PlayerInitOptions initOptions) {
-        if (playerConfigRetrieved) {
+        if (playerConfigRetrieved && initOptions != null && initOptions.partnerId != null) {
             initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
         }
         return new KalturaOttPlayer(context, initOptions);

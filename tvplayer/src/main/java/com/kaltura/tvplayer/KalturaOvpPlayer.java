@@ -15,7 +15,7 @@ public class KalturaOvpPlayer extends KalturaPlayer {
     }
 
     public static KalturaOvpPlayer create(Context context, PlayerInitOptions initOptions) {
-        if (playerConfigRetrieved) {
+        if (playerConfigRetrieved && initOptions != null && initOptions.partnerId != null) {
             initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ovp, initOptions.partnerId));
         }
         return new KalturaOvpPlayer(context, initOptions);
