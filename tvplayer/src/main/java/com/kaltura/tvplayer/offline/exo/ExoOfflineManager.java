@@ -746,7 +746,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public void start(ManagerStartCallback callback) throws IOException {
+    public void start(ManagerStartCallback callback) {
         if (callback != null) {
             callback.onStarted();
         }
