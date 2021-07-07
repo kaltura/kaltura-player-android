@@ -109,19 +109,6 @@ public abstract class OfflineManager {
                                       @NonNull SelectionPrefs selectionPrefs,
                                       @NonNull PrepareCallback prepareCallback);
 
-
-    /**
-     * Prefetch an asset. Select the best source from the entry, load the source metadata, select tracks
-     * based on the prefetchConfig, call the listener.
-     *
-     * @param mediaEntry
-     * @param prefetchConfig
-     * @param prefetchCallback
-     */
-    public abstract void prefetchAsset(@NonNull PKMediaEntry mediaEntry,
-                                       @NonNull PrefetchConfig prefetchConfig,
-                                       @NonNull PrefetchCallback prefetchCallback);
-
     /**
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
      * the entry, load the source metadata, select tracks based on the prefs, call the listener. If the asset requires
@@ -139,22 +126,6 @@ public abstract class OfflineManager {
                                       @NonNull PrepareCallback prepareCallback)
             throws IllegalStateException;
 
-    /**
-     * Prefetch an asset. Connect to Kaltura Backend to load entry metadata, select the best source from
-     * the entry, load the source metadata, select tracks based on the prefetchConfig, call the listener. If the asset requires
-     * KS, make sure to set {@link MediaOptions}.
-     * Before calling this method, the partner id and the server URL must be set by {@link #setKalturaParams(KalturaPlayer.Type, int)}
-     * and {@link #setKalturaServerUrl(String)}, respectively.
-     *
-     * @param mediaOptions
-     * @param prefetchConfig
-     * @param prefetchCallback
-     * @throws IllegalStateException if partner id and/or server URL were not set.
-     */
-    public abstract void prefetchAsset(@NonNull MediaOptions mediaOptions,
-                                       @NonNull PrefetchConfig prefetchConfig,
-                                       @NonNull PrefetchCallback prefetchCallback)
-            throws IllegalStateException;
     /**
      * Add a prepared asset to the db and start downloading it.
      * @param assetInfo AssetInfo
@@ -236,7 +207,6 @@ public abstract class OfflineManager {
      */
     public abstract @NonNull PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) throws IOException;
 
-
     /**
      * Check the license status of an asset.
      *
@@ -244,7 +214,6 @@ public abstract class OfflineManager {
      * @return DRM license status - {@link DrmStatus}.
      */
     public abstract @NonNull DrmStatus getDrmStatus(@NonNull String assetId);
-
 
     public abstract void setKs(@Nullable String ks);
 
@@ -262,6 +231,14 @@ public abstract class OfflineManager {
     public abstract Prefetch getPrefetchManager();
 
     public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
+
+    public String getKalturaServerUrl() {
+        return kalturaServerUrl;
+    }
+
+    public Integer getKalturaPartnerId() {
+        return kalturaPartnerId;
+    }
 
     public enum AssetDownloadState {
         none, prepared, started, prefetched, completed, failed, removing, paused
@@ -327,31 +304,6 @@ public abstract class OfflineManager {
          * @param drmParams PKDrmParams
          */
         default void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {}
-    }
-
-    /**
-     * Event callbacks invoked during asset info loading ({@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)})
-     * or {@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)}).
-     * The app MUST handle at least {@link #onPrefetched(String, AssetInfo, Map)}  and {@link #onPrefetchError(String, Exception)}. If the
-     * app has used {@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)}, it MUST also handle
-     * {@link #onMediaEntryLoadError(Exception)}.
-     */
-    public interface PrefetchCallback extends PrepareCallback {
-        /**
-         * Called when the asset is prefetched
-         * @param assetId
-         * @param assetInfo
-         * @param selected
-         */
-        void onPrefetched(@NonNull String assetId, @NonNull AssetInfo assetInfo, @Nullable Map<TrackType, List<Track>> selected);
-
-        /**
-         * Called when asset prefetch has failed for some reason.
-         * Must be handled by all applications.
-         * @param assetId
-         * @param error
-         */
-        void onPrefetchError(@NonNull String assetId, @NonNull Exception error);
     }
 
     /**

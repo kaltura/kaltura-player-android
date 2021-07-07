@@ -528,31 +528,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
     }
 
-    @Override
-    public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull PrefetchConfig prefetchConfig, @NonNull PrefetchCallback prefetchCallback) {
-        prefetchConfig.getSelectionPrefs().downloadType = DownloadType.PREFETCH;
-        prepareAsset(mediaEntry, prefetchConfig.getSelectionPrefs(), new PrepareCallback() {
-            @Override
-            public void onPrepared(@NonNull String assetId, @NonNull AssetInfo assetInfo, @Nullable Map<TrackType, List<Track>> selected) {
-                ((ExoAssetInfo)assetInfo).downloadType = DownloadType.PREFETCH;
-                ((ExoAssetInfo)assetInfo).prefetchConfig = prefetchConfig;
-                startAssetDownload(assetInfo);
-            }
-
-            @Override
-            public void onPrepareError(@NonNull String assetId, @NonNull Exception error) {
-                log.e("onPrepareError");
-                prefetchCallback.onPrefetchError(assetId, error);
-            }
-
-            @Override
-            public void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {
-                log.d("onSourceSelected");
-                prefetchCallback.onSourceSelected(assetId, source, drmParams);
-            }
-        });
-    }
-
     private boolean isLowDiskSpace(long requiredBytes) {
         final long downloadsDirFreeSpace = downloadDirectory.getFreeSpace();
         return downloadsDirFreeSpace < requiredBytes;
@@ -754,7 +729,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void stop() {
-        // Do Nothing
+        removeEventHandler();
+        if (prefetchManager != null) {
+            prefetchManager.removeEventHandler();
+        }
     }
 
     @Override

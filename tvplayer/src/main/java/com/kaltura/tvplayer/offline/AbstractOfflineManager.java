@@ -16,7 +16,6 @@ import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.OfflineManager;
-import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -45,6 +44,10 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     protected void postEventDelayed(Runnable event, int delayMillis) {
         eventHandler.postDelayed(event, delayMillis);
+    }
+    
+    protected void removeEventHandler() {
+        eventHandler.removeCallbacksAndMessages(null);
     }
 
     private static final AssetStateListener noopListener = new AssetStateListener() {
@@ -85,27 +88,6 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 prepareAsset(mediaEntry, selectionPrefs, prepareCallback);
             } else {
                 prepareCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
-            }
-        }));
-    }
-
-    @Override
-    public final void prefetchAsset(@NonNull MediaOptions mediaOptions, @NonNull PrefetchConfig prefetchConfig,
-                                   @NonNull PrefetchCallback prefetchCallback) throws IllegalStateException {
-
-        if (kalturaPartnerId == null || kalturaServerUrl == null) {
-            throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
-        }
-
-        final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId);
-
-        mediaEntryProvider.load(response -> postEvent(() -> {
-            if (response.isSuccess()) {
-                final PKMediaEntry mediaEntry = response.getResponse();
-                prefetchCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
-                prefetchAsset(mediaEntry, prefetchConfig, prefetchCallback);
-            } else {
-                prefetchCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
             }
         }));
     }

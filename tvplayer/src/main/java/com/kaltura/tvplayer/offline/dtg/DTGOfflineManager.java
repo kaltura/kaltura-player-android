@@ -27,7 +27,6 @@ import com.kaltura.playkit.drm.SimpleDashParser;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.tvplayer.offline.Prefetch;
-import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -132,6 +131,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     @Override
     public void stop() {
         cm.stop();
+        removeEventHandler();
     }
 
     @Override
@@ -259,11 +259,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         //return new DefaultTrackSelector.ParametersBuilder(appContext).build();
         //return DownloadHelper.getDefaultTrackSelectorParameters(appContext);
         //return  DefaultTrackSelector.Parameters.DEFAULT_WITHOUT_CONTEXT.buildUpon().setForceHighestSupportedBitrate(true).build();
-    }
-
-    @Override
-    public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull PrefetchConfig prefetchConfig, @NonNull PrefetchCallback prefetchCallback) {
-        log.e("DTG prefetchAsset is not supported");
     }
 
     @Override
