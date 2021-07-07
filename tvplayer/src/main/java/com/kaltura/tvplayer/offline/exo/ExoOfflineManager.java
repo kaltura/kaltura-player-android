@@ -970,7 +970,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     AssetInfo asset = getAssetInfo(assetId);
                     if (asset == null) {
                         if (listener != null) {
-                            postEvent(() -> listener.onAssetRemoveError(assetId, DownloadType.UNKNOWM, new IllegalArgumentException("AssetId: " + assetId + " not found")));
+                            postEvent(() -> listener.onAssetRemoveError(assetId, DownloadType.UNKNOWN, new IllegalArgumentException("AssetId: " + assetId + " not found")));
                         }
                         removeAssetStatus[0] = false;
                     }

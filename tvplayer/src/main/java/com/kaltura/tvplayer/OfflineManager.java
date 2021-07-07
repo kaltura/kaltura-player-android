@@ -410,7 +410,7 @@ public abstract class OfflineManager {
     }
 
     public enum DownloadType {
-        UNKNOWM,
+        UNKNOWN,
         PREFETCH,
         FULL
     }
