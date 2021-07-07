@@ -25,8 +25,6 @@ private val log = PKLog.get("PlayActivity")
 
 class PlayActivity : AppCompatActivity() {
 
-    class Destroyed
-
     private lateinit var player: KalturaPlayer
     private lateinit var playDrawable: Drawable
     private lateinit var pauseDrawable: Drawable
@@ -51,7 +49,7 @@ class PlayActivity : AppCompatActivity() {
         setContentView(player.playerView)
 
 
-        val manager = OfflineManager.getInstance(this)
+        val manager = OfflineManager.getInstance(this, OfflineManager.OfflineProvider.DTG)
 
         intent.dataString?.let {
             val entry = manager.getLocalPlaybackEntry(it)
