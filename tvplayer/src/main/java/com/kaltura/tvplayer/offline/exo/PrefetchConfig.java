@@ -12,7 +12,7 @@ public class PrefetchConfig {
     long assetPrefetchDuration = 20 * Consts.MILLISECONDS_MULTIPLIER; //20 seconds
     boolean emptyCashOnPlayerDestroy = true;
     boolean emptyCacheIfFull = true; // remove first one by time stamp?
-    OfflineManager.SelectionPrefs selectionPrefs;
+    OfflineManager.SelectionPrefs selectionPrefs = new OfflineManager.SelectionPrefs();
 
     public PrefetchConfig setMaxItemCountInCache(int maxItemCountInCache) {
         this.maxItemCountInCache = maxItemCountInCache;
