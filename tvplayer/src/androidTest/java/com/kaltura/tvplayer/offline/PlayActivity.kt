@@ -10,7 +10,6 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AppCompatActivity
 import com.kaltura.playkit.PKLog
-import com.kaltura.playkit.PlayerEvent
 import com.kaltura.playkit.PlayerEvent.*
 import com.kaltura.tvplayer.KalturaBasicPlayer
 import com.kaltura.tvplayer.KalturaPlayer
