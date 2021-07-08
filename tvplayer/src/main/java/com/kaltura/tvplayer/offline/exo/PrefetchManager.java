@@ -25,9 +25,11 @@ import java.util.Map;
 public class PrefetchManager implements Prefetch {
 
     private static final PKLog log = PKLog.get("PrefetchManager");
-    OfflineManager offlineManager;
 
+    private PrefetchConfig prefetchConfig;
     private final Handler eventHandler;
+    private OfflineManager.SelectionPrefs selectionPrefs;
+    OfflineManager offlineManager;
 
     protected void postEvent(Runnable event) {
         eventHandler.post(event);
@@ -39,6 +41,8 @@ public class PrefetchManager implements Prefetch {
 
     public PrefetchManager(OfflineManager offlineManager) {
         this.offlineManager = offlineManager;
+        this.prefetchConfig = new PrefetchConfig();
+        this.selectionPrefs = new OfflineManager.SelectionPrefs();
         HandlerThread handlerThread = new HandlerThread("PrefetchManagerEvents");
         handlerThread.start();
         eventHandler = new Handler(handlerThread.getLooper());
@@ -46,7 +50,7 @@ public class PrefetchManager implements Prefetch {
 
     @Override
     public void prefetchByMediaOptionsList(@NonNull List<MediaOptions> mediaOptionsList,
-                                           @NonNull PrefetchConfig prefetchConfig,
+                                           @NonNull OfflineManager.SelectionPrefs selectionPrefs,
                                            @NonNull Prefetch.PrefetchCallback prefetchCallback) {
         log.d("prefetchByMediaOptions");
 
@@ -62,13 +66,13 @@ public class PrefetchManager implements Prefetch {
             } else if (!(mediaOptions instanceof OVPMediaOptions)) {
                 return;
             }
-            prefetchAsset(isOTTMedia ? (OTTMediaOptions) mediaOptions : (OVPMediaOptions) mediaOptions, prefetchConfig, prefetchCallback);
+            prefetchAsset(isOTTMedia ? (OTTMediaOptions) mediaOptions : (OVPMediaOptions) mediaOptions, selectionPrefs, prefetchCallback);
         }
     }
 
     @Override
     public void prefetchByMediaEntryList(@NonNull List<PKMediaEntry> mediaEntryList,
-                                         @NonNull PrefetchConfig prefetchConfig,
+                                         @NonNull OfflineManager.SelectionPrefs selectionPrefs,
                                          @NonNull Prefetch.PrefetchCallback prefetchCallback) {
         log.d("prefetchByMediaEntry");
 
@@ -77,7 +81,7 @@ public class PrefetchManager implements Prefetch {
         }
 
         for (PKMediaEntry mediaEntry : mediaEntryList) {
-            prefetchAsset(mediaEntry, prefetchConfig, prefetchCallback);
+            prefetchAsset(mediaEntry, selectionPrefs, prefetchCallback);
         }
     }
 
@@ -90,6 +94,11 @@ public class PrefetchManager implements Prefetch {
     @Override
     public OfflineManager.AssetInfo getAssetInfoByAssetId(@NonNull String assetId) {
         return offlineManager.getAssetInfo(assetId);
+    }
+
+    @Override
+    public void setPrefetchConfig(PrefetchConfig prefetchConfig) {
+        this.prefetchConfig = prefetchConfig;
     }
 
     @Override
@@ -146,7 +155,7 @@ public class PrefetchManager implements Prefetch {
     }
 
     @Override
-    public final void prefetchAsset(@NonNull MediaOptions mediaOptions, @NonNull PrefetchConfig prefetchConfig,
+    public final void prefetchAsset(@NonNull MediaOptions mediaOptions, @NonNull OfflineManager.SelectionPrefs selectionPrefs,
                                     @NonNull PrefetchCallback prefetchCallback) throws IllegalStateException {
 
         if (offlineManager.getKalturaPartnerId() == null || offlineManager.getKalturaServerUrl() == null) {
@@ -159,7 +168,7 @@ public class PrefetchManager implements Prefetch {
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
                 prefetchCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
-                prefetchAsset(mediaEntry, prefetchConfig, prefetchCallback);
+                prefetchAsset(mediaEntry, selectionPrefs, prefetchCallback);
             } else {
                 prefetchCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
             }
@@ -167,9 +176,13 @@ public class PrefetchManager implements Prefetch {
     }
 
     @Override
-    public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull PrefetchConfig prefetchConfig, @NonNull PrefetchCallback prefetchCallback) {
-        prefetchConfig.getSelectionPrefs().downloadType = OfflineManager.DownloadType.PREFETCH;
-        offlineManager.prepareAsset(mediaEntry, prefetchConfig.getSelectionPrefs(), new OfflineManager.PrepareCallback() {
+    public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull OfflineManager.SelectionPrefs selectionPrefs, @NonNull PrefetchCallback prefetchCallback) {
+        if (selectionPrefs != null) {
+            this.selectionPrefs = selectionPrefs;
+        }
+
+        this.selectionPrefs.downloadType = OfflineManager.DownloadType.PREFETCH;
+        offlineManager.prepareAsset(mediaEntry, this.selectionPrefs, new OfflineManager.PrepareCallback() {
             @Override
             public void onPrepared(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected) {
                 ((ExoAssetInfo)assetInfo).downloadType = OfflineManager.DownloadType.PREFETCH;

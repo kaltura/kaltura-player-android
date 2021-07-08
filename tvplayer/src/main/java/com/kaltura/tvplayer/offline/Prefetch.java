@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public interface Prefetch {
+    
+    void setPrefetchConfig(PrefetchConfig prefetchConfig);
 
     /**
      * Checks if the asset is already prefetched
@@ -61,11 +63,11 @@ public interface Prefetch {
      * based on the prefetchConfig, call the listener.
      *
      * @param mediaEntry PKMediaEntry
-     * @param prefetchConfig PrefetchConfig
+     * @param selectionPrefs OfflineManager.SelectionPrefs
      * @param prefetchCallback Prefetch.PrefetchCallback
      */
     void prefetchAsset(@NonNull PKMediaEntry mediaEntry,
-                       @NonNull PrefetchConfig prefetchConfig,
+                       @NonNull OfflineManager.SelectionPrefs selectionPrefs,
                        @NonNull Prefetch.PrefetchCallback prefetchCallback);
 
     /**
@@ -76,12 +78,12 @@ public interface Prefetch {
      * and {@link OfflineManager#setKalturaServerUrl(String)}, respectively.
      *
      * @param mediaOptions MediaOptions
-     * @param prefetchConfig PrefetchConfig
+     * @param selectionPrefs OfflineManager.SelectionPrefs
      * @param prefetchCallback Prefetch.PrefetchCallback
      * @throws IllegalStateException if partner id and/or server URL were not set.
      */
     void prefetchAsset(@NonNull MediaOptions mediaOptions,
-                       @NonNull PrefetchConfig prefetchConfig,
+                       @NonNull OfflineManager.SelectionPrefs selectionPrefs,
                        @NonNull Prefetch.PrefetchCallback prefetchCallback)
             throws IllegalStateException;
 
@@ -93,12 +95,12 @@ public interface Prefetch {
      * and {@link OfflineManager#setKalturaServerUrl(String)}, respectively.
      *
      * @param mediaOptions MediaOptions
-     * @param prefetchConfig PrefetchConfig
+     * @param selectionPrefs OfflineManager.SelectionPrefs
      * @param prefetchCallback Prefetch.PrefetchCallback
      * @throws IllegalStateException if partner id and/or server URL were not set.
      */
     void prefetchByMediaOptionsList(@NonNull List<MediaOptions> mediaOptions,
-                                    @NonNull PrefetchConfig prefetchConfig,
+                                    @NonNull OfflineManager.SelectionPrefs selectionPrefs,
                                     @NonNull Prefetch.PrefetchCallback prefetchCallback); // prepare + start + register
 
     /**
@@ -106,19 +108,19 @@ public interface Prefetch {
      * based on the prefetchConfig, call the listener.
      *
      * @param mediaEntryList List of PKMediaEntry
-     * @param prefetchConfig PrefetchConfig
+     * @param selectionPrefs OfflineManager.SelectionPrefs
      * @param prefetchCallback Prefetch.PrefetchCallback
      */
     void prefetchByMediaEntryList(@NonNull List<PKMediaEntry> mediaEntryList,
-                                  @NonNull PrefetchConfig prefetchConfig,
+                                  @NonNull OfflineManager.SelectionPrefs selectionPrefs,
                                   @NonNull Prefetch.PrefetchCallback prefetchCallback); // prepare + start + register
 
 
     /**
-     * Event callbacks invoked during asset info loading ({@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)})
-     * or {@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)}).
+     * Event callbacks invoked during asset info loading ({@link #prefetchAsset(PKMediaEntry, OfflineManager.SelectionPrefs, PrefetchCallback)})
+     * or {@link #prefetchAsset(PKMediaEntry, OfflineManager.SelectionPrefs, PrefetchCallback)}).
      * The app MUST handle at least {@link #onPrefetched(String, OfflineManager.AssetInfo, Map)} and {@link #onPrefetchError(String, Exception)}.
-     * If the app has used {@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)}, it MUST also handle
+     * If the app has used {@link #prefetchAsset(PKMediaEntry, OfflineManager.SelectionPrefs, PrefetchCallback)}, it MUST also handle
      * {@link #onMediaEntryLoadError(Exception)}.
      */
     interface PrefetchCallback extends OfflineManager.PrepareCallback {
