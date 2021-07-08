@@ -483,9 +483,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 } else { // if default prefs is given then
                     downloadDefaultTracks(downloadHelper);
                 }
-                //downloadAllTracks(helper, downloadHelper, selectionPrefs);
-                //downloadAllAudioTracks(helper, downloadHelper, selectionPrefs);
-                //downloadAllTextTracks(helper, downloadHelper, selectionPrefs);
+                //downloadAllTracks(downloadHelper, selectionPrefs);
+                //downloadAllAudioTracks(downloadHelper, selectionPrefs);
+                //downloadAllTextTracks(downloadHelper, selectionPrefs);
 
                 long selectedSize = estimateTotalSize(downloadHelper, OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION);
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
