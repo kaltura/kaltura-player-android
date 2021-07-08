@@ -489,6 +489,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     @Override
     public Prefetch getPrefetchManager() {
-        throw new RuntimeException("Feature not supported. To use prefetch use EXO as OfflineProvider");
+        throw new UnsupportedOperationException("Feature not supported. To use prefetch use EXO as OfflineProvider");
     }
 }
