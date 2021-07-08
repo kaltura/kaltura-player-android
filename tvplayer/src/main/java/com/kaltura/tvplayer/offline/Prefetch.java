@@ -22,41 +22,13 @@ public interface Prefetch {
     boolean isPrefetched(@NonNull String assetId);
 
     /**
-     * Prefetch the list of assets. Connect to Kaltura Backend to load entry metadata, select the best source from
-     * the entry, load the source metadata, select tracks based on the prefetchConfig, call the listener. If the asset requires
-     * KS, make sure to set {@link MediaOptions}.
-     * Before calling this method, the partner id and the server URL must be set by {@link OfflineManager#setKalturaParams(KalturaPlayer.Type, int)}
-     * and {@link OfflineManager#setKalturaServerUrl(String)}, respectively.
-     *
-     * @param mediaOptions MediaOptions
-     * @param prefetchConfig PrefetchConfig
-     * @param prefetchCallback Prefetch.PrefetchCallback
-     * @throws IllegalStateException if partner id and/or server URL were not set.
-     */
-    void prefetchByMediaOptionsList(@NonNull List<MediaOptions> mediaOptions,
-                                    @NonNull PrefetchConfig prefetchConfig,
-                                    @NonNull Prefetch.PrefetchCallback prefetchCallback); // prepare + start + register
-
-    /**
-     * Prefetch the list of assets. Select the best source from the entry, load the source metadata, select tracks
-     * based on the prefetchConfig, call the listener.
-     *
-     * @param mediaEntryList List of PKMediaEntry
-     * @param prefetchConfig PrefetchConfig
-     * @param prefetchCallback Prefetch.PrefetchCallback
-     */
-    void prefetchByMediaEntryList(@NonNull List<PKMediaEntry> mediaEntryList,
-                                  @NonNull PrefetchConfig prefetchConfig,
-                                  @NonNull Prefetch.PrefetchCallback prefetchCallback); // prepare + start + register
-
-    /**
      * Get all the assets which are already prefetched
      * @return List of assets
      */
     List<OfflineManager.AssetInfo> getAllAssets();
 
     /**
-     * Get the asset info per assetId
+     * Get the asset info as per assetId
      * @param assetId AssetId
      * @return AssetInfo
      */
@@ -112,6 +84,35 @@ public interface Prefetch {
                        @NonNull PrefetchConfig prefetchConfig,
                        @NonNull Prefetch.PrefetchCallback prefetchCallback)
             throws IllegalStateException;
+
+    /**
+     * Prefetch the list of assets. Connect to Kaltura Backend to load entry metadata, select the best source from
+     * the entry, load the source metadata, select tracks based on the prefetchConfig, call the listener. If the asset requires
+     * KS, make sure to set {@link MediaOptions}.
+     * Before calling this method, the partner id and the server URL must be set by {@link OfflineManager#setKalturaParams(KalturaPlayer.Type, int)}
+     * and {@link OfflineManager#setKalturaServerUrl(String)}, respectively.
+     *
+     * @param mediaOptions MediaOptions
+     * @param prefetchConfig PrefetchConfig
+     * @param prefetchCallback Prefetch.PrefetchCallback
+     * @throws IllegalStateException if partner id and/or server URL were not set.
+     */
+    void prefetchByMediaOptionsList(@NonNull List<MediaOptions> mediaOptions,
+                                    @NonNull PrefetchConfig prefetchConfig,
+                                    @NonNull Prefetch.PrefetchCallback prefetchCallback); // prepare + start + register
+
+    /**
+     * Prefetch the list of assets. Select the best source from the entry, load the source metadata, select tracks
+     * based on the prefetchConfig, call the listener.
+     *
+     * @param mediaEntryList List of PKMediaEntry
+     * @param prefetchConfig PrefetchConfig
+     * @param prefetchCallback Prefetch.PrefetchCallback
+     */
+    void prefetchByMediaEntryList(@NonNull List<PKMediaEntry> mediaEntryList,
+                                  @NonNull PrefetchConfig prefetchConfig,
+                                  @NonNull Prefetch.PrefetchCallback prefetchCallback); // prepare + start + register
+
 
     /**
      * Event callbacks invoked during asset info loading ({@link #prefetchAsset(PKMediaEntry, PrefetchConfig, PrefetchCallback)})
