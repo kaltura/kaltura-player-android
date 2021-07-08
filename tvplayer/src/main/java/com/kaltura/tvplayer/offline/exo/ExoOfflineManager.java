@@ -335,9 +335,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Nullable
-    private Format getFirstFormatWithDrmInitData(DownloadHelper helper) {
-        for (int periodIndex = 0; periodIndex < helper.getPeriodCount(); periodIndex++) {
-            MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(periodIndex);
+    private Format getFirstFormatWithDrmInitData(DownloadHelper downloadHelper) {
+        for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
+            MappingTrackSelector.MappedTrackInfo mappedTrackInfo = downloadHelper.getMappedTrackInfo(periodIndex);
             for (int rendererIndex = 0;
                  rendererIndex < mappedTrackInfo.getRendererCount();
                  rendererIndex++) {
@@ -372,7 +372,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final String url = source.getUrl();
         final Uri uri = Uri.parse(url);
 
-        final DownloadHelper downloadHelper;
+        final DownloadHelper assetDownloadHelper;
         if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.FULL) {
             log.d("removing prefetched media before full download");
             removeAsset(assetId);
@@ -426,7 +426,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         MediaItem mediaItem = builder.build();
         if (mediaFormat != PKMediaFormat.dash) {
-            downloadHelper = DownloadHelper.forMediaItem(
+            assetDownloadHelper = DownloadHelper.forMediaItem(
                     appContext, mediaItem, new DefaultRenderersFactory(appContext), httpDataSourceFactory);
         } else if (drmData != null && drmData.getScheme() != null) {
             final DrmCallback drmCallback = new DrmCallback(httpDataSourceFactory, null); // TODO license adapter usage?
@@ -436,15 +436,15 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 postEvent(() -> prepareCallback.onPrepareError(assetId, new IllegalArgumentException("drm call failed")));
             }, true, forceWidevineL3Playback);
             deferredDrmSessionManager.setMediaSource(source);
-            downloadHelper =  DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, deferredDrmSessionManager);
+            assetDownloadHelper =  DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, deferredDrmSessionManager);
         } else {
-            downloadHelper = DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, DrmSessionManager.DUMMY);
+            assetDownloadHelper = DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, DrmSessionManager.DUMMY);
         }
 
-        downloadHelper.prepare(new DownloadHelper.Callback() {
+        assetDownloadHelper.prepare(new DownloadHelper.Callback() {
             @Override
-            public void onPrepared(DownloadHelper helper) {
-                @Nullable Format format = getFirstFormatWithDrmInitData(helper);
+            public void onPrepared(DownloadHelper downloadHelper) {
+                @Nullable Format format = getFirstFormatWithDrmInitData(downloadHelper);
 
                 if (mediaItem.playbackProperties.drmConfiguration != null && mediaItem.playbackProperties.drmConfiguration.licenseUri != null) {
 
@@ -455,7 +455,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                                         format,
                                         mediaItem.playbackProperties.drmConfiguration,
                                         httpDataSourceFactory,
-                                        helper);
+                                        downloadHelper);
                     }
                     if (widevineOfflineLicenseFetchTask != null) {
                         widevineOfflineLicenseFetchTask.execute();
@@ -479,16 +479,16 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 //helper.getDefaultTrackSelectorParameters(appContext);
 
                 if ((selectionPrefs.allAudioLanguages && selectionPrefs.allTextLanguages) || (selectionPrefs.textLanguages != null && !selectionPrefs.textLanguages.isEmpty()) ||  (selectionPrefs.audioLanguages != null && !selectionPrefs.audioLanguages.isEmpty())) {
-                      downloadAllTracks(helper, downloadHelper, selectionPrefs);
+                      downloadAllTracks(downloadHelper, selectionPrefs);
                 } else { // if default prefs is given then
-                    downloadDefaultTracks(helper, downloadHelper);
+                    downloadDefaultTracks(downloadHelper);
                 }
                 //downloadAllTracks(helper, downloadHelper, selectionPrefs);
                 //downloadAllAudioTracks(helper, downloadHelper, selectionPrefs);
                 //downloadAllTextTracks(helper, downloadHelper, selectionPrefs);
 
-                long selectedSize = estimateTotalSize(helper, OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION);
-                final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, helper);
+                long selectedSize = estimateTotalSize(downloadHelper, OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION);
+                final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
                 }
@@ -502,22 +502,22 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
 
             @Override
-            public void onPrepareError(DownloadHelper helper, IOException error) {
+            public void onPrepareError(DownloadHelper downloadHelper, IOException error) {
                 if (error != null) {
                     log.e("onPrepareError: " + error.getCause());
                 }
-                if (helper != null) {
-                    helper.release();
+                if (downloadHelper != null) {
+                    downloadHelper.release();
                 }
                 postEvent(() -> prepareCallback.onPrepareError(assetId, error));
             }
         });
     }
 
-    private void downloadDefaultTracks(DownloadHelper helper, DownloadHelper downloadHelper) {
+    private void downloadDefaultTracks(DownloadHelper downloadHelper) {
         for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
             downloadHelper.clearTrackSelections(periodIndex);
-            for (int i = 0; i < helper.getMappedTrackInfo(periodIndex).getRendererCount(); i++) {
+            for (int i = 0; i < downloadHelper.getMappedTrackInfo(periodIndex).getRendererCount(); i++) {
 
                 downloadHelper.addTrackSelectionForSingleRenderer(
                         periodIndex,
@@ -533,9 +533,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return downloadsDirFreeSpace < requiredBytes;
     }
 
-    private void downloadAllTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
+    private void downloadAllTracks(DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
         log.d("downloadAllTracks");
-        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(0);
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = downloadHelper.getMappedTrackInfo(0);
         for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
             downloadHelper.clearTrackSelections(periodIndex);
             for (int rendererIndex = 0; rendererIndex < 3 ; rendererIndex++) { // 0, 1, 2 run only over video audio and text tracks
@@ -592,21 +592,21 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
     }
 
-//    private void downloadAllVideoTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
-//        downloadAllTracks(Consts.TRACK_TYPE_VIDEO, helper, downloadHelper, selectionPrefs);
+//    private void downloadAllVideoTracks(DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
+//        downloadAllTracks(Consts.TRACK_TYPE_VIDEO, downloadHelper, selectionPrefs);
 //    }
 //
-//    private void downloadAllAudioTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
-//        downloadAllTracks(Consts.TRACK_TYPE_AUDIO, helper, downloadHelper, selectionPrefs);
+//    private void downloadAllAudioTracks(DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
+//        downloadAllTracks(Consts.TRACK_TYPE_AUDIO, downloadHelper, selectionPrefs);
 //    }
 //
-//    private void downloadAllTextTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
-//        downloadAllTracks(Consts.TRACK_TYPE_TEXT, helper, downloadHelper, selectionPrefs);
+//    private void downloadAllTextTracks(DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
+//        downloadAllTracks(Consts.TRACK_TYPE_TEXT, downloadHelper, selectionPrefs);
 //    }
 
-    private void downloadAllTracks(int trackType, DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
+    private void downloadAllTracks(int trackType, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
 
-        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(0);
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = downloadHelper.getMappedTrackInfo(0);
         for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
             downloadHelper.clearTrackSelections(periodIndex);
             int rendererIndex = trackType;
@@ -656,10 +656,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
     }
 
-    private static long estimateTotalSize(DownloadHelper helper, int hlsAudioBitrate) {
+    private static long estimateTotalSize(DownloadHelper downloadHelper, int hlsAudioBitrate) {
         long selectedSize = 0;
 
-        final Object manifest = helper.getManifest();
+        final Object manifest = downloadHelper.getManifest();
 
         final long durationMs;
         if (manifest instanceof DashManifest) {
@@ -672,13 +672,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             durationMs = 0; // TODO: 2019-08-15
         }
 
-        for (int pi = 0; pi < helper.getPeriodCount(); pi++) {
+        for (int pi = 0; pi < downloadHelper.getPeriodCount(); pi++) {
 
-            final MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(pi);
+            final MappingTrackSelector.MappedTrackInfo mappedTrackInfo = downloadHelper.getMappedTrackInfo(pi);
             final int rendererCount = mappedTrackInfo.getRendererCount();
 
             for (int i = 0; i < rendererCount; i++) {
-                final List<ExoTrackSelection> trackSelections = helper.getTrackSelections(pi, i);
+                final List<ExoTrackSelection> trackSelections = downloadHelper.getTrackSelections(pi, i);
                 for (int j = 0 ; j < trackSelections.size() ; j++) {
                     ExoTrackSelection trackSelection = trackSelections.get(j);
                     if (trackSelection != null) {
@@ -909,8 +909,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
         final ExoAssetInfo exoAssetInfo = (ExoAssetInfo) assetInfo;
 
-        final DownloadHelper helper = exoAssetInfo.downloadHelper;
-        if (helper == null) {
+        final DownloadHelper downloadHelper = exoAssetInfo.downloadHelper;
+        if (downloadHelper == null) {
             try {
                 final Download download = downloadManager.getDownloadIndex().getDownload(exoAssetInfo.getAssetId());
                 DownloadService.sendSetStopReason(appContext, ExoDownloadService.class, exoAssetInfo.getAssetId(), 0, false);
@@ -929,7 +929,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
         bytes = data.toString().getBytes();
 
-        final DownloadRequest downloadRequest = helper.getDownloadRequest(assetInfo.getAssetId(), bytes);
+        final DownloadRequest downloadRequest = downloadHelper.getDownloadRequest(assetInfo.getAssetId(), bytes);
         downloadRequest.copyWithKeySetId(keySetId);
 
         DownloadService.sendAddDownload(appContext, ExoDownloadService.class, downloadRequest, false);
