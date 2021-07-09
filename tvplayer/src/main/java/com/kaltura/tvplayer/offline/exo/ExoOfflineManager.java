@@ -376,7 +376,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.FULL) {
             log.d("removing prefetched media before full download");
             removeAsset(assetId);
-        } else   if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.PREFETCH) {
+        } else if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.PREFETCH) {
             log.d("media already prefetched");
             postEvent(() -> prepareCallback.onPrepared(assetId, getPrefetchManager().getAssetInfoByAssetId(assetId), null));
             return;
@@ -438,15 +438,22 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             deferredDrmSessionManager.setMediaSource(source);
             assetDownloadHelper =  DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, deferredDrmSessionManager);
         } else {
-            assetDownloadHelper = DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, DrmSessionManager.DUMMY);
+            assetDownloadHelper = DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, DrmSessionManager.DRM_UNSUPPORTED);
         }
 
         assetDownloadHelper.prepare(new DownloadHelper.Callback() {
             @Override
-            public void onPrepared(DownloadHelper downloadHelper) {
+            public void onPrepared(@NonNull DownloadHelper downloadHelper) {
                 @Nullable Format format = getFirstFormatWithDrmInitData(downloadHelper);
 
-                if (mediaItem.playbackProperties.drmConfiguration != null && mediaItem.playbackProperties.drmConfiguration.licenseUri != null) {
+                if (format == null && downloadHelper.getPeriodCount() == 0) {
+                    final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, 0, -1, downloadHelper);
+                    postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
+                    return;
+                }
+
+                if (format != null && format.drmInitData != null && mediaItem.playbackProperties != null &&
+                        mediaItem.playbackProperties.drmConfiguration != null && mediaItem.playbackProperties.drmConfiguration.licenseUri != null) {
 
                     WidevineOfflineLicenseFetchTask widevineOfflineLicenseFetchTask = null;
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
