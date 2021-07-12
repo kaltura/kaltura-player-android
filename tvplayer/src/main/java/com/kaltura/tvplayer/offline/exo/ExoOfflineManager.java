@@ -123,6 +123,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private File downloadDirectory;
     final Cache downloadCache;
     final DownloadManager downloadManager;
+    private DownloadHelper assetDownloadHelper;
 
     //private DrmSessionManager drmSessionManager;
     private DeferredDrmSessionManager deferredDrmSessionManager;
@@ -372,7 +373,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final String url = source.getUrl();
         final Uri uri = Uri.parse(url);
 
-        final DownloadHelper assetDownloadHelper;
         if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.FULL) {
             log.d("removing prefetched media before full download");
             removeAsset(assetId);
@@ -423,6 +423,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 }
             }
         }
+
+        releaseDownloadHelper();
 
         MediaItem mediaItem = builder.build();
         if (mediaFormat != PKMediaFormat.dash) {
@@ -509,16 +511,18 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
 
             @Override
-            public void onPrepareError(DownloadHelper downloadHelper, IOException error) {
-                if (error != null) {
-                    log.e("onPrepareError: " + error.getCause());
-                }
-                if (downloadHelper != null) {
-                    downloadHelper.release();
-                }
+            public void onPrepareError(@NonNull DownloadHelper downloadHelper, @NonNull IOException error) {
+                log.e("onPrepareError " + error.getMessage());
+                releaseDownloadHelper();
                 postEvent(() -> prepareCallback.onPrepareError(assetId, error));
             }
         });
+    }
+    
+    private void releaseDownloadHelper() {
+        if (assetDownloadHelper != null) {
+            assetDownloadHelper.release();
+        }
     }
 
     private void downloadDefaultTracks(DownloadHelper downloadHelper) {
@@ -740,6 +744,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         if (prefetchManager != null) {
             prefetchManager.removeEventHandler();
         }
+        releaseDownloadHelper();
+        assetDownloadHelper = null;
     }
 
     @Override
