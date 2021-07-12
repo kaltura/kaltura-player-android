@@ -419,17 +419,7 @@ public abstract class OfflineManager {
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
-
-        public enum DownloadVideoQuality {
-            LOW,
-            MEDIUM,
-            HIGH
-        }
-        @Nullable public DownloadVideoQuality downloadVideoQuality;
-        public static Pair<Integer,Integer> low = new Pair(1, 350000);
-        public static Pair<Integer,Integer> medium = new Pair(350001, 750000);
-        public static Pair<Integer,Integer> high = new Pair(750001, 16000000);
-
+        
         @Nullable public Map<TrackCodec, Integer> codecVideoBitrates;
         @Nullable public List<TrackCodec> videoCodecs;
         @Nullable public List<TrackCodec> audioCodecs;
