@@ -58,7 +58,7 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
         percentDownloaded = download.getPercentDownloaded();
         bytesDownloaded = download.getBytesDownloaded();
 
-        JsonObject jsonObject = new JsonParser().parse(new String(download.request.data)).getAsJsonObject();
+        JsonObject jsonObject = JsonParser.parseString(new String(download.request.data)).getAsJsonObject();
         if (jsonObject != null && jsonObject.has("prefetchConfig")) {
             String prefetchConfigStr = jsonObject.get("prefetchConfig").getAsString();
             if (prefetchConfigStr != null) {
