@@ -28,7 +28,6 @@ public class PrefetchManager implements Prefetch {
 
     private PrefetchConfig prefetchConfig;
     private final Handler eventHandler;
-    private OfflineManager.SelectionPrefs selectionPrefs;
     OfflineManager offlineManager;
 
     protected void postEvent(Runnable event) {
@@ -42,7 +41,6 @@ public class PrefetchManager implements Prefetch {
     public PrefetchManager(OfflineManager offlineManager) {
         this.offlineManager = offlineManager;
         this.prefetchConfig = new PrefetchConfig();
-        this.selectionPrefs = new OfflineManager.SelectionPrefs();
         HandlerThread handlerThread = new HandlerThread("PrefetchManagerEvents");
         handlerThread.start();
         eventHandler = new Handler(handlerThread.getLooper());
@@ -177,12 +175,12 @@ public class PrefetchManager implements Prefetch {
 
     @Override
     public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull OfflineManager.SelectionPrefs selectionPrefs, @NonNull PrefetchCallback prefetchCallback) {
-        if (selectionPrefs != null) {
-            this.selectionPrefs = selectionPrefs;
+        if (selectionPrefs == null) {
+            selectionPrefs = new OfflineManager.SelectionPrefs();
         }
 
-        this.selectionPrefs.downloadType = OfflineManager.DownloadType.PREFETCH;
-        offlineManager.prepareAsset(mediaEntry, this.selectionPrefs, new OfflineManager.PrepareCallback() {
+        selectionPrefs.downloadType = OfflineManager.DownloadType.PREFETCH;
+        offlineManager.prepareAsset(mediaEntry, selectionPrefs, new OfflineManager.PrepareCallback() {
             @Override
             public void onPrepared(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected) {
                 ((ExoAssetInfo)assetInfo).downloadType = OfflineManager.DownloadType.PREFETCH;
