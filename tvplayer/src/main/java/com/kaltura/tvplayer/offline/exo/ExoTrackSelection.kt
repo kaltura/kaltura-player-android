@@ -39,7 +39,7 @@ fun selectTracks(
 }
 
 fun selectDefaultTracks(
-    appContext: Context ,
+    appContext: Context,
     downloadHelper: DownloadHelper) {
     ExoTrackSelection(appContext, downloadHelper, SelectionPrefs()).selectDefaultTracks()
 }

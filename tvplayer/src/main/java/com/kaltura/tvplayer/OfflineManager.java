@@ -425,9 +425,8 @@ public abstract class OfflineManager {
         @Nullable public List<TrackCodec> audioCodecs;
         @Nullable public Integer videoBitrate;
 
-
-        @Nullable public Integer videoHeight;
         @Nullable public Integer videoWidth;
+        @Nullable public Integer videoHeight;
 
         @Nullable public List<String> audioLanguages;
         @Nullable public List<String> textLanguages;
@@ -436,6 +435,20 @@ public abstract class OfflineManager {
         public boolean allTextLanguages;
         public boolean allowInefficientCodecs;
         public OfflineManager.DownloadType downloadType = DownloadType.FULL;
+
+        public static boolean isDefaultSelectionPrefs(SelectionPrefs selectionPrefs) {
+            return selectionPrefs.codecVideoBitrates != null &&
+                    selectionPrefs.videoCodecs != null &&
+                    selectionPrefs.audioCodecs != null &&
+                    selectionPrefs.videoBitrate != null &&
+                    selectionPrefs.videoWidth != null &&
+                    selectionPrefs.videoHeight != null &&
+                    selectionPrefs.audioLanguages != null &&
+                    selectionPrefs.textLanguages != null &&
+                    selectionPrefs.allAudioLanguages == false &&
+                    selectionPrefs.allTextLanguages == false &&
+                    selectionPrefs.allowInefficientCodecs == false;
+        }
     }
 
     public static abstract class AssetInfo {
