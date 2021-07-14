@@ -103,7 +103,7 @@ class ExoTrackSelection(
         if (selectionPrefs.audioCodecs != null && selectionPrefs.audioCodecs!!.size > 0) {
             val audioCodecs = mutableListOf<PKAudioCodec>()
 
-            for (code in selectionPrefs.videoCodecs ?: listOf()) {
+            for (code in selectionPrefs.audioCodecs ?: listOf()) {
                 if (code == EAC3) {
                     audioCodecs.add(PKAudioCodec.E_AC3)
                 } else  if (code == AC3) {
