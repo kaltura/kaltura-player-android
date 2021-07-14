@@ -425,7 +425,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
         }
 
-        releaseDownloadHelper();
+        //releaseDownloadHelper();
 
         MediaItem mediaItem = builder.build();
         if (mediaFormat != PKMediaFormat.dash) {
@@ -500,7 +500,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
         });
     }
-    
+
     private void releaseDownloadHelper() {
         if (assetDownloadHelper != null) {
             assetDownloadHelper.release();

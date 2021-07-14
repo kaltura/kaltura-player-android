@@ -419,7 +419,9 @@ public abstract class OfflineManager {
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
-        
+
+        public OfflineManager.DownloadType downloadType = DownloadType.FULL;
+
         @Nullable public Map<TrackCodec, Integer> codecVideoBitrates;
         @Nullable public List<TrackCodec> videoCodecs;
         @Nullable public List<TrackCodec> audioCodecs;
@@ -434,7 +436,6 @@ public abstract class OfflineManager {
         public boolean allAudioLanguages;
         public boolean allTextLanguages;
         public boolean allowInefficientCodecs;
-        public OfflineManager.DownloadType downloadType = DownloadType.FULL;
 
         public static boolean isDefaultSelectionPrefs(SelectionPrefs selectionPrefs) {
             return selectionPrefs.codecVideoBitrates != null &&
@@ -445,9 +446,9 @@ public abstract class OfflineManager {
                     selectionPrefs.videoHeight != null &&
                     selectionPrefs.audioLanguages != null &&
                     selectionPrefs.textLanguages != null &&
-                    selectionPrefs.allAudioLanguages == false &&
-                    selectionPrefs.allTextLanguages == false &&
-                    selectionPrefs.allowInefficientCodecs == false;
+                    !selectionPrefs.allAudioLanguages &&
+                    !selectionPrefs.allTextLanguages &&
+                    !selectionPrefs.allowInefficientCodecs;
         }
     }
 

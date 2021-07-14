@@ -86,7 +86,6 @@ class ExoTrackSelection(
                 listOf(PKVideoCodec.AVC)))
             playerSettings.setPreferredAudioCodecSettings(AudioCodecSettings().setCodecPriorityList(
                 listOf(PKAudioCodec.AC3)))
-            trackSelectionHelper.setPlayerSettings(playerSettings)
         }
 
         if (selectionPrefs.videoCodecs != null && selectionPrefs.videoCodecs!!.size > 0) {
@@ -115,6 +114,8 @@ class ExoTrackSelection(
             }
             playerSettings.setPreferredAudioCodecSettings(AudioCodecSettings().setCodecPriorityList(audioCodecs))
         }
+
+        trackSelectionHelper.setPlayerSettings(playerSettings)
 
         var pkTracks: PKTracks = trackSelectionHelper.buildTracks(listOf()) ?: return
         downloadVideoTrack(pkTracks)
@@ -193,18 +194,7 @@ class ExoTrackSelection(
 
         var tracks = videoTracks
 
-        selectionPrefs.videoHeight?.let { videoHeight ->
-            tracks = filterTracks(tracks, Track.heightComparator, { it.height >= videoHeight} )
-        }
-
-        selectionPrefs.videoWidth?.let { videoWidth ->
-            tracks = filterTracks(tracks, Track.widthComparator, { it.width >= videoWidth} )
-        }
-
-        selectionPrefs.videoBitrate?.let { videoBitrate ->
-            tracks = filterTracks(tracks, Track.bitrateComparator, { it.bitrate >= videoBitrate} )
-        }
-
+        tracks = filterVideoTracks(tracks, selectionPrefs)
 
         val videoBitrates = videoBitratePrefsPerCodec()
 
@@ -228,6 +218,32 @@ class ExoTrackSelection(
         }
 
         return null
+    }
+
+    private fun filterVideoTracks(tracks: List<Track>, selectionPrefs: SelectionPrefs): List<Track> {
+
+        selectionPrefs.videoHeight?.let { videoHeight ->
+            selectionPrefs.videoWidth?.let { videoWidth ->
+                return filterTracks(
+                    tracks,
+                    Track.pixelComparator,
+                    { it.width * it.height >= videoWidth * videoHeight })
+            }
+        }
+
+        selectionPrefs.videoHeight?.let { videoHeight ->
+            return filterTracks(tracks, Track.heightComparator, { it.height >= videoHeight })
+        }
+
+        selectionPrefs.videoWidth?.let { videoWidth ->
+            return filterTracks(tracks, Track.widthComparator, { it.width >= videoWidth })
+        }
+
+        selectionPrefs.videoBitrate?.let { videoBitrate ->
+            return filterTracks(tracks, Track.bitrateComparator, { it.bitrate >= videoBitrate })
+        }
+
+        return tracks
     }
 
     private fun videoBitratePrefsPerCodec(): HashMap<TrackCodec, Int> {
