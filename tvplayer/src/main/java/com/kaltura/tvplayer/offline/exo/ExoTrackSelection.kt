@@ -81,11 +81,9 @@ class ExoTrackSelection(
         trackSelectionHelper = TrackSelectionHelper(appContext, trackSelector, lastSelectedTrackIds)
         trackSelectionHelper.setMappedTrackInfo(downloadHelper.getMappedTrackInfo(0))
 
+        var videoCodecSettings = VideoCodecSettings()
         if (selectionPrefs.allowInefficientCodecs) {
-            playerSettings.setPreferredVideoCodecSettings(VideoCodecSettings().setCodecPriorityList(
-                listOf(PKVideoCodec.AVC)))
-            playerSettings.setPreferredAudioCodecSettings(AudioCodecSettings().setCodecPriorityList(
-                listOf(PKAudioCodec.AC3)))
+            videoCodecSettings.isAllowSoftwareDecoder = true
         }
 
         if (selectionPrefs.videoCodecs != null && selectionPrefs.videoCodecs!!.size > 0) {
@@ -97,8 +95,10 @@ class ExoTrackSelection(
                     videoCodecs.add(PKVideoCodec.AVC)
                 }
             }
-            playerSettings.setPreferredVideoCodecSettings(VideoCodecSettings().setCodecPriorityList(videoCodecs))
+            videoCodecSettings.codecPriorityList = videoCodecs
         }
+
+        playerSettings.setPreferredVideoCodecSettings(videoCodecSettings)
 
         if (selectionPrefs.audioCodecs != null && selectionPrefs.audioCodecs!!.size > 0) {
             val audioCodecs = mutableListOf<PKAudioCodec>()
