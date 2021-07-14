@@ -57,7 +57,7 @@ class ExoTrackSelection(
     private val allowedVideoCodecTags = allowedVideoCodecs.map { it.tag() }
     private val allowedAudioCodecTags = allowedAudioCodecs.map { it.tag() }
 
-    private val allowedCodecTags = allowedVideoCodecTags + allowedAudioCodecTags
+    //private val allowedCodecTags = allowedVideoCodecTags + allowedAudioCodecTags
 
     private lateinit var trackSelectionHelper: TrackSelectionHelper
     private val lastSelectedTrackIds = arrayOf(
@@ -68,7 +68,7 @@ class ExoTrackSelection(
     )
 
     internal fun selectDefaultTracks() {
-        downloadDefaultTracks(downloadHelper);
+        downloadDefaultTracks(downloadHelper)
     }
 
     internal fun selectAllTracks() {
@@ -122,7 +122,7 @@ class ExoTrackSelection(
 
         var audioExoTracks = mutableListOf<ExoTrack>()
         for (audioTrack in pkTracks.audioTracks) {
-            var exoTrack = ExoTrack(DownloadItem.TrackType.AUDIO, audioTrack.uniqueId, audioTrack.bitrate, -1, -1, audioTrack.codecName, audioTrack.language);
+            var exoTrack = ExoTrack(DownloadItem.TrackType.AUDIO, audioTrack.uniqueId, audioTrack.bitrate, -1, -1, audioTrack.codecName, audioTrack.language)
             audioExoTracks.add(exoTrack)
         }
 
