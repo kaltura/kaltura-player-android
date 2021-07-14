@@ -401,7 +401,7 @@ public abstract class OfflineManager {
 
 
         // Audio Codecs
-        /// MP4A
+        /// MP4A, AAC
         MP4A,
         /// AC3: Dolby Atmos
         AC3,
