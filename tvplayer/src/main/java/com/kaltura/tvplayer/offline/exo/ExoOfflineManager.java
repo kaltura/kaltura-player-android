@@ -425,8 +425,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
         }
 
-        //releaseDownloadHelper();
-
         MediaItem mediaItem = builder.build();
         if (mediaFormat != PKMediaFormat.dash) {
             assetDownloadHelper = DownloadHelper.forMediaItem(
@@ -450,6 +448,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 @Nullable Format format = getFirstFormatWithDrmInitData(downloadHelper);
 
                 if (format == null && downloadHelper.getPeriodCount() == 0) {
+                    //TODO match logic with exoplayer
                     final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, 0, -1, downloadHelper);
                     postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
                     return;
@@ -486,6 +485,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
                 saveAssetSourceId(assetId, source.getId());
                 if (isLowDiskSpace(assetInfo.getEstimatedSize())) {
+                    downloadHelper.release();
                     postEvent(() -> prepareCallback.onPrepareError(assetId, new UnsupportedOperationException("Warning Low Disk Space")));
                 } else {
                     postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
@@ -495,16 +495,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             @Override
             public void onPrepareError(@NonNull DownloadHelper downloadHelper, @NonNull IOException error) {
                 log.e("onPrepareError " + error.getMessage());
-                releaseDownloadHelper();
+                downloadHelper.release();
                 postEvent(() -> prepareCallback.onPrepareError(assetId, error));
             }
         });
-    }
-
-    private void releaseDownloadHelper() {
-        if (assetDownloadHelper != null) {
-            assetDownloadHelper.release();
-        }
     }
 
     private boolean isLowDiskSpace(long requiredBytes) {
@@ -595,8 +589,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         if (prefetchManager != null) {
             prefetchManager.removeEventHandler();
         }
-        releaseDownloadHelper();
-        assetDownloadHelper = null;
+        if (assetDownloadHelper != null) {
+            assetDownloadHelper.release();
+            assetDownloadHelper = null;
+        }
     }
 
     @Override
@@ -793,6 +789,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         final DownloadRequest downloadRequest = downloadHelper.getDownloadRequest(assetInfo.getAssetId(), bytes);
         downloadRequest.copyWithKeySetId(keySetId);
+
+        downloadHelper.release();
 
         DownloadService.sendAddDownload(appContext, ExoDownloadService.class, downloadRequest, false);
     }
