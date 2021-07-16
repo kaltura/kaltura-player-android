@@ -148,8 +148,7 @@ public abstract class KalturaPlayer {
     }
 
     private boolean kavaPartnerIdIsMissing(PlayerInitOptions initOptions) {
-        return (initOptions.tvPlayerParams == null ||
-                (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams && ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId == null));
+        return initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams && ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId == null;
     }
 
     protected static String safeServerUrl(Type tvPlayerType, String url, String defaultUrl) {
@@ -251,9 +250,12 @@ public abstract class KalturaPlayer {
 
     private void loadPlayer() {
         tokenResolver.update(initOptions);
-        PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
+        setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
+        if (Type.basic.equals(tvPlayerType) || !combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
+            NetworkUtils.sendKavaAnalytics(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID, NetworkUtils.KAVA_EVENT_IMPRESSION);
+        }
     }
 
     private void updatePlayerSettings() {
@@ -408,16 +410,16 @@ public abstract class KalturaPlayer {
     @NonNull
     private PKPluginConfigs setupPluginsConfiguration() {
         PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
-        this.combinedPluginConfigs = new PKPluginConfigs();
+        combinedPluginConfigs = new PKPluginConfigs();
 
         if (pluginConfigs != null) {
             for (Map.Entry<String, Object> entry : pluginConfigs) {
                 String pluginName = entry.getKey();
-                this.combinedPluginConfigs.setPluginConfig(pluginName, resolve(entry.getValue()));
+                combinedPluginConfigs.setPluginConfig(pluginName, resolve(entry.getValue()));
             }
         }
-        addKalturaPluginConfigs(this.combinedPluginConfigs);
-        return this.combinedPluginConfigs;
+        addKalturaPluginConfigs(combinedPluginConfigs);
+        return combinedPluginConfigs;
     }
 
     public View getPlayerView() {
@@ -445,6 +447,8 @@ public abstract class KalturaPlayer {
     public void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry, getKS());
 
+        sendKavaPlayRequest(mediaEntry.getId());
+
         if (externalSubtitles != null) {
             if (mediaEntry.getExternalSubtitleList() == null) {
                 mediaEntry.setExternalSubtitleList(externalSubtitles);
@@ -471,7 +475,6 @@ public abstract class KalturaPlayer {
     }
 
     public void setMedia(PKMediaEntry entry, Long startPosition) {
-        sendKavaImpression(entry.getId());
         externalSubtitles = null;
         if (startPosition != null) {
             setStartPosition(startPosition);
@@ -841,7 +844,7 @@ public abstract class KalturaPlayer {
         } else {
             this.partnerId = initOptions.partnerId;
             if (Type.ott.equals(tvPlayerType)) {
-                this.ovpPartnerId = (initOptions.tvPlayerParams != null &&
+                this.ovpPartnerId = (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams &&
                         ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId != null &&
                         ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId > 0) ? ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId : null;
             } else {
@@ -1027,8 +1030,6 @@ public abstract class KalturaPlayer {
         if (!isValidOTTPlayer())
             return;
 
-        sendKavaImpression(mediaOptions.getOttMediaAsset().getAssetId());
-
         prepareLoadMedia(mediaOptions);
 
         if (loadMediaFromCache(mediaOptions.getOttMediaAsset().getUUID(), mediaOptions.startPosition)) {
@@ -1079,8 +1080,6 @@ public abstract class KalturaPlayer {
 
         if (!isValidOVPPlayer())
             return;
-
-        sendKavaImpression(mediaOptions.getOvpMediaAsset().getEntryId());
 
         prepareLoadMedia(mediaOptions);
         if (loadMediaFromCache(mediaOptions.getOvpMediaAsset().getUUID(), mediaOptions.startPosition)) {
@@ -1213,7 +1212,7 @@ public abstract class KalturaPlayer {
         return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
     }
 
-    private void sendKavaImpression(String entryId) {
+    private void sendKavaPlayRequest(String entryId) {
         boolean isKavaPluginAvailable = combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName());
         if (isKavaPluginAvailable) {
             return;
@@ -1221,7 +1220,7 @@ public abstract class KalturaPlayer {
 
         int partnerId = 0;
         populatePartnersValues();
-        
+
         switch (tvPlayerType) {
             case ott:
                 if (this.partnerId != null && this.partnerId > 0) {
@@ -1240,9 +1239,7 @@ public abstract class KalturaPlayer {
             entryId = KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID;
         }
 
-        if (!isKavaPluginAvailable) {
-            NetworkUtils.sendKavaImpression(context, partnerId, entryId);
-        }
+        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST);
     }
 
     public interface OnEntryLoadListener {
