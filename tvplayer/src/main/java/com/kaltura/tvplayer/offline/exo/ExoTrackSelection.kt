@@ -449,7 +449,7 @@ class ExoTrackSelection(
                             (selectionPrefs.audioLanguages == null || !selectionPrefs.audioLanguages!!.contains(format.language))) {
                             continue
                         } else {
-                            log.d("XXX audio language = " + format.language + " bitrate =" + format.bitrate)
+                            log.d("XXX audio language = " + format.language + " bitrate = " + format.bitrate)
                             if (!TextUtils.isEmpty(format.language)) {
                                 selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                             }
@@ -460,7 +460,7 @@ class ExoTrackSelection(
                             (selectionPrefs.textLanguages == null || !selectionPrefs.textLanguages!!.contains(format.language))) {
                             continue
                         } else {
-                            log.d("XXX text language = " + format.language + " bitrate =" + format.bitrate)
+                            log.d("XXX text language = " + format.language + " bitrate = " + format.bitrate)
                             selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                         }
                     }
@@ -493,10 +493,10 @@ class ExoTrackSelection(
                             log.d("XXX video bitrate = " + format.bitrate + " codec = " + format.sampleMimeType)
                             selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                         } else if (rendererIndex == Consts.TRACK_TYPE_AUDIO) {
-                            log.d("XXX audio language = " + format.language + " bitrate =" + format.bitrate)
+                            log.d("XXX audio language = " + format.language + " bitrate = " + format.bitrate)
                             selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                         } else if (rendererIndex == Consts.TRACK_TYPE_TEXT) {
-                            log.d("XXX text language = " + format.language + " bitrate =" + format.bitrate)
+                            log.d("XXX text language = " + format.language + " bitrate = " + format.bitrate)
                             selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                         }
                     }

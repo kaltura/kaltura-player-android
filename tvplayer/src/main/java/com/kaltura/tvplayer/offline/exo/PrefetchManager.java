@@ -19,6 +19,7 @@ import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.offline.Prefetch;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -86,7 +87,30 @@ public class PrefetchManager implements Prefetch {
     @Override
     public List<OfflineManager.AssetInfo> getAllAssets() {
         log.d("getAllItems");
-        return offlineManager.getAssetsInState(OfflineManager.AssetDownloadState.prefetched);
+        List<OfflineManager.AssetInfo> prefetchedItems = new ArrayList<>();
+
+        List<OfflineManager.AssetInfo> allStartedItems =  offlineManager.getAssetsInState(OfflineManager.AssetDownloadState.started);
+        for (OfflineManager.AssetInfo startedItem: allStartedItems) {
+            if (startedItem.getPrefetchConfig() != null) {
+                prefetchedItems.add(startedItem);
+            }
+        }
+
+        List<OfflineManager.AssetInfo> allCompletedItems =  offlineManager.getAssetsInState(OfflineManager.AssetDownloadState.completed);
+        for (OfflineManager.AssetInfo completedItem: allCompletedItems) {
+            if (completedItem.getPrefetchConfig() != null) {
+                prefetchedItems.add(completedItem);
+            }
+        }
+
+        List<OfflineManager.AssetInfo> allStoppedItems =  offlineManager.getAssetsInState(OfflineManager.AssetDownloadState.prefetched);
+        for (OfflineManager.AssetInfo stoppedItem: allStoppedItems) {
+            if (stoppedItem.getPrefetchConfig() != null || stoppedItem.getDownloadType() == OfflineManager.DownloadType.PREFETCH) {
+                prefetchedItems.add(stoppedItem);
+            }
+        }
+
+        return prefetchedItems;
     }
 
     @Override
@@ -122,9 +146,6 @@ public class PrefetchManager implements Prefetch {
                 removeAsset(assetInfo.getAssetId());
             }
         }
-
-        // remove all still downloading assets
-        //TODO remove all still downloading assets
     }
 
     @Override
@@ -202,7 +223,11 @@ public class PrefetchManager implements Prefetch {
         });
     }
 
-//    private Prefetch.PrefetchCallback getPrefetchCallback() {
+    public PrefetchConfig getPrefetchConfig() {
+        return prefetchConfig;
+    }
+
+    //    private Prefetch.PrefetchCallback getPrefetchCallback() {
 //        return new Prefetch.PrefetchCallback() {
 //            @Override
 //            public void onPrefetched(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected) {

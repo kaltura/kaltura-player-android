@@ -587,8 +587,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     public void stop() {
         removeEventHandler();
         if (prefetchManager != null) {
+            if (prefetchManager.getPrefetchConfig().isEmptyCashOnPlayerDestroy()) {
+                 prefetchManager.removeAllAssets();
+            }
+
             prefetchManager.removeEventHandler();
         }
+
         if (assetDownloadHelper != null) {
             assetDownloadHelper.release();
             assetDownloadHelper = null;
@@ -693,6 +698,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 exoStates = new int[]{Download.STATE_REMOVING};
                 break;
             case paused:
+            case prefetched:
                 exoStates = new int[]{Download.STATE_STOPPED};
                 break;
             case none:
