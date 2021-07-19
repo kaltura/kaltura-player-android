@@ -254,7 +254,7 @@ public abstract class KalturaPlayer {
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
         if (Type.basic.equals(tvPlayerType) || !combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
-            NetworkUtils.sendKavaAnalytics(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID, NetworkUtils.KAVA_EVENT_IMPRESSION);
+            NetworkUtils.sendKavaAnalytics(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID, NetworkUtils.KAVA_EVENT_IMPRESSION, pkPlayer.getSessionId());
         }
     }
 
@@ -447,8 +447,6 @@ public abstract class KalturaPlayer {
     public void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry, getKS());
 
-        sendKavaPlayRequest(mediaEntry.getId());
-
         if (externalSubtitles != null) {
             if (mediaEntry.getExternalSubtitleList() == null) {
                 mediaEntry.setExternalSubtitleList(externalSubtitles);
@@ -464,6 +462,8 @@ public abstract class KalturaPlayer {
             updateKalturaPluginConfigs(combinedPluginConfigs);
             prepare();
         }
+
+        sendKavaPlayRequest(mediaEntry.getId());
     }
 
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
@@ -1218,6 +1218,8 @@ public abstract class KalturaPlayer {
             return;
         }
 
+        String sessionId = (pkPlayer != null && pkPlayer.getSessionId() != null) ? pkPlayer.getSessionId() : "";
+
         int partnerId = 0;
         populatePartnersValues();
 
@@ -1239,7 +1241,7 @@ public abstract class KalturaPlayer {
             entryId = KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID;
         }
 
-        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST);
+        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST, sessionId);
     }
 
     public interface OnEntryLoadListener {
