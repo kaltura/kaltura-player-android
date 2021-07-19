@@ -76,7 +76,7 @@ public abstract class KalturaPlayer {
     public static final int COUNT_DOWN_TOTAL = 5000;
     public static final int COUNT_DOWN_INTERVAL = 100;
     public static final String OKHTTP = "okhttp";
-    
+
     static boolean playerConfigRetrieved;
 
     private static final String KALTURA_PLAYER_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
@@ -98,6 +98,7 @@ public abstract class KalturaPlayer {
 
     private MessageBus messageBus;
     private boolean pluginsRegistered;
+    private PKPluginConfigs combinedPluginConfigs;
     private Type tvPlayerType;
 
     private Integer partnerId;
@@ -252,11 +253,11 @@ public abstract class KalturaPlayer {
 
     private void loadPlayer() {
         tokenResolver.update(initOptions);
-        PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
+        setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
-        if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName()) && Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId)) {
-            NetworkUtils.sendKavaImpression(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID);
+        if (Type.basic.equals(tvPlayerType) || !combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
+            NetworkUtils.sendKavaAnalytics(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID, NetworkUtils.KAVA_EVENT_IMPRESSION, pkPlayer.getSessionId());
         }
     }
 
@@ -412,7 +413,7 @@ public abstract class KalturaPlayer {
     @NonNull
     private PKPluginConfigs setupPluginsConfiguration() {
         PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
-        PKPluginConfigs combinedPluginConfigs = new PKPluginConfigs();
+        combinedPluginConfigs = new PKPluginConfigs();
 
         if (pluginConfigs != null) {
             for (Map.Entry<String, Object> entry : pluginConfigs) {
@@ -471,6 +472,8 @@ public abstract class KalturaPlayer {
             }
             prepare();
         }
+
+        sendKavaPlayRequest(mediaEntry.getId());
     }
 
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
@@ -851,7 +854,7 @@ public abstract class KalturaPlayer {
         } else {
             this.partnerId = initOptions.partnerId;
             if (Type.ott.equals(tvPlayerType)) {
-                this.ovpPartnerId = (initOptions.tvPlayerParams != null &&
+                this.ovpPartnerId = (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams &&
                         ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId != null &&
                         ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId > 0) ? ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId : null;
             } else {
@@ -1217,6 +1220,38 @@ public abstract class KalturaPlayer {
             }
         }
         return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
+    }
+
+    private void sendKavaPlayRequest(String entryId) {
+        boolean isKavaPluginAvailable = combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName());
+        if (isKavaPluginAvailable) {
+            return;
+        }
+
+        String sessionId = (pkPlayer != null && pkPlayer.getSessionId() != null) ? pkPlayer.getSessionId() : "";
+
+        int partnerId = 0;
+        populatePartnersValues();
+
+        switch (tvPlayerType) {
+            case ott:
+                if (this.partnerId != null && this.partnerId > 0) {
+                    partnerId = this.partnerId;
+                }
+                break;
+            case ovp:
+                if (this.ovpPartnerId != null && this.ovpPartnerId > 0) {
+                    partnerId = this.ovpPartnerId;
+                }
+                break;
+        }
+
+        if (TextUtils.isEmpty(entryId) || partnerId <= 0) {
+            partnerId = NetworkUtils.DEFAULT_KAVA_PARTNER_ID;
+            entryId = KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID;
+        }
+
+        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST, sessionId);
     }
 
     public interface OnEntryLoadListener {
