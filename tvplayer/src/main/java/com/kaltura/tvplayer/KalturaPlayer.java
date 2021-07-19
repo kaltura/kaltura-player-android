@@ -444,7 +444,6 @@ public abstract class KalturaPlayer {
                 }));
     }
 
-    
     public void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry, getKS());
 
