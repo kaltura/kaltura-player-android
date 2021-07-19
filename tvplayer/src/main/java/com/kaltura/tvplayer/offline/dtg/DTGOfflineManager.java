@@ -131,7 +131,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     @Override
     public void stop() {
         cm.stop();
-        removeEventHandler();
+        //removeEventHandler();
     }
 
     @Override

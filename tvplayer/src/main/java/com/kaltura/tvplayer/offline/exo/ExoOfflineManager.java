@@ -62,9 +62,7 @@ import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.SourceSelector;
-import com.kaltura.playkit.utils.Consts;
 import com.kaltura.playkit.utils.NativeCookieJarBridge;
-import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.playkit.drm.DeferredDrmSessionManager;
 import com.kaltura.playkit.drm.DrmCallback;
@@ -103,6 +101,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private static ExecutorService networkExecutor;
     private static ExoOfflineManager instance;
     private PrefetchManager prefetchManager;
+    private Runnable downloadProgressTracker;
     @Nullable private byte[] keySetId;
 
 
@@ -161,6 +160,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     break;
                 case Download.STATE_DOWNLOADING:
                     log.d("STATE_DOWNLOADING: " + assetId);
+                    if (downloadProgressTracker == null) {
+                        sendDownloadProgress();
+                    }
                     maybeRegisterDrmAsset(assetId, downloadType, REGISTER_ASSET_AFTER_5_SEC);
                     break;
                 case Download.STATE_FAILED:
@@ -251,40 +253,55 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         downloadManager.setMinRetryCount(MIN_RETRY_COUNT);
         downloadManager.addListener(exoListener);
 
-        postEvent(new Runnable() {
-            @Override
-            public void run() {
+    }
 
-                final DownloadProgressListener listener = ExoOfflineManager.this.downloadProgressListener;
+    private Runnable getDownloadTrackerRunnable() {
+        if (downloadProgressTracker == null) {
+           downloadProgressTracker =  new Runnable() {
+                @Override
+                public void run() {
+                    log.d("XXX sendDownloadProgress executed");
+                    final DownloadProgressListener listener = ExoOfflineManager.this.downloadProgressListener;
 
-                if (listener != null) {
-                    final List<Download> downloads = downloadManager.getCurrentDownloads();
-                    for (Download download : downloads) {
-                        if (download.state != Download.STATE_DOWNLOADING) {
-                            continue;
-                        }
-
-                        final float percentDownloaded = download.getPercentDownloaded();
-                        final long bytesDownloaded = download.getBytesDownloaded();
-                        final long totalSize = percentDownloaded > 0 ? (long) (100f * bytesDownloaded / percentDownloaded) : -1;
-                        final String dataJson = Util.fromUtf8Bytes(download.request.data);
-
-                        PrefetchConfig prefetchConfig = extractPrefetchConfig(dataJson);
-                        if (prefetchConfig != null && prefetchConfig.getAssetPrefetchSize() > 0) {
-                            log.d("XXX Downloaded: " + bytesDownloaded / 1000000 + " Mb");
-                            if (bytesDownloaded / 1000000 >= prefetchConfig.getAssetPrefetchSize()) { // default 2mb
-                                downloadManager.setStopReason(download.request.id, StopReason.prefetchDone.toExoCode()); // prefetchDone
+                    if (listener != null) {
+                        final List<Download> downloads = downloadManager.getCurrentDownloads();
+                        int nonDownlodingCounter = 0;
+                        for (Download download : downloads) {
+                            if (download.state != Download.STATE_DOWNLOADING) {
+                                nonDownlodingCounter++;
+                                continue;
                             }
+
+                            final float percentDownloaded = download.getPercentDownloaded();
+                            final long bytesDownloaded = download.getBytesDownloaded();
+                            final long totalSize = percentDownloaded > 0 ? (long) (100f * bytesDownloaded / percentDownloaded) : -1;
+                            final String dataJson = Util.fromUtf8Bytes(download.request.data);
+
+                            PrefetchConfig prefetchConfig = extractPrefetchConfig(dataJson);
+                            if (prefetchConfig != null && prefetchConfig.getAssetPrefetchSize() > 0) {
+                                log.d("XXX Downloaded: " + bytesDownloaded / 1000000 + " Mb");
+                                if (bytesDownloaded / 1000000 >= prefetchConfig.getAssetPrefetchSize()) { // default 2mb
+                                    downloadManager.setStopReason(download.request.id, StopReason.prefetchDone.toExoCode()); // prefetchDone
+                                }
+                            }
+                            final String assetId = download.request.id;
+                            listener.onDownloadProgress(assetId, bytesDownloaded, totalSize, percentDownloaded);
                         }
-                        final String assetId = download.request.id;
-                        listener.onDownloadProgress(assetId, bytesDownloaded, totalSize, percentDownloaded);
+                        if (nonDownlodingCounter == downloads.size()) {
+                            log.d("XXX exit sendDownloadProgress");
+                            downloadProgressTracker = null;
+                            return;
+                        }
                     }
-
+                    postEventDelayed(this, 250);
                 }
-
-                postEventDelayed(this, 250);
-            }
-        });
+            };
+        } 
+        return downloadProgressTracker;
+    }
+    
+    private void sendDownloadProgress( ) {
+        postEvent(getDownloadTrackerRunnable());
     }
 
     private PrefetchConfig extractPrefetchConfig(String dataJson) {
@@ -585,13 +602,12 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void stop() {
-        removeEventHandler();
+        //removeEventHandler();
         if (prefetchManager != null) {
             if (prefetchManager.getPrefetchConfig().isEmptyCashOnPlayerDestroy()) {
                  prefetchManager.removeAllAssets();
             }
-
-            prefetchManager.removeEventHandler();
+            //prefetchManager.removeEventHandler();
         }
 
         if (assetDownloadHelper != null) {
@@ -771,6 +787,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         if (!(assetInfo instanceof ExoAssetInfo)) {
             throw new IllegalArgumentException("Not an ExoAssetInfo object");
         }
+
         final ExoAssetInfo exoAssetInfo = (ExoAssetInfo) assetInfo;
 
         final DownloadHelper downloadHelper = exoAssetInfo.downloadHelper;
