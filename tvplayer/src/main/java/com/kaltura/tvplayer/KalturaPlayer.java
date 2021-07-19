@@ -146,6 +146,7 @@ public abstract class KalturaPlayer {
         registerPlugins(context);
         loadPlayer();
     }
+    
 
     private boolean kavaPartnerIdIsMissing(PlayerInitOptions initOptions) {
         return (initOptions.tvPlayerParams == null ||
