@@ -148,7 +148,8 @@ public abstract class KalturaPlayer {
     }
 
     private boolean kavaPartnerIdIsMissing(PlayerInitOptions initOptions) {
-        return initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams && ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId == null;
+        return (initOptions.tvPlayerParams == null ||
+                (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams && ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId == null));
     }
 
     protected static String safeServerUrl(Type tvPlayerType, String url, String defaultUrl) {
