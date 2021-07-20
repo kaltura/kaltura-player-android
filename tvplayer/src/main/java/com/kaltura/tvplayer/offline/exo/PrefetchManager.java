@@ -196,6 +196,7 @@ public class PrefetchManager implements Prefetch {
 
     @Override
     public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull OfflineManager.SelectionPrefs selectionPrefs, @NonNull PrefetchCallback prefetchCallback) {
+
         if (selectionPrefs == null) {
             selectionPrefs = new OfflineManager.SelectionPrefs();
         }
