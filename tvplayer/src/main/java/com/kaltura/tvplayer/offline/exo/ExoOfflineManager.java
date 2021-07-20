@@ -161,7 +161,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     if (downloadProgressTracker == null) {
                         sendDownloadProgress();
                     }
-                    maybeRegisterDrmAsset(assetId, downloadType, REGISTER_ASSET_AFTER_5_SEC);
+                    if (downloadType != DownloadType.PREFETCH) {
+                        maybeRegisterDrmAsset(assetId, downloadType, REGISTER_ASSET_AFTER_5_SEC);
+                    }
                     break;
                 case Download.STATE_FAILED:
                     log.d("STATE_FAILED: " + assetId);
@@ -254,7 +256,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     protected void addExoListener() {
         if (downloadManager != null) {
-            downloadManager.addListener(exoListener); // TODO: REMOVE ME At some place
+            downloadManager.addListener(exoListener);
         }
     }
 

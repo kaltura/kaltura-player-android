@@ -60,7 +60,6 @@ public class ExoDownloadService extends DownloadService {
         return new DownloadNotificationHelper(context, CHANNEL_ID);
     }
 
-
     /**
      * Creates and displays notifications for downloads when they complete or fail.
      *
