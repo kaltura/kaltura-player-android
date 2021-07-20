@@ -501,9 +501,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 }
 
                 if (selectionPrefs != null) {
-                    ExoTrackSelectionKt.selectTracks(appContext, downloadHelper,selectionPrefs);
+                    ExoPlayerTrackSelection.selectTracks(appContext, downloadHelper,selectionPrefs);
                 } else { // if default prefs is given then
-                    ExoTrackSelectionKt.selectDefaultTracks(appContext, downloadHelper);
+                    ExoPlayerTrackSelection.selectDefaultTracks(appContext, downloadHelper);
                 }
 
                 long selectedSize = estimateTotalSize(downloadHelper, OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION);

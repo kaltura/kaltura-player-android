@@ -1,5 +1,3 @@
-@file:Suppress("MoveLambdaOutsideParentheses")
-
 package com.kaltura.tvplayer.offline.exo
 
 import android.content.Context
@@ -27,29 +25,12 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-fun selectTracks(
-    appContext: Context,
-    downloadHelper: DownloadHelper,
-    selectionPrefs: SelectionPrefs) {
-    if (selectionPrefs.downloadType == OfflineManager.DownloadType.PREFETCH) {
-        ExoTrackSelection(appContext, downloadHelper, SelectionPrefs()).selectAllTracks()
-    } else {
-        ExoTrackSelection(appContext, downloadHelper, selectionPrefs).selectTracks()
-    }
-}
-
-fun selectDefaultTracks(
-    appContext: Context,
-    downloadHelper: DownloadHelper) {
-    ExoTrackSelection(appContext, downloadHelper, SelectionPrefs()).selectDefaultTracks()
-}
-
-private val log = PKLog.get("ExoTrackSelection")
-
-class ExoTrackSelection(
+class ExoPlayerTrackSelection(
     private val appContext: Context,
     private val downloadHelper: DownloadHelper,
     private val selectionPrefs: SelectionPrefs) {
+
+    private val log = PKLog.get("ExoPlayerTrackSelection")
 
     private val allowedVideoCodecs = videoCodecs.filter { it.isAllowed() }
     private val allowedAudioCodecs = audioCodecs.filter { it.isAllowed() }
@@ -66,6 +47,25 @@ class ExoTrackSelection(
         "none",
         "none"
     )
+
+    companion object {
+        @JvmStatic fun selectTracks(
+            appContext: Context,
+            downloadHelper: DownloadHelper,
+            selectionPrefs: SelectionPrefs) {
+            if (selectionPrefs.downloadType == OfflineManager.DownloadType.PREFETCH) {
+                ExoPlayerTrackSelection(appContext, downloadHelper, SelectionPrefs()).selectAllTracks()
+            } else {
+                ExoPlayerTrackSelection(appContext, downloadHelper, selectionPrefs).selectTracks()
+            }
+        }
+
+        @JvmStatic fun selectDefaultTracks(
+            appContext: Context,
+            downloadHelper: DownloadHelper) {
+            ExoPlayerTrackSelection(appContext, downloadHelper, SelectionPrefs()).selectDefaultTracks()
+        }
+    }
 
     internal fun selectDefaultTracks() {
         downloadDefaultTracks(downloadHelper)
