@@ -80,8 +80,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-
-
 // NOTE: this and related classes are not currently in use. OfflineManager.getInstance() always
 // returns an instance of DTGOfflineManager. ExoOfflineManager will be used in a future version.
 
@@ -251,13 +249,25 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         downloadManager.setRequirements(new Requirements(Requirements.NETWORK|Requirements.DEVICE_STORAGE_NOT_LOW));
         downloadManager.setMaxParallelDownloads(MAX_PARALLEL_DOWNLOADS);
         downloadManager.setMinRetryCount(MIN_RETRY_COUNT);
-        downloadManager.addListener(exoListener);
+        addExoListener();
+    }
 
+    protected void addExoListener() {
+        if (downloadManager != null) {
+            downloadManager.addListener(exoListener); // TODO: REMOVE ME At some place
+        }
+    }
+
+    protected void removeExoListener() {
+        if (downloadManager != null) {
+            downloadManager.removeListener(exoListener);
+        }
     }
 
     private Runnable getDownloadTrackerRunnable() {
         if (downloadProgressTracker == null) {
-           downloadProgressTracker =  new Runnable() {
+            log.d("XXX Creating new runnable");
+            downloadProgressTracker =  new Runnable() {
                 @Override
                 public void run() {
                     log.d("XXX sendDownloadProgress executed");
@@ -296,10 +306,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     postEventDelayed(this, 250);
                 }
             };
-        } 
+        }
         return downloadProgressTracker;
     }
-    
+
     private void sendDownloadProgress( ) {
         postEvent(getDownloadTrackerRunnable());
     }
@@ -399,7 +409,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             postEvent(() -> prepareCallback.onPrepared(assetId, getPrefetchManager().getAssetInfoByAssetId(assetId), null));
             return;
         }
-        
+
         postEvent(() -> prepareCallback.onSourceSelected(assetId, source, drmData));
         DefaultTrackSelector.Parameters defaultTrackSelectorParameters =  DownloadHelper.getDefaultTrackSelectorParameters(appContext);
 
@@ -487,13 +497,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                         widevineOfflineLicenseFetchTask.execute();
                     }
                 }
-                
-                if (selectionPrefs != null) {     
+
+                if (selectionPrefs != null) {
                     ExoTrackSelectionKt.selectTracks(appContext, downloadHelper,selectionPrefs);
                 } else { // if default prefs is given then
                     ExoTrackSelectionKt.selectDefaultTracks(appContext, downloadHelper);
                 }
-                
+
                 long selectedSize = estimateTotalSize(downloadHelper, OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION);
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
@@ -522,7 +532,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final long downloadsDirFreeSpace = downloadDirectory.getFreeSpace();
         return downloadsDirFreeSpace < requiredBytes;
     }
-    
+
     private static boolean isValidRenderer(MappingTrackSelector.MappedTrackInfo mappedTrackInfo, int rendererIndex) {
         TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
         if (trackGroupArray.length == 0) {
@@ -585,7 +595,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
         return selectedSize;
     }
-    
+
     public static ExoOfflineManager getInstance(Context context) {
         if (instance == null) {
             instance = new ExoOfflineManager(context.getApplicationContext());
@@ -595,19 +605,26 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void start(ManagerStartCallback callback) {
+        setupEventHandler();
         if (callback != null) {
             callback.onStarted();
         }
+        if (downloadProgressTracker == null) {
+            sendDownloadProgress();
+        }
+        addExoListener();
     }
 
     @Override
     public void stop() {
-        //removeEventHandler();
+        removeExoListener();
+        removeEventHandler();
+        downloadProgressTracker = null;
         if (prefetchManager != null) {
             if (prefetchManager.getPrefetchConfig().isEmptyCashOnPlayerDestroy()) {
-                 prefetchManager.removeAllAssets();
+                prefetchManager.removeAllAssets();
             }
-            //prefetchManager.removeEventHandler();
+            prefetchManager.removeEventHandler();
         }
 
         if (assetDownloadHelper != null) {
@@ -681,9 +698,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     Download.STATE_STOPPED);
         }
         catch (IOException e) {
-                e.printStackTrace();
-                return Collections.emptyList();
-            }
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
 
         List<AssetInfo> assetInfoList = new ArrayList<>(downloads.getCount());
 
@@ -752,7 +769,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 //
 //        final PKMediaSource localMediaSource = lam.getLocalMediaSource(assetId, mediaSource);
 //        return new PKMediaEntry().setId(assetId).setSources(Collections.singletonList(localMediaSource));
-        
+
         if (download == null ||
                 (download.state == Download.STATE_STOPPED && download.stopReason != StopReason.prefetchDone.toExoCode()) ||
                 (download.state != Download.STATE_COMPLETED && download.state != Download.STATE_STOPPED)) {
@@ -886,7 +903,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 removeAssetStatus[0] = false;
             }
         });
-       return removeAssetStatus[0];
+        return removeAssetStatus[0];
     }
 
     @Override
@@ -945,12 +962,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             drmInitData = getDrmInitData(cacheDataSourceFactory, sourceUrl);
             lam.registerWidevineDashAsset(assetId, licenseUri, drmInitData, forceWidevineL3Playback);
             postEvent(() -> listener.onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
-
             pendingDrmRegistration.remove(assetId);
-
         } catch (IOException | InterruptedException e) {
             postEvent(() -> listener.onRegisterError(assetId, downloadType, e));
-
         } catch (LocalAssetsManager.RegisterException e) {
             postEvent(() -> listener.onRegisterError(assetId, downloadType, e));
         }

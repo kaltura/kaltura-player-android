@@ -54,14 +54,12 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         @Override
         public void onProgressChange(DownloadItem item, long downloadedBytes) {
-            if (downloadProgressListener == null) {
-                return;
-            }
-
             final long total = item.getEstimatedSizeBytes();
             final float percentDownloaded = total > 0 ? Math.min(downloadedBytes * 100f / total, 100f) : 0;
 
-            postEvent(() -> downloadProgressListener.onDownloadProgress(item.getItemId(), downloadedBytes, total, percentDownloaded));
+            if (downloadProgressListener != null) {
+                postEvent(() -> downloadProgressListener.onDownloadProgress(item.getItemId(), downloadedBytes, total, percentDownloaded));
+            }
         }
 
         @Override
@@ -116,7 +114,8 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             cm.getSettings().chunksUrlAdapter = offlineManagerSettings.getChunksUrlAdapter();
             cm.getSettings().crossProtocolRedirectEnabled = offlineManagerSettings.isCrossProtocolRedirectEnabled();
         }
-
+        
+        setupEventHandler();
         cm.addDownloadStateListener(dtgListener);
         cm.start(() -> {
             log.d("Started DTG");
@@ -131,7 +130,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     @Override
     public void stop() {
         cm.stop();
-        //removeEventHandler();
+        removeEventHandler();
     }
 
     @Override

@@ -36,18 +36,25 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     private AssetStateListener assetStateListener;
     private String ks;
 
-    private final Handler eventHandler;
+    private Handler eventHandler;
 
     protected void postEvent(Runnable event) {
-        eventHandler.post(event);
+        if (isEventHandlerAlive()) {
+            eventHandler.post(event);
+        }
     }
 
     protected void postEventDelayed(Runnable event, int delayMillis) {
-        eventHandler.postDelayed(event, delayMillis);
+        if (isEventHandlerAlive()) {
+            eventHandler.postDelayed(event, delayMillis);
+        }
     }
     
     protected void removeEventHandler() {
-        eventHandler.removeCallbacksAndMessages(null);
+        if (isEventHandlerAlive()) {
+            eventHandler.removeCallbacksAndMessages(null);
+            eventHandler = null;
+        }
     }
 
     private static final AssetStateListener noopListener = new AssetStateListener() {
@@ -65,9 +72,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     public AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
-        HandlerThread handlerThread = new HandlerThread("OfflineManagerEvents");
-        handlerThread.start();
-        eventHandler = new Handler(handlerThread.getLooper());
+        setupEventHandler();
         lam = new LocalAssetsManagerExo(context);
     }
 
@@ -129,6 +134,18 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     @Override
     public void setKs(String ks) {
         this.ks = ks;
+    }
+
+    protected void setupEventHandler() {
+        if (eventHandler == null) {
+            HandlerThread handlerThread = new HandlerThread("OfflineManagerEvents");
+            handlerThread.start();
+            eventHandler = new Handler(handlerThread.getLooper());
+        }
+    }
+
+    private boolean isEventHandlerAlive() {
+        return eventHandler != null;
     }
 
     protected AssetStateListener getListener() {
