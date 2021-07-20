@@ -164,7 +164,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         final PKDrmParams drmData = selector.getSelectedDrmParams();
 
         if (source == null) {
-            postEvent(() -> prepareCallback.onPrepareError(assetId, new IllegalArgumentException("No playable source found")));
+            postEvent(() -> prepareCallback.onPrepareError(assetId, DownloadType.FULL, new IllegalArgumentException("No playable source found")));
             return;
         }
 
@@ -181,12 +181,12 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 dtgItem = cm.createItem(assetId, url);
             }
         } catch (IOException e) {
-            postEvent(() -> prepareCallback.onPrepareError(assetId, e));
+            postEvent(() -> prepareCallback.onPrepareError(assetId, DownloadType.FULL, e));
             return;
         }
 
         if (dtgItem == null) {
-            postEvent(() -> prepareCallback.onPrepareError(assetId, new Exception("Unknown failure adding asset")));
+            postEvent(() -> prepareCallback.onPrepareError(assetId, DownloadType.FULL, new Exception("Unknown failure adding asset")));
             return;
         }
 
@@ -194,12 +194,12 @@ public class DTGOfflineManager extends AbstractOfflineManager {
             @Override
             public void onDownloadMetadata(DownloadItem item, Exception error) {
                 if (!TextUtils.equals(item.getItemId(), assetId))  {
-                    postEvent(() -> prepareCallback.onPrepareError(assetId, error));
+                    postEvent(() -> prepareCallback.onPrepareError(assetId, DownloadType.FULL, error));
                     return; // wrong item - could be a matter of timing
                 }
 
                 if (error != null) {
-                    postEvent(() -> prepareCallback.onPrepareError(assetId, error));
+                    postEvent(() -> prepareCallback.onPrepareError(assetId, DownloadType.FULL, error));
                 } else {
                     postEvent(() -> prepareCallback.onPrepared(assetId, new DTGAssetInfo(item, AssetDownloadState.prepared), null));
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));

@@ -89,10 +89,10 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         mediaEntryProvider.load(response -> postEvent(() -> {
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
-                prepareCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
+                prepareCallback.onMediaEntryLoaded(mediaEntry.getId(), DownloadType.FULL, mediaEntry);
                 prepareAsset(mediaEntry, selectionPrefs, prepareCallback);
             } else {
-                prepareCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
+                prepareCallback.onMediaEntryLoadError(DownloadType.FULL, new IOException(response.getError().getMessage()));
             }
         }));
     }
@@ -109,12 +109,11 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         mediaEntryProvider.load(response -> postEvent(() -> {
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
-                mediaEntryCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
-
+                mediaEntryCallback.onMediaEntryLoaded(mediaEntry.getId(), DownloadType.UNKNOWN, mediaEntry);
                 renewDrmAssetLicense(assetId, mediaEntry);
 
             } else {
-                mediaEntryCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
+                mediaEntryCallback.onMediaEntryLoadError(DownloadType.UNKNOWN, new IOException(response.getError().getMessage()));
             }
         }));
     }

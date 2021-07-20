@@ -50,7 +50,7 @@ public class PrefetchManager implements Prefetch {
     @Override
     public void prefetchByMediaOptionsList(@NonNull List<MediaOptions> mediaOptionsList,
                                            @NonNull OfflineManager.SelectionPrefs selectionPrefs,
-                                           @NonNull Prefetch.PrefetchCallback prefetchCallback) {
+                                           @NonNull OfflineManager.PrepareCallback prefetchCallback) {
         log.d("prefetchByMediaOptions");
 
         if (mediaOptionsList == null) {
@@ -72,7 +72,7 @@ public class PrefetchManager implements Prefetch {
     @Override
     public void prefetchByMediaEntryList(@NonNull List<PKMediaEntry> mediaEntryList,
                                          @NonNull OfflineManager.SelectionPrefs selectionPrefs,
-                                         @NonNull Prefetch.PrefetchCallback prefetchCallback) {
+                                         @NonNull OfflineManager.PrepareCallback prefetchCallback) {
         log.d("prefetchByMediaEntry");
 
         if (mediaEntryList == null) {
@@ -154,8 +154,8 @@ public class PrefetchManager implements Prefetch {
         if (assetInfo instanceof ExoAssetInfo &&
                 assetInfo.getPrefetchConfig() != null &&
                 assetInfo.getState() == OfflineManager.AssetDownloadState.started) {
-                log.d("cancelAsset id: " + assetId);
-                removeAsset(assetId);
+            log.d("cancelAsset id: " + assetId);
+            removeAsset(assetId);
         }
     }
 
@@ -175,7 +175,7 @@ public class PrefetchManager implements Prefetch {
 
     @Override
     public final void prefetchAsset(@NonNull MediaOptions mediaOptions, @NonNull OfflineManager.SelectionPrefs selectionPrefs,
-                                    @NonNull PrefetchCallback prefetchCallback) throws IllegalStateException {
+                                    @NonNull OfflineManager.PrepareCallback prefetchCallback) throws IllegalStateException {
 
         if (offlineManager.getKalturaPartnerId() == null || offlineManager.getKalturaServerUrl() == null) {
             throw new IllegalStateException("kalturaPartnerId and/or kalturaServerUrl not set");
@@ -186,40 +186,36 @@ public class PrefetchManager implements Prefetch {
         mediaEntryProvider.load(response -> postEvent(() -> {
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
-                prefetchCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
+                prefetchCallback.onMediaEntryLoaded(mediaEntry.getId(), OfflineManager.DownloadType.PREFETCH, mediaEntry);
                 prefetchAsset(mediaEntry, selectionPrefs, prefetchCallback);
             } else {
-                prefetchCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
+                prefetchCallback.onMediaEntryLoadError(OfflineManager.DownloadType.PREFETCH, new IOException(response.getError().getMessage()));
             }
         }));
     }
 
     @Override
-    public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull OfflineManager.SelectionPrefs selectionPrefs, @NonNull PrefetchCallback prefetchCallback) {
+    public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull OfflineManager.SelectionPrefs selectionPrefs, @NonNull OfflineManager.PrepareCallback prefetchCallback) {
 
         if (selectionPrefs == null) {
             selectionPrefs = new OfflineManager.SelectionPrefs();
         }
 
         selectionPrefs.downloadType = OfflineManager.DownloadType.PREFETCH;
+
         offlineManager.prepareAsset(mediaEntry, selectionPrefs, new OfflineManager.PrepareCallback() {
             @Override
             public void onPrepared(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected) {
+                log.e("XXX onPrepared prefetch");
                 ((ExoAssetInfo)assetInfo).downloadType = OfflineManager.DownloadType.PREFETCH;
                 ((ExoAssetInfo)assetInfo).prefetchConfig = prefetchConfig;
                 offlineManager.startAssetDownload(assetInfo);
             }
 
             @Override
-            public void onPrepareError(@NonNull String assetId, @NonNull Exception error) {
-                log.e("onPrepareError");
-                prefetchCallback.onPrefetchError(assetId, error);
-            }
-
-            @Override
-            public void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {
-                log.d("onSourceSelected");
-                prefetchCallback.onSourceSelected(assetId, source, drmParams);
+            public void onPrepareError(@NonNull String assetId, OfflineManager.DownloadType downloadType,  @NonNull Exception error) {
+                log.e("XXX onPrepareError prefetch");
+                prefetchCallback.onPrepareError(assetId, downloadType, error);
             }
         });
     }

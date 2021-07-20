@@ -463,7 +463,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             //drmSessionManager = buildDrmSessionManager(drmData);
             deferredDrmSessionManager = new DeferredDrmSessionManager(new Handler(Looper.getMainLooper()), drmCallback, error -> {
                 log.e("onPrepareError drm call failed");
-                postEvent(() -> prepareCallback.onPrepareError(assetId, new IllegalArgumentException("drm call failed")));
+                postEvent(() -> prepareCallback.onPrepareError(assetId, selectionPrefs.downloadType, new IllegalArgumentException("drm call failed")));
             }, true, forceWidevineL3Playback);
             deferredDrmSessionManager.setMediaSource(source);
             assetDownloadHelper =  DownloadHelper.forMediaItem(mediaItem, defaultTrackSelectorParameters , new DefaultRenderersFactory(appContext), httpDataSourceFactory, deferredDrmSessionManager);
@@ -515,7 +515,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 saveAssetSourceId(assetId, source.getId());
                 if (isLowDiskSpace(assetInfo.getEstimatedSize())) {
                     downloadHelper.release();
-                    postEvent(() -> prepareCallback.onPrepareError(assetId, new UnsupportedOperationException("Warning Low Disk Space")));
+                    postEvent(() -> prepareCallback.onPrepareError(assetId, selectionPrefs.downloadType, new UnsupportedOperationException("Warning Low Disk Space")));
                 } else {
                     postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
                 }
@@ -525,7 +525,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             public void onPrepareError(@NonNull DownloadHelper downloadHelper, @NonNull IOException error) {
                 log.e("onPrepareError " + error.getMessage());
                 downloadHelper.release();
-                postEvent(() -> prepareCallback.onPrepareError(assetId, error));
+                postEvent(() -> prepareCallback.onPrepareError(assetId, selectionPrefs.downloadType, error));
             }
         });
     }

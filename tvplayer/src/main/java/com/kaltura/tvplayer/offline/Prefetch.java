@@ -64,11 +64,11 @@ public interface Prefetch {
      *
      * @param mediaEntry PKMediaEntry
      * @param selectionPrefs OfflineManager.SelectionPrefs
-     * @param prefetchCallback Prefetch.PrefetchCallback
+     * @param prefetchCallback OfflineManager.PrepareCallback
      */
     void prefetchAsset(@NonNull PKMediaEntry mediaEntry,
                        @NonNull OfflineManager.SelectionPrefs selectionPrefs,
-                       @NonNull Prefetch.PrefetchCallback prefetchCallback);
+                       @NonNull OfflineManager.PrepareCallback prefetchCallback);
 
     /**
      * Prefetch an asset. Connect to Kaltura Backend to load entry metadata, select the best source from
@@ -79,12 +79,12 @@ public interface Prefetch {
      *
      * @param mediaOptions MediaOptions
      * @param selectionPrefs OfflineManager.SelectionPrefs
-     * @param prefetchCallback Prefetch.PrefetchCallback
+     * @param prefetchCallback OfflineManager.PrepareCallback
      * @throws IllegalStateException if partner id and/or server URL were not set.
      */
     void prefetchAsset(@NonNull MediaOptions mediaOptions,
                        @NonNull OfflineManager.SelectionPrefs selectionPrefs,
-                       @NonNull Prefetch.PrefetchCallback prefetchCallback)
+                       @NonNull OfflineManager.PrepareCallback prefetchCallback)
             throws IllegalStateException;
 
     /**
@@ -96,12 +96,12 @@ public interface Prefetch {
      *
      * @param mediaOptions MediaOptions
      * @param selectionPrefs OfflineManager.SelectionPrefs
-     * @param prefetchCallback Prefetch.PrefetchCallback
+     * @param prefetchCallback OfflineManager.PrepareCallback
      * @throws IllegalStateException if partner id and/or server URL were not set.
      */
     void prefetchByMediaOptionsList(@NonNull List<MediaOptions> mediaOptions,
                                     @NonNull OfflineManager.SelectionPrefs selectionPrefs,
-                                    @NonNull Prefetch.PrefetchCallback prefetchCallback); // prepare + start + register
+                                    @NonNull OfflineManager.PrepareCallback prefetchCallback); // prepare + start + register
 
     /**
      * Prefetch the list of assets. Select the best source from the entry, load the source metadata, select tracks
@@ -109,27 +109,11 @@ public interface Prefetch {
      *
      * @param mediaEntryList List of PKMediaEntry
      * @param selectionPrefs OfflineManager.SelectionPrefs
-     * @param prefetchCallback Prefetch.PrefetchCallback
+     * @param prefetchCallback OfflineManager.PrepareCallback
      */
     void prefetchByMediaEntryList(@NonNull List<PKMediaEntry> mediaEntryList,
                                   @NonNull OfflineManager.SelectionPrefs selectionPrefs,
-                                  @NonNull Prefetch.PrefetchCallback prefetchCallback); // prepare + start + register
+                                  @NonNull OfflineManager.PrepareCallback prefetchCallback); // prepare + start + register
 
 
-    /**
-     * Event callbacks invoked during asset info loading ({@link #prefetchAsset(PKMediaEntry, OfflineManager.SelectionPrefs, PrefetchCallback)})
-     * or {@link #prefetchAsset(PKMediaEntry, OfflineManager.SelectionPrefs, PrefetchCallback)}).
-     * The app MUST handle at least {@link #onPrefetchError(String, Exception)}.
-     * If the app has used {@link #prefetchAsset(PKMediaEntry, OfflineManager.SelectionPrefs, PrefetchCallback)}, it MUST also handle
-     * {@link #onMediaEntryLoadError(Exception)}.
-     */
-    interface PrefetchCallback extends OfflineManager.PrepareCallback {
-        /**
-         * Called when asset prefetch has failed for some reason.
-         * Must be handled by all applications.
-         * @param assetId String
-         * @param error Exception
-         */
-        void onPrefetchError(@NonNull String assetId, @NonNull Exception error);
-    }
 }

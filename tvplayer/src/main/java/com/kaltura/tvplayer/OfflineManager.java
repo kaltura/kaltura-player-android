@@ -251,7 +251,7 @@ public abstract class OfflineManager {
     /**
      * Event callbacks invoked during asset info loading ({@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)})
      * or {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}).
-     * The app MUST handle at least {@link #onPrepared(String, AssetInfo, Map)} and {@link #onPrepareError(String, Exception)}. If the
+     * The app MUST handle at least {@link #onPrepared(String, AssetInfo, Map)} and {@link #onPrepareError(String, OfflineManager.DownloadType, Exception)}. If the
      * app has used {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}, it MUST also handle
      * {@link #onMediaEntryLoadError(Exception)}.
      */
@@ -272,7 +272,7 @@ public abstract class OfflineManager {
          * @param assetId String
          * @param error Exception
          */
-        void onPrepareError(@NonNull String assetId, @NonNull Exception error);
+        void onPrepareError(@NonNull String assetId, OfflineManager.DownloadType downloadType, @NonNull Exception error);
 
         /**
          * Called when loading a {@link PKMediaEntry} object from the backend has succeeded. It allows the app to
@@ -283,7 +283,7 @@ public abstract class OfflineManager {
          * @param mediaEntry PKMediaEntry
          */
         @Override
-        default void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry) {}
+        default void onMediaEntryLoaded(@NonNull String assetId, OfflineManager.DownloadType downloadType, @NonNull PKMediaEntry mediaEntry) {}
 
         /**
          * Called when loading a {@link PKMediaEntry} object from the backend has failed.
@@ -293,7 +293,7 @@ public abstract class OfflineManager {
          * @param error Exception
          */
         @Override
-        default void onMediaEntryLoadError(@NonNull Exception error) {}
+        default void onMediaEntryLoadError(OfflineManager.DownloadType downloadType, @NonNull Exception error) {}
 
         /**
          * Called when prepareAsset() has selected a specific {@link PKMediaSource} from the provided or loaded
@@ -482,8 +482,8 @@ public abstract class OfflineManager {
     }
 
     public interface MediaEntryCallback {
-        void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry);
+        void onMediaEntryLoaded(@NonNull String assetId, DownloadType downloadType, @NonNull PKMediaEntry mediaEntry);
 
-        void onMediaEntryLoadError(@NonNull Exception error);
+        void onMediaEntryLoadError(DownloadType downloadType, @NonNull Exception error);
     }
 }
