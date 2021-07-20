@@ -119,19 +119,11 @@ public interface Prefetch {
     /**
      * Event callbacks invoked during asset info loading ({@link #prefetchAsset(PKMediaEntry, OfflineManager.SelectionPrefs, PrefetchCallback)})
      * or {@link #prefetchAsset(PKMediaEntry, OfflineManager.SelectionPrefs, PrefetchCallback)}).
-     * The app MUST handle at least {@link #onPrefetched(String, OfflineManager.AssetInfo, Map)} and {@link #onPrefetchError(String, Exception)}.
+     * The app MUST handle at least {@link #onPrefetchError(String, Exception)}.
      * If the app has used {@link #prefetchAsset(PKMediaEntry, OfflineManager.SelectionPrefs, PrefetchCallback)}, it MUST also handle
      * {@link #onMediaEntryLoadError(Exception)}.
      */
     interface PrefetchCallback extends OfflineManager.PrepareCallback {
-        /**
-         * Called when the asset is prefetched
-         * @param assetId String
-         * @param assetInfo OfflineManager.AssetInfo
-         * @param selected Map<OfflineManager.TrackType, List<OfflineManager.Track>>
-         */
-        void onPrefetched(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected);
-
         /**
          * Called when asset prefetch has failed for some reason.
          * Must be handled by all applications.
