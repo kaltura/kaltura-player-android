@@ -139,7 +139,7 @@ public class PrefetchManager implements Prefetch {
 
     @Override
     public void removeAllAssets() {
-        log.d("removeAll");
+        log.d("removeAllAssets");
         List<OfflineManager.AssetInfo> assetInfoList = getAllAssets();
         if (assetInfoList != null && !assetInfoList.isEmpty()) {
             for (OfflineManager.AssetInfo assetInfo : assetInfoList) {
