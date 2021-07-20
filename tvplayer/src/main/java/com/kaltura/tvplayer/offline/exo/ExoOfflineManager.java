@@ -623,8 +623,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         removeEventHandler();
         downloadProgressTracker = null;
         if (prefetchManager != null) {
-            if (prefetchManager.getPrefetchConfig().isEmptyCashOnPlayerDestroy()) {
-                prefetchManager.removeAllAssets();
+            if (prefetchManager.getPrefetchConfig().isRemoveCacheOnDestroy()) {
+                 prefetchManager.removeAllAssets();
             }
             prefetchManager.removeEventHandler();
         }
