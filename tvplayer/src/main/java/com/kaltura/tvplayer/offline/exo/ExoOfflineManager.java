@@ -71,13 +71,18 @@ import com.kaltura.tvplayer.offline.Prefetch;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 // NOTE: this and related classes are not currently in use. OfflineManager.getInstance() always
@@ -395,7 +400,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         deferredDrmSessionManager = null;
         final String assetId = mediaEntry.getId();
         final PKMediaSource source = selector.getSelectedSource();
-        if (source == null) {
+        if (source == null || (selectionPrefs.downloadType == DownloadType.PREFETCH && source.getMediaFormat() != PKMediaFormat.hls && source.getMediaFormat() != PKMediaFormat.dash)) {
+            postEvent(() -> prepareCallback.onPrepareError(assetId, selectionPrefs.downloadType, new UnsupportedOperationException("Invalid source")));
             return;
         }
         final PKDrmParams drmData = selector.getSelectedDrmParams();
@@ -478,8 +484,19 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
                 if (format == null && downloadHelper.getPeriodCount() == 0) {
                     //TODO match logic with exoplayer
-                    final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, 0, -1, downloadHelper);
-                    postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
+                    long selectedSize = estimateTotalSize(downloadHelper,
+                            assetId,
+                            selectionPrefs.downloadType,
+                            uri,
+                            OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION,
+                            prepareCallback);
+                    final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
+                    if (isLowDiskSpace(assetInfo.getEstimatedSize())) {
+                        downloadHelper.release();
+                        postEvent(() -> prepareCallback.onPrepareError(assetId, selectionPrefs.downloadType, new UnsupportedOperationException("Warning Low Disk Space")));
+                    } else {
+                        postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
+                    }
                     return;
                 }
 
@@ -506,7 +523,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     ExoPlayerTrackSelection.selectDefaultTracks(appContext, downloadHelper);
                 }
 
-                long selectedSize = estimateTotalSize(downloadHelper, OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION);
+                long selectedSize = estimateTotalSize(downloadHelper,
+                        assetId,
+                        selectionPrefs.downloadType,uri,
+                        OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION,
+                        prepareCallback);
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmData));
@@ -555,7 +576,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
     }
 
-    private static long estimateTotalSize(DownloadHelper downloadHelper, int hlsAudioBitrate) {
+    private static long estimateTotalSize(DownloadHelper downloadHelper, String assetId, DownloadType downloadType, Uri uri, int hlsAudioBitrate, @NonNull PrepareCallback prepareCallback) {
         long selectedSize = 0;
 
         final Object manifest = downloadHelper.getManifest();
@@ -568,7 +589,14 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             final HlsManifest hlsManifest = (HlsManifest) manifest;
             durationMs = hlsManifest.mediaPlaylist.durationUs / 1000;
         } else {
-            durationMs = 0; // TODO: 2019-08-15
+            try {
+                ExecutorService executorService = Executors.newSingleThreadExecutor();
+                Future<Long> length = executorService.submit(new HttpHeadGetLength(uri));
+                return length.get();
+            } catch (ExecutionException|InterruptedException exception) {
+                prepareCallback.onPrepareError(assetId, downloadType, exception);
+                return 0;
+            }
         }
 
         for (int pi = 0; pi < downloadHelper.getPeriodCount(); pi++) {
@@ -596,6 +624,40 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
         }
         return selectedSize;
+    }
+
+    static long httpHeadGetLength(Uri uri) throws IOException {
+
+        HttpURLConnection connection = null;
+        try {
+            connection = openConnection(uri);
+            connection.setRequestMethod("HEAD");
+            connection.setRequestProperty("Accept-Encoding", "");
+            connection.connect();
+            int responseCode = connection.getResponseCode();
+            if (responseCode >= 400) {
+                throw new IOException("Response code from HEAD request: " + responseCode);
+            }
+            String contentLength = connection.getHeaderField("Content-Length");
+            if (!TextUtils.isEmpty(contentLength)) {
+                return Long.parseLong(contentLength);
+            } else {
+                return -1;
+            }
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+    }
+
+    static HttpURLConnection openConnection(Uri uri) throws IOException {
+        if (uri == null) {
+            return null;
+        }
+
+        HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(uri.toString()).openConnection();
+        return httpURLConnection;
     }
 
     public static ExoOfflineManager getInstance(Context context) {
@@ -1072,6 +1134,18 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             } else {
                 //onOfflineLicenseFetched(downloadHelper, checkStateNotNull(keySetId));
             }
+        }
+    }
+
+    public static class HttpHeadGetLength implements Callable<Long> {
+        private Uri uri;
+
+        public HttpHeadGetLength(Uri uri) {
+            this.uri = uri;
+        }
+
+        public Long call() throws IOException {
+            return httpHeadGetLength(uri);
         }
     }
 }
