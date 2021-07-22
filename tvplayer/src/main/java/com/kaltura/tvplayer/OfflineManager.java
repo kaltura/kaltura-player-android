@@ -473,6 +473,10 @@ public abstract class OfflineManager {
 
         @Nullable
         public abstract PrefetchConfig getPrefetchConfig();
+        
+        @NonNull
+        public abstract Long getDownloadTime();
+        
     }
 
     public static class AssetDownloadException extends Exception {

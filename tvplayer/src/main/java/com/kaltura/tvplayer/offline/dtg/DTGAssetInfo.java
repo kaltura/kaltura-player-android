@@ -7,6 +7,8 @@ import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
+import org.jetbrains.annotations.NotNull;
+
 class DTGAssetInfo extends OfflineManager.AssetInfo {
 
     final private String itemId;
@@ -15,6 +17,7 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
     final private long bytesDownloaded;
     final private float percentDownloaded;
     final DownloadItem downloadItem;
+    final Long downloadTime;
 
     DTGAssetInfo(DownloadItem item, AssetDownloadState state) {
         this.itemId = item.getItemId();
@@ -22,6 +25,7 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
         this.estimatedSize = item.getEstimatedSizeBytes();
         this.percentDownloaded = item.getEstimatedCompletionPercent();
         this.downloadItem = item;
+        this.downloadTime = System.currentTimeMillis();
 
         if (state == null) {
             switch (item.getState()) {
@@ -90,6 +94,12 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
     @Override
     public PrefetchConfig getPrefetchConfig() {
         return null;
+    }
+
+    @NonNull
+    @Override
+    public Long getDownloadTime() {
+        return downloadTime;
     }
 
 }

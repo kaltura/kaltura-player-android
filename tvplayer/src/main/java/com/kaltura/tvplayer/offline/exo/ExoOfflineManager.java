@@ -589,13 +589,15 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             final HlsManifest hlsManifest = (HlsManifest) manifest;
             durationMs = hlsManifest.mediaPlaylist.durationUs / 1000;
         } else {
+            ExecutorService executorService = Executors.newSingleThreadExecutor();
             try {
-                ExecutorService executorService = Executors.newSingleThreadExecutor();
                 Future<Long> length = executorService.submit(new HttpHeadGetLength(uri));
                 return length.get();
             } catch (ExecutionException|InterruptedException exception) {
                 prepareCallback.onPrepareError(assetId, downloadType, exception);
                 return 0;
+            } finally {
+                executorService.shutdown();
             }
         }
 

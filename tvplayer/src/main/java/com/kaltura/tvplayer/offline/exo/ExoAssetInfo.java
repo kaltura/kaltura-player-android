@@ -10,6 +10,8 @@ import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadHelper;
 import com.kaltura.tvplayer.OfflineManager;
 
+import org.jetbrains.annotations.NotNull;
+
 class ExoAssetInfo extends OfflineManager.AssetInfo {
 
     private final String assetId;
@@ -18,6 +20,7 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
     private final long estimatedSize;
     private final long bytesDownloaded;
     OfflineManager.DownloadType downloadType;
+    private final Long downloadTime;
     PrefetchConfig prefetchConfig;
     private static final Gson gson = new Gson();
 
@@ -33,6 +36,7 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
         this.downloadHelper = downloadHelper;
         this.percentDownloaded = 0;
         this.prefetchConfig = prefetchConfig;
+        this.downloadTime = System.currentTimeMillis();
     }
 
     ExoAssetInfo(OfflineManager.DownloadType downloadType, String assetId, OfflineManager.AssetDownloadState state, long estimatedSize, long bytesDownloaded, @SuppressWarnings("NullableProblems") DownloadHelper downloadHelper) {
@@ -44,6 +48,7 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
         this.downloadHelper = downloadHelper;
         this.percentDownloaded = 0;
         this.prefetchConfig = null;
+        this.downloadTime = System.currentTimeMillis();
     }
 
     ExoAssetInfo(Download download) {
@@ -57,6 +62,7 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
         downloadHelper = null;
         percentDownloaded = download.getPercentDownloaded();
         bytesDownloaded = download.getBytesDownloaded();
+        downloadTime = System.currentTimeMillis();
 
         JsonObject jsonObject = JsonParser.parseString(new String(download.request.data)).getAsJsonObject();
         if (jsonObject != null && jsonObject.has("prefetchConfig")) {
@@ -149,5 +155,11 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
     @Override
     public PrefetchConfig getPrefetchConfig() {
         return prefetchConfig;
+    }
+
+    @NonNull
+    @Override
+    public Long getDownloadTime() {
+        return downloadTime;
     }
 }
