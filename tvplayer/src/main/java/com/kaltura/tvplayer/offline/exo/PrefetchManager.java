@@ -6,10 +6,8 @@ import android.os.HandlerThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-import com.kaltura.playkit.PKMediaSource;
 
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.MediaOptions;
@@ -20,6 +18,7 @@ import com.kaltura.tvplayer.offline.Prefetch;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +29,6 @@ public class PrefetchManager implements Prefetch {
     private PrefetchConfig prefetchConfig;
     private final Handler eventHandler;
     OfflineManager offlineManager;
-
     protected void postEvent(Runnable event) {
         eventHandler.post(event);
     }
@@ -68,7 +66,7 @@ public class PrefetchManager implements Prefetch {
             prefetchAsset(isOTTMedia ? (OTTMediaOptions) mediaOptions : (OVPMediaOptions) mediaOptions, selectionPrefs, prefetchCallback);
         }
     }
-
+    
     @Override
     public void prefetchByMediaEntryList(@NonNull List<PKMediaEntry> mediaEntryList,
                                          @NonNull OfflineManager.SelectionPrefs selectionPrefs,
@@ -196,17 +194,21 @@ public class PrefetchManager implements Prefetch {
 
     @Override
     public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull OfflineManager.SelectionPrefs selectionPrefs, @NonNull OfflineManager.PrepareCallback prefetchCallback) {
-
         if (selectionPrefs == null) {
             selectionPrefs = new OfflineManager.SelectionPrefs();
         }
-
+        
+        List<OfflineManager.AssetInfo> prefetched = getAllAssets();
+        if (prefetched.size() > 0 && prefetched.size() >= prefetchConfig.getMaxItemCountInCache()) {
+            log.d("XXX before removeOldestPrefetchedAsset prefetched.size() = " + prefetched.size());
+            removeOldestPrefetchedAsset(prefetched);
+        }
         selectionPrefs.downloadType = OfflineManager.DownloadType.PREFETCH;
 
         offlineManager.prepareAsset(mediaEntry, selectionPrefs, new OfflineManager.PrepareCallback() {
             @Override
             public void onPrepared(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected) {
-                log.e("XXX onPrepared prefetch");
+                log.d("XXX onPrepared prefetch");
                 ((ExoAssetInfo)assetInfo).downloadType = OfflineManager.DownloadType.PREFETCH;
                 ((ExoAssetInfo)assetInfo).prefetchConfig = prefetchConfig;
                 offlineManager.startAssetDownload(assetInfo);
@@ -218,6 +220,17 @@ public class PrefetchManager implements Prefetch {
                 prefetchCallback.onPrepareError(assetId, downloadType, error);
             }
         });
+    }
+
+    private void removeOldestPrefetchedAsset(List<OfflineManager.AssetInfo> prefetched) {
+        if (prefetched.size() > 0) {
+            Collections.sort(prefetched, new OfflineManager.TimestampSorter());
+
+            final String assetId = prefetched.get(0).getAssetId();
+            log.d("XXX removeOldestPrefetchedAsset prefetched.get(0).getAssetId() = " + assetId);
+            removeAsset(assetId);
+            prefetched.remove(0);
+        }
     }
 
     public PrefetchConfig getPrefetchConfig() {

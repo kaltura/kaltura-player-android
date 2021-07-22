@@ -21,6 +21,7 @@ import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -253,7 +254,7 @@ public abstract class OfflineManager {
      * or {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}).
      * The app MUST handle at least {@link #onPrepared(String, AssetInfo, Map)} and {@link #onPrepareError(String, OfflineManager.DownloadType, Exception)}. If the
      * app has used {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}, it MUST also handle
-     * {@link #onMediaEntryLoadError(Exception)}.
+     * {@link #onMediaEntryLoadError(OfflineManager.DownloadType, Exception)}.
      */
     public interface PrepareCallback extends MediaEntryCallback {
         /**
@@ -489,5 +490,13 @@ public abstract class OfflineManager {
         void onMediaEntryLoaded(@NonNull String assetId, DownloadType downloadType, @NonNull PKMediaEntry mediaEntry);
 
         void onMediaEntryLoadError(DownloadType downloadType, @NonNull Exception error);
+    }
+
+    public static class TimestampSorter implements Comparator<AssetInfo>
+    {
+        @Override
+        public int compare(AssetInfo o1, AssetInfo o2) {
+            return o1.getDownloadTime().compareTo(o2.getDownloadTime());
+        }
     }
 }
