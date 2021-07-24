@@ -1,5 +1,6 @@
 package com.kaltura.tvplayer.offline.exo;
 
+import android.app.Notification;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -13,13 +14,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
-import com.kaltura.android.exoplayer2.MediaItem;
-import com.kaltura.android.exoplayer2.drm.DrmSession;
-import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
-import com.kaltura.android.exoplayer2.drm.OfflineLicenseHelper;
-import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
-import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
-import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -27,10 +21,15 @@ import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.DefaultRenderersFactory;
 import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.Format;
+import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
 import com.kaltura.android.exoplayer2.database.ExoDatabaseProvider;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
+import com.kaltura.android.exoplayer2.drm.DrmSession;
+import com.kaltura.android.exoplayer2.drm.DrmSessionEventListener;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
+import com.kaltura.android.exoplayer2.drm.OfflineLicenseHelper;
+import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadCursor;
 import com.kaltura.android.exoplayer2.offline.DownloadHelper;
@@ -44,8 +43,10 @@ import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.hls.HlsManifest;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.HttpDataSource;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
@@ -58,14 +59,14 @@ import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.Utils;
+import com.kaltura.playkit.drm.DeferredDrmSessionManager;
+import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.utils.NativeCookieJarBridge;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
-import com.kaltura.playkit.drm.DeferredDrmSessionManager;
-import com.kaltura.playkit.drm.DrmCallback;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.Prefetch;
 
@@ -92,7 +93,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private static final PKLog log = PKLog.get("ExoOfflineManager");
     private static final String DOWNLOAD_CONTENT_DIRECTORY = "downloads";
-    private static long REQUIRED_DATA_PARTITION_SIZE_BYTES = 200 * 1024 * 1024;
+    private static final long REQUIRED_DATA_PARTITION_SIZE_BYTES = 200 * 1024 * 1024;
 
     private static final int THREAD_POOL_SIZE = 8;
     private static final int MAX_PARALLEL_DOWNLOADS = 4;
@@ -100,7 +101,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private static final int REGISTER_ASSET_AFTER_5_SEC = 5000;
     private static final int REGISTER_ASSET_NOW = 0;
 
-    private static Gson gson = new Gson();
+    private static final Gson gson = new Gson();
     private static ExecutorService networkExecutor;
     private static ExoOfflineManager instance;
     private PrefetchManager prefetchManager;
@@ -120,7 +121,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             .readTimeout(DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS).build());
 
 
-    private Handler bgHandler = createBgHandler();
+    private final Handler bgHandler = createBgHandler();
 
     private final DatabaseProvider databaseProvider;
     private File downloadDirectory;
@@ -688,7 +689,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         downloadProgressTracker = null;
         if (prefetchManager != null) {
             if (prefetchManager.getPrefetchConfig().isRemoveCacheOnDestroy()) {
-                 prefetchManager.removeAllAssets();
+                prefetchManager.removeAllAssets();
             }
             prefetchManager.removeEventHandler();
         }
@@ -735,6 +736,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 removeAsset(assetInfo.getAssetId());
             }
         }
+    }
+
+    @Override
+    public void setForegroundNotification(ExoOfflineNotificationHelper notification) {
+        ExoDownloadService.setForegroundNotification(notification);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.kaltura.tvplayer.offline.dtg;
 
+import android.app.Notification;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -27,6 +28,7 @@ import com.kaltura.playkit.drm.SimpleDashParser;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.tvplayer.offline.Prefetch;
+import com.kaltura.tvplayer.offline.exo.ExoOfflineNotificationHelper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -131,6 +133,11 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     public void stop() {
         cm.stop();
         removeEventHandler();
+    }
+
+    @Override
+    public void setForegroundNotification(ExoOfflineNotificationHelper notification) {
+        throw new UnsupportedOperationException("Feature not supported. Notification is only used for EXO as OfflineProvider");
     }
 
     @Override

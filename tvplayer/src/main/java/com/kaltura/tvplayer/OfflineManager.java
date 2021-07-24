@@ -1,5 +1,6 @@
 package com.kaltura.tvplayer;
 
+import android.app.Notification;
 import android.content.Context;
 import android.util.Pair;
 
@@ -17,6 +18,7 @@ import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
+import com.kaltura.tvplayer.offline.exo.ExoOfflineNotificationHelper;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.io.File;
@@ -45,7 +47,7 @@ public abstract class OfflineManager {
                 return ExoOfflineManager.getInstance(context);
             case DTG:
             default:
-                return  DTGOfflineManager.getInstance(context);
+                return DTGOfflineManager.getInstance(context);
         }
     }
 
@@ -97,6 +99,13 @@ public abstract class OfflineManager {
      * Cancel currently downloading assets.
      */
     public abstract void cancelDownloads();
+
+    /**
+     * Customised foreground notification only for ExoOfflineManager
+     * Useless for DTGOfflineManager
+     * @param notification
+     */
+    public abstract void setForegroundNotification(ExoOfflineNotificationHelper notification);
 
     /**
      * Prepare an asset for download. Select the best source from the entry, load the source metadata, select tracks
