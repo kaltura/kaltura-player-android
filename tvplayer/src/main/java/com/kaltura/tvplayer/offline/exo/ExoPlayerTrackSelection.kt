@@ -449,7 +449,7 @@ class ExoPlayerTrackSelection(
                             (selectionPrefs.audioLanguages == null || !selectionPrefs.audioLanguages!!.contains(format.language))) {
                             continue
                         } else {
-                            log.d("XXX audio language = " + format.language + " bitrate = " + format.bitrate)
+                            log.d("audio language = " + format.language + " bitrate = " + format.bitrate)
                             if (!TextUtils.isEmpty(format.language)) {
                                 selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                             }
@@ -460,7 +460,7 @@ class ExoPlayerTrackSelection(
                             (selectionPrefs.textLanguages == null || !selectionPrefs.textLanguages!!.contains(format.language))) {
                             continue
                         } else {
-                            log.d("XXX text language = " + format.language + " bitrate = " + format.bitrate)
+                            log.d("text language = " + format.language + " bitrate = " + format.bitrate)
                             selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                         }
                     }
@@ -490,13 +490,13 @@ class ExoPlayerTrackSelection(
                     for (trackIndex in 0 until trackGroup.length) {
                         val format = trackGroup.getFormat(trackIndex)
                         if (rendererIndex == Consts.TRACK_TYPE_VIDEO) { //video
-                            log.d("XXX video bitrate = " + format.bitrate + " codec = " + format.sampleMimeType)
+                            log.d("video bitrate = " + format.bitrate + " codec = " + format.sampleMimeType)
                             selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                         } else if (rendererIndex == Consts.TRACK_TYPE_AUDIO) {
-                            log.d("XXX audio language = " + format.language + " bitrate = " + format.bitrate)
+                            log.d("audio language = " + format.language + " bitrate = " + format.bitrate)
                             selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                         } else if (rendererIndex == Consts.TRACK_TYPE_TEXT) {
-                            log.d("XXX text language = " + format.language + " bitrate = " + format.bitrate)
+                            log.d("text language = " + format.language + " bitrate = " + format.bitrate)
                             selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                         }
                     }
@@ -601,7 +601,7 @@ private object OMCodecSupport {
 //                for (trackIndex in 0 until trackGroup.length) {
 //                    val format = trackGroup.getFormat(trackIndex)
 //                    if (rendererIndex == Consts.TRACK_TYPE_VIDEO) { //video
-//                        log.d("XXX video bitrate = " + format.bitrate + " codec = " + format.sampleMimeType)
+//                        log.d("video bitrate = " + format.bitrate + " codec = " + format.sampleMimeType)
 //                        if (selectionPrefs.videoBitrate != null) {
 //                            var range = low
 //                            if (downloadVideoQuality == DownloadVideoQuality.MEDIUM) {
@@ -628,7 +628,7 @@ private object OMCodecSupport {
 //                        ) {
 //                            continue
 //                        } else {
-//                            log.d("XXX audio language = " + format.language + " bitrate =" + format.bitrate)
+//                            log.d("audio language = " + format.language + " bitrate =" + format.bitrate)
 //                            if (!TextUtils.isEmpty(format.language)) {
 //                                selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
 //                            }
@@ -640,7 +640,7 @@ private object OMCodecSupport {
 //                        ) {
 //                            continue
 //                        } else {
-//                            log.d("XXX text language = " + format.language + " bitrate =" + format.bitrate)
+//                            log.d("text language = " + format.language + " bitrate =" + format.bitrate)
 //                            selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
 //                        }
 //                    }

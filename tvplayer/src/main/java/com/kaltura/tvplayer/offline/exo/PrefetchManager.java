@@ -191,7 +191,7 @@ public class PrefetchManager implements Prefetch {
 
         List<OfflineManager.AssetInfo> prefetched = getAllAssets();
         if (prefetched.size() > 0 && prefetched.size() >= prefetchConfig.getMaxItemCountInCache()) {
-            log.d("XXX before removeOldestPrefetchedAsset prefetched.size() = " + prefetched.size());
+            log.d("before removeOldestPrefetchedAsset prefetched.size() = " + prefetched.size());
             removeOldestPrefetchedAsset(prefetched);
         }
         selectionPrefs.downloadType = OfflineManager.DownloadType.PREFETCH;
@@ -199,7 +199,7 @@ public class PrefetchManager implements Prefetch {
         offlineManager.prepareAsset(mediaEntry, selectionPrefs, new OfflineManager.PrepareCallback() {
             @Override
             public void onPrepared(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected) {
-                log.d("XXX onPrepared prefetch");
+                log.d("onPrepared prefetch");
                 ((ExoAssetInfo)assetInfo).downloadType = OfflineManager.DownloadType.PREFETCH;
                 ((ExoAssetInfo)assetInfo).prefetchConfig = prefetchConfig;
                 offlineManager.startAssetDownload(assetInfo);
@@ -207,7 +207,7 @@ public class PrefetchManager implements Prefetch {
 
             @Override
             public void onPrepareError(@NonNull String assetId, OfflineManager.DownloadType downloadType,  @NonNull Exception error) {
-                log.e("XXX onPrepareError prefetch");
+                log.e("onPrepareError prefetch");
                 prefetchCallback.onPrepareError(assetId, downloadType, error);
             }
         });
@@ -218,7 +218,7 @@ public class PrefetchManager implements Prefetch {
             Collections.sort(prefetched, new OfflineManager.TimestampSorter());
 
             final String assetId = prefetched.get(0).getAssetId();
-            log.d("XXX removeOldestPrefetchedAsset prefetched.get(0).getAssetId() = " + assetId);
+            log.d("removeOldestPrefetchedAsset prefetched.get(0).getAssetId() = " + assetId);
             removeAsset(assetId);
             prefetched.remove(0);
         }

@@ -274,11 +274,11 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private Runnable getDownloadTrackerRunnable() {
         if (downloadProgressTracker == null) {
-            log.d("XXX Creating new runnable");
+            log.d("getDownloadTrackerRunnable creating new runnable");
             downloadProgressTracker =  new Runnable() {
                 @Override
                 public void run() {
-                    log.d("XXX sendDownloadProgress executed");
+                    log.d("sendDownloadProgress executed");
                     final DownloadProgressListener listener = ExoOfflineManager.this.downloadProgressListener;
 
                     if (listener != null) {
@@ -297,7 +297,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
                             PrefetchConfig prefetchConfig = extractPrefetchConfig(dataJson);
                             if (prefetchConfig != null && prefetchConfig.getAssetPrefetchSize() > 0) {
-                                log.d("XXX Downloaded: " + bytesDownloaded / 1000000 + " Mb");
+                                log.d("prefetch downloaded: " + bytesDownloaded / 1000000 + " Mb");
                                 if (bytesDownloaded / 1000000 >= prefetchConfig.getAssetPrefetchSize()) { // default 2mb
                                     downloadManager.setStopReason(download.request.id, StopReason.prefetchDone.toExoCode()); // prefetchDone
                                 }
@@ -306,7 +306,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                             listener.onDownloadProgress(assetId, bytesDownloaded, totalSize, percentDownloaded);
                         }
                         if (nonDownlodingCounter == downloads.size()) {
-                            log.d("XXX exit sendDownloadProgress");
+                            log.d("exit sendDownloadProgress");
                             downloadProgressTracker = null;
                             return;
                         }
