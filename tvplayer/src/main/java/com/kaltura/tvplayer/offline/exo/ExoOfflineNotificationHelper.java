@@ -3,6 +3,7 @@ package com.kaltura.tvplayer.offline.exo;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -38,8 +39,12 @@ import java.util.List;
 
 public abstract class ExoOfflineNotificationHelper extends ExoNotificationHelper {
 
-    public ExoOfflineNotificationHelper(Context context) {
+    public ExoOfflineNotificationHelper(Context context, String channelId) {
         super(context);
+        if (!TextUtils.equals(channelId, super.getDownloadChannelId())) {
+            throw new IllegalArgumentException("ChannelId mismatch. \n " +
+                    "Use getChannelId() OR EXO_DOWNLOAD_CHANNEL_ID from Consts to get the correct channelId for Notification.");
+        }
     }
 
     /**
@@ -47,7 +52,7 @@ public abstract class ExoOfflineNotificationHelper extends ExoNotificationHelper
      * @return ChannelId
      */
     public String getChannelID() {
-        return super.getDownloadChannelID();
+        return super.getDownloadChannelId();
     }
 
     /**

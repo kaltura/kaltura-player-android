@@ -28,10 +28,10 @@ class ExoNotificationHelper {
     private final NotificationCompat.Builder notificationBuilder;
 
     public ExoNotificationHelper(Context context) {
-        notificationBuilder = new NotificationCompat.Builder(context.getApplicationContext(), Consts.EXO_DOWNLOAD_CHANNEL_ID);
+        notificationBuilder = new NotificationCompat.Builder(context.getApplicationContext(), getDownloadChannelId());
     }
 
-    public String getDownloadChannelID() {
+    public String getDownloadChannelId() {
         return Consts.EXO_DOWNLOAD_CHANNEL_ID;
     }
 
