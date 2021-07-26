@@ -110,15 +110,17 @@ class ExoNotificationHelper {
                             buildDownloadCompletedNotification(
                                     context,
                                     R.drawable.ic_cloud_done_black_24dp,
-                                    null,
-                                    Util.fromUtf8Bytes(download.request.data));
+                                    null, 
+                                    null);
                 } else if (download.state == Download.STATE_FAILED) {
                     notification =
                             buildDownloadFailedNotification(
                                     context,
                                     R.drawable.ic_cloud_done_black_24dp,
                                     null,
-                                    Util.fromUtf8Bytes(download.request.data));
+                                    download.failureReason == 0 ?
+                                            context.getString(R.string.download_failure_none) :
+                                            context.getString(R.string.download_failure_unknown));
                 } else {
                     return;
                 }

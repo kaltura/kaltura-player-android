@@ -5,4 +5,6 @@
     <string name="icon_play_next">icon_play_next</string>
     <string name="toggleplaypausebutton">togglePlayPauseButton</string>
     <string name="icon_play_prev">icon_play_prev</string>
+    <string name="download_failure_none">Download Failure None</string>
+    <string name="download_failure_unknown">Download Failure Unknown</string>
 </resources>
