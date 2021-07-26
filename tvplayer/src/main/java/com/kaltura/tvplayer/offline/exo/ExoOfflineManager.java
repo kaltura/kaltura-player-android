@@ -1,6 +1,5 @@
 package com.kaltura.tvplayer.offline.exo;
 
-import android.app.Notification;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -483,8 +482,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             public void onPrepared(@NonNull DownloadHelper downloadHelper) {
                 @Nullable Format format = getFirstFormatWithDrmInitData(downloadHelper);
 
-                if (format == null && downloadHelper.getPeriodCount() == 0) {
-                    //TODO match logic with exoplayer
+                if ((format == null && downloadHelper.getPeriodCount() == 0) ||
+                        (format != null && downloadHelper.getPeriodCount() > 0 && hasAnyValidRenderer(downloadHelper.getMappedTrackInfo(0)))) {
+                    log.d("No Period or no valid renderer found. Downloading entire stream.");
                     long selectedSize = estimateTotalSize(downloadHelper,
                             assetId,
                             selectionPrefs.downloadType,
@@ -492,12 +492,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                             OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION,
                             prepareCallback);
                     final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
-                    if (isLowDiskSpace(assetInfo.getEstimatedSize())) {
-                        downloadHelper.release();
-                        postEvent(() -> prepareCallback.onPrepareError(assetId, selectionPrefs.downloadType, new UnsupportedOperationException("Warning Low Disk Space")));
-                    } else {
-                        postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
-                    }
+                    sendOnPreparedEvent(downloadHelper, assetInfo, prepareCallback, assetId, selectionPrefs);
                     return;
                 }
 
@@ -526,7 +521,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
                 long selectedSize = estimateTotalSize(downloadHelper,
                         assetId,
-                        selectionPrefs.downloadType,uri,
+                        selectionPrefs.downloadType,
+                        uri,
                         OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION,
                         prepareCallback);
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
@@ -535,12 +531,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 }
 
                 saveAssetSourceId(assetId, source.getId());
-                if (isLowDiskSpace(assetInfo.getEstimatedSize())) {
-                    downloadHelper.release();
-                    postEvent(() -> prepareCallback.onPrepareError(assetId, selectionPrefs.downloadType, new UnsupportedOperationException("Warning Low Disk Space")));
-                } else {
-                    postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
-                }
+                sendOnPreparedEvent(downloadHelper, assetInfo, prepareCallback, assetId, selectionPrefs);
             }
 
             @Override
@@ -552,9 +543,27 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         });
     }
 
+    private void sendOnPreparedEvent(@NonNull DownloadHelper downloadHelper, ExoAssetInfo assetInfo, @NonNull PrepareCallback prepareCallback, String assetId, @NonNull SelectionPrefs selectionPrefs) {
+        if (isLowDiskSpace(assetInfo.getEstimatedSize())) {
+            downloadHelper.release();
+            postEvent(() -> prepareCallback.onPrepareError(assetId, selectionPrefs.downloadType, new UnsupportedOperationException("Warning Low Disk Space")));
+        } else {
+            postEvent(() -> prepareCallback.onPrepared(assetId, assetInfo, null));
+        }
+    }
+
     private boolean isLowDiskSpace(long requiredBytes) {
         final long downloadsDirFreeSpace = downloadDirectory.getFreeSpace();
         return downloadsDirFreeSpace < requiredBytes;
+    }
+
+    private static boolean hasAnyValidRenderer(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
+        for (int i = 0; i < mappedTrackInfo.getRendererCount(); i++) {
+            if (isValidRenderer(mappedTrackInfo, i)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isValidRenderer(MappingTrackSelector.MappedTrackInfo mappedTrackInfo, int rendererIndex) {
