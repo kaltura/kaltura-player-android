@@ -66,7 +66,7 @@ public class PrefetchManager implements Prefetch {
             prefetchAsset(isOTTMedia ? (OTTMediaOptions) mediaOptions : (OVPMediaOptions) mediaOptions, selectionPrefs, prefetchCallback);
         }
     }
-    
+
     @Override
     public void prefetchByMediaEntryList(@NonNull List<PKMediaEntry> mediaEntryList,
                                          @NonNull OfflineManager.SelectionPrefs selectionPrefs,
@@ -84,27 +84,16 @@ public class PrefetchManager implements Prefetch {
 
     @Override
     public List<OfflineManager.AssetInfo> getAllAssets() {
-        log.d("getAllItems");
+        log.d("getAllAssets");
+
         List<OfflineManager.AssetInfo> prefetchedItems = new ArrayList<>();
-
-        List<OfflineManager.AssetInfo> allStartedItems =  offlineManager.getAssetsInState(OfflineManager.AssetDownloadState.started);
-        for (OfflineManager.AssetInfo startedItem: allStartedItems) {
-            if (startedItem.getPrefetchConfig() != null) {
-                prefetchedItems.add(startedItem);
-            }
-        }
-
-        List<OfflineManager.AssetInfo> allCompletedItems =  offlineManager.getAssetsInState(OfflineManager.AssetDownloadState.completed);
-        for (OfflineManager.AssetInfo completedItem: allCompletedItems) {
-            if (completedItem.getPrefetchConfig() != null) {
-                prefetchedItems.add(completedItem);
-            }
-        }
-
-        List<OfflineManager.AssetInfo> allStoppedItems =  offlineManager.getAssetsInState(OfflineManager.AssetDownloadState.prefetched);
-        for (OfflineManager.AssetInfo stoppedItem: allStoppedItems) {
-            if (stoppedItem.getPrefetchConfig() != null || stoppedItem.getDownloadType() == OfflineManager.DownloadType.PREFETCH) {
-                prefetchedItems.add(stoppedItem);
+        List<OfflineManager.AssetInfo> assetInfoItems = offlineManager.getAllAssets();
+        for (OfflineManager.AssetInfo assetInfoItem: assetInfoItems) {
+            if (assetInfoItem.getState() == OfflineManager.AssetDownloadState.prefetched &&
+                    (assetInfoItem.getPrefetchConfig() != null || assetInfoItem.getDownloadType() == OfflineManager.DownloadType.PREFETCH)) {
+                prefetchedItems.add(assetInfoItem);
+            } else if (assetInfoItem.getPrefetchConfig() != null) {
+                prefetchedItems.add(assetInfoItem);
             }
         }
 
@@ -137,8 +126,10 @@ public class PrefetchManager implements Prefetch {
 
     @Override
     public void removeAllAssets() {
+
         log.d("removeAllAssets");
         List<OfflineManager.AssetInfo> assetInfoList = getAllAssets();
+
         if (assetInfoList != null && !assetInfoList.isEmpty()) {
             for (OfflineManager.AssetInfo assetInfo : assetInfoList) {
                 removeAsset(assetInfo.getAssetId());
@@ -197,7 +188,7 @@ public class PrefetchManager implements Prefetch {
         if (selectionPrefs == null) {
             selectionPrefs = new OfflineManager.SelectionPrefs();
         }
-        
+
         List<OfflineManager.AssetInfo> prefetched = getAllAssets();
         if (prefetched.size() > 0 && prefetched.size() >= prefetchConfig.getMaxItemCountInCache()) {
             log.d("XXX before removeOldestPrefetchedAsset prefetched.size() = " + prefetched.size());

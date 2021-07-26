@@ -767,7 +767,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     Download.STATE_RESTARTING,
                     Download.STATE_COMPLETED,
                     Download.STATE_REMOVING,
-                    Download.STATE_STOPPED);
+                    Download.STATE_STOPPED,
+                    Download.STATE_FAILED);
         }
         catch (IOException e) {
             e.printStackTrace();
