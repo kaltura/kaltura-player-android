@@ -1,11 +1,10 @@
 package com.kaltura.tvplayer;
 
-import android.app.Notification;
 import android.content.Context;
-import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKDrmParams;
@@ -14,8 +13,8 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
-import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
+import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineNotificationHelper;
@@ -483,10 +482,10 @@ public abstract class OfflineManager {
 
         @Nullable
         public abstract PrefetchConfig getPrefetchConfig();
-        
+
         @NonNull
         public abstract Long getDownloadTime();
-        
+
     }
 
     public static class AssetDownloadException extends Exception {
