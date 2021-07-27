@@ -185,14 +185,10 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
-    public void setOfflineManagerSettings(OfflineManagerSettings offlineManagerSettings) {
+    public void setOfflineManagerSettings(@NonNull OfflineManagerSettings offlineManagerSettings) {
         this.offlineManagerSettings = offlineManagerSettings;
-    }
-
-    @Override
-    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
-        if (lam != null) {
-            lam.setLicenseRequestAdapter(licenseRequestAdapter);
+        if (lam != null && offlineManagerSettings != null && offlineManagerSettings.getLicenseRequestAdapter() != null) {
+            lam.setLicenseRequestAdapter(offlineManagerSettings.getLicenseRequestAdapter());
         }
     }
 

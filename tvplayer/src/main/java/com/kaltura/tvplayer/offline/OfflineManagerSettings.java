@@ -1,6 +1,7 @@
 package com.kaltura.tvplayer.offline;
 
 import com.kaltura.dtg.DownloadRequestParams;
+import com.kaltura.playkit.PKRequestParams;
 
 public class OfflineManagerSettings {
     public static final int DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION = 64000;
@@ -15,6 +16,7 @@ public class OfflineManagerSettings {
     private boolean crossProtocolRedirectEnabled = true;
     private DownloadRequestParams.Adapter downloadRequestAdapter;
     private DownloadRequestParams.Adapter chunksUrlAdapter;
+    private PKRequestParams.Adapter licenseRequestAdapter;
 
     public int getMaxDownloadRetries() {
         return maxDownloadRetries;
@@ -79,6 +81,15 @@ public class OfflineManagerSettings {
         return this;
     }
 
+    public boolean isCrossProtocolRedirectEnabled() {
+        return crossProtocolRedirectEnabled;
+    }
+
+    public OfflineManagerSettings setCrossProtocolRedirectEnabled(boolean crossProtocolRedirectEnabled) {
+        this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
+        return this;
+    }
+
     public DownloadRequestParams.Adapter getDownloadRequestAdapter() {
         return downloadRequestAdapter;
     }
@@ -97,14 +108,11 @@ public class OfflineManagerSettings {
         return this;
     }
 
-    public boolean isCrossProtocolRedirectEnabled() {
-        return crossProtocolRedirectEnabled;
+    public PKRequestParams.Adapter getLicenseRequestAdapter() {
+        return licenseRequestAdapter;
     }
 
-    public OfflineManagerSettings setCrossProtocolRedirectEnabled(boolean crossProtocolRedirectEnabled) {
-        this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
-        return this;
+    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        this.licenseRequestAdapter = licenseRequestAdapter;
     }
-    
-    
 }

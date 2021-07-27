@@ -239,8 +239,6 @@ public abstract class OfflineManager {
 
     public abstract Prefetch getPrefetchManager();
 
-    public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
-
     public String getKalturaServerUrl() {
         return kalturaServerUrl;
     }
