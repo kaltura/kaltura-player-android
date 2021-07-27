@@ -483,7 +483,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 @Nullable Format format = getFirstFormatWithDrmInitData(downloadHelper);
 
                 if ((format == null && downloadHelper.getPeriodCount() == 0) ||
-                        (format != null && downloadHelper.getPeriodCount() > 0 && hasAnyValidRenderer(downloadHelper.getMappedTrackInfo(0)))) {
+                        (format != null && downloadHelper.getPeriodCount() > 0 && !hasAnyValidRenderer(downloadHelper.getMappedTrackInfo(0)))) {
                     log.d("No Period or no valid renderer found. Downloading entire stream.");
                     long selectedSize = estimateTotalSize(downloadHelper,
                             assetId,
