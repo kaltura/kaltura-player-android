@@ -1,5 +1,6 @@
 package com.kaltura.tvplayer.playlist;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKMediaEntry;
@@ -8,7 +9,7 @@ import com.kaltura.playkit.PKPlaylistMedia;
 public class BasicMediaOptions extends PKPlaylistMedia {
 
     private PKMediaEntry pkMediaEntry;
-    private @Nullable CountDownOptions playlistCountDownOptions;
+    private @NonNull CountDownOptions playlistCountDownOptions;
 
     public BasicMediaOptions(PKMediaEntry pkMediaEntry) {
         super.setId(pkMediaEntry.getId());
@@ -20,7 +21,7 @@ public class BasicMediaOptions extends PKPlaylistMedia {
         this.playlistCountDownOptions = new CountDownOptions();
     }
 
-    public BasicMediaOptions(PKMediaEntry pkMediaEntry, @Nullable CountDownOptions playlistCountDownOptions) {
+    public BasicMediaOptions(PKMediaEntry pkMediaEntry, @NonNull CountDownOptions playlistCountDownOptions) {
         this(pkMediaEntry);
         this.playlistCountDownOptions = playlistCountDownOptions;
     }
@@ -29,6 +30,7 @@ public class BasicMediaOptions extends PKPlaylistMedia {
         return pkMediaEntry;
     }
 
+    @NonNull
     public CountDownOptions getPlaylistCountDownOptions() {
         return playlistCountDownOptions;
     }

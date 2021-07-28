@@ -1,6 +1,5 @@
 package com.kaltura.tvplayer.offline.dtg;
 
-import android.app.Notification;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Pair;

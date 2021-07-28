@@ -70,7 +70,8 @@ public interface Prefetch {
      */
     void prefetchAsset(@NonNull PKMediaEntry mediaEntry,
                        @NonNull OfflineManager.SelectionPrefs selectionPrefs,
-                       @NonNull OfflineManager.PrepareCallback prefetchCallback);
+                       @NonNull OfflineManager.PrepareCallback prefetchCallback)
+            throws IllegalStateException;
 
     /**
      * Prefetch an asset. Connect to Kaltura Backend to load entry metadata, select the best source from

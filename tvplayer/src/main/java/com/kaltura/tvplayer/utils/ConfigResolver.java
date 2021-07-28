@@ -35,7 +35,7 @@ public class ConfigResolver {
     private static JsonObject resolveJsonObject(JsonObject config, TokenResolver tokenResolver) {
         // Resolve by converting to string and back
         final String resolved = resolveString(config.toString(), tokenResolver);
-        return (JsonObject) new JsonParser().parse(resolved);
+        return (JsonObject) JsonParser.parseString(resolved);
     }
     private static Bundle resolveBundle(Bundle config, TokenResolver tokenResolver) {
         Bundle resolvedBundle = new Bundle();

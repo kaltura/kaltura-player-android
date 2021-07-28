@@ -7,7 +7,6 @@ import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
-import org.jetbrains.annotations.NotNull;
 
 class DTGAssetInfo extends OfflineManager.AssetInfo {
 
