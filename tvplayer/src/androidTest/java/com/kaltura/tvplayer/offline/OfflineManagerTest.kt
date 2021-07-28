@@ -173,7 +173,7 @@ class OfflineManagerTest {
                 om.startAssetDownload(assetInfo)
             }
 
-            override fun onPrepareError(assetId: String, error: Exception) {
+            override fun onPrepareError(assetId: String, downloadType: OfflineManager.DownloadType, error: Exception) {
                 fail("Prepare failed with $error")
                 downloadComplete(error)
             }
