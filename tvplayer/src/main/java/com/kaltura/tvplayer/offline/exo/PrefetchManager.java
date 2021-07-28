@@ -8,7 +8,6 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
-
 import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.OTTMediaOptions;
@@ -126,7 +125,6 @@ public class PrefetchManager implements Prefetch {
 
     @Override
     public void removeAllAssets() {
-
         log.d("removeAllAssets");
         List<OfflineManager.AssetInfo> assetInfoList = getAllAssets();
 
@@ -163,7 +161,8 @@ public class PrefetchManager implements Prefetch {
     }
 
     @Override
-    public final void prefetchAsset(@NonNull MediaOptions mediaOptions, @NonNull OfflineManager.SelectionPrefs selectionPrefs,
+    public final void prefetchAsset(@NonNull MediaOptions mediaOptions,
+                                    @NonNull OfflineManager.SelectionPrefs selectionPrefs,
                                     @NonNull OfflineManager.PrepareCallback prefetchCallback) throws IllegalStateException {
 
         if (offlineManager.getKalturaPartnerId() == null || offlineManager.getKalturaServerUrl() == null) {
@@ -184,14 +183,15 @@ public class PrefetchManager implements Prefetch {
     }
 
     @Override
-    public void prefetchAsset(@NonNull PKMediaEntry mediaEntry, @NonNull OfflineManager.SelectionPrefs selectionPrefs, @NonNull OfflineManager.PrepareCallback prefetchCallback) {
+    public void prefetchAsset(@NonNull PKMediaEntry mediaEntry,
+                              @NonNull OfflineManager.SelectionPrefs selectionPrefs,
+                              @NonNull OfflineManager.PrepareCallback prefetchCallback) throws IllegalStateException {
         if (selectionPrefs == null) {
             selectionPrefs = new OfflineManager.SelectionPrefs();
         }
 
         List<OfflineManager.AssetInfo> prefetched = getAllAssets();
         if (prefetched.size() > 0 && prefetched.size() >= prefetchConfig.getMaxItemCountInCache()) {
-            log.d("before removeOldestPrefetchedAsset prefetched.size() = " + prefetched.size());
             removeOldestPrefetchedAsset(prefetched);
         }
         selectionPrefs.downloadType = OfflineManager.DownloadType.PREFETCH;
@@ -218,7 +218,6 @@ public class PrefetchManager implements Prefetch {
             Collections.sort(prefetched, new OfflineManager.TimestampSorter());
 
             final String assetId = prefetched.get(0).getAssetId();
-            log.d("removeOldestPrefetchedAsset prefetched.get(0).getAssetId() = " + assetId);
             removeAsset(assetId);
             prefetched.remove(0);
         }
@@ -227,43 +226,4 @@ public class PrefetchManager implements Prefetch {
     public PrefetchConfig getPrefetchConfig() {
         return prefetchConfig;
     }
-
-    //    private Prefetch.PrefetchCallback getPrefetchCallback() {
-//        return new Prefetch.PrefetchCallback() {
-//            @Override
-//            public void onPrefetched(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected) {
-//                log.d("onPrefetched");
-//            }
-//
-//            @Override
-//            public void onPrefetchError(@NonNull String assetId, @NonNull Exception error) {
-//                log.d("onPrefetchError");
-//            }
-//
-//            @Override
-//            public void onPrepared(@NonNull String assetId, @NonNull OfflineManager.AssetInfo assetInfo, @Nullable Map<OfflineManager.TrackType, List<OfflineManager.Track>> selected) {
-//                log.d("onPrepared");
-//            }
-//
-//            @Override
-//            public void onPrepareError(@NonNull String assetId, @NonNull Exception error) {
-//                log.d("onPrepareError");
-//            }
-//
-//            @Override
-//            public void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry) {
-//                log.d("onMediaEntryLoaded");
-//            }
-//
-//            @Override
-//            public void onMediaEntryLoadError(@NonNull Exception error) {
-//                log.d("onMediaEntryLoadError");
-//            }
-//
-//            @Override
-//            public void onSourceSelected(@NonNull String assetId, @NonNull PKMediaSource source, @Nullable PKDrmParams drmParams) {
-//                log.d("onSourceSelected");
-//            }
-//        };
-//    }
 }

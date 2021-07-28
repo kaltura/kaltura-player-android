@@ -76,13 +76,9 @@ class ExoPlayerTrackSelection(
     }
 
     internal fun selectTracks() {
-
         val playerSettings = applyPlayerSettings()
-
         trackSelectionHelper.setPlayerSettings(playerSettings)
-
-        var pkTracks: PKTracks = trackSelectionHelper.buildTracks(listOf()) ?: return
-
+        val pkTracks: PKTracks = trackSelectionHelper.buildTracks(listOf()) ?: return
         downloadVideoTrack(pkTracks)
 
         if (selectionPrefs.textLanguages == null && selectionPrefs.audioCodecs != null) {
@@ -100,44 +96,48 @@ class ExoPlayerTrackSelection(
         trackSelectionHelper = TrackSelectionHelper(appContext, trackSelector, lastSelectedTrackIds)
         trackSelectionHelper.setMappedTrackInfo(downloadHelper.getMappedTrackInfo(0))
 
-        var videoCodecSettings = VideoCodecSettings()
+        val videoCodecSettings = VideoCodecSettings()
         if (selectionPrefs.allowInefficientCodecs) {
             videoCodecSettings.isAllowSoftwareDecoder = true
         }
 
-        if (selectionPrefs.videoCodecs != null && selectionPrefs.videoCodecs!!.size > 0) {
-            val videoCodecs = mutableListOf<PKVideoCodec>()
-            for (code in selectionPrefs.videoCodecs ?: listOf()) {
-                if (code == HEVC) {
-                    videoCodecs.add(PKVideoCodec.HEVC)
-                } else if (code == AVC1) {
-                    videoCodecs.add(PKVideoCodec.AVC)
+        selectionPrefs.videoCodecs?.let {
+            if (it.isNotEmpty()) {
+                val videoCodecs = mutableListOf<PKVideoCodec>()
+                for (codec in it) {
+                    if (codec == HEVC) {
+                        videoCodecs.add(PKVideoCodec.HEVC)
+                    } else if (codec == AVC1) {
+                        videoCodecs.add(PKVideoCodec.AVC)
+                    }
+                }
+                if (videoCodecs.size > 0) {
+                    videoCodecSettings.codecPriorityList = videoCodecs
                 }
             }
-            if (videoCodecs.size > 0) {
-                videoCodecSettings.codecPriorityList = videoCodecs
-            }
         }
-        playerSettings.setPreferredVideoCodecSettings(videoCodecSettings)
+        playerSettings.preferredVideoCodecSettings = videoCodecSettings
 
-        var audioCodecSettings = AudioCodecSettings()
-        if (selectionPrefs.audioCodecs != null && selectionPrefs.audioCodecs!!.size > 0) {
-            val audioCodecs = mutableListOf<PKAudioCodec>()
-
-            for (code in selectionPrefs.audioCodecs ?: listOf()) {
-                if (code == EAC3) {
-                    audioCodecs.add(PKAudioCodec.E_AC3)
-                } else if (code == AC3) {
-                    audioCodecs.add(PKAudioCodec.AC3)
-                } else if (code == MP4A) {
-                    audioCodecs.add(PKAudioCodec.AAC)
+        val audioCodecSettings = AudioCodecSettings()
+        selectionPrefs.audioCodecs?.let {
+            if (it.isNotEmpty()) {
+                val audioCodecs = mutableListOf<PKAudioCodec>()
+                for (codec in it) {
+                    if (codec == EAC3) {
+                        audioCodecs.add(PKAudioCodec.E_AC3)
+                    } else if (codec == AC3) {
+                        audioCodecs.add(PKAudioCodec.AC3)
+                    } else if (codec == MP4A) {
+                        audioCodecs.add(PKAudioCodec.AAC)
+                    }
+                }
+                if (audioCodecs.size > 0) {
+                    audioCodecSettings.codecPriorityList = audioCodecs
                 }
             }
-            if (audioCodecs.size > 0) {
-                audioCodecSettings.codecPriorityList = audioCodecs
-            }
         }
-        playerSettings.setPreferredAudioCodecSettings(audioCodecSettings)
+        playerSettings.preferredAudioCodecSettings = audioCodecSettings
+
         return playerSettings
     }
 
@@ -161,14 +161,14 @@ class ExoPlayerTrackSelection(
 
         val selectedVideoTrack = selectVideoTrack(videoExoTracks)
 
-        val trackUniqueIdidArray = parseUniqueId((selectedVideoTrack as ExoTrack).uniqueId)
+        val trackUniqueIdArray = parseUniqueId((selectedVideoTrack as ExoTrack).uniqueId)
         val selectionOverrides: MutableList<SelectionOverride> = java.util.ArrayList()
-        selectionOverrides.add(SelectionOverride(trackUniqueIdidArray[1], trackUniqueIdidArray[2]))
+        selectionOverrides.add(SelectionOverride(trackUniqueIdArray[1], trackUniqueIdArray[2]))
         for (periodIndex in 0 until downloadHelper.periodCount) {
             downloadHelper.clearTrackSelections(periodIndex)
             downloadHelper.addTrackSelectionForSingleRenderer(
                 periodIndex,
-                trackUniqueIdidArray[0],
+                trackUniqueIdArray[0],
                 buildExoParameters(),
                 selectionOverrides
             )
@@ -176,9 +176,9 @@ class ExoPlayerTrackSelection(
     }
 
     private fun downloadAudioTrack(pkTracks: PKTracks) {
-        var audioExoTracks = mutableListOf<ExoTrack>()
+        val audioExoTracks = mutableListOf<ExoTrack>()
         for (audioTrack in pkTracks.audioTracks) {
-            var exoTrack = ExoTrack(DownloadItem.TrackType.AUDIO,
+            val exoTrack = ExoTrack(DownloadItem.TrackType.AUDIO,
                 audioTrack.uniqueId,
                 audioTrack.bitrate,
                 -1, -1,
@@ -189,7 +189,7 @@ class ExoPlayerTrackSelection(
 
         val selectionOverrides: MutableList<SelectionOverride> = java.util.ArrayList()
 
-        if(selectionPrefs.allTextLanguages == false) {
+        if(!selectionPrefs.allTextLanguages) {
             val selectedAudioTrack = selectAudioTrack(audioExoTracks)
             val trackUniqueIdArray = parseUniqueId((selectedAudioTrack as ExoTrack).uniqueId)
             selectionOverrides.add(SelectionOverride(trackUniqueIdArray[1], trackUniqueIdArray[2]))
@@ -252,13 +252,9 @@ class ExoPlayerTrackSelection(
     }
 
     private fun selectVideoTrack(videoTracks: List<Track>): Track? {
-
         var tracks = videoTracks
-
         tracks = filterVideoTracks(tracks, selectionPrefs)
-
         val videoBitrates = videoBitratePrefsPerCodec()
-
         val tracksByCodec = mutableMapOf<CodecTag, List<Track>>()
 
         for (codec in TrackCodec.values()) {
@@ -282,9 +278,7 @@ class ExoPlayerTrackSelection(
     }
 
     private fun selectAudioTrack(audioTracks: List<Track>): Track? {
-
-        var tracks = audioTracks
-
+        val tracks = audioTracks
         val tracksByCodec = mutableMapOf<CodecTag, List<Track>>()
 
         for (codec in TrackCodec.values()) {
@@ -304,7 +298,6 @@ class ExoPlayerTrackSelection(
 
 
     private fun filterVideoTracks(tracks: List<Track>, selectionPrefs: SelectionPrefs): List<Track> {
-
         selectionPrefs.videoHeight?.let { videoHeight ->
             selectionPrefs.videoWidth?.let { videoWidth ->
                 return filterTracks(
@@ -340,8 +333,6 @@ class ExoPlayerTrackSelection(
         return videoBitrates
     }
 
-
-
     private fun filterTracks(
         tracks: List<Track>,
         comparator: Comparator<Track?>,
@@ -352,9 +343,7 @@ class ExoPlayerTrackSelection(
         }
 
         val sorted = tracks.sortedWith(comparator)
-
         val filtered = sorted.filter(predicate)
-
         return if (filtered.isEmpty()) sorted.subList(0, 1) else filtered
     }
 
@@ -377,18 +366,13 @@ class ExoPlayerTrackSelection(
     private fun Track.codecTags(): Set<CodecTag> {
         // `codecs` is an array of String, but it's declared as a non-generic `Array`.
         // It might also be nil.
-
         val codecs = this.codecs ?: return setOf()
-
         val codecList = codecs.split(',')
-
         val tags = mutableSetOf<CodecTag>()
-
         for (c in codecList) {
             val tag = c.split('.').first().trim()
             tags.add(tag)
         }
-
         return tags
     }
 
@@ -438,9 +422,11 @@ class ExoPlayerTrackSelection(
         for (periodIndex in 0 until downloadHelper.periodCount) {
             val selectionOverrides: MutableList<SelectionOverride> = java.util.ArrayList()
             val trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex)
+
             for (groupIndex in 0 until trackGroupArray.length) {
                 //run through the all tracks in current trackGroup.
                 val trackGroup = trackGroupArray[groupIndex]
+
                 for (trackIndex in 0 until trackGroup.length) {
                     val format = trackGroup.getFormat(trackIndex)
                     if (rendererIndex == Consts.TRACK_TYPE_AUDIO) {
@@ -481,12 +467,15 @@ class ExoPlayerTrackSelection(
         for (periodIndex in 0 until downloadHelper.periodCount) {
             val mappedTrackInfo = downloadHelper.getMappedTrackInfo(periodIndex)
             downloadHelper.clearTrackSelections(periodIndex)
+
             for (rendererIndex in listOf(Consts.TRACK_TYPE_VIDEO, Consts.TRACK_TYPE_AUDIO, Consts.TRACK_TYPE_TEXT) ) { // 0, 1, 2 run only over video audio and text tracks
                 val selectionOverrides: MutableList<SelectionOverride> = java.util.ArrayList()
                 val trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex)
+
                 for (groupIndex in 0 until trackGroupArray.length) {
                     //run through the all tracks in current trackGroup.
                     val trackGroup = trackGroupArray[groupIndex]
+
                     for (trackIndex in 0 until trackGroup.length) {
                         val format = trackGroup.getFormat(trackIndex)
                         if (rendererIndex == Consts.TRACK_TYPE_VIDEO) { //video
@@ -522,9 +511,11 @@ class ExoPlayerTrackSelection(
             downloadHelper.clearTrackSelections(periodIndex)
             val selectionOverrides: MutableList<SelectionOverride> = java.util.ArrayList()
             val trackGroupArray = mappedTrackInfo.getTrackGroups(trackType)
+
             for (groupIndex in 0 until trackGroupArray.length) {
                 //run through the all tracks in current trackGroup.
                 val trackGroup = trackGroupArray[groupIndex]
+
                 for (trackIndex in 0 until trackGroup.length) {
                     selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
                 }
@@ -541,6 +532,7 @@ class ExoPlayerTrackSelection(
     private fun downloadDefaultTracks(downloadHelper: DownloadHelper) {
         for (periodIndex in 0 until downloadHelper.periodCount) {
             downloadHelper.clearTrackSelections(periodIndex)
+
             for (i in 0 until downloadHelper.getMappedTrackInfo(periodIndex).rendererCount) {
                 downloadHelper.addTrackSelectionForSingleRenderer(
                     periodIndex,  /* rendererIndex= */
@@ -555,7 +547,7 @@ class ExoPlayerTrackSelection(
         return DownloadHelper.getDefaultTrackSelectorParameters(appContext)
     }
 
-    private fun isDowonloadableTrackType(mappedTrackInfo: MappingTrackSelector.MappedTrackInfo, rendererIndex: Int): Boolean {
+    private fun isDownloadableTrackType(mappedTrackInfo: MappingTrackSelector.MappedTrackInfo, rendererIndex: Int): Boolean {
         val trackGroupArray: TrackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex)
         if (trackGroupArray.length === 0) {
             return false
@@ -586,87 +578,3 @@ private object OMCodecSupport {
     val anyHEVC = CodecSupport.hasDecoder(MimeTypes.VIDEO_H265, true, true)
 }
 
-
-//private fun downloadAllTracks(downloadHelper: DownloadHelper, selectionPrefs: SelectionPrefs) {
-//    log.d("downloadAllTracks")
-//    val mappedTrackInfo = downloadHelper.getMappedTrackInfo(0)
-//    for (periodIndex in 0 until downloadHelper.periodCount) {
-//        downloadHelper.clearTrackSelections(periodIndex)
-//        for (rendererIndex in listOf(Consts.TRACK_TYPE_VIDEO, Consts.TRACK_TYPE_AUDIO, Consts.TRACK_TYPE_TEXT) ) { // 0, 1, 2 run only over video audio and text tracks
-//            val selectionOverrides: MutableList<SelectionOverride> = java.util.ArrayList()
-//            val trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex)
-//            for (groupIndex in 0 until trackGroupArray.length) {
-//                //run through the all tracks in current trackGroup.
-//                val trackGroup = trackGroupArray[groupIndex]
-//                for (trackIndex in 0 until trackGroup.length) {
-//                    val format = trackGroup.getFormat(trackIndex)
-//                    if (rendererIndex == Consts.TRACK_TYPE_VIDEO) { //video
-//                        log.d("video bitrate = " + format.bitrate + " codec = " + format.sampleMimeType)
-//                        if (selectionPrefs.videoBitrate != null) {
-//                            var range = low
-//                            if (downloadVideoQuality == DownloadVideoQuality.MEDIUM) {
-//                                range = medium
-//                            } else if (downloadVideoQuality == DownloadVideoQuality.HIGH) {
-//                                range = high
-//                            }
-//                            if (format.bitrate >= range.first && format.bitrate <= range.second) {
-//                                selectionOverrides.add(
-//                                    SelectionOverride(
-//                                        groupIndex,
-//                                        trackIndex
-//                                    )
-//                                )
-//                                break
-//                            }
-//                        } else {
-//                            selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
-//                        }
-//                    } else if (rendererIndex == Consts.TRACK_TYPE_AUDIO) {
-//                        if (format.language == null || !selectionPrefs.allAudioLanguages && (selectionPrefs.audioLanguages == null || !selectionPrefs.audioLanguages!!.contains(
-//                                format.language
-//                            ))
-//                        ) {
-//                            continue
-//                        } else {
-//                            log.d("audio language = " + format.language + " bitrate =" + format.bitrate)
-//                            if (!TextUtils.isEmpty(format.language)) {
-//                                selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
-//                            }
-//                        }
-//                    } else if (rendererIndex == Consts.TRACK_TYPE_TEXT) {
-//                        if (format.language == null || !selectionPrefs.allTextLanguages && (selectionPrefs.textLanguages == null || !selectionPrefs.textLanguages!!.contains(
-//                                format.language
-//                            ))
-//                        ) {
-//                            continue
-//                        } else {
-//                            log.d("text language = " + format.language + " bitrate =" + format.bitrate)
-//                            selectionOverrides.add(SelectionOverride(groupIndex, trackIndex))
-//                        }
-//                    }
-//                }
-//            }
-//
-//            downloadHelper.addTrackSelectionForSingleRenderer(
-//                periodIndex,
-//                rendererIndex,
-//                buildExoParameters(),
-//                selectionOverrides
-//            )
-//        }
-//    }
-//}
-
-
-//    private DefaultTrackSelector.Parameters buildExoParameters(SelectionPrefs selectionPrefs) {
-//        //MappingTrackSelector.MappedTrackInfo mappedTrackInfo = downloadHelper.getMappedTrackInfo(/* periodIndex= */ 0);
-//        //return new DefaultTrackSelector.ParametersBuilder(appContext).setMaxVideoSizeSd().build();
-//        //return DefaultTrackSelector.Parameters.getDefaults(appContext);   // TODO: 2019-07-31
-//        //return new DefaultTrackSelector.ParametersBuilder(appContext).build();
-//        //return DownloadHelper.getDefaultTrackSelectorParameters(appContext);
-//
-//        //return  DefaultTrackSelector.Parameters.DEFAULT_WITHOUT_CONTEXT.buildUpon().setForceHighestSupportedBitrate(true).build();
-//        return DownloadHelper.getDefaultTrackSelectorParameters(appContext);
-//        //return  DefaultTrackSelector.Parameters.DEFAULT_WITHOUT_CONTEXT.buildUpon().build();
-//
-//    }

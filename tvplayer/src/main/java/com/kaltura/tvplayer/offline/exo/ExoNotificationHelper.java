@@ -14,7 +14,6 @@ import com.kaltura.android.exoplayer2.C;
 import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadManager;
 import com.kaltura.android.exoplayer2.util.NotificationUtil;
-import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.R;
 

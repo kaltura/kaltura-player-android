@@ -1,7 +1,6 @@
 package com.kaltura.tvplayer.offline;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.tvplayer.KalturaPlayer;
@@ -10,10 +9,13 @@ import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.util.List;
-import java.util.Map;
 
 public interface Prefetch {
-    
+
+    /**
+     * Prefetch config for {@link com.kaltura.tvplayer.offline.exo.PrefetchManager}
+     * @param prefetchConfig config
+     */
     void setPrefetchConfig(PrefetchConfig prefetchConfig);
 
     /**

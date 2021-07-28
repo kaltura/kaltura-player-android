@@ -10,8 +10,6 @@ import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadHelper;
 import com.kaltura.tvplayer.OfflineManager;
 
-import org.jetbrains.annotations.NotNull;
-
 class ExoAssetInfo extends OfflineManager.AssetInfo {
 
     private final String assetId;
