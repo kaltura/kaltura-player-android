@@ -5,15 +5,19 @@ import com.kaltura.playkit.PKRequestParams;
 
 public class OfflineManagerSettings {
     public static final int DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION = 64000;
+    public static final int MAX_PARALLEL_DOWNLOADS = 4;
+    public static final int MIN_RETRY_COUNT = 5;
+    public static final boolean CREATE_NO_MEDIA_FILE = true;
+    public static final boolean CROSS_PROTOCOL_ENABLED = true;
 
-    private int maxDownloadRetries = 5;
+    private int maxDownloadRetries = MIN_RETRY_COUNT;
     private int httpTimeoutMillis = 15000;
-    private int maxConcurrentDownloads = 4;
+    private int maxConcurrentDownloads = MAX_PARALLEL_DOWNLOADS;
     private int hlsAudioBitrateEstimation = DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION;
-    private long freeDiskSpaceRequiredBytes = 400 * 1024 * 1024; // default 400MB
+    private long freeDiskSpaceRequiredBytes = 400 * 1024 * 1024; // default 400MB and only relevant for DTG
     private String applicationName = "";
-    private boolean createNoMediaFileInDownloadsDir = true;
-    private boolean crossProtocolRedirectEnabled = true;
+    private boolean createNoMediaFileInDownloadsDir = CREATE_NO_MEDIA_FILE;
+    private boolean crossProtocolRedirectEnabled = CROSS_PROTOCOL_ENABLED;
     private DownloadRequestParams.Adapter downloadRequestAdapter;
     private DownloadRequestParams.Adapter chunksUrlAdapter;
     private PKRequestParams.Adapter licenseRequestAdapter;
