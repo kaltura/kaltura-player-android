@@ -79,10 +79,14 @@ class ExoPlayerTrackSelection(
         val playerSettings = applyPlayerSettings()
         trackSelectionHelper.setPlayerSettings(playerSettings)
         val pkTracks: PKTracks = trackSelectionHelper.buildTracks(listOf()) ?: return
-        downloadVideoTrack(pkTracks)
+        if (pkTracks.videoTracks.size > 0) {
+            downloadVideoTrack(pkTracks)
+        }
 
-        if (selectionPrefs.textLanguages == null && selectionPrefs.audioCodecs != null) {
-            downloadAudioTrack(pkTracks)
+        if (selectionPrefs.audioLanguages == null && selectionPrefs.audioCodecs != null) {
+            if (pkTracks.audioTracks.size > 0) {
+                downloadAudioTrack(pkTracks)
+            }
         } else {
             downloadLanguageTracks(Consts.TRACK_TYPE_AUDIO, downloadHelper, selectionPrefs)
         }
@@ -178,6 +182,9 @@ class ExoPlayerTrackSelection(
     private fun downloadAudioTrack(pkTracks: PKTracks) {
         val audioExoTracks = mutableListOf<ExoTrack>()
         for (audioTrack in pkTracks.audioTracks) {
+            if (audioTrack.bitrate == 0L) {
+                continue
+            }
             val exoTrack = ExoTrack(DownloadItem.TrackType.AUDIO,
                 audioTrack.uniqueId,
                 audioTrack.bitrate,
@@ -189,7 +196,7 @@ class ExoPlayerTrackSelection(
 
         val selectionOverrides: MutableList<SelectionOverride> = java.util.ArrayList()
 
-        if(!selectionPrefs.allTextLanguages) {
+        if(!selectionPrefs.allAudioLanguages) {
             val selectedAudioTrack = selectAudioTrack(audioExoTracks)
             val trackUniqueIdArray = parseUniqueId((selectedAudioTrack as ExoTrack).uniqueId)
             selectionOverrides.add(SelectionOverride(trackUniqueIdArray[1], trackUniqueIdArray[2]))
