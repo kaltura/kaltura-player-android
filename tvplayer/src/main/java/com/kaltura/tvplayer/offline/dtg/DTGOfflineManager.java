@@ -282,7 +282,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         final PKDrmParams drmData;
 
-        final Pair<PKMediaSource, PKDrmParams> pair = pendingDrmRegistration.get(assetId);
+        final Pair<PKMediaSource, Object> pair = pendingDrmRegistration.get(assetId);
         if (pair == null || pair.first == null || pair.second == null) {
             PKDrmParams pkDrmParams = loadAssetPkDrmParams(assetId);
             if (pkDrmParams == null) {
@@ -292,7 +292,12 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 drmData = pkDrmParams;
             }
         } else {
-            drmData = pair.second;
+            if (pair.second instanceof PKDrmParams) {
+                drmData = (PKDrmParams) pair.second;
+            } else {
+                log.w("registerDrmAsset: DRM data is not valid: " + assetId);
+                return;
+            }
         }
 
         final String licenseUri = drmData.getLicenseUri();

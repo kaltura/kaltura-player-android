@@ -27,7 +27,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     private static final PKLog log = PKLog.get("AbstractOfflineManager");
 
     protected final Context appContext;
-    protected final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
+    protected final Map<String, Pair<PKMediaSource, Object>> pendingDrmRegistration = new HashMap<>();
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
     protected boolean forceWidevineL3Playback;
