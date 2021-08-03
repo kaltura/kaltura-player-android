@@ -406,9 +406,14 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             log.d("Removing prefetched media before full download");
             removeAsset(assetId);
         } else if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.PREFETCH) {
-            log.d("Media already prefetched");
-            postEvent(() -> prepareCallback.onPrepared(assetId, getPrefetchManager().getAssetInfoByAssetId(assetId), null));
-            return;
+            if (getDrmStatus(assetId).isValid()) {
+                log.d("Media already prefetched");
+                postEvent(() -> prepareCallback.onPrepared(assetId, getPrefetchManager().getAssetInfoByAssetId(assetId), null));
+                return;
+            } else {
+                log.d("Media already prefetched but asset's license was expired so removing and prefetching.");
+                removeAsset(assetId);
+            }
         }
 
         postEvent(() -> prepareCallback.onSourceSelected(assetId, source, drmData));
@@ -516,7 +521,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
-                    pendingDrmRegistration.put(assetId, new Pair<>(source, format));
+                    DrmRegistrationMetaData drmRegistrationMetaData = new DrmRegistrationMetaData(format, false);
+                    pendingDrmRegistration.put(assetId, new Pair<>(source, drmRegistrationMetaData));
                 }
 
                 saveAssetSourceId(assetId, source.getId());
@@ -962,11 +968,12 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
                     final Pair<PKMediaSource, Object> pair = pendingDrmRegistration.get(assetId);
                     boolean isDRM = true;
-                    if (pair == null || pair.first == null || pair.second == null) {
+                    if (pair == null || pair.first == null || pair.second == null ||
+                            (pair.second instanceof DrmRegistrationMetaData && !((DrmRegistrationMetaData) pair.second).isRegistered())) {
                         isDRM = false;
                     }
                     if (isDRM) {
-                        final byte[] drmInitData = getDrmInitData(assetId);
+                        final byte[] drmInitData = extractDrmInitDataFromFormat(pair.second, assetId);
                         if (drmInitData == null) {
                             log.e("removeAsset failed drmInitData == null");
                             if (listener != null) {
@@ -975,12 +982,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                             removeAssetStatus[0] = false;
                         }
                         lam.unregisterAsset(assetId, drmInitData);
+                        pendingDrmRegistration.remove(assetId);
                     }
 
                     DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
                     removeAssetSourceId(assetId);
 
-                } catch (IOException | InterruptedException e) {
+                } catch (Exception e) {
                     log.e("removeAsset failed", e);
                     if (listener != null) {
                         AssetInfo assetInfo = getAssetInfo(assetId);
@@ -999,6 +1007,16 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     protected byte[] getDrmInitData(String assetId) throws IOException, InterruptedException {
+        final Pair<PKMediaSource, Object> pair = pendingDrmRegistration.get(assetId);
+        if (pair != null && pair.first != null && pair.second != null &&
+                (pair.second instanceof DrmRegistrationMetaData && ((DrmRegistrationMetaData) pair.second).isRegistered())) {
+            byte[] drmInitData = extractDrmInitDataFromFormat(pair.second, assetId);
+            if (drmInitData != null) {
+                log.d("Extracting DrmInitData from the map.");
+                return drmInitData;
+            }
+        }
+
         final Download download = downloadManager.getDownloadIndex().getDownload(assetId);
         if (download == null) {
             return null;
@@ -1035,33 +1053,24 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         final Pair<PKMediaSource, Object> pair = pendingDrmRegistration.get(assetId);
-        if (pair == null || pair.first == null || pair.second == null) {
+        if (pair == null || pair.first == null || pair.second == null ||
+                (pair.second instanceof DrmRegistrationMetaData && ((DrmRegistrationMetaData) pair.second).isRegistered())) {
             return; // no DRM or already processed
         }
 
         final PKMediaSource source = pair.first;
         String licenseUri = extractDrmLicense(source.getDrmData(), PKDrmParams.Scheme.WidevineCENC);
-        Format format;
-        if (pair.second instanceof Format && !TextUtils.isEmpty(licenseUri)) {
-            format = (Format) pair.second;
-        } else {
-            log.w("Format is invalid. assetId: " + assetId);
+
+        if (TextUtils.isEmpty(licenseUri)) {
+            log.w("LicenseUri is empty. assetId: " + assetId);
             return;
         }
 
-        if (format.drmInitData == null) {
-            log.w("DrmInitData is null. assetId: " + assetId);
+        final byte[] drmInitData = extractDrmInitDataFromFormat(pair.second, assetId);
+
+        if (drmInitData == null) {
             return;
         }
-
-        DrmInitData.SchemeData schemeData = findWidevineSchemaData(format.drmInitData);
-
-        if (schemeData == null || schemeData.data == null) {
-            log.w("SchemeData is invalid. assetId: " + assetId);
-            return;
-        }
-
-        final byte[] drmInitData = schemeData.data;
 
         final CacheDataSource.Factory cacheDataSourceFactory = getCacheDataSourceFactory();
         cacheDataSourceFactory.setUpstreamPriority(C.PRIORITY_DOWNLOAD);
@@ -1070,7 +1079,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         try {
             lam.registerWidevineDashAsset(assetId, licenseUri, drmInitData, forceWidevineL3Playback);
             postEvent(() -> listener.onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
-            pendingDrmRegistration.remove(assetId);
+            ((DrmRegistrationMetaData) pair.second).setRegistered(true);
         } catch (LocalAssetsManager.RegisterException e) {
             postEvent(() -> listener.onRegisterError(assetId, downloadType, e));
         }
@@ -1087,6 +1096,23 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return null;
     }
 
+    private byte[] extractDrmInitDataFromFormat(Object drmRegistrationMetaData, String assetId) {
+        Format format = ((DrmRegistrationMetaData) drmRegistrationMetaData).getFormat();
+        if (format.drmInitData == null) {
+            log.w("DrmInitData is null. assetId: " + assetId);
+            return null;
+        }
+
+        DrmInitData.SchemeData schemeData = findWidevineSchemaData(format.drmInitData);
+
+        if (schemeData == null || schemeData.data == null) {
+            log.w("SchemeData is invalid. assetId: " + assetId);
+            return null;
+        }
+
+        return schemeData.data;
+    }
+
     @NonNull
     private CacheDataSource.Factory getCacheDataSourceFactory() {
         return new CacheDataSource.Factory()
@@ -1097,13 +1123,14 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     private byte[] getDrmInitData(CacheDataSource.Factory dataSourceFactory, String contentUri) throws IOException, InterruptedException {
-        if (PKMediaFormat.valueOfUrl(contentUri) != PKMediaFormat.dash ) {
+        if (PKMediaFormat.valueOfUrl(contentUri) != PKMediaFormat.dash) {
             return null;
         }
 
         if (!contentUri.contains(".mpd")) {
             return null;
         }
+
         final CacheDataSource cacheDataSource = dataSourceFactory.createDataSource();
         final DashManifest dashManifest = DashUtil.loadManifest(cacheDataSource, Uri.parse(contentUri));
         Format formatWithDrmInitData = DashUtil.loadFormatWithDrmInitData(cacheDataSource, dashManifest.getPeriod(0));

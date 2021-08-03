@@ -20,6 +20,7 @@ import com.kaltura.tvplayer.OfflineManager;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -27,7 +28,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     private static final PKLog log = PKLog.get("AbstractOfflineManager");
 
     protected final Context appContext;
-    protected final Map<String, Pair<PKMediaSource, Object>> pendingDrmRegistration = new HashMap<>();
+    protected final Map<String, Pair<PKMediaSource, Object>> pendingDrmRegistration = new ConcurrentHashMap<>();
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
     protected boolean forceWidevineL3Playback;
