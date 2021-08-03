@@ -557,7 +557,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final long downloadsDirFreeSpace = downloadDirectory.getFreeSpace();
         return downloadsDirFreeSpace < requiredBytes;
     }
-    
+
     private static boolean hasAnyValidRenderer(MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
         for (int i = 0; i < mappedTrackInfo.getRendererCount(); i++) {
             if (isValidRenderer(mappedTrackInfo, i)) {
@@ -966,24 +966,16 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                         return;
                     }
 
-                    final Pair<PKMediaSource, Object> pair = pendingDrmRegistration.get(assetId);
-                    boolean isDRM = true;
-                    if (pair == null || pair.first == null || pair.second == null ||
-                            (pair.second instanceof DrmRegistrationMetaData && !((DrmRegistrationMetaData) pair.second).isRegistered())) {
-                        isDRM = false;
-                    }
-                    if (isDRM) {
-                        final byte[] drmInitData = extractDrmInitDataFromFormat(pair.second, assetId);
-                        if (drmInitData == null) {
-                            log.e("removeAsset failed drmInitData == null");
-                            if (listener != null) {
-                                postEvent(() -> listener.onAssetRemoveError(assetId, asset.getDownloadType(), new IllegalArgumentException("drmInitData == null for AssetId: " + assetId)));
-                            }
-                            removeAssetStatus[0] = false;
+                    final byte[] drmInitData = getDrmInitData(assetId);
+                    if (drmInitData == null) {
+                        log.e("removeAsset failed drmInitData == null");
+                        if (listener != null) {
+                            postEvent(() -> listener.onAssetRemoveError(assetId, asset.getDownloadType(), new IllegalArgumentException("drmInitData == null for AssetId: " + assetId)));
                         }
-                        lam.unregisterAsset(assetId, drmInitData);
-                        pendingDrmRegistration.remove(assetId);
+                        removeAssetStatus[0] = false;
                     }
+                    lam.unregisterAsset(assetId, drmInitData);
+                    pendingDrmRegistration.remove(assetId);
 
                     DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
                     removeAssetSourceId(assetId);
