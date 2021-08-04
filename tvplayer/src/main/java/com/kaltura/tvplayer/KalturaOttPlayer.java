@@ -12,14 +12,14 @@ public class KalturaOttPlayer extends KalturaPlayer {
         super(context, Type.ott, initOptions);
     }
 
-    public static KalturaOttPlayer create(Context context, PlayerInitOptions initOptions) {
+    public static KalturaOttPlayer create(@NonNull Context context, @NonNull PlayerInitOptions initOptions) {
         if (playerConfigRetrieved && initOptions != null && initOptions.partnerId != null) {
             initOptions.setTVPlayerParams(PlayerConfigManager.retrieve(Type.ott, initOptions.partnerId));
         }
         return new KalturaOttPlayer(context, initOptions);
     }
 
-    public static void initialize(Context context, int partnerId, @NonNull String serverUrl) {
+    public static void initialize(@NonNull Context context, int partnerId, @NonNull String serverUrl) {
         KalturaPlayer.initializeDrm(context);
         PlayerConfigManager.retrieve(context, Type.ott, partnerId, serverUrl, (config, error, freshness) -> {
             if (error != null) {

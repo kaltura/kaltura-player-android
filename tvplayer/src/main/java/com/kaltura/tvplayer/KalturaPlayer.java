@@ -441,7 +441,7 @@ public abstract class KalturaPlayer {
     }
 
     public void setMedia(@NonNull PKMediaEntry mediaEntry) {
-        if (mediaEntry.hasSources()) {
+        if (mediaEntry != null && mediaEntry.hasSources()) {
             applyMediaEntryInterceptors(mediaEntry, () ->
                     mainHandler.post(() -> {
                         setMediaInternal(mediaEntry);
@@ -451,7 +451,7 @@ public abstract class KalturaPlayer {
         }
     }
 
-    public void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
+    private void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry, getKS());
 
         if (externalSubtitles != null) {
@@ -476,7 +476,7 @@ public abstract class KalturaPlayer {
         sendKavaPlayRequest(mediaEntry.getId());
     }
 
-    public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
+    public void setPlaylist(@NonNull List<PKMediaEntry> entryList, Long startPosition) {
         externalSubtitles = null;
         if (startPosition != null) {
             setStartPosition(startPosition);
@@ -484,7 +484,7 @@ public abstract class KalturaPlayer {
         setMedia(entryList.get(0));
     }
 
-    public void setMedia(PKMediaEntry entry, Long startPosition) {
+    public void setMedia(@NonNull PKMediaEntry entry, Long startPosition) {
         externalSubtitles = null;
         if (startPosition != null) {
             setStartPosition(startPosition);
@@ -902,7 +902,6 @@ public abstract class KalturaPlayer {
             }
         }.start();
     }
-
 
     public void loadPlaylist(@NonNull OVPPlaylistOptions playlistOptions, @NonNull final OnPlaylistControllerListener controllerListener) {
 
