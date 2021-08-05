@@ -440,7 +440,7 @@ public abstract class KalturaPlayer {
         this.view = pkPlayer.getView();
     }
 
-    public void setMedia(@NonNull PKMediaEntry mediaEntry) {
+    public void setMedia(PKMediaEntry mediaEntry) {
         if (mediaEntry != null && mediaEntry.hasSources()) {
             applyMediaEntryInterceptors(mediaEntry, () ->
                     mainHandler.post(() -> {
@@ -476,7 +476,12 @@ public abstract class KalturaPlayer {
         sendKavaPlayRequest(mediaEntry.getId());
     }
 
-    public void setPlaylist(@NonNull List<PKMediaEntry> entryList, Long startPosition) {
+    public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
+        if (entryList == null || entryList.isEmpty()) {
+            log.e("entryList does not contain any source");
+            return;
+        }
+
         externalSubtitles = null;
         if (startPosition != null) {
             setStartPosition(startPosition);
@@ -484,7 +489,7 @@ public abstract class KalturaPlayer {
         setMedia(entryList.get(0));
     }
 
-    public void setMedia(@NonNull PKMediaEntry entry, Long startPosition) {
+    public void setMedia(PKMediaEntry entry, Long startPosition) {
         externalSubtitles = null;
         if (startPosition != null) {
             setStartPosition(startPosition);
