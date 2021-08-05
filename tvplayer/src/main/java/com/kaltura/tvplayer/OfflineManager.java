@@ -519,8 +519,7 @@ public abstract class OfflineManager {
         void onMediaEntryLoadError(DownloadType downloadType, @NonNull Exception error);
     }
 
-    public static class TimestampSorter implements Comparator<AssetInfo>
-    {
+    public static class TimestampSorter implements Comparator<AssetInfo> {
         @Override
         public int compare(AssetInfo o1, AssetInfo o2) {
             return o1.getDownloadTime().compareTo(o2.getDownloadTime());

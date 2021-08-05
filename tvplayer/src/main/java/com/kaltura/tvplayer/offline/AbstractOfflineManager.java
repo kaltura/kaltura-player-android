@@ -108,13 +108,18 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId);
 
         mediaEntryProvider.load(response -> postEvent(() -> {
+            DownloadType downloadType = DownloadType.UNKNOWN;
+            OfflineManager.AssetInfo assetInfo = getAssetInfo(assetId);
+            if (assetInfo != null) {
+                downloadType = assetInfo.getDownloadType();
+            }
+
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
-                mediaEntryCallback.onMediaEntryLoaded(mediaEntry.getId(), DownloadType.UNKNOWN, mediaEntry);
+                mediaEntryCallback.onMediaEntryLoaded(mediaEntry.getId(), downloadType, mediaEntry);
                 renewDrmAssetLicense(assetId, mediaEntry);
-
             } else {
-                mediaEntryCallback.onMediaEntryLoadError(DownloadType.UNKNOWN, new IOException(response.getError().getMessage()));
+                mediaEntryCallback.onMediaEntryLoadError(downloadType, new IOException(response.getError().getMessage()));
             }
         }));
     }
