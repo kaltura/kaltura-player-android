@@ -25,6 +25,7 @@ class ExoNotificationHelper {
 
     private static final @StringRes int NULL_STRING_ID = 0;
     private final NotificationCompat.Builder notificationBuilder;
+    private final int NOTIFICATION_ID = 56324;
 
     public ExoNotificationHelper(Context context) {
         notificationBuilder = new NotificationCompat.Builder(context.getApplicationContext(), getDownloadChannelId());
@@ -123,7 +124,7 @@ class ExoNotificationHelper {
                 } else {
                     return;
                 }
-                NotificationUtil.setNotification(context,  56324, notification);
+                NotificationUtil.setNotification(context, NOTIFICATION_ID, notification);
             }
         };
     }

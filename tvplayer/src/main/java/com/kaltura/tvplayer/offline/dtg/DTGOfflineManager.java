@@ -8,11 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
-import com.kaltura.android.exoplayer2.offline.DownloadHelper;
-import com.kaltura.android.exoplayer2.source.TrackGroup;
-import com.kaltura.android.exoplayer2.source.TrackGroupArray;
-import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadItem;
@@ -35,9 +30,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static com.kaltura.dtg.DownloadState.INFO_LOADED;
-
 
 public class DTGOfflineManager extends AbstractOfflineManager {
     private static final PKLog log = PKLog.get("DTGOfflineManager");
@@ -231,41 +223,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         dtgItem.loadMetadata();
     }
 
-    private void downloadAllTracks(DownloadHelper helper, DownloadHelper downloadHelper, @NonNull SelectionPrefs selectionPrefs) {
-
-        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = helper.getMappedTrackInfo(0);
-        for (int periodIndex = 0; periodIndex < downloadHelper.getPeriodCount(); periodIndex++) {
-            downloadHelper.clearTrackSelections(periodIndex);
-            for (int rendererIndex = 0; rendererIndex < 3 ; rendererIndex++) { // 0, 1, 2 run only over video audio and text tracks
-                List<DefaultTrackSelector.SelectionOverride> selectionOverrides = new ArrayList<>();
-                TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
-
-                for (int groupIndex = 0; groupIndex < trackGroupArray.length; groupIndex++) {
-                    //run through the all tracks in current trackGroup.
-                    TrackGroup trackGroup = trackGroupArray.get(groupIndex);
-                    for (int trackIndex = 0; trackIndex < trackGroup.length; trackIndex++) {
-                        selectionOverrides.add(new DefaultTrackSelector.SelectionOverride(groupIndex, trackIndex));
-                    }
-
-                    downloadHelper.addTrackSelectionForSingleRenderer(
-                            periodIndex,
-                            rendererIndex,
-                            buildExoParameters(selectionPrefs),
-                            selectionOverrides);
-                }
-            }
-        }
-    }
-
-    private DefaultTrackSelector.Parameters buildExoParameters(SelectionPrefs selectionPrefs) {
-        //MappingTrackSelector.MappedTrackInfo mappedTrackInfo = downloadHelper.getMappedTrackInfo(/* periodIndex= */ 0);
-        //return new DefaultTrackSelector.ParametersBuilder(appContext).setMaxVideoSizeSd().build();
-        return DefaultTrackSelector.Parameters.getDefaults(appContext);   // TODO: 2019-07-31
-        //return new DefaultTrackSelector.ParametersBuilder(appContext).build();
-        //return DownloadHelper.getDefaultTrackSelectorParameters(appContext);
-        //return  DefaultTrackSelector.Parameters.DEFAULT_WITHOUT_CONTEXT.buildUpon().setForceHighestSupportedBitrate(true).build();
-    }
-
     @Override
     protected byte[] getDrmInitData(String assetId) throws IOException {
         final File localFile = cm.getLocalFile(assetId);
@@ -349,7 +306,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void startAssetDownload(@NonNull AssetInfo assetInfo) {
-
         if (!(assetInfo instanceof DTGAssetInfo)) {
             throw new IllegalArgumentException("Not a DTGAssetInfo object");
         }
@@ -460,7 +416,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
                 dtgState = DownloadState.IN_PROGRESS;
                 break;
             case prepared:
-                dtgState = INFO_LOADED;
+                dtgState = DownloadState.INFO_LOADED;
                 break;
             case completed:
                 dtgState = DownloadState.COMPLETED;

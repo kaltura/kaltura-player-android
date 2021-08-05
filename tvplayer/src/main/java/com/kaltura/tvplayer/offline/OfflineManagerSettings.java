@@ -13,7 +13,7 @@ public class OfflineManagerSettings {
     private int maxDownloadRetries = MIN_RETRY_COUNT;
     private int httpTimeoutMillis = 15000;
     private int maxConcurrentDownloads = MAX_PARALLEL_DOWNLOADS;
-    private int hlsAudioBitrateEstimation = DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION;
+    private int hlsAudioBitrateEstimation = DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION; // only relevant for DTG
     private long freeDiskSpaceRequiredBytes = 400 * 1024 * 1024; // default 400MB and only relevant for DTG
     private String applicationName = "";
     private boolean createNoMediaFileInDownloadsDir = CREATE_NO_MEDIA_FILE;

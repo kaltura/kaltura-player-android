@@ -101,7 +101,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private static final int REGISTER_ASSET_AFTER_5_SEC = 5000;
     private static final int REGISTER_ASSET_NOW = 0;
 
-    private static final Gson gson = new Gson();
+    private final Gson gson = new Gson();
     private static ExoOfflineManager instance;
     private PrefetchManager prefetchManager;
     final DownloadManager downloadManager;
@@ -131,7 +131,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             .build())
             .setUserAgent(userAgent);
 
-    private final DownloadManager.Listener exoListener = new DownloadManager.Listener() {
+    private final DownloadManager.Listener exoDownloadManagerListner = new DownloadManager.Listener() {
         @Override
         public void onInitialized(@NonNull DownloadManager downloadManager) { }
 
@@ -251,24 +251,24 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         downloadManager.setMinRetryCount(offlineManagerSettings != null ?
                 offlineManagerSettings.getMaxDownloadRetries() :
                 OfflineManagerSettings.MIN_RETRY_COUNT);
-        addExoListener();
+        addExoDownloadManagerListener();
     }
 
-    protected void addExoListener() {
+    protected void addExoDownloadManagerListener() {
         if (downloadManager != null) {
-            downloadManager.addListener(exoListener);
+            downloadManager.addListener(exoDownloadManagerListner);
         }
     }
 
-    protected void removeExoListener() {
+    protected void removeExoDownloadManagerListener() {
         if (downloadManager != null) {
-            downloadManager.removeListener(exoListener);
+            downloadManager.removeListener(exoDownloadManagerListner);
         }
     }
 
     private Runnable getDownloadTrackerRunnable() {
         if (downloadProgressTracker == null) {
-            log.d("getDownloadTrackerRunnable creating new runnable");
+            //log.d("getDownloadTrackerRunnable creating new runnable");
             downloadProgressTracker =  new Runnable() {
                 @Override
                 public void run() {
@@ -277,10 +277,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
                     if (listener != null) {
                         final List<Download> downloads = downloadManager.getCurrentDownloads();
-                        int nonDownlodingCounter = 0;
+                        int nonDownloadingCounter = 0;
                         for (Download download : downloads) {
                             if (download.state != Download.STATE_DOWNLOADING) {
-                                nonDownlodingCounter++;
+                                nonDownloadingCounter++;
                                 continue;
                             }
 
@@ -296,10 +296,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                                     downloadManager.setStopReason(download.request.id, StopReason.prefetchDone.toExoCode()); // prefetchDone
                                 }
                             }
-                            final String assetId = download.request.id;
-                            listener.onDownloadProgress(assetId, bytesDownloaded, totalSize, percentDownloaded);
+                            listener.onDownloadProgress(download.request.id, bytesDownloaded, totalSize, percentDownloaded);
                         }
-                        if (nonDownlodingCounter == downloads.size()) {
+                        if (nonDownloadingCounter == downloads.size()) {
                             log.d("exit sendDownloadProgress");
                             downloadProgressTracker = null;
                             return;
@@ -436,7 +435,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         uri = downloadRequestParams.url;
-
         uri = replaceQueryParam(uri);
 
         MediaItem.Builder builder =
@@ -455,13 +453,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 String licenseUri = getDrmLicenseUrl(source, scheme);
 
                 Map<String, String> headers = new HashMap<>(); //requestParams.headers;
-//                @Nullable
-//                String[] keyRequestPropertiesArray = new String[]{};
-//                if (keyRequestPropertiesArray != null) {
-//                    for (int i = 0; i < keyRequestPropertiesArray.length; i += 2) {
-//                        headers.put(keyRequestPropertiesArray[i], keyRequestPropertiesArray[i + 1]);
-//                    }
-//                }
 
                 builder
                         .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
@@ -702,7 +693,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         if (downloadProgressTracker == null) {
             sendDownloadProgress();
         }
-        addExoListener();
+        addExoDownloadManagerListener();
     }
 
     private void createNoMediaFile() throws IOException {
@@ -719,7 +710,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @Override
     public void stop() {
-        removeExoListener();
+        removeExoDownloadManagerListener();
         removeEventHandler();
         downloadProgressTracker = null;
         if (prefetchManager != null) {
@@ -846,7 +837,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         List<AssetInfo> assetInfoList = new ArrayList<>(downloads.getCount());
         while (downloads.moveToNext()) {
             final Download download = downloads.getDownload();
-            assetInfoList.add(new ExoAssetInfo(download));
+            if (download != null) {
+                assetInfoList.add(new ExoAssetInfo(download));
+            }
         }
 
         return assetInfoList;
@@ -892,7 +885,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         while (downloads.moveToNext()) {
             final Download download = downloads.getDownload();
-            assetInfoList.add(new ExoAssetInfo(download));
+            if (download != null) {
+                assetInfoList.add(new ExoAssetInfo(download));
+            }
         }
 
         return assetInfoList;
@@ -1078,7 +1073,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     private void registerDrmAsset(String assetId, DownloadType downloadType) {
-
         if (assetId == null) {
             return;
         }
@@ -1098,7 +1092,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         final byte[] drmInitData = extractDrmInitDataFromFormat(pair.second, assetId);
-
         if (drmInitData == null) {
             return;
         }
@@ -1135,7 +1128,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         DrmInitData.SchemeData schemeData = findWidevineSchemaData(format.drmInitData);
-
         if (schemeData == null || schemeData.data == null) {
             log.w("SchemeData is invalid. assetId: " + assetId);
             return null;

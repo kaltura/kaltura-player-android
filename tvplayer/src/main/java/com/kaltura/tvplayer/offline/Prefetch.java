@@ -26,7 +26,7 @@ public interface Prefetch {
     boolean isPrefetched(@NonNull String assetId);
 
     /**
-     * Get all the assets which are already prefetched
+     * Get all the assets which has {@link com.kaltura.tvplayer.OfflineManager.DownloadType#PREFETCH}
      * @return List of assets
      */
     List<OfflineManager.AssetInfo> getAllAssets();
