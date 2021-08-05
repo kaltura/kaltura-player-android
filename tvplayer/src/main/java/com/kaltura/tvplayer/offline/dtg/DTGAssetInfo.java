@@ -5,6 +5,8 @@ import androidx.annotation.NonNull;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
+import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
+
 
 class DTGAssetInfo extends OfflineManager.AssetInfo {
 
@@ -12,14 +14,17 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
     final private AssetDownloadState state;
     final private long estimatedSize;
     final private long bytesDownloaded;
+    final private float percentDownloaded;
     final DownloadItem downloadItem;
+    final Long downloadTime;
 
     DTGAssetInfo(DownloadItem item, AssetDownloadState state) {
         this.itemId = item.getItemId();
         this.bytesDownloaded = item.getDownloadedSizeBytes();
         this.estimatedSize = item.getEstimatedSizeBytes();
-
+        this.percentDownloaded = item.getEstimatedCompletionPercent();
         this.downloadItem = item;
+        this.downloadTime = System.currentTimeMillis();
 
         if (state == null) {
             switch (item.getState()) {
@@ -54,6 +59,12 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
 
     @NonNull
     @Override
+    public OfflineManager.DownloadType getDownloadType() {
+        return OfflineManager.DownloadType.FULL;
+    }
+
+    @NonNull
+    @Override
     public String getAssetId() {
         return itemId;
     }
@@ -72,6 +83,22 @@ class DTGAssetInfo extends OfflineManager.AssetInfo {
     @Override
     public long getBytesDownloaded() {
         return bytesDownloaded;
+    }
+
+    @Override
+    public float getPercentDownloaded() {
+        return percentDownloaded;
+    }
+
+    @Override
+    public PrefetchConfig getPrefetchConfig() {
+        return null;
+    }
+
+    @NonNull
+    @Override
+    public Long getDownloadTime() {
+        return downloadTime;
     }
 
 }

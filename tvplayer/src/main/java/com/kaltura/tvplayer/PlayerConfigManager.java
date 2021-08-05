@@ -133,8 +133,7 @@ public class PlayerConfigManager {
             return false;
         }
         try {
-            JsonParser jsonParser = new JsonParser();
-            Object jsonResponseObject = jsonParser.parse(responseString);
+            Object jsonResponseObject = JsonParser.parseString(responseString);
             if (jsonResponseObject instanceof JsonObject) {
                 JsonObject responseJson = (JsonObject) jsonResponseObject;
                 if (responseJson != null && responseJson.has("objectType")) {

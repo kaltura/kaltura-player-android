@@ -1,18 +1,27 @@
 package com.kaltura.tvplayer;
 
 import android.content.Context;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.kaltura.android.exoplayer2.database.DatabaseProvider;
+import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
-import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
+import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.dtg.DTGOfflineManager;
+import com.kaltura.tvplayer.offline.exo.ExoOfflineManager;
+import com.kaltura.tvplayer.offline.exo.ExoOfflineNotificationHelper;
+import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -25,8 +34,19 @@ public abstract class OfflineManager {
     protected Integer kalturaPartnerId;
     protected String referrer;
 
-    public static @NonNull OfflineManager getInstance(Context context) {
-        return DTGOfflineManager.getInstance(context);
+    public enum OfflineProvider {
+        DTG,
+        EXO
+    }
+
+    public static @NonNull OfflineManager getInstance(Context context, OfflineProvider offlineProvider) {
+        switch(offlineProvider) {
+            case EXO:
+                return ExoOfflineManager.getInstance(context);
+            case DTG:
+            default:
+                return DTGOfflineManager.getInstance(context);
+        }
     }
 
     public void setKalturaParams(KalturaPlayer.Type type, int partnerId) {
@@ -59,8 +79,17 @@ public abstract class OfflineManager {
      */
     public abstract void setDownloadProgressListener(@Nullable DownloadProgressListener listener);
 
+    /**
+     * Mandatory call to start the OfflineManager
+     *
+     * @param callback
+     * @throws IOException
+     */
     public abstract void start(@Nullable ManagerStartCallback callback) throws IOException;
 
+    /**
+     * Stops the OfflineManager
+     */
     public abstract void stop();
 
     /**
@@ -73,33 +102,44 @@ public abstract class OfflineManager {
      */
     public abstract void resumeDownloads();
 
+    /**
+     * Cancel currently downloading assets.
+     */
+    public abstract void cancelDownloads();
+
+    /**
+     * Customised foreground notification only for ExoOfflineManager
+     * Useless for DTGOfflineManager
+     * @param notification
+     */
+    public abstract void setForegroundNotification(ExoOfflineNotificationHelper notification);
 
     /**
      * Prepare an asset for download. Select the best source from the entry, load the source metadata, select tracks
      * based on the prefs, call the listener.
      *
-     * @param mediaEntry PKMediaEntry
-     * @param prefs SelectionPrefs
-     * @param prepareCallback PrepareCallback
+     * @param mediaEntry
+     * @param selectionPrefs
+     * @param prepareCallback
      */
     public abstract void prepareAsset(@NonNull PKMediaEntry mediaEntry,
-                                      @NonNull SelectionPrefs prefs,
+                                      @NonNull SelectionPrefs selectionPrefs,
                                       @NonNull PrepareCallback prepareCallback);
 
     /**
      * Prepare an asset for download. Connect to Kaltura Backend to load entry metadata, select the best source from
      * the entry, load the source metadata, select tracks based on the prefs, call the listener. If the asset requires
-     * KS, make sure to set ks.
+     * KS, make sure to set {@link MediaOptions}.
      * Before calling this method, the partner id and the server URL must be set by {@link #setKalturaParams(KalturaPlayer.Type, int)}
      * and {@link #setKalturaServerUrl(String)}, respectively.
      *
-     * @param mediaOptions MediaOptions
-     * @param prefs SelectionPrefs
-     * @param prepareCallback PrepareCallback
+     * @param mediaOptions
+     * @param selectionPrefs
+     * @param prepareCallback
      * @throws IllegalStateException if partner id and/or server URL were not set.
      */
     public abstract void prepareAsset(@NonNull MediaOptions mediaOptions,
-                                      @NonNull SelectionPrefs prefs,
+                                      @NonNull SelectionPrefs selectionPrefs,
                                       @NonNull PrepareCallback prepareCallback)
             throws IllegalStateException;
 
@@ -107,7 +147,7 @@ public abstract class OfflineManager {
      * Add a prepared asset to the db and start downloading it.
      * @param assetInfo AssetInfo
      */
-    public abstract void startAssetDownload(@NonNull AssetInfo assetInfo);
+    public abstract void startAssetDownload(@NonNull AssetInfo assetInfo) throws IllegalArgumentException;
 
     /**
      * Pause downloading an asset. Resume by calling {@link #resumeAssetDownload(String)}.
@@ -155,6 +195,32 @@ public abstract class OfflineManager {
     public abstract @Nullable AssetInfo getAssetInfo(@NonNull String assetId);
 
     /**
+     * Get the download directory (Applicable only for {@link OfflineProvider#EXO})
+     * @return File
+     */
+    public abstract @Nullable File getDownloadDirectory();
+
+    /**
+     * Get the download cache (Applicable only for {@link OfflineProvider#EXO})
+     * @return Cache
+     */
+    public abstract @Nullable Cache getDownloadCache();
+
+    /**
+     * Get the Database provider (Applicable only for {@link OfflineProvider#EXO})
+     * @return file
+     */
+    public abstract @Nullable DatabaseProvider getDatabaseProvider();
+
+    /**
+     * Get list of {@link AssetInfo} objects for all assets.
+     * @param downloadType {@link DownloadType} If passed empty or null then all the assets will be returned
+     *
+     * @return AssetInfo list
+     */
+    public abstract @NonNull List<AssetInfo> getAllAssets(DownloadType... downloadType);
+
+    /**
      * Get list of {@link AssetInfo} objects for all assets in the given state.
      *
      * @param state AssetDownloadState
@@ -171,7 +237,6 @@ public abstract class OfflineManager {
      */
     public abstract @NonNull PKMediaEntry getLocalPlaybackEntry(@NonNull String assetId) throws IOException;
 
-
     /**
      * Check the license status of an asset.
      *
@@ -179,7 +244,6 @@ public abstract class OfflineManager {
      * @return DRM license status - {@link DrmStatus}.
      */
     public abstract @NonNull DrmStatus getDrmStatus(@NonNull String assetId);
-
 
     public abstract void setKs(@Nullable String ks);
 
@@ -194,10 +258,18 @@ public abstract class OfflineManager {
      */
     public abstract void setOfflineManagerSettings(@NonNull OfflineManagerSettings offlineManagerSettings);
 
-    public abstract void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter);
+    public abstract Prefetch getPrefetchManager();
+
+    public String getKalturaServerUrl() {
+        return kalturaServerUrl;
+    }
+
+    public Integer getKalturaPartnerId() {
+        return kalturaPartnerId;
+    }
 
     public enum AssetDownloadState {
-        none, prepared, started, completed, failed, removing, paused
+        none, prepared, started, prefetched, completed, failed, removing, paused
     }
 
     public enum TrackType {
@@ -207,9 +279,9 @@ public abstract class OfflineManager {
     /**
      * Event callbacks invoked during asset info loading ({@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)})
      * or {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}).
-     * The app MUST handle at least {@link #onPrepared(String, AssetInfo, Map)} and {@link #onPrepareError(String, Exception)}. If the
+     * The app MUST handle at least {@link #onPrepared(String, AssetInfo, Map)} and {@link #onPrepareError(String, OfflineManager.DownloadType, Exception)}. If the
      * app has used {@link #prepareAsset(MediaOptions, SelectionPrefs, PrepareCallback)}, it MUST also handle
-     * {@link #onMediaEntryLoadError(Exception)}.
+     * {@link #onMediaEntryLoadError(OfflineManager.DownloadType, Exception)}.
      */
     public interface PrepareCallback extends MediaEntryCallback {
         /**
@@ -228,7 +300,7 @@ public abstract class OfflineManager {
          * @param assetId String
          * @param error Exception
          */
-        void onPrepareError(@NonNull String assetId, @NonNull Exception error);
+        void onPrepareError(@NonNull String assetId, OfflineManager.DownloadType downloadType, @NonNull Exception error);
 
         /**
          * Called when loading a {@link PKMediaEntry} object from the backend has succeeded. It allows the app to
@@ -239,7 +311,7 @@ public abstract class OfflineManager {
          * @param mediaEntry PKMediaEntry
          */
         @Override
-        default void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry) {}
+        default void onMediaEntryLoaded(@NonNull String assetId, OfflineManager.DownloadType downloadType, @NonNull PKMediaEntry mediaEntry) {}
 
         /**
          * Called when loading a {@link PKMediaEntry} object from the backend has failed.
@@ -249,7 +321,7 @@ public abstract class OfflineManager {
          * @param error Exception
          */
         @Override
-        default void onMediaEntryLoadError(@NonNull Exception error) {}
+        default void onMediaEntryLoadError(OfflineManager.DownloadType downloadType, @NonNull Exception error) {}
 
         /**
          * Called when prepareAsset() has selected a specific {@link PKMediaSource} from the provided or loaded
@@ -270,14 +342,16 @@ public abstract class OfflineManager {
     }
 
     public interface AssetStateListener {
-        void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo);
-        void onAssetRemoved(@NonNull String assetId);
-        void onAssetDownloadFailed(@NonNull String assetId, @NonNull Exception error);
-        void onAssetDownloadComplete(@NonNull String assetId);
-        void onAssetDownloadPending(@NonNull String assetId);
-        void onAssetDownloadPaused(@NonNull String assetId);
+        void onStateChanged(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull AssetInfo assetInfo);
+        void onAssetRemoved(@NonNull String assetId, @NonNull DownloadType downloadType);
+        void onAssetRemoveError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error);
+        void onAssetDownloadFailed(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error);
+        void onAssetDownloadComplete(@NonNull String assetId, @NonNull DownloadType downloadType);
+        void onAssetPrefetchComplete(@NonNull String assetId, @NonNull DownloadType downloadType);
+        void onAssetDownloadPending(@NonNull String assetId, @NonNull DownloadType downloadType);
+        void onAssetDownloadPaused(@NonNull String assetId, @NonNull DownloadType downloadType);
         void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus);
-        void onRegisterError(@NonNull String assetId, @NonNull Exception error);
+        void onRegisterError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error);
     }
 
     public interface ManagerStartCallback {
@@ -355,7 +429,7 @@ public abstract class OfflineManager {
 
 
         // Audio Codecs
-        /// MP4A
+        /// MP4A, AAC
         MP4A,
         /// AC3: Dolby Atmos
         AC3,
@@ -363,18 +437,26 @@ public abstract class OfflineManager {
         EAC3
     }
 
+    public enum DownloadType {
+        UNKNOWN,
+        PREFETCH,
+        FULL
+    }
 
     /**
      * Pre-download media preferences. Used with {@link #prepareAsset(PKMediaEntry, SelectionPrefs, PrepareCallback)}.
      */
     public static class SelectionPrefs {
+
+        public OfflineManager.DownloadType downloadType = DownloadType.FULL;
+
         @Nullable public Map<TrackCodec, Integer> codecVideoBitrates;
         @Nullable public List<TrackCodec> videoCodecs;
         @Nullable public List<TrackCodec> audioCodecs;
-              
         @Nullable public Integer videoBitrate;
-        @Nullable public Integer videoHeight;
+
         @Nullable public Integer videoWidth;
+        @Nullable public Integer videoHeight;
 
         @Nullable public List<String> audioLanguages;
         @Nullable public List<String> textLanguages;
@@ -382,11 +464,28 @@ public abstract class OfflineManager {
         public boolean allAudioLanguages;
         public boolean allTextLanguages;
         public boolean allowInefficientCodecs;
+
+        public static boolean isDefaultSelectionPrefs(SelectionPrefs selectionPrefs) {
+            return selectionPrefs.codecVideoBitrates != null &&
+                    selectionPrefs.videoCodecs != null &&
+                    selectionPrefs.audioCodecs != null &&
+                    selectionPrefs.videoBitrate != null &&
+                    selectionPrefs.videoWidth != null &&
+                    selectionPrefs.videoHeight != null &&
+                    selectionPrefs.audioLanguages != null &&
+                    selectionPrefs.textLanguages != null &&
+                    !selectionPrefs.allAudioLanguages &&
+                    !selectionPrefs.allTextLanguages &&
+                    !selectionPrefs.allowInefficientCodecs;
+        }
     }
 
     public static abstract class AssetInfo {
 
         public abstract void release();
+
+        @NonNull
+        public abstract DownloadType getDownloadType();
 
         @NonNull
         public abstract String getAssetId();
@@ -397,6 +496,15 @@ public abstract class OfflineManager {
         public abstract long getEstimatedSize();
 
         public abstract long getBytesDownloaded();
+
+        public abstract float getPercentDownloaded();
+
+        @Nullable
+        public abstract PrefetchConfig getPrefetchConfig();
+
+        @NonNull
+        public abstract Long getDownloadTime();
+
     }
 
     public static class AssetDownloadException extends Exception {
@@ -406,8 +514,15 @@ public abstract class OfflineManager {
     }
 
     public interface MediaEntryCallback {
-        void onMediaEntryLoaded(@NonNull String assetId, @NonNull PKMediaEntry mediaEntry);
+        void onMediaEntryLoaded(@NonNull String assetId, DownloadType downloadType, @NonNull PKMediaEntry mediaEntry);
 
-        void onMediaEntryLoadError(@NonNull Exception error);
+        void onMediaEntryLoadError(DownloadType downloadType, @NonNull Exception error);
+    }
+
+    public static class TimestampSorter implements Comparator<AssetInfo> {
+        @Override
+        public int compare(AssetInfo o1, AssetInfo o2) {
+            return o1.getDownloadTime().compareTo(o2.getDownloadTime());
+        }
     }
 }

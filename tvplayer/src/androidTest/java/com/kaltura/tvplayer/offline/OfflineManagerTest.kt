@@ -47,19 +47,27 @@ class OfflineManagerTest {
     var downloadError: Exception? = null
 
     val listener = object : OfflineManager.AssetStateListener {
-        override fun onStateChanged(assetId: String, assetInfo: OfflineManager.AssetInfo) {
+        override fun onStateChanged(assetId: String, downloadType: OfflineManager.DownloadType, assetInfo: OfflineManager.AssetInfo) {
             toast("State changed for asset $assetId")
         }
 
-        override fun onAssetRemoved(assetId: String) {
+        override fun onAssetRemoved(assetId: String, downloadType: OfflineManager.DownloadType) {
             toast("Asset $assetId removed")
         }
 
-        override fun onAssetDownloadPending(assetId: String) {
+        override fun onAssetRemoveError(
+            assetId: String,
+            downloadType: OfflineManager.DownloadType,
+            error: java.lang.Exception
+        ) {
+            toast("Error Asset $assetId WAS NOT removed")
+        }
+
+        override fun onAssetDownloadPending(assetId: String,  downloadType: OfflineManager.DownloadType) {
             toast("asset $assetId is waiting for download")
         }
 
-        override fun onAssetDownloadPaused(assetId: String) {
+        override fun onAssetDownloadPaused(assetId: String,  downloadType: OfflineManager.DownloadType) {
             toast("asset $assetId download finished")
         }
 
@@ -67,20 +75,27 @@ class OfflineManagerTest {
             toast("drm register of asset $assetId is successful")
         }
 
-        override fun onRegisterError(assetId: String, error: Exception) {
-            toast("drm register of asset $assetId is failed: $error")
+        override fun onRegisterError(assetId: String, downloadType: OfflineManager.DownloadType, error: Exception) {
+            toast("drm register of asset $assetId, ${downloadType.name} has failed: $error")
         }
 
-        override fun onAssetDownloadFailed(assetId: String, error: Exception) {
-            toast("download of $assetId has failed: $error")
+        override fun onAssetDownloadFailed(assetId: String, downloadType: OfflineManager.DownloadType, error: Exception) {
+            toast("download of $assetId, ${downloadType.name} has failed: $error")
             downloadError = error
             downloadLatch?.countDown()
         }
-
-        override fun onAssetDownloadComplete(assetId: String) {
+        
+        override fun onAssetDownloadComplete(assetId: String, downloadType : OfflineManager.DownloadType) {
             toast("download of $assetId has finished")
             downloadError = null
             downloadLatch?.countDown()
+        }
+
+        override fun onAssetPrefetchComplete(
+            assetId: String,
+            downloadType: OfflineManager.DownloadType
+        ) {
+            toast("prefetch of $assetId has finished") 
         }
     }
 
@@ -95,7 +110,7 @@ class OfflineManagerTest {
     private fun startPlayer(assetId: String, expectedDuration: Long) {
         val intent = Intent(context, PlayActivity::class.java).apply {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            data = Uri.parse(assetId ?: return)
+            data = Uri.parse(assetId)
             putExtra("expectedDuration", expectedDuration)
         }
 
@@ -158,7 +173,7 @@ class OfflineManagerTest {
                 om.startAssetDownload(assetInfo)
             }
 
-            override fun onPrepareError(assetId: String, error: Exception) {
+            override fun onPrepareError(assetId: String, downloadType: OfflineManager.DownloadType, error: Exception) {
                 fail("Prepare failed with $error")
                 downloadComplete(error)
             }

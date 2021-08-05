@@ -20,6 +20,7 @@ import com.kaltura.tvplayer.OfflineManager;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -27,7 +28,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     private static final PKLog log = PKLog.get("AbstractOfflineManager");
 
     protected final Context appContext;
-    protected final Map<String, Pair<PKMediaSource, PKDrmParams>> pendingDrmRegistration = new HashMap<>();
+    protected final Map<String, Pair<PKMediaSource, Object>> pendingDrmRegistration = new ConcurrentHashMap<>();
     protected final LocalAssetsManagerExo lam;
     protected PKMediaFormat preferredMediaFormat;
     protected boolean forceWidevineL3Playback;
@@ -36,37 +37,48 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     private AssetStateListener assetStateListener;
     private String ks;
 
-    private final Handler eventHandler;
+    private Handler eventHandler;
 
     protected void postEvent(Runnable event) {
-        eventHandler.post(event);
+        if (isEventHandlerAlive()) {
+            eventHandler.post(event);
+        }
     }
 
     protected void postEventDelayed(Runnable event, int delayMillis) {
-        eventHandler.postDelayed(event, delayMillis);
+        if (isEventHandlerAlive()) {
+            eventHandler.postDelayed(event, delayMillis);
+        }
+    }
+    
+    protected void removeEventHandler() {
+        if (isEventHandlerAlive()) {
+            eventHandler.removeCallbacksAndMessages(null);
+            eventHandler = null;
+        }
     }
 
     private static final AssetStateListener noopListener = new AssetStateListener() {
-        @Override public void onStateChanged(@NonNull String assetId, @NonNull AssetInfo assetInfo) {}
-        @Override public void onAssetRemoved(@NonNull String assetId) {}
-        @Override public void onAssetDownloadFailed(@NonNull String assetId, @NonNull Exception error) {}
-        @Override public void onAssetDownloadComplete(@NonNull String assetId) {}
-        @Override public void onAssetDownloadPending(@NonNull String assetId) {}
-        @Override public void onAssetDownloadPaused(@NonNull String assetId) {}
+        @Override public void onStateChanged(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull AssetInfo assetInfo) {}
+        @Override public void onAssetRemoved(@NonNull String assetId, @NonNull DownloadType downloadType) {}
+        @Override public void onAssetRemoveError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error) {}
+        @Override public void onAssetDownloadFailed(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error) {}
+        @Override public void onAssetDownloadComplete(@NonNull String assetId, @NonNull DownloadType downloadType) {}
+        @Override public void onAssetPrefetchComplete(@NonNull String assetId, @NonNull DownloadType downloadType) {}
+        @Override public void onAssetDownloadPending(@NonNull String assetId, @NonNull DownloadType downloadType) {}
+        @Override public void onAssetDownloadPaused(@NonNull String assetId, @NonNull DownloadType downloadType) {}
         @Override public void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus) {}
-        @Override public void onRegisterError(@NonNull String assetId, @NonNull Exception error) {}
+        @Override public void onRegisterError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error) {}
     };
 
     public AbstractOfflineManager(Context context) {
         this.appContext = context.getApplicationContext();
-        HandlerThread handlerThread = new HandlerThread("OfflineManagerEvents");
-        handlerThread.start();
-        eventHandler = new Handler(handlerThread.getLooper());
+        setupEventHandler();
         lam = new LocalAssetsManagerExo(context);
     }
 
     @Override
-    public final void prepareAsset(@NonNull MediaOptions mediaOptions, @NonNull SelectionPrefs prefs,
+    public final void prepareAsset(@NonNull MediaOptions mediaOptions, @NonNull SelectionPrefs selectionPrefs,
                                    @NonNull PrepareCallback prepareCallback) throws IllegalStateException {
 
         if (kalturaPartnerId == null || kalturaServerUrl == null) {
@@ -78,10 +90,10 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         mediaEntryProvider.load(response -> postEvent(() -> {
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
-                prepareCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
-                prepareAsset(mediaEntry, prefs, prepareCallback);
+                prepareCallback.onMediaEntryLoaded(mediaEntry.getId(), DownloadType.FULL, mediaEntry);
+                prepareAsset(mediaEntry, selectionPrefs, prepareCallback);
             } else {
-                prepareCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
+                prepareCallback.onMediaEntryLoadError(DownloadType.FULL, new IOException(response.getError().getMessage()));
             }
         }));
     }
@@ -96,14 +108,18 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         final MediaEntryProvider mediaEntryProvider = mediaOptions.buildMediaProvider(kalturaServerUrl, kalturaPartnerId);
 
         mediaEntryProvider.load(response -> postEvent(() -> {
+            DownloadType downloadType = DownloadType.UNKNOWN;
+            OfflineManager.AssetInfo assetInfo = getAssetInfo(assetId);
+            if (assetInfo != null) {
+                downloadType = assetInfo.getDownloadType();
+            }
+
             if (response.isSuccess()) {
                 final PKMediaEntry mediaEntry = response.getResponse();
-                mediaEntryCallback.onMediaEntryLoaded(mediaEntry.getId(), mediaEntry);
-
+                mediaEntryCallback.onMediaEntryLoaded(mediaEntry.getId(), downloadType, mediaEntry);
                 renewDrmAssetLicense(assetId, mediaEntry);
-
             } else {
-                mediaEntryCallback.onMediaEntryLoadError(new IOException(response.getError().getMessage()));
+                mediaEntryCallback.onMediaEntryLoadError(downloadType, new IOException(response.getError().getMessage()));
             }
         }));
     }
@@ -123,6 +139,18 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     @Override
     public void setKs(String ks) {
         this.ks = ks;
+    }
+
+    protected void setupEventHandler() {
+        if (eventHandler == null) {
+            HandlerThread handlerThread = new HandlerThread("OfflineManagerEvents");
+            handlerThread.start();
+            eventHandler = new Handler(handlerThread.getLooper());
+        }
+    }
+
+    private boolean isEventHandlerAlive() {
+        return eventHandler != null;
     }
 
     protected AssetStateListener getListener() {
@@ -163,14 +191,10 @@ public abstract class AbstractOfflineManager extends OfflineManager {
     }
 
     @Override
-    public void setOfflineManagerSettings(OfflineManagerSettings offlineManagerSettings) {
+    public void setOfflineManagerSettings(@NonNull OfflineManagerSettings offlineManagerSettings) {
         this.offlineManagerSettings = offlineManagerSettings;
-    }
-
-    @Override
-    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
-        if (lam != null) {
-            lam.setLicenseRequestAdapter(licenseRequestAdapter);
+        if (lam != null && offlineManagerSettings != null && offlineManagerSettings.getLicenseRequestAdapter() != null) {
+            lam.setLicenseRequestAdapter(offlineManagerSettings.getLicenseRequestAdapter());
         }
     }
 
@@ -265,13 +289,13 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         try {
             final byte[] drmInitData = getDrmInitData(assetId);
             if (drmInitData == null) {
-                postEvent(() -> getListener().onRegisterError(assetId, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
+                postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
                 return;
             }
             lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData, forceWidevineL3Playback);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
-            postEvent(() -> getListener().onRegisterError(assetId, e));
+            postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, e));
         }
     }
 }

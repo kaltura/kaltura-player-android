@@ -1,19 +1,26 @@
 package com.kaltura.tvplayer.offline;
 
 import com.kaltura.dtg.DownloadRequestParams;
+import com.kaltura.playkit.PKRequestParams;
 
 public class OfflineManagerSettings {
+    public static final int DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION = 64000;
+    public static final int MAX_PARALLEL_DOWNLOADS = 4;
+    public static final int MIN_RETRY_COUNT = 5;
+    public static final boolean CREATE_NO_MEDIA_FILE = true;
+    public static final boolean CROSS_PROTOCOL_ENABLED = true;
 
-    private int maxDownloadRetries = 5;
+    private int maxDownloadRetries = MIN_RETRY_COUNT;
     private int httpTimeoutMillis = 15000;
-    private int maxConcurrentDownloads = 4;
-    private int defaultHlsAudioBitrateEstimation = 64000;
-    private long freeDiskSpaceRequiredBytes = 400 * 1024 * 1024; // default 400MB
+    private int maxConcurrentDownloads = MAX_PARALLEL_DOWNLOADS;
+    private int hlsAudioBitrateEstimation = DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION; // only relevant for DTG
+    private long freeDiskSpaceRequiredBytes = 400 * 1024 * 1024; // default 400MB and only relevant for DTG
     private String applicationName = "";
-    private boolean createNoMediaFileInDownloadsDir = true;
-    private boolean crossProtocolRedirectEnabled = true;
+    private boolean createNoMediaFileInDownloadsDir = CREATE_NO_MEDIA_FILE;
+    private boolean crossProtocolRedirectEnabled = CROSS_PROTOCOL_ENABLED;
     private DownloadRequestParams.Adapter downloadRequestAdapter;
     private DownloadRequestParams.Adapter chunksUrlAdapter;
+    private PKRequestParams.Adapter licenseRequestAdapter;
 
     public int getMaxDownloadRetries() {
         return maxDownloadRetries;
@@ -60,12 +67,12 @@ public class OfflineManagerSettings {
         return this;
     }
 
-    public int getDefaultHlsAudioBitrateEstimation() {
-        return defaultHlsAudioBitrateEstimation;
+    public int getHlsAudioBitrateEstimation() {
+        return hlsAudioBitrateEstimation;
     }
 
-    public OfflineManagerSettings setDefaultHlsAudioBitrateEstimation(int defaultHlsAudioBitrateEstimation) {
-        this.defaultHlsAudioBitrateEstimation = defaultHlsAudioBitrateEstimation;
+    public OfflineManagerSettings setHlsAudioBitrateEstimation(int hlsAudioBitrateEstimation) {
+        this.hlsAudioBitrateEstimation = hlsAudioBitrateEstimation;
         return this;
     }
 
@@ -75,6 +82,15 @@ public class OfflineManagerSettings {
 
     public OfflineManagerSettings setFreeDiskSpaceRequiredBytes(long freeDiskSpaceRequiredBytes) {
         this.freeDiskSpaceRequiredBytes = freeDiskSpaceRequiredBytes;
+        return this;
+    }
+
+    public boolean isCrossProtocolRedirectEnabled() {
+        return crossProtocolRedirectEnabled;
+    }
+
+    public OfflineManagerSettings setCrossProtocolRedirectEnabled(boolean crossProtocolRedirectEnabled) {
+        this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
         return this;
     }
 
@@ -96,12 +112,11 @@ public class OfflineManagerSettings {
         return this;
     }
 
-    public boolean isCrossProtocolRedirectEnabled() {
-        return crossProtocolRedirectEnabled;
+    public PKRequestParams.Adapter getLicenseRequestAdapter() {
+        return licenseRequestAdapter;
     }
 
-    public OfflineManagerSettings setCrossProtocolRedirectEnabled(boolean crossProtocolRedirectEnabled) {
-        this.crossProtocolRedirectEnabled = crossProtocolRedirectEnabled;
-        return this;
+    public void setLicenseRequestAdapter(PKRequestParams.Adapter licenseRequestAdapter) {
+        this.licenseRequestAdapter = licenseRequestAdapter;
     }
 }

@@ -122,10 +122,12 @@ public abstract class KalturaPlayer {
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PlayerInitOptions initOptions;
     private PlaylistController playlistController;
+    private OfflineManager offlineManager;
 
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
         this.context = context;
+        offlineManager = OfflineManager.getInstance(context, initOptions.offlineProvider);
         this.tvPlayerType = tvPlayerType;
         this.initOptions = initOptions;
         this.preload = initOptions.preload != null ? initOptions.preload : true;
@@ -438,14 +440,18 @@ public abstract class KalturaPlayer {
         this.view = pkPlayer.getView();
     }
 
-    public void setMedia(@NonNull PKMediaEntry mediaEntry) {
-        applyMediaEntryInterceptors(mediaEntry, () ->
-                mainHandler.post(() -> {
-                    setMediaInternal(mediaEntry);
-                }));
+    public void setMedia(PKMediaEntry mediaEntry) {
+        if (mediaEntry != null && mediaEntry.hasSources()) {
+            applyMediaEntryInterceptors(mediaEntry, () ->
+                    mainHandler.post(() -> {
+                        setMediaInternal(mediaEntry);
+                    }));
+        } else {
+            log.e("mediaEntry does not contain any source");
+        }
     }
 
-    public void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
+    private void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry, getKS());
 
         if (externalSubtitles != null) {
@@ -461,6 +467,9 @@ public abstract class KalturaPlayer {
             this.prepareState = PrepareState.not_prepared;
             PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
             updateKalturaPluginConfigs(combinedPluginConfigs);
+            if (offlineManager != null && offlineManager.getDownloadCache() != null) {
+                pkPlayer.setDownloadCache(offlineManager.getDownloadCache());
+            }
             prepare();
         }
 
@@ -468,6 +477,11 @@ public abstract class KalturaPlayer {
     }
 
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
+        if (entryList == null || entryList.isEmpty()) {
+            log.e("entryList does not contain any source");
+            return;
+        }
+
         externalSubtitles = null;
         if (startPosition != null) {
             setStartPosition(startPosition);
@@ -893,7 +907,6 @@ public abstract class KalturaPlayer {
             }
         }.start();
     }
-
 
     public void loadPlaylist(@NonNull OVPPlaylistOptions playlistOptions, @NonNull final OnPlaylistControllerListener controllerListener) {
 
