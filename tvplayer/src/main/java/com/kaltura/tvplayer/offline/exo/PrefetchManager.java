@@ -108,7 +108,6 @@ public class PrefetchManager implements Prefetch {
     public void removeAsset(@NonNull String assetId) {
         log.d("removeAsset");
         offlineManager.removeAsset(assetId);
-        // both for prefetch state and downloading state
     }
 
     @Override
