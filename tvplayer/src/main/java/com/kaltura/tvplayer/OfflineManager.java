@@ -79,8 +79,17 @@ public abstract class OfflineManager {
      */
     public abstract void setDownloadProgressListener(@Nullable DownloadProgressListener listener);
 
+    /**
+     * Mandatory call to start the OfflineManager
+     *
+     * @param callback
+     * @throws IOException
+     */
     public abstract void start(@Nullable ManagerStartCallback callback) throws IOException;
 
+    /**
+     * Stops the OfflineManager
+     */
     public abstract void stop();
 
     /**
@@ -185,18 +194,31 @@ public abstract class OfflineManager {
      */
     public abstract @Nullable AssetInfo getAssetInfo(@NonNull String assetId);
 
+    /**
+     * Get the download directory (Applicable only for {@link OfflineProvider#EXO})
+     * @return File
+     */
     public abstract @Nullable File getDownloadDirectory();
 
+    /**
+     * Get the download cache (Applicable only for {@link OfflineProvider#EXO})
+     * @return Cache
+     */
     public abstract @Nullable Cache getDownloadCache();
 
+    /**
+     * Get the Database provider (Applicable only for {@link OfflineProvider#EXO})
+     * @return file
+     */
     public abstract @Nullable DatabaseProvider getDatabaseProvider();
 
     /**
      * Get list of {@link AssetInfo} objects for all assets.
+     * @param downloadType {@link DownloadType} If passed empty or null then all the assets will be returned
      *
      * @return AssetInfo list
      */
-    public abstract @NonNull List<AssetInfo> getAllAssets();
+    public abstract @NonNull List<AssetInfo> getAllAssets(DownloadType... downloadType);
 
     /**
      * Get list of {@link AssetInfo} objects for all assets in the given state.

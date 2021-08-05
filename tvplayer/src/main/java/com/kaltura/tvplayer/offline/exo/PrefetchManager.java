@@ -84,19 +84,7 @@ public class PrefetchManager implements Prefetch {
     @Override
     public List<OfflineManager.AssetInfo> getAllAssets() {
         log.d("getAllAssets");
-
-        List<OfflineManager.AssetInfo> prefetchedItems = new ArrayList<>();
-        List<OfflineManager.AssetInfo> assetInfoItems = offlineManager.getAllAssets();
-        for (OfflineManager.AssetInfo assetInfoItem: assetInfoItems) {
-            if (assetInfoItem.getState() == OfflineManager.AssetDownloadState.prefetched &&
-                    (assetInfoItem.getPrefetchConfig() != null || assetInfoItem.getDownloadType() == OfflineManager.DownloadType.PREFETCH)) {
-                prefetchedItems.add(assetInfoItem);
-            } else if (assetInfoItem.getPrefetchConfig() != null) {
-                prefetchedItems.add(assetInfoItem);
-            }
-        }
-
-        return prefetchedItems;
+        return offlineManager.getAllAssets(OfflineManager.DownloadType.PREFETCH);
     }
 
     @Override

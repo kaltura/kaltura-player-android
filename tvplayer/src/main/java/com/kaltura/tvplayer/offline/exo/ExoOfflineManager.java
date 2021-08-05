@@ -63,10 +63,13 @@ import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.playkit.utils.NativeCookieJarBridge;
+import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.Prefetch;
 
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -74,6 +77,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -519,7 +523,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                         OfflineManagerSettings.DEFAULT_HLS_AUDIO_BITRATE_ESTIMATION,
                         prepareCallback);
 
-                final ExoAssetInfo assetInfo = new ExoAssetInfo(DownloadType.FULL, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
+
+                final ExoAssetInfo assetInfo = new ExoAssetInfo(selectionPrefs.downloadType, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
                 if (mediaFormat == PKMediaFormat.dash && drmData != null) {
                     DrmRegistrationMetaData drmRegistrationMetaData = new DrmRegistrationMetaData(format, false);
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmRegistrationMetaData));
@@ -787,7 +792,40 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     @NonNull
     @Override
-    public List<AssetInfo> getAllAssets() {
+    public List<AssetInfo> getAllAssets(DownloadType... downloadType) {
+        List<OfflineManager.AssetInfo> assetInfoItems = getDownloadsFromDatabase();
+        if (downloadType == null) {
+            return assetInfoItems;
+        }
+
+        List<DownloadType> downloadTypeList = new ArrayList<>(Arrays.asList(downloadType));
+
+        if (downloadTypeList.size() == 1) {
+            if (downloadTypeList.contains(DownloadType.PREFETCH)) {
+                return getAssetInfos(assetInfoItems, DownloadType.PREFETCH);
+            } else if (downloadTypeList.contains(DownloadType.FULL)) {
+                return getAssetInfos(assetInfoItems, DownloadType.FULL);
+            } else {
+                return Collections.emptyList();
+            }
+        }
+
+        return assetInfoItems;
+    }
+
+    @NotNull
+    private List<AssetInfo> getAssetInfos(List<AssetInfo> assetInfoItems, DownloadType downloadType) {
+        List<AssetInfo> filteredItems = new ArrayList<>();
+
+        for (AssetInfo assetInfoItem: assetInfoItems) {
+            if (assetInfoItem.getDownloadType() == downloadType) {
+                filteredItems.add(assetInfoItem);
+            }
+        }
+        return filteredItems;
+    }
+
+    private List<AssetInfo> getDownloadsFromDatabase() {
         final DownloadCursor downloads;
         try {
             downloads = downloadManager.getDownloadIndex().getDownloads(Download.STATE_DOWNLOADING,
@@ -804,7 +842,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         List<AssetInfo> assetInfoList = new ArrayList<>(downloads.getCount());
-
         while (downloads.moveToNext()) {
             final Download download = downloads.getDownload();
             assetInfoList.add(new ExoAssetInfo(download));

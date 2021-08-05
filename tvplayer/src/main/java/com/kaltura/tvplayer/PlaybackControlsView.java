@@ -115,7 +115,9 @@ public class PlaybackControlsView extends LinearLayout {
             }
         }
 
-        if (player != null && player.getMediaEntry() != null && player.getMediaEntry().getMediaType().equals(Live)) {
+        if (player != null && player.getMediaEntry() != null &&
+                player.getMediaEntry().getMediaType() != null &&
+                player.getMediaEntry().getMediaType().equals(Live)) {
             tvLiveIndicator.setVisibility(VISIBLE);
             tvCurTime.setVisibility(INVISIBLE);
             tvTime.setVisibility(View.INVISIBLE);
@@ -130,7 +132,9 @@ public class PlaybackControlsView extends LinearLayout {
                 seekBar.setDuration(duration);
             }
 
-            if (player != null && player.getMediaEntry() != null && player.getMediaEntry().getMediaType().equals(DvrLive)) {
+            if (player != null && player.getMediaEntry() != null &&
+                    player.getMediaEntry().getMediaType() != null &&
+                    player.getMediaEntry().getMediaType().equals(DvrLive)) {
                 tvLiveIndicator.setVisibility(VISIBLE);
                 if (!dragging && position > (duration - LIVE_EDGE_THRESHOLD)) {
                     tvLiveIndicator.setBackgroundResource(R.drawable.red_background);

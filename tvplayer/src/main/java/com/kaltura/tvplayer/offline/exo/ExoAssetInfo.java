@@ -50,12 +50,6 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
     }
 
     ExoAssetInfo(Download download) {
-
-        if (StopReason.fromExoReason(download.stopReason) == StopReason.prefetchDone) {
-            downloadType = OfflineManager.DownloadType.PREFETCH;
-        } else {
-            downloadType = OfflineManager.DownloadType.FULL;
-        }
         assetId = download.request.id;
         downloadHelper = null;
         percentDownloaded = download.getPercentDownloaded();
@@ -73,6 +67,13 @@ class ExoAssetInfo extends OfflineManager.AssetInfo {
         } else {
             this.prefetchConfig = null;
         }
+
+        if (prefetchConfig != null) {
+            downloadType = OfflineManager.DownloadType.PREFETCH;
+        } else {
+            downloadType = OfflineManager.DownloadType.FULL;
+        }
+
         if (download.contentLength > 0) {
             estimatedSize = download.contentLength;
         } else {

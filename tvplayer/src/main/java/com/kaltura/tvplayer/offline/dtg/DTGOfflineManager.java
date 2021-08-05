@@ -415,7 +415,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
     @NonNull
     @Override
-    public List<AssetInfo> getAllAssets() {
+    public List<AssetInfo> getAllAssets(DownloadType... downloadType) {
         final List<DownloadItem> downloads = cm.getDownloads(DownloadState.NEW,
                 DownloadState.INFO_LOADED,
                 DownloadState.IN_PROGRESS,
