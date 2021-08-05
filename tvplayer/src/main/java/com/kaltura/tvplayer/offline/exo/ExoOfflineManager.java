@@ -169,7 +169,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     break;
                 case Download.STATE_FAILED:
                     log.d("STATE_FAILED: " + assetId);
-                    listener.onAssetDownloadFailed(assetId, downloadType, new AssetDownloadException("Failed for unknown reason"));
+                    String message = finalException != null ? finalException.getMessage() : "Failed for unknown reason";
+                    listener.onAssetDownloadFailed(assetId, downloadType,
+                            new AssetDownloadException("DownloadType: " + downloadType.name() + " Error: " + message));
                     break;
                 case Download.STATE_QUEUED:
                     log.d("STATE_QUEUED: " + assetId);
