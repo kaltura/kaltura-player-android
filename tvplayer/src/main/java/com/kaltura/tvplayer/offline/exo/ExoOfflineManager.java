@@ -1003,9 +1003,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     if (isDRMOfflineAsset(assetId)) {
                         final byte[] drmInitData = getDrmInitData(assetId);
                         if (drmInitData == null) {
-                            log.e("removeAsset - unregisterAsset failed drmInitData == null");
+                            String errorMsg = "Can not unregisterAsset when drmInitData == null AssetId: " + assetId;
+                            log.e(errorMsg);
                             if (listener != null) {
-                                postEvent(() -> listener.onAssetRemoveError(assetId, asset.getDownloadType(), new IllegalArgumentException("drmInitData == null for AssetId: " + assetId)));
+                                postEvent(() -> listener.onUnRegisterError(assetId, asset.getDownloadType(), new IllegalArgumentException(errorMsg)));
                             }
                             removeAssetStatus[0] = false;
                         }
