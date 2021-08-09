@@ -18,7 +18,6 @@ import com.kaltura.tvplayer.MediaOptions;
 import com.kaltura.tvplayer.OfflineManager;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
@@ -69,6 +68,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         @Override public void onAssetDownloadPaused(@NonNull String assetId, @NonNull DownloadType downloadType) {}
         @Override public void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus) {}
         @Override public void onRegisterError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error) {}
+        @Override public void onUnRegisterError(@NonNull String assetId, @NonNull OfflineManager.DownloadType downloadType, @NonNull Exception error) {}
     };
 
     public AbstractOfflineManager(Context context) {

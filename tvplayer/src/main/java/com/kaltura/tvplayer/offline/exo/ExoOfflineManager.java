@@ -49,6 +49,7 @@ import com.kaltura.dtg.DownloadRequestParams;
 import com.kaltura.dtg.KalturaDownloadRequestAdapter;
 import com.kaltura.dtg.exoparser.util.UriUtil;
 import com.kaltura.playkit.LocalAssetsManager;
+import com.kaltura.playkit.LocalAssetsManagerExo;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
@@ -133,7 +134,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private final DownloadManager.Listener exoDownloadManagerListner = new DownloadManager.Listener() {
         @Override
-        public void onInitialized(@NonNull DownloadManager downloadManager) { }
+        public void onInitialized(@NonNull DownloadManager downloadManager) {}
 
         @Override
         public void onDownloadsPausedChanged(@NonNull DownloadManager downloadManager, boolean downloadsPaused) {
@@ -208,13 +209,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         @Override
-        public void onIdle(@NonNull DownloadManager downloadManager) { }
+        public void onIdle(@NonNull DownloadManager downloadManager) {}
 
         @Override
-        public void onRequirementsStateChanged(@NonNull DownloadManager downloadManager, @NonNull Requirements requirements, int notMetRequirements) { }
+        public void onRequirementsStateChanged(@NonNull DownloadManager downloadManager, @NonNull Requirements requirements, int notMetRequirements) {}
 
         @Override
-        public void onWaitingForRequirementsChanged(@NonNull DownloadManager downloadManager, boolean waitingForRequirements) { }
+        public void onWaitingForRequirementsChanged(@NonNull DownloadManager downloadManager, boolean waitingForRequirements) {}
     };
 
     @NonNull
@@ -999,18 +1000,19 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                         removeAssetStatus[0] = false;
                         return;
                     }
-
-                    final byte[] drmInitData = getDrmInitData(assetId);
-                    if (drmInitData == null) {
-                        log.e("removeAsset failed drmInitData == null");
-                        if (listener != null) {
-                            postEvent(() -> listener.onAssetRemoveError(assetId, asset.getDownloadType(), new IllegalArgumentException("drmInitData == null for AssetId: " + assetId)));
+                    if (isDRMOfflineAsset(assetId)) {
+                        final byte[] drmInitData = getDrmInitData(assetId);
+                        if (drmInitData == null) {
+                            String errorMsg = "Can not unregisterAsset when drmInitData == null AssetId: " + assetId;
+                            log.e(errorMsg);
+                            if (listener != null) {
+                                postEvent(() -> listener.onUnRegisterError(assetId, asset.getDownloadType(), new IllegalArgumentException(errorMsg)));
+                            }
+                            removeAssetStatus[0] = false;
                         }
-                        removeAssetStatus[0] = false;
+                        lam.unregisterAsset(assetId, drmInitData);
+                        pendingDrmRegistration.remove(assetId);
                     }
-                    lam.unregisterAsset(assetId, drmInitData);
-                    pendingDrmRegistration.remove(assetId);
-
                     DownloadService.sendRemoveDownload(appContext, ExoDownloadService.class, assetId, false);
                     removeAssetSourceId(assetId);
 
@@ -1029,6 +1031,16 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         return removeAssetStatus[0];
+    }
+
+    private boolean isDRMOfflineAsset(String assetId) throws IOException {
+        PKMediaEntry mediaEntry = getLocalPlaybackEntry(assetId);
+
+        return mediaEntry != null &&
+                mediaEntry.getSources() != null &&
+                mediaEntry.getSources().size() > 0 &&
+                mediaEntry.getSources().get(0) instanceof LocalAssetsManagerExo.LocalExoMediaItem &&
+                ((LocalAssetsManagerExo.LocalExoMediaItem) mediaEntry.getSources().get(0)).getScheme() != null;
     }
 
     @Override

@@ -352,6 +352,7 @@ public abstract class OfflineManager {
         void onAssetDownloadPaused(@NonNull String assetId, @NonNull DownloadType downloadType);
         void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus);
         void onRegisterError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error);
+        void onUnRegisterError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error);
     }
 
     public interface ManagerStartCallback {
