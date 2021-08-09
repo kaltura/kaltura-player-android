@@ -68,7 +68,7 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         @Override public void onAssetDownloadPaused(@NonNull String assetId, @NonNull DownloadType downloadType) {}
         @Override public void onRegistered(@NonNull String assetId, @NonNull DrmStatus drmStatus) {}
         @Override public void onRegisterError(@NonNull String assetId, @NonNull DownloadType downloadType, @NonNull Exception error) {}
-        @Override public void onUnRegisterError(@NonNull String assetId, @NonNull OfflineManager.DownloadType downloadType, @NonNull Exception error) { }
+        @Override public void onUnRegisterError(@NonNull String assetId, @NonNull OfflineManager.DownloadType downloadType, @NonNull Exception error) {}
     };
 
     public AbstractOfflineManager(Context context) {

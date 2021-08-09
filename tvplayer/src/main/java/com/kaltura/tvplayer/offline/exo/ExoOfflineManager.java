@@ -134,7 +134,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private final DownloadManager.Listener exoDownloadManagerListner = new DownloadManager.Listener() {
         @Override
-        public void onInitialized(@NonNull DownloadManager downloadManager) { }
+        public void onInitialized(@NonNull DownloadManager downloadManager) {}
 
         @Override
         public void onDownloadsPausedChanged(@NonNull DownloadManager downloadManager, boolean downloadsPaused) {
@@ -209,13 +209,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         @Override
-        public void onIdle(@NonNull DownloadManager downloadManager) { }
+        public void onIdle(@NonNull DownloadManager downloadManager) {}
 
         @Override
-        public void onRequirementsStateChanged(@NonNull DownloadManager downloadManager, @NonNull Requirements requirements, int notMetRequirements) { }
+        public void onRequirementsStateChanged(@NonNull DownloadManager downloadManager, @NonNull Requirements requirements, int notMetRequirements) {}
 
         @Override
-        public void onWaitingForRequirementsChanged(@NonNull DownloadManager downloadManager, boolean waitingForRequirements) { }
+        public void onWaitingForRequirementsChanged(@NonNull DownloadManager downloadManager, boolean waitingForRequirements) {}
     };
 
     @NonNull
