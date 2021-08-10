@@ -256,7 +256,7 @@ public abstract class KalturaPlayer {
         setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
-        if (Type.basic.equals(tvPlayerType) || !combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
+        if (Type.basic.equals(tvPlayerType) && !combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
             NetworkUtils.sendKavaAnalytics(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID, NetworkUtils.KAVA_EVENT_IMPRESSION, pkPlayer.getSessionId());
         }
     }
