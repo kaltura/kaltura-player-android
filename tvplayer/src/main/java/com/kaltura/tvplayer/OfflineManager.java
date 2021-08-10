@@ -258,7 +258,7 @@ public abstract class OfflineManager {
      */
     public abstract void setOfflineManagerSettings(@NonNull OfflineManagerSettings offlineManagerSettings);
 
-    public abstract Prefetch getPrefetchManager();
+    public abstract Prefetch getPrefetchManager(@NonNull PrefetchConfig prefetchConfig);
 
     public String getKalturaServerUrl() {
         return kalturaServerUrl;

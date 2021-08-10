@@ -23,6 +23,7 @@ import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.tvplayer.offline.Prefetch;
 import com.kaltura.tvplayer.offline.exo.ExoOfflineNotificationHelper;
+import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -454,7 +455,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public Prefetch getPrefetchManager() {
+    public Prefetch getPrefetchManager(@NonNull PrefetchConfig prefetchConfig) {
         throw new UnsupportedOperationException("Feature not supported. To use prefetch use EXO as OfflineProvider");
     }
 }
