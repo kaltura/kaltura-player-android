@@ -408,13 +408,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final String url = source.getUrl();
         Uri uri;
 
-        if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.FULL) {
+        if (prefetchManager.isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.FULL) {
             log.d("Removing prefetched media before full download");
             removeAsset(assetId);
-        } else if (getPrefetchManager().isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.PREFETCH) {
+        } else if (prefetchManager.isPrefetched(assetId) && selectionPrefs.downloadType == DownloadType.PREFETCH) {
             if (getDrmStatus(assetId).isValid()) {
                 log.d("Media already prefetched");
-                postEvent(() -> prepareCallback.onPrepared(assetId, getPrefetchManager().getAssetInfoByAssetId(assetId), null));
+                postEvent(() -> prepareCallback.onPrepared(assetId, prefetchManager.getAssetInfoByAssetId(assetId), null));
                 return;
             } else {
                 log.d("Media already prefetched but asset's license was expired so removing and prefetching.");
@@ -715,7 +715,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         removeEventHandler();
         downloadProgressTracker = null;
         if (prefetchManager != null) {
-            if (prefetchManager.getPrefetchConfig().isRemoveCacheOnDestroy()) {
+            if (prefetchManager.getPrefetchConfig().isCleanPrefetchedAssets()) {
                 prefetchManager.removeAllAssets();
             }
             prefetchManager.removeEventHandler();
@@ -919,10 +919,17 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     @Override
-    public Prefetch getPrefetchManager() {
+    public Prefetch getPrefetchManager(@NonNull PrefetchConfig prefetchConfig) {
         if (prefetchManager == null) {
             prefetchManager = new PrefetchManager(this);
+            if (prefetchConfig == null) {
+                prefetchConfig = new PrefetchConfig();
+            }
+            if (prefetchConfig.isCleanPrefetchedAssets()) {
+                prefetchManager.removeAllAssets();
+            }
         }
+        prefetchManager.setPrefetchConfig(prefetchConfig);
         return prefetchManager;
     }
 
