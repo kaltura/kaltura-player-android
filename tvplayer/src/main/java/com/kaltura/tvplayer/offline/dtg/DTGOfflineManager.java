@@ -191,8 +191,8 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         final DTGListener listener = new DTGListener() {
             @Override
             public void onDownloadMetadata(DownloadItem item, Exception error) {
-                if (!TextUtils.equals(item.getItemId(), assetId))  {
-                    postEvent(() -> prepareCallback.onPrepareError(assetId, DownloadType.FULL, error));
+                if (!TextUtils.equals(item.getItemId(), assetId) && error != null)  {
+                    //postEvent(() -> prepareCallback.onPrepareError(assetId, DownloadType.FULL, error));
                     return; // wrong item - could be a matter of timing
                 }
 
