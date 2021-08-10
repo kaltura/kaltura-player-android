@@ -300,7 +300,7 @@ public abstract class OfflineManager {
          * @param assetId String
          * @param error Exception
          */
-        void onPrepareError(@NonNull String assetId, OfflineManager.DownloadType downloadType, @NonNull Exception error);
+        void onPrepareError(@NonNull String assetId, OfflineManager.DownloadType downloadType, Exception error);
 
         /**
          * Called when loading a {@link PKMediaEntry} object from the backend has succeeded. It allows the app to
