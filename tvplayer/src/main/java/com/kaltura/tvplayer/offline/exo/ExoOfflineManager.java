@@ -446,7 +446,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
-        if (mediaFormat == PKMediaFormat.dash) {
+        if (mediaFormat == PKMediaFormat.dash || mediaFormat == PKMediaFormat.hls) {
             if (drmData != null) {
                 boolean setDrmSessionForClearTypes = false;
                 // selecting WidevineCENC as default right now
@@ -471,7 +471,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         MediaItem mediaItem = builder.build();
-        if (mediaFormat != PKMediaFormat.dash) {
+        if (mediaFormat != PKMediaFormat.dash || mediaFormat != PKMediaFormat.hls) {
             assetDownloadHelper = DownloadHelper.forMediaItem(
                     appContext, mediaItem, new DefaultRenderersFactory(appContext), httpDataSourceFactory);
         } else if (drmData != null && drmData.getScheme() != null) {
@@ -519,7 +519,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
 
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(selectionPrefs.downloadType, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
-                if (mediaFormat == PKMediaFormat.dash && drmData != null) {
+                if ((mediaFormat == PKMediaFormat.dash || mediaFormat == PKMediaFormat.hls) && drmData != null) {
                     DrmRegistrationMetaData drmRegistrationMetaData = new DrmRegistrationMetaData(format, false);
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmRegistrationMetaData));
                 }
@@ -1165,11 +1165,12 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     private byte[] getDrmInitData(CacheDataSource.Factory dataSourceFactory, String contentUri) throws IOException, InterruptedException {
-        if (PKMediaFormat.valueOfUrl(contentUri) != PKMediaFormat.dash) {
+        if (PKMediaFormat.valueOfUrl(contentUri) != PKMediaFormat.dash ||
+                PKMediaFormat.valueOfUrl(contentUri) != PKMediaFormat.hls) {
             return null;
         }
 
-        if (!contentUri.contains(".mpd")) {
+        if (!contentUri.contains(".mpd") || !contentUri.contains(".m3u8")) {
             return null;
         }
 
