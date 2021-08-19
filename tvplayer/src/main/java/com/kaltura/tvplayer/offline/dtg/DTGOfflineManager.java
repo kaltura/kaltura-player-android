@@ -9,6 +9,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.dtg.AssetFormat;
 import com.kaltura.dtg.ContentManager;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.dtg.DownloadItem.TrackSelector;
@@ -19,6 +20,7 @@ import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.drm.SimpleDashParser;
+import com.kaltura.playkit.drm.SimpleHlsParser;
 import com.kaltura.playkit.player.SourceSelector;
 import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.tvplayer.offline.Prefetch;
@@ -292,8 +294,17 @@ public class DTGOfflineManager extends AbstractOfflineManager {
     }
 
     private byte[] getWidevineInitData(File localFile) throws IOException {
-        SimpleDashParser dashParser = new SimpleDashParser().parse(localFile.getAbsolutePath());
-        return dashParser.getWidevineInitData();
+        switch (AssetFormat.byFilename(localFile.getName())) {
+            case dash: {
+                SimpleDashParser dashParser = new SimpleDashParser().parse(localFile.getAbsolutePath());
+                return dashParser.getWidevineInitData();
+            }
+            case hls: {
+                SimpleHlsParser hlsParser = new SimpleHlsParser().parse(localFile.getAbsolutePath());
+                return hlsParser.getWidevineInitData();
+            }
+        }
+        return null;
     }
 
     private @Nullable byte[] getWidevineInitDataOrNull(File localFile) {
