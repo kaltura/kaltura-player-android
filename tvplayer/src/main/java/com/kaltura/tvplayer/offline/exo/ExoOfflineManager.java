@@ -1120,7 +1120,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final AssetStateListener listener = getListener();
 
         try {
-            lam.registerWidevineDashAsset(assetId, licenseUri, drmInitData, forceWidevineL3Playback);
+            lam.registerWidevineAsset(assetId, licenseUri, drmInitData, forceWidevineL3Playback);
             postEvent(() -> listener.onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
             ((DrmRegistrationMetaData) pair.second).setRegistered(true);
         } catch (LocalAssetsManager.RegisterException e) {
