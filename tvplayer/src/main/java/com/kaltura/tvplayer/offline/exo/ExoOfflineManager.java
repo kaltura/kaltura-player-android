@@ -35,11 +35,17 @@ import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
+import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParser;
 import com.kaltura.android.exoplayer2.source.hls.HlsManifest;
+import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMasterPlaylist;
+import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
+import com.kaltura.android.exoplayer2.source.hls.playlist.HlsPlaylist;
+import com.kaltura.android.exoplayer2.source.hls.playlist.HlsPlaylistParser;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.ParsingLoadable;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
@@ -1050,6 +1056,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 ((LocalAssetsManagerExo.LocalExoMediaItem) mediaEntry.getSources().get(0)).getScheme() != null;
     }
 
+    /**
+     * Gets DRM int data either from local map or Remote
+     */
     @Override
     protected byte[] getDrmInitData(String assetId) throws IOException, InterruptedException {
         final Pair<PKMediaSource, Object> pair = pendingDrmRegistration.get(assetId);
@@ -1057,7 +1066,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 (pair.second instanceof DrmRegistrationMetaData && ((DrmRegistrationMetaData) pair.second).isRegistered())) {
             byte[] drmInitData = extractDrmInitDataFromFormat(pair.second, assetId);
             if (drmInitData != null) {
-                log.d("Extracting DrmInitData from the map.");
+                log.d("Extracting DrmInitData from the local map");
                 return drmInitData;
             }
         }
@@ -1164,31 +1173,66 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
     }
 
+    /**
+     * Takes DRM Init data from the remote source
+     */
     private byte[] getDrmInitData(CacheDataSource.Factory dataSourceFactory, String contentUri) throws IOException, InterruptedException {
-        if (PKMediaFormat.valueOfUrl(contentUri) != PKMediaFormat.dash ||
-                PKMediaFormat.valueOfUrl(contentUri) != PKMediaFormat.hls) {
+        PKMediaFormat pkMediaFormat = PKMediaFormat.valueOfUrl(contentUri);
+        if (pkMediaFormat != null &&
+                pkMediaFormat != PKMediaFormat.dash &&
+                pkMediaFormat != PKMediaFormat.hls) {
             return null;
         }
 
-        if (!contentUri.contains(".mpd") || !contentUri.contains(".m3u8")) {
+        if (!contentUri.contains(".mpd") && !contentUri.contains(".m3u8")) {
             return null;
         }
 
-        final CacheDataSource cacheDataSource = dataSourceFactory.createDataSource();
-        final DashManifest dashManifest = DashUtil.loadManifest(cacheDataSource, Uri.parse(contentUri));
-        Format formatWithDrmInitData = DashUtil.loadFormatWithDrmInitData(cacheDataSource, dashManifest.getPeriod(0));
-        if (formatWithDrmInitData == null) {
-            return null;
-        }
-
-        final DrmInitData drmInitData = formatWithDrmInitData.drmInitData;
-        final DrmInitData.SchemeData schemeData;
+        final DrmInitData drmInitData = fetchDrmInitData(pkMediaFormat, contentUri, dataSourceFactory);
         if (drmInitData == null) {
             return null;
         }
 
-        schemeData = findWidevineSchemaData(drmInitData);
+        final DrmInitData.SchemeData schemeData = findWidevineSchemaData(drmInitData);
         return schemeData != null ? schemeData.data : null;
+    }
+
+    /**
+     * Method to get the drm Init data from remote. It parses the manifest and gets the relevant representation
+     * or segments and from there it takes the DRM initdata
+     *
+     * @param pkMediaFormat weather it is DASH or HLS
+     * @param contentUri URI of the content (For exo case, it is always remote URI not the local URI_
+     * @param dataSourceFactory CacheDataSource
+     * @return DRMInitData
+     * @throws IOException If there is some error
+     * @throws InterruptedException if the remote thread is interrupted
+     */
+    private DrmInitData fetchDrmInitData(PKMediaFormat pkMediaFormat, String contentUri, CacheDataSource.Factory dataSourceFactory) throws IOException, InterruptedException {
+        DrmInitData drmInitData = null;
+        final CacheDataSource cacheDataSource = dataSourceFactory.createDataSource();
+
+        switch (pkMediaFormat) {
+            case dash: {
+                final DashManifest dashManifest = DashUtil.loadManifest(cacheDataSource, Uri.parse(contentUri));
+                Format formatWithDrmInitData = DashUtil.loadFormatWithDrmInitData(cacheDataSource, dashManifest.getPeriod(0));
+                drmInitData = formatWithDrmInitData == null ? null : formatWithDrmInitData.drmInitData;
+                log.d("Loading Dash drmInitData from remote");
+                break;
+            }
+            case hls: {
+                HlsPlaylist hlsPlaylist = ParsingLoadable.load(cacheDataSource, new HlsPlaylistParser(), Uri.parse(contentUri), C.DATA_TYPE_MANIFEST);
+                HlsMasterPlaylist hlsMasterPlaylist = (HlsMasterPlaylist) hlsPlaylist;
+                if (!hlsMasterPlaylist.variants.isEmpty()) {
+                    HlsMediaPlaylist hlsMediaPlaylist = (HlsMediaPlaylist) ParsingLoadable.load(cacheDataSource, new HlsPlaylistParser(), Uri.parse(hlsMasterPlaylist.variants.get(0).url.toString()), C.DATA_TYPE_MANIFEST);
+                    if (!hlsMediaPlaylist.segments.isEmpty())
+                        drmInitData = hlsMediaPlaylist.segments.get(0).drmInitData;
+                    log.d("Loading HLS drmInitData from remote");
+                }
+                break;
+            }
+        }
+        return drmInitData;
     }
 
     private DrmInitData.SchemeData findWidevineSchemaData(DrmInitData drmInitData) {
