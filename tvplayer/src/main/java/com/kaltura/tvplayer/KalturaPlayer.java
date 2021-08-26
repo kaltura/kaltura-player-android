@@ -283,7 +283,6 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setPKRequestConfig(initOptions.pkRequestConfig);
         }
 
-
         if (initOptions.preferredMediaFormat != null) {
             pkPlayer.getSettings().setPreferredMediaFormat(initOptions.preferredMediaFormat);
         }
