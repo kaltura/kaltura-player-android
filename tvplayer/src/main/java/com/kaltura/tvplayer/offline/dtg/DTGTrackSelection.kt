@@ -215,7 +215,6 @@ class DTGTrackSelection(
                 // If no codec is specified, assume avc1/mp4a
                 mainTracks[AVC1.tag()]?.add(s)
                 hasVideo = true
-
             }
 
             val videoCodec = s.videoCodec()
@@ -239,13 +238,8 @@ class DTGTrackSelection(
         if (hasResolution) {
             // Don't sort/filter by resolution if not set
             for (c in videoCodecTags) {
-                val height = prefs.videoHeight
-                if (height != null) {
-                    mainTracks[c] = filterTracks(mainTracks[c]!!, Track.heightComparator, {it.height >= height}).toMutableList()
-                }
-                val width = prefs.videoWidth
-                if (width != null) {
-                    mainTracks[c] = filterTracks(mainTracks[c]!!, Track.widthComparator, {it.width >= width}).toMutableList()
+                mainTracks[c]?.let {
+                    mainTracks[c] = filterVideoTracks(it, prefs).toMutableList()
                 }
             }
         }
