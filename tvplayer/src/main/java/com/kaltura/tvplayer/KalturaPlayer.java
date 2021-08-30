@@ -26,6 +26,7 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.PKRequestConfig;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
@@ -275,7 +276,11 @@ public abstract class KalturaPlayer {
         }
 
         if (initOptions.allowCrossProtocolEnabled != null) {
-            pkPlayer.getSettings().setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
+            pkPlayer.getSettings().setPKRequestConfig(new PKRequestConfig(initOptions.allowCrossProtocolEnabled));
+        }
+
+        if (initOptions.pkRequestConfig != null) {
+            pkPlayer.getSettings().setPKRequestConfig(initOptions.pkRequestConfig);
         }
 
         if (initOptions.preferredMediaFormat != null) {
@@ -336,10 +341,6 @@ public abstract class KalturaPlayer {
 
         if (initOptions.pkLowLatencyConfig != null) {
             pkPlayer.getSettings().setPKLowLatencyConfig(initOptions.pkLowLatencyConfig);
-        }
-
-        if (initOptions.pkRequestConfig != null) {
-            pkPlayer.getSettings().setPKRequestConfig(initOptions.pkRequestConfig);
         }
 
         if (initOptions.forceSinglePlayerEngine != null) {
