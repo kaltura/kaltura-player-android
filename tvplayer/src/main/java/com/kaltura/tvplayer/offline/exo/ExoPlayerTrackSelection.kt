@@ -351,7 +351,7 @@ class ExoPlayerTrackSelection(
 
         val sorted = tracks.sortedWith(comparator)
         val filtered = sorted.filter(predicate)
-        return if (filtered.isEmpty()) sorted.subList(0, 1) else filtered
+        return if (filtered.isEmpty()) sorted.asReversed().subList(0, 1) else filtered
     }
 
     private fun TrackCodec.isAllowed() = when (this) {
