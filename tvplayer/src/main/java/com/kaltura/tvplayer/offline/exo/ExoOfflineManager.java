@@ -1226,12 +1226,22 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 if (hlsPlaylist instanceof HlsMasterPlaylist) {
                     HlsMasterPlaylist hlsMasterPlaylist = (HlsMasterPlaylist) hlsPlaylist;
                     if (!hlsMasterPlaylist.variants.isEmpty()) {
-                        HlsPlaylist playlist = ParsingLoadable.load(cacheDataSource, new HlsPlaylistParser(), Uri.parse(hlsMasterPlaylist.variants.get(0).url.toString()), C.DATA_TYPE_MANIFEST);
-                        if (playlist instanceof HlsMediaPlaylist) {
-                            HlsMediaPlaylist hlsMediaPlaylist = (HlsMediaPlaylist) playlist;
-                            if (!hlsMediaPlaylist.segments.isEmpty())
-                                drmInitData = hlsMediaPlaylist.segments.get(0).drmInitData;
-                            log.d("Loading HLS drmInitData from remote");
+                        ExecutorService executorService = Executors.newSingleThreadExecutor();
+                        try {
+                            Future<HlsPlaylist> hlsPlaylistFuture = executorService.submit(new GetHlsMediaPlaylistForDrmInitData(cacheDataSource, hlsMasterPlaylist));
+                            if (hlsPlaylistFuture != null &&
+                                    hlsPlaylistFuture.get() != null &&
+                                    hlsPlaylistFuture.get() instanceof HlsMediaPlaylist) {
+                                HlsMediaPlaylist hlsMediaPlaylist = (HlsMediaPlaylist) hlsPlaylistFuture.get();
+                                if (!hlsMediaPlaylist.segments.isEmpty())
+                                    drmInitData = hlsMediaPlaylist.segments.get(0).drmInitData;
+                                log.d("Loading HLS drmInitData from remote");
+                            }
+                            return drmInitData;
+                        } catch (ExecutionException|InterruptedException exception) {
+                            return drmInitData;
+                        } finally {
+                            executorService.shutdown();
                         }
                     }
                 }
@@ -1260,6 +1270,21 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         public Long call() throws IOException {
             return httpHeadGetLength(uri);
+        }
+    }
+
+    private static class GetHlsMediaPlaylistForDrmInitData implements Callable<HlsPlaylist> {
+        private final CacheDataSource cacheDataSource;
+        private final HlsMasterPlaylist hlsMasterPlaylist;
+
+        public GetHlsMediaPlaylistForDrmInitData(CacheDataSource cacheDataSource, HlsMasterPlaylist hlsMasterPlaylist) {
+            this.cacheDataSource = cacheDataSource;
+            this.hlsMasterPlaylist = hlsMasterPlaylist;
+        }
+
+        @Override
+        public HlsPlaylist call() throws Exception {
+            return ParsingLoadable.load(cacheDataSource, new HlsPlaylistParser(), Uri.parse(hlsMasterPlaylist.variants.get(0).url.toString()), C.DATA_TYPE_MANIFEST);
         }
     }
 }
