@@ -477,7 +477,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         MediaItem mediaItem = builder.build();
-        if (mediaFormat != PKMediaFormat.dash || mediaFormat != PKMediaFormat.hls) {
+        if (mediaFormat != PKMediaFormat.dash && mediaFormat != PKMediaFormat.hls) {
             assetDownloadHelper = DownloadHelper.forMediaItem(
                     appContext, mediaItem, new DefaultRenderersFactory(appContext), httpDataSourceFactory);
         } else if (drmData != null && drmData.getScheme() != null) {
@@ -1208,6 +1208,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
      * @throws IOException If there is some error
      * @throws InterruptedException if the remote thread is interrupted
      */
+    @Nullable
     private DrmInitData fetchDrmInitData(PKMediaFormat pkMediaFormat, String contentUri, CacheDataSource.Factory dataSourceFactory) throws IOException, InterruptedException {
         DrmInitData drmInitData = null;
         final CacheDataSource cacheDataSource = dataSourceFactory.createDataSource();
@@ -1222,12 +1223,17 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
             case hls: {
                 HlsPlaylist hlsPlaylist = ParsingLoadable.load(cacheDataSource, new HlsPlaylistParser(), Uri.parse(contentUri), C.DATA_TYPE_MANIFEST);
-                HlsMasterPlaylist hlsMasterPlaylist = (HlsMasterPlaylist) hlsPlaylist;
-                if (!hlsMasterPlaylist.variants.isEmpty()) {
-                    HlsMediaPlaylist hlsMediaPlaylist = (HlsMediaPlaylist) ParsingLoadable.load(cacheDataSource, new HlsPlaylistParser(), Uri.parse(hlsMasterPlaylist.variants.get(0).url.toString()), C.DATA_TYPE_MANIFEST);
-                    if (!hlsMediaPlaylist.segments.isEmpty())
-                        drmInitData = hlsMediaPlaylist.segments.get(0).drmInitData;
-                    log.d("Loading HLS drmInitData from remote");
+                if (hlsPlaylist instanceof HlsMasterPlaylist) {
+                    HlsMasterPlaylist hlsMasterPlaylist = (HlsMasterPlaylist) hlsPlaylist;
+                    if (!hlsMasterPlaylist.variants.isEmpty()) {
+                        HlsPlaylist playlist = ParsingLoadable.load(cacheDataSource, new HlsPlaylistParser(), Uri.parse(hlsMasterPlaylist.variants.get(0).url.toString()), C.DATA_TYPE_MANIFEST);
+                        if (playlist instanceof HlsMediaPlaylist) {
+                            HlsMediaPlaylist hlsMediaPlaylist = (HlsMediaPlaylist) playlist;
+                            if (!hlsMediaPlaylist.segments.isEmpty())
+                                drmInitData = hlsMediaPlaylist.segments.get(0).drmInitData;
+                            log.d("Loading HLS drmInitData from remote");
+                        }
+                    }
                 }
                 break;
             }

@@ -293,6 +293,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         }
     }
 
+    @Nullable
     private byte[] getWidevineInitData(File localFile) throws IOException {
         switch (AssetFormat.byFilename(localFile.getName())) {
             case dash: {
@@ -307,7 +308,8 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         return null;
     }
 
-    private @Nullable byte[] getWidevineInitDataOrNull(File localFile) {
+    @Nullable
+    private byte[] getWidevineInitDataOrNull(File localFile) {
         try {
             return getWidevineInitData(localFile);
         } catch (IOException e) {
