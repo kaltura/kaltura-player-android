@@ -294,7 +294,7 @@ class DTGTrackSelection(
 
         val filtered = sorted.filter(predicate)
 
-        return if (filtered.isEmpty()) sorted.subList(0, 1) else filtered
+        return if (filtered.isEmpty()) sorted.asReversed().subList(0, 1) else filtered
     }
 
     private fun Track.usesUnsupportedCodecs(): Boolean {
