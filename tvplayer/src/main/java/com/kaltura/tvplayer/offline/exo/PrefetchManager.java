@@ -16,7 +16,6 @@ import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.offline.Prefetch;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

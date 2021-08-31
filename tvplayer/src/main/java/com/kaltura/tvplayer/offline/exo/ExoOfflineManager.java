@@ -35,7 +35,6 @@ import com.kaltura.android.exoplayer2.source.TrackGroup;
 import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
-import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifestParser;
 import com.kaltura.android.exoplayer2.source.hls.HlsManifest;
 import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMasterPlaylist;
 import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
