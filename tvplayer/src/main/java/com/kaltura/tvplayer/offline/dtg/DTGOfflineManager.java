@@ -18,6 +18,7 @@ import com.kaltura.playkit.LocalAssetsManager;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
+import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKMediaSource;
 import com.kaltura.playkit.drm.SimpleDashParser;
 import com.kaltura.playkit.drm.SimpleHlsParser;
@@ -235,6 +236,13 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         return getWidevineInitData(localFile);
     }
 
+    @Override
+    protected PKMediaFormat getAssetFormat(String assetId) {
+        final String playbackURL = cm.getPlaybackURL(assetId);
+        PKMediaFormat pkMediaFormat = PKMediaFormat.valueOfUrl(playbackURL);
+        return pkMediaFormat != null ? pkMediaFormat : PKMediaFormat.unknown;
+    }
+
     private void registerDrmAsset(String assetId, boolean allowFileNotFound) {
         if (assetId == null) {
             return;
@@ -282,7 +290,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
         try {
             final byte[] widevineInitData = getWidevineInitData(localFile);
-            lam.registerWidevineAsset(assetId, licenseUri, widevineInitData, forceWidevineL3Playback);
+            lam.registerWidevineAsset(assetId, getAssetFormat(assetId), licenseUri, widevineInitData, forceWidevineL3Playback);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, widevineInitData)));
 
             pendingDrmRegistration.remove(assetId);

@@ -157,21 +157,35 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         return assetStateListener != null ? assetStateListener : noopListener;
     }
 
+    @Nullable
     private PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {
 
         final String sourceId = loadAssetSourceId(assetId);
+        final PKMediaFormat pkMediaFormat = extractFormatFromSources(mediaEntry);
 
-        final SourceSelector selector = new SourceSelector(mediaEntry, PKMediaFormat.dash);
+        if (pkMediaFormat == null) {
+            log.w("DrmParams can not be found on null format.");
+            return null;
+        }
+
+        final SourceSelector selector = new SourceSelector(mediaEntry, pkMediaFormat);
         selector.setPreferredSourceId(sourceId);
 
         PKMediaSource selectedSource = selector.getSelectedSource();
         PKDrmParams selectedDrmParams = selector.getSelectedDrmParams();
 
-        if (selectedSource == null || selectedSource.getMediaFormat() != PKMediaFormat.dash) {
+        if (selectedSource == null || selectedSource.getMediaFormat() != pkMediaFormat) {
             return null;
         }
 
         return selectedDrmParams;
+    }
+
+    private PKMediaFormat extractFormatFromSources(PKMediaEntry mediaEntry) {
+        if (mediaEntry != null && mediaEntry.getSources() != null && !mediaEntry.getSources().isEmpty()) {
+            return mediaEntry.getSources().get(0).getMediaFormat();
+        }
+        return null;
     }
 
     @Override
@@ -284,6 +298,8 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     protected abstract byte[] getDrmInitData(String assetId) throws IOException, InterruptedException;
 
+    protected abstract PKMediaFormat getAssetFormat(String assetId);
+
     @Override
     public void renewDrmAssetLicense(@NonNull String assetId, @NonNull PKDrmParams drmParams) {
         try {
@@ -292,7 +308,8 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
                 return;
             }
-            lam.registerWidevineAsset(assetId, drmParams.getLicenseUri(), drmInitData, forceWidevineL3Playback);
+
+            lam.registerWidevineAsset(assetId, getAssetFormat(assetId), drmParams.getLicenseUri(), drmInitData, forceWidevineL3Playback);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
             postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, e));

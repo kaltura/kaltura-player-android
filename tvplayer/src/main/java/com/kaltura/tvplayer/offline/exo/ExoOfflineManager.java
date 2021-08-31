@@ -1081,6 +1081,22 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         return getDrmInitData(cacheDataSourceFactory, uri.toString());
     }
 
+    @Override
+    protected PKMediaFormat getAssetFormat(String assetId) {
+        PKMediaFormat pkMediaFormat = PKMediaFormat.unknown;
+        try {
+            final Download download = downloadManager.getDownloadIndex().getDownload(assetId);
+            if (download == null) {
+                return pkMediaFormat;
+            }
+            final Uri uri = download.request.uri;
+            pkMediaFormat = PKMediaFormat.valueOfUrl(uri.toString());
+            return pkMediaFormat != null ? pkMediaFormat : PKMediaFormat.unknown;
+        } catch (IOException exception) {
+            return pkMediaFormat;
+        }
+    }
+
     @Nullable
     @Override
     public DatabaseProvider getDatabaseProvider() {
@@ -1128,7 +1144,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final AssetStateListener listener = getListener();
 
         try {
-            lam.registerWidevineAsset(assetId, licenseUri, drmInitData, forceWidevineL3Playback);
+            lam.registerWidevineAsset(assetId, getAssetFormat(assetId), licenseUri, drmInitData, forceWidevineL3Playback);
             postEvent(() -> listener.onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
             ((DrmRegistrationMetaData) pair.second).setRegistered(true);
         } catch (LocalAssetsManager.RegisterException e) {
