@@ -795,7 +795,8 @@ public abstract class KalturaPlayer {
         } else if (mediaOptions instanceof OTTMediaOptions) {
             mediaAssetUUID = ((OTTMediaOptions) mediaOptions).getOttMediaAsset().getUUID();
         }
-        if (entriesCache != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching() && !TextUtils.isEmpty(mediaAssetUUID)) {
+
+        if (entriesCache != null && initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching() && !TextUtils.isEmpty(mediaAssetUUID)) {
             log.d("Add Entry to Cache: key = " + mediaAssetUUID + " name = " + entry.getName() + " mediaId = " + entry.getId());
             String mediaEntryJson = new Gson().toJson(entry);
             entriesCache.put(mediaAssetUUID, mediaEntryJson);
