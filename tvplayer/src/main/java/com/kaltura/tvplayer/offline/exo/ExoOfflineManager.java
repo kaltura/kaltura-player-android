@@ -74,7 +74,6 @@ import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.Prefetch;
 
-
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -88,6 +87,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -1226,37 +1226,37 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     @Nullable
     private DrmInitData fetchDrmInitData(PKMediaFormat pkMediaFormat, String contentUri, CacheDataSource.Factory dataSourceFactory) throws IOException, InterruptedException {
         DrmInitData drmInitData = null;
-        final CacheDataSource cacheDataSource = dataSourceFactory.createDataSource();
+        final CacheDataSource cacheDataSource = dataSourceFactory.createDataSourceForRemovingDownload();
 
         switch (pkMediaFormat) {
             case dash: {
                 final DashManifest dashManifest = DashUtil.loadManifest(cacheDataSource, Uri.parse(contentUri));
                 Format formatWithDrmInitData = DashUtil.loadFormatWithDrmInitData(cacheDataSource, dashManifest.getPeriod(0));
                 drmInitData = formatWithDrmInitData == null ? null : formatWithDrmInitData.drmInitData;
-                log.d("Loading Dash drmInitData from remote");
+                log.d("Loading Dash drmInitData from cache");
                 break;
             }
             case hls: {
-                HlsPlaylist hlsPlaylist = ParsingLoadable.load(cacheDataSource, new HlsPlaylistParser(), Uri.parse(contentUri), C.DATA_TYPE_MANIFEST);
+                HlsPlaylist hlsPlaylist = ParsingLoadable.load(cacheDataSource,
+                        new HlsPlaylistParser(),
+                        Uri.parse(contentUri),
+                        C.DATA_TYPE_MANIFEST);
                 if (hlsPlaylist instanceof HlsMasterPlaylist) {
                     HlsMasterPlaylist hlsMasterPlaylist = (HlsMasterPlaylist) hlsPlaylist;
+
                     if (!hlsMasterPlaylist.variants.isEmpty()) {
-                        ExecutorService executorService = Executors.newSingleThreadExecutor();
-                        try {
-                            Future<HlsPlaylist> hlsPlaylistFuture = executorService.submit(new GetHlsMediaPlaylistForDrmInitData(cacheDataSource, hlsMasterPlaylist));
-                            if (hlsPlaylistFuture != null &&
-                                    hlsPlaylistFuture.get() != null &&
-                                    hlsPlaylistFuture.get() instanceof HlsMediaPlaylist) {
-                                HlsMediaPlaylist hlsMediaPlaylist = (HlsMediaPlaylist) hlsPlaylistFuture.get();
-                                if (!hlsMediaPlaylist.segments.isEmpty())
-                                    drmInitData = hlsMediaPlaylist.segments.get(0).drmInitData;
-                                log.d("Loading HLS drmInitData from remote");
+                        int index = findDownloadedVariantIndexForHls(cacheDataSource, hlsMasterPlaylist);
+
+                        if (index != -1) {
+                            HlsPlaylist playlist = ParsingLoadable.load(cacheDataSource,
+                                    new HlsPlaylistParser(),
+                                    Uri.parse(hlsMasterPlaylist.variants.get(index).url.toString()),
+                                    C.DATA_TYPE_MANIFEST);
+                            if (playlist instanceof HlsMediaPlaylist && !((HlsMediaPlaylist) playlist).segments.isEmpty()) {
+                                drmInitData = ((HlsMediaPlaylist) playlist).segments.get(0).drmInitData;
+                                log.d("Loading HLS drmInitData from cache");
+                                return drmInitData;
                             }
-                            return drmInitData;
-                        } catch (ExecutionException|InterruptedException exception) {
-                            return drmInitData;
-                        } finally {
-                            executorService.shutdown();
                         }
                     }
                 }
@@ -1264,6 +1264,26 @@ public class ExoOfflineManager extends AbstractOfflineManager {
             }
         }
         return drmInitData;
+    }
+
+    /**
+     * Loop over the available variant(video tracks) in HLSMasterPlaylist
+     * and checks if that variant is availble in the Cache
+     *
+     * @param cacheDataSource datasource
+     * @param hlsMasterPlaylist given master playlist
+     *
+     * @return index of the very first variant video track which is available in the cache
+     */
+    private int findDownloadedVariantIndexForHls(CacheDataSource cacheDataSource, HlsMasterPlaylist hlsMasterPlaylist) {
+        Set<String> downloadedKeys = cacheDataSource.getCache().getKeys();
+
+        for (int variantCount = 0; variantCount < hlsMasterPlaylist.variants.size(); variantCount++) {
+            if (downloadedKeys.contains(hlsMasterPlaylist.variants.get(variantCount).url.toString())) {
+                return variantCount;
+            }
+        }
+        return -1;
     }
 
     private DrmInitData.SchemeData findWidevineSchemaData(DrmInitData drmInitData) {
@@ -1285,21 +1305,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
         public Long call() throws IOException {
             return httpHeadGetLength(uri);
-        }
-    }
-
-    private static class GetHlsMediaPlaylistForDrmInitData implements Callable<HlsPlaylist> {
-        private final CacheDataSource cacheDataSource;
-        private final HlsMasterPlaylist hlsMasterPlaylist;
-
-        public GetHlsMediaPlaylistForDrmInitData(CacheDataSource cacheDataSource, HlsMasterPlaylist hlsMasterPlaylist) {
-            this.cacheDataSource = cacheDataSource;
-            this.hlsMasterPlaylist = hlsMasterPlaylist;
-        }
-
-        @Override
-        public HlsPlaylist call() throws Exception {
-            return ParsingLoadable.load(cacheDataSource, new HlsPlaylistParser(), Uri.parse(hlsMasterPlaylist.variants.get(0).url.toString()), C.DATA_TYPE_MANIFEST);
         }
     }
 }
