@@ -1255,7 +1255,6 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                             if (playlist instanceof HlsMediaPlaylist && !((HlsMediaPlaylist) playlist).segments.isEmpty()) {
                                 drmInitData = ((HlsMediaPlaylist) playlist).segments.get(0).drmInitData;
                                 log.d("Loading HLS drmInitData from cache");
-                                return drmInitData;
                             }
                         }
                     }
@@ -1263,12 +1262,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 break;
             }
         }
+
         return drmInitData;
     }
 
     /**
      * Loop over the available variant(video tracks) in HLSMasterPlaylist
-     * and checks if that variant is availble in the Cache
+     * and checks if that variant is available in the Cache
      *
      * @param cacheDataSource datasource
      * @param hlsMasterPlaylist given master playlist

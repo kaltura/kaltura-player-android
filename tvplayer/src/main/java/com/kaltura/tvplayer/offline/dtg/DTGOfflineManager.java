@@ -360,6 +360,8 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         cm.removeItem(assetId);
         removeAssetSourceId(assetId);
         removeAssetPkDrmParams(assetId);
+        log.d("removeAsset: assetId = " + assetId);
+        postEvent(() -> getListener().onAssetRemoved(assetId, DownloadType.FULL));
         return true;
     }
 
