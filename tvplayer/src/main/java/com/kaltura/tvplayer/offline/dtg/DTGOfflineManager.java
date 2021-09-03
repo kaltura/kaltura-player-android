@@ -364,7 +364,6 @@ public class DTGOfflineManager extends AbstractOfflineManager {
         postEvent(() -> getListener().onAssetRemoved(assetId, DownloadType.FULL));
         return true;
     }
-    
 
     @Nullable
     @Override
