@@ -159,33 +159,20 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     @Nullable
     private PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {
-
         final String sourceId = loadAssetSourceId(assetId);
-        final PKMediaFormat pkMediaFormat = extractFormatFromSources(mediaEntry);
+        PKMediaFormat format = getAssetFormat(assetId);
 
-        if (pkMediaFormat == null) {
-            log.w("DrmParams can not be found on null format.");
-            return null;
-        }
-
-        final SourceSelector selector = new SourceSelector(mediaEntry, pkMediaFormat);
+        final SourceSelector selector = new SourceSelector(mediaEntry, format);
         selector.setPreferredSourceId(sourceId);
 
         PKMediaSource selectedSource = selector.getSelectedSource();
         PKDrmParams selectedDrmParams = selector.getSelectedDrmParams();
 
-        if (selectedSource == null || selectedSource.getMediaFormat() != pkMediaFormat) {
+        if (selectedSource == null || selectedSource.getMediaFormat() != format) {
             return null;
         }
 
         return selectedDrmParams;
-    }
-
-    private PKMediaFormat extractFormatFromSources(PKMediaEntry mediaEntry) {
-        if (mediaEntry != null && mediaEntry.getSources() != null && !mediaEntry.getSources().isEmpty()) {
-            return mediaEntry.getSources().get(0).getMediaFormat();
-        }
-        return null;
     }
 
     @Override
