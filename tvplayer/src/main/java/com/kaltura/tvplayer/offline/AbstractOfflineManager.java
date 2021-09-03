@@ -157,17 +157,18 @@ public abstract class AbstractOfflineManager extends OfflineManager {
         return assetStateListener != null ? assetStateListener : noopListener;
     }
 
+    @Nullable
     private PKDrmParams findDrmParams(String assetId, PKMediaEntry mediaEntry) {
-
         final String sourceId = loadAssetSourceId(assetId);
+        PKMediaFormat format = getAssetFormat(assetId);
 
-        final SourceSelector selector = new SourceSelector(mediaEntry, PKMediaFormat.dash);
+        final SourceSelector selector = new SourceSelector(mediaEntry, format);
         selector.setPreferredSourceId(sourceId);
 
         PKMediaSource selectedSource = selector.getSelectedSource();
         PKDrmParams selectedDrmParams = selector.getSelectedDrmParams();
 
-        if (selectedSource == null || selectedSource.getMediaFormat() != PKMediaFormat.dash) {
+        if (selectedSource == null || selectedSource.getMediaFormat() != format) {
             return null;
         }
 
@@ -284,6 +285,8 @@ public abstract class AbstractOfflineManager extends OfflineManager {
 
     protected abstract byte[] getDrmInitData(String assetId) throws IOException, InterruptedException;
 
+    protected abstract PKMediaFormat getAssetFormat(String assetId);
+
     @Override
     public void renewDrmAssetLicense(@NonNull String assetId, @NonNull PKDrmParams drmParams) {
         try {
@@ -292,7 +295,8 @@ public abstract class AbstractOfflineManager extends OfflineManager {
                 postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, new LocalAssetsManager.RegisterException("drmInitData = null", null)));
                 return;
             }
-            lam.registerWidevineDashAsset(assetId, drmParams.getLicenseUri(), drmInitData, forceWidevineL3Playback);
+
+            lam.registerWidevineAsset(assetId, getAssetFormat(assetId), drmParams.getLicenseUri(), drmInitData, forceWidevineL3Playback);
             postEvent(() -> getListener().onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
         } catch (LocalAssetsManager.RegisterException | IOException | InterruptedException e) {
             postEvent(() -> getListener().onRegisterError(assetId, DownloadType.FULL, e));

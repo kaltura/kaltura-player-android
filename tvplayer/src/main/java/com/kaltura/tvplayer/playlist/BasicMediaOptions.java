@@ -1,7 +1,6 @@
 package com.kaltura.tvplayer.playlist;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKPlaylistMedia;

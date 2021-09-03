@@ -36,10 +36,15 @@ import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.hls.HlsManifest;
+import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMasterPlaylist;
+import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
+import com.kaltura.android.exoplayer2.source.hls.playlist.HlsPlaylist;
+import com.kaltura.android.exoplayer2.source.hls.playlist.HlsPlaylistParser;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.kaltura.android.exoplayer2.trackselection.ExoTrackSelection;
 import com.kaltura.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.kaltura.android.exoplayer2.upstream.DefaultHttpDataSource;
+import com.kaltura.android.exoplayer2.upstream.ParsingLoadable;
 import com.kaltura.android.exoplayer2.upstream.cache.Cache;
 import com.kaltura.android.exoplayer2.upstream.cache.CacheDataSource;
 import com.kaltura.android.exoplayer2.upstream.cache.NoOpCacheEvictor;
@@ -69,7 +74,6 @@ import com.kaltura.tvplayer.offline.AbstractOfflineManager;
 import com.kaltura.tvplayer.offline.OfflineManagerSettings;
 import com.kaltura.tvplayer.offline.Prefetch;
 
-
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -83,6 +87,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -446,7 +451,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                         .setClipStartPositionMs(0L)
                         .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
 
-        if (mediaFormat == PKMediaFormat.dash) {
+        if (mediaFormat == PKMediaFormat.dash || mediaFormat == PKMediaFormat.hls) {
             if (drmData != null) {
                 boolean setDrmSessionForClearTypes = false;
                 // selecting WidevineCENC as default right now
@@ -471,7 +476,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
 
         MediaItem mediaItem = builder.build();
-        if (mediaFormat != PKMediaFormat.dash) {
+        if (mediaFormat != PKMediaFormat.dash && mediaFormat != PKMediaFormat.hls) {
             assetDownloadHelper = DownloadHelper.forMediaItem(
                     appContext, mediaItem, new DefaultRenderersFactory(appContext), httpDataSourceFactory);
         } else if (drmData != null && drmData.getScheme() != null) {
@@ -519,7 +524,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
 
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(selectionPrefs.downloadType, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
-                if (mediaFormat == PKMediaFormat.dash && drmData != null) {
+                if ((mediaFormat == PKMediaFormat.dash || mediaFormat == PKMediaFormat.hls) && drmData != null) {
                     DrmRegistrationMetaData drmRegistrationMetaData = new DrmRegistrationMetaData(format, false);
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmRegistrationMetaData));
                 }
@@ -1050,6 +1055,9 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 ((LocalAssetsManagerExo.LocalExoMediaItem) mediaEntry.getSources().get(0)).getScheme() != null;
     }
 
+    /**
+     * Gets DRM int data either from local map or Remote
+     */
     @Override
     protected byte[] getDrmInitData(String assetId) throws IOException, InterruptedException {
         final Pair<PKMediaSource, Object> pair = pendingDrmRegistration.get(assetId);
@@ -1057,7 +1065,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 (pair.second instanceof DrmRegistrationMetaData && ((DrmRegistrationMetaData) pair.second).isRegistered())) {
             byte[] drmInitData = extractDrmInitDataFromFormat(pair.second, assetId);
             if (drmInitData != null) {
-                log.d("Extracting DrmInitData from the map.");
+                log.d("Extracting DrmInitData from the local map");
                 return drmInitData;
             }
         }
@@ -1071,6 +1079,22 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final CacheDataSource.Factory cacheDataSourceFactory = getCacheDataSourceFactory();
         cacheDataSourceFactory.setUpstreamPriority(C.PRIORITY_DOWNLOAD);
         return getDrmInitData(cacheDataSourceFactory, uri.toString());
+    }
+
+    @Override
+    protected PKMediaFormat getAssetFormat(String assetId) {
+        PKMediaFormat pkMediaFormat = PKMediaFormat.unknown;
+        try {
+            final Download download = downloadManager.getDownloadIndex().getDownload(assetId);
+            if (download == null) {
+                return pkMediaFormat;
+            }
+            final Uri uri = download.request.uri;
+            pkMediaFormat = PKMediaFormat.valueOfUrl(uri.toString());
+            return pkMediaFormat != null ? pkMediaFormat : PKMediaFormat.unknown;
+        } catch (IOException exception) {
+            return pkMediaFormat;
+        }
     }
 
     @Nullable
@@ -1120,7 +1144,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         final AssetStateListener listener = getListener();
 
         try {
-            lam.registerWidevineDashAsset(assetId, licenseUri, drmInitData, forceWidevineL3Playback);
+            lam.registerWidevineAsset(assetId, getAssetFormat(assetId), licenseUri, drmInitData, forceWidevineL3Playback);
             postEvent(() -> listener.onRegistered(assetId, getDrmStatus(assetId, drmInitData)));
             ((DrmRegistrationMetaData) pair.second).setRegistered(true);
         } catch (LocalAssetsManager.RegisterException e) {
@@ -1164,30 +1188,102 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 .setFlags(CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR);
     }
 
+    /**
+     * Takes DRM Init data from the remote source
+     */
     private byte[] getDrmInitData(CacheDataSource.Factory dataSourceFactory, String contentUri) throws IOException, InterruptedException {
-        if (PKMediaFormat.valueOfUrl(contentUri) != PKMediaFormat.dash) {
+        PKMediaFormat pkMediaFormat = PKMediaFormat.valueOfUrl(contentUri);
+        if (pkMediaFormat != null &&
+                pkMediaFormat != PKMediaFormat.dash &&
+                pkMediaFormat != PKMediaFormat.hls) {
             return null;
         }
 
-        if (!contentUri.contains(".mpd")) {
+        if (!contentUri.contains(".mpd") && !contentUri.contains(".m3u8")) {
             return null;
         }
 
-        final CacheDataSource cacheDataSource = dataSourceFactory.createDataSource();
-        final DashManifest dashManifest = DashUtil.loadManifest(cacheDataSource, Uri.parse(contentUri));
-        Format formatWithDrmInitData = DashUtil.loadFormatWithDrmInitData(cacheDataSource, dashManifest.getPeriod(0));
-        if (formatWithDrmInitData == null) {
-            return null;
-        }
-
-        final DrmInitData drmInitData = formatWithDrmInitData.drmInitData;
-        final DrmInitData.SchemeData schemeData;
+        final DrmInitData drmInitData = fetchDrmInitData(pkMediaFormat, contentUri, dataSourceFactory);
         if (drmInitData == null) {
             return null;
         }
 
-        schemeData = findWidevineSchemaData(drmInitData);
+        final DrmInitData.SchemeData schemeData = findWidevineSchemaData(drmInitData);
         return schemeData != null ? schemeData.data : null;
+    }
+
+    /**
+     * Method to get the drm Init data from remote. It parses the manifest and gets the relevant representation
+     * or segments and from there it takes the DRM initdata
+     *
+     * @param pkMediaFormat weather it is DASH or HLS
+     * @param contentUri URI of the content (For exo case, it is always remote URI not the local URI_
+     * @param dataSourceFactory CacheDataSource
+     * @return DRMInitData
+     * @throws IOException If there is some error
+     * @throws InterruptedException if the remote thread is interrupted
+     */
+    @Nullable
+    private DrmInitData fetchDrmInitData(PKMediaFormat pkMediaFormat, String contentUri, CacheDataSource.Factory dataSourceFactory) throws IOException, InterruptedException {
+        DrmInitData drmInitData = null;
+        final CacheDataSource cacheDataSource = dataSourceFactory.createDataSourceForRemovingDownload();
+
+        switch (pkMediaFormat) {
+            case dash: {
+                final DashManifest dashManifest = DashUtil.loadManifest(cacheDataSource, Uri.parse(contentUri));
+                Format formatWithDrmInitData = DashUtil.loadFormatWithDrmInitData(cacheDataSource, dashManifest.getPeriod(0));
+                drmInitData = formatWithDrmInitData == null ? null : formatWithDrmInitData.drmInitData;
+                log.d("Loading Dash drmInitData from cache");
+                break;
+            }
+            case hls: {
+                HlsPlaylist hlsPlaylist = ParsingLoadable.load(cacheDataSource,
+                        new HlsPlaylistParser(),
+                        Uri.parse(contentUri),
+                        C.DATA_TYPE_MANIFEST);
+                if (hlsPlaylist instanceof HlsMasterPlaylist) {
+                    HlsMasterPlaylist hlsMasterPlaylist = (HlsMasterPlaylist) hlsPlaylist;
+
+                    if (!hlsMasterPlaylist.variants.isEmpty()) {
+                        int index = findDownloadedVariantIndexForHls(cacheDataSource, hlsMasterPlaylist);
+
+                        if (index != -1) {
+                            HlsPlaylist playlist = ParsingLoadable.load(cacheDataSource,
+                                    new HlsPlaylistParser(),
+                                    Uri.parse(hlsMasterPlaylist.variants.get(index).url.toString()),
+                                    C.DATA_TYPE_MANIFEST);
+                            if (playlist instanceof HlsMediaPlaylist && !((HlsMediaPlaylist) playlist).segments.isEmpty()) {
+                                drmInitData = ((HlsMediaPlaylist) playlist).segments.get(0).drmInitData;
+                                log.d("Loading HLS drmInitData from cache");
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+        }
+
+        return drmInitData;
+    }
+
+    /**
+     * Loop over the available variant(video tracks) in HLSMasterPlaylist
+     * and checks if that variant is available in the Cache
+     *
+     * @param cacheDataSource datasource
+     * @param hlsMasterPlaylist given master playlist
+     *
+     * @return index of the very first variant video track which is available in the cache
+     */
+    private int findDownloadedVariantIndexForHls(CacheDataSource cacheDataSource, HlsMasterPlaylist hlsMasterPlaylist) {
+        Set<String> downloadedKeys = cacheDataSource.getCache().getKeys();
+
+        for (int variantCount = 0; variantCount < hlsMasterPlaylist.variants.size(); variantCount++) {
+            if (downloadedKeys.contains(hlsMasterPlaylist.variants.get(variantCount).url.toString())) {
+                return variantCount;
+            }
+        }
+        return -1;
     }
 
     private DrmInitData.SchemeData findWidevineSchemaData(DrmInitData drmInitData) {
