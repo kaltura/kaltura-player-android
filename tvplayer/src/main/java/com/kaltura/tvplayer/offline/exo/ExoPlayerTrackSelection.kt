@@ -78,7 +78,7 @@ class ExoPlayerTrackSelection(
     internal fun selectTracks() {
         val playerSettings = applyPlayerSettings()
         trackSelectionHelper.applyPlayerSettings(playerSettings)
-        val pkTracks: PKTracks = trackSelectionHelper.buildTracks(listOf()) ?: return
+        val pkTracks: PKTracks = trackSelectionHelper.buildTracks(null, listOf()) ?: return
         if (pkTracks.videoTracks.size > 0) {
             downloadVideoTrack(pkTracks)
         }
