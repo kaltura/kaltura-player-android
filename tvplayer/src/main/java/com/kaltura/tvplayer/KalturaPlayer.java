@@ -114,6 +114,7 @@ public abstract class KalturaPlayer {
     private boolean preload;
     private Long startPosition;
     private List<PKExternalSubtitle> externalSubtitles;
+    private String externalVttThumbnailUrl;
     private View view;
     private PKMediaEntry mediaEntry;
 
@@ -460,6 +461,12 @@ public abstract class KalturaPlayer {
                 mediaEntry.setExternalSubtitleList(externalSubtitles);
             } else {
                 mediaEntry.getExternalSubtitleList().addAll(externalSubtitles);
+            }
+        }
+
+        if (externalVttThumbnailUrl != null) {
+            if (mediaEntry.getExternalVttThumbnailUrl() == null) {
+                mediaEntry.setExternalVttThumbnailUrl(externalVttThumbnailUrl);
             }
         }
 
@@ -1149,6 +1156,11 @@ public abstract class KalturaPlayer {
         externalSubtitles = null;
         if (mediaOptions.externalSubtitles != null) {
             externalSubtitles = mediaOptions.externalSubtitles;
+        }
+
+        externalVttThumbnailUrl = null;
+        if (mediaOptions.externalVttThumbnailUrl != null) {
+            externalVttThumbnailUrl = mediaOptions.externalVttThumbnailUrl;
         }
 
         ks = null;
