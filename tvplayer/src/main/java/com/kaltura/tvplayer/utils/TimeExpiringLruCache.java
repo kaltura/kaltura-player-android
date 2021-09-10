@@ -143,6 +143,10 @@ public class TimeExpiringLruCache<K, V> {
                             + ".sizeOf() is reporting inconsistent results!");
                 }
 
+                if (map.isEmpty()) {
+                    break;
+                }
+                
                 if (size <= maxSize) {
                     break;
                 }
