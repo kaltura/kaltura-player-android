@@ -118,7 +118,7 @@ public abstract class KalturaPlayer {
     private View view;
     private PKMediaEntry mediaEntry;
 
-    private static TimeExpiringLruCache<String, String> entriesCache;
+    private TimeExpiringLruCache<String, String> entriesCache;
 
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
@@ -138,8 +138,9 @@ public abstract class KalturaPlayer {
             this.preload = true; // autoplay implies preload
         }
         if (initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
-            entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryCacheConfig.getTimeoutMs());
+            this.entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryCacheConfig.getTimeoutMs());
         }
+
         messageBus = new MessageBus();
         this.referrer = buildReferrer(context, initOptions.referrer);
         populatePartnersValues();
