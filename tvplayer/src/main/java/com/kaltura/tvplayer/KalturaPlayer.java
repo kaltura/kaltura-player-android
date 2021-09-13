@@ -84,6 +84,7 @@ public abstract class KalturaPlayer {
     private static final String KALTURA_PLAYLIST_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
     public static ErrorElement KalturaPlayerNotInitializedError = new ErrorElement("KalturaPlayerNotInitializedError", KALTURA_PLAYER_INIT_EXCEPTION, 777);
     public static ErrorElement KalturaPlaylistInitializedError = new ErrorElement("KalturaPlayerPlaylistInitializedError", KALTURA_PLAYLIST_INIT_EXCEPTION, 778);
+    private boolean isSendKavaPlayRequestOnPlay = false;
 
     private enum PrepareState {
         not_prepared,
@@ -470,6 +471,11 @@ public abstract class KalturaPlayer {
                 mediaEntry.setExternalVttThumbnailUrl(externalVttThumbnailUrl);
             }
         }
+        if (autoPlay) {
+            sendKavaPlayRequest(mediaEntry.getId());
+        } else {
+            sendKavaPlayRequestOnPlay();
+        }
 
         if (preload) {
             this.mediaEntry = mediaEntry;
@@ -481,8 +487,6 @@ public abstract class KalturaPlayer {
             }
             prepare();
         }
-
-        sendKavaPlayRequest(mediaEntry.getId());
     }
 
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
@@ -622,6 +626,11 @@ public abstract class KalturaPlayer {
             prepare();
         }
         if (pkPlayer != null) {
+            if (isSendKavaPlayRequestOnPlay) {
+                sendKavaPlayRequest(mediaEntry.getId());
+                isSendKavaPlayRequestOnPlay = false;
+            }
+
             pkPlayer.play();
         }
     }
@@ -1239,6 +1248,15 @@ public abstract class KalturaPlayer {
             }
         }
         return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
+    }
+
+    private void sendKavaPlayRequestOnPlay() {
+
+        boolean isKavaPluginAvailable = combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName());
+        if (isKavaPluginAvailable) {
+            return;
+        }
+        isSendKavaPlayRequestOnPlay = true;
     }
 
     private void sendKavaPlayRequest(String entryId) {
