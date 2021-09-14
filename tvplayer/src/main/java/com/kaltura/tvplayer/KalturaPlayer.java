@@ -524,6 +524,11 @@ public abstract class KalturaPlayer {
             return;
         }
 
+        if (mediaEntry == null) {
+            log.w("player prepare was called with null mediaEntry");
+            return;
+        }
+
         final PKMediaConfig config = new PKMediaConfig()
                 .setMediaEntry(mediaEntry)
                 .setStartPosition(startPosition);
