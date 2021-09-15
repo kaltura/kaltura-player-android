@@ -138,6 +138,7 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
+        
         if (initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
             this.entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryCacheConfig.getTimeoutMs());
         }
@@ -521,6 +522,11 @@ public abstract class KalturaPlayer {
     public void prepare() {
 
         if (prepareState == PrepareState.preparing) {
+            return;
+        }
+
+        if (mediaEntry == null) {
+            log.w("player prepare was called with null mediaEntry");
             return;
         }
 
