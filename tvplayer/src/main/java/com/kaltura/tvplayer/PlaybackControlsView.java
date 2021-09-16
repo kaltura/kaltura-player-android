@@ -193,7 +193,7 @@ public class PlaybackControlsView extends LinearLayout {
         }
 
         @Override
-        public void onTimelineChanged(Timeline timeline, @Nullable Object manifest, @com.kaltura.android.exoplayer2.Player.TimelineChangeReason int reason) {
+        public void onTimelineChanged(Timeline timeline, int reason) {
             updateProgress();
         }
 
