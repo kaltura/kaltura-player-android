@@ -650,7 +650,7 @@ public class PKPlaylistController implements PlaylistController {
     }
 
     private boolean isPostrollPlaybackPending(AdController adController) {
-        return adController != null && !adController.isAllAdsCompleted() && adController.getCuePoints().hasPostRoll() &&
+        return adController != null && !adController.isAllAdsCompleted() && adController.getCuePoints() != null && adController.getCuePoints().hasPostRoll() &&
                 kalturaPlayer.getCurrentPosition() > 0 && kalturaPlayer.getDuration() > 0 && kalturaPlayer.getCurrentPosition() >= kalturaPlayer.getDuration();
     }
 
