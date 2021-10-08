@@ -1071,7 +1071,7 @@ public abstract class KalturaPlayer {
 
         prepareLoadMedia(mediaOptions);
 
-        if (loadMediaFromCache(mediaOptions.getOttMediaAsset().getUUID(), mediaOptions.startPosition)) {
+        if (loadMediaFromCache(mediaOptions, mediaOptions.getOttMediaAsset().getUUID(), mediaOptions.startPosition, listener)) {
             return;
         }
 
@@ -1098,7 +1098,7 @@ public abstract class KalturaPlayer {
         }.start();
     }
 
-    private boolean loadMediaFromCache(@NonNull String mediaEntryCacheKey, Long startPositoin) {
+    private boolean loadMediaFromCache(@NonNull MediaOptions mediaOptions, @NonNull String mediaEntryCacheKey, Long startPosition, @NonNull final OnEntryLoadListener onEntryLoadListener) {
 
         if (entriesCache != null && initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
             String mediaEntryJson = entriesCache.get(mediaEntryCacheKey);
@@ -1106,8 +1106,9 @@ public abstract class KalturaPlayer {
                 PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
                 if (pkMediaEntry != null) {
                     log.d("LoadMedia from Cache: key = " + mediaEntryCacheKey + " name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
-                    setMedia(pkMediaEntry, startPositoin);
+                    setMedia(pkMediaEntry, startPosition);
                     entriesCache.put(mediaEntryCacheKey, mediaEntryJson); // restart cache revoke timer
+                    onEntryLoadListener.onEntryLoadComplete(mediaOptions, pkMediaEntry, null);
                     return true;
                 }
             }
@@ -1121,7 +1122,7 @@ public abstract class KalturaPlayer {
             return;
 
         prepareLoadMedia(mediaOptions);
-        if (loadMediaFromCache(mediaOptions.getOvpMediaAsset().getUUID(), mediaOptions.startPosition)) {
+        if (loadMediaFromCache(mediaOptions, mediaOptions.getOvpMediaAsset().getUUID(), mediaOptions.startPosition, listener)) {
             return;
         }
 
@@ -1298,7 +1299,7 @@ public abstract class KalturaPlayer {
     }
 
     public interface OnEntryLoadListener {
-        void onEntryLoadComplete(MediaOptions mediaOptions, PKMediaEntry entry, ErrorElement error);
+        void onEntryLoadComplete(MediaOptions mediaOptions, PKMediaEntry entry, @Nullable ErrorElement error);
     }
 
     public interface OnPlaylistLoadListener {
