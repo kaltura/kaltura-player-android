@@ -804,10 +804,14 @@ public abstract class KalturaPlayer {
             applyMediaEntryInterceptors(entry, () ->
                     mainHandler.post(() -> {
                         setMediaInternal(entry);
-                        onEntryLoadListener.onEntryLoadComplete(mediaOptions, entry, response.getError());
+                        if (onEntryLoadListener != null) {
+                            onEntryLoadListener.onEntryLoadComplete(mediaOptions, entry, response.getError());
+                        }
                     }));
         } else {
-            onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, response.getError());
+            if (onEntryLoadListener != null) {
+                onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, response.getError());
+            }
         }
     }
 
@@ -1093,7 +1097,9 @@ public abstract class KalturaPlayer {
             @Override
             public void onFinish() {
                 log.e("KalturaPlayerNotInitializedError");
-                onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
+                if (onEntryLoadListener != null) {
+                    onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
+                }
             }
         }.start();
     }
@@ -1108,7 +1114,9 @@ public abstract class KalturaPlayer {
                     log.d("LoadMedia from Cache: key = " + mediaEntryCacheKey + " name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
                     setMedia(pkMediaEntry, startPosition);
                     entriesCache.put(mediaEntryCacheKey, mediaEntryJson); // restart cache revoke timer
-                    onEntryLoadListener.onEntryLoadComplete(mediaOptions, pkMediaEntry, null);
+                    if (onEntryLoadListener != null) {
+                        onEntryLoadListener.onEntryLoadComplete(mediaOptions, pkMediaEntry, null);
+                    }
                     return true;
                 }
             }
@@ -1144,7 +1152,9 @@ public abstract class KalturaPlayer {
             @Override
             public void onFinish() {
                 log.e("KalturaPlayerNotInitializedError");
-                onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
+                if (onEntryLoadListener != null) {
+                    onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
+                }
             }
         }.start();
     }
