@@ -1064,14 +1064,14 @@ public abstract class KalturaPlayer {
         playlistController.playItem(playlistOptions.startIndex, autoPlay);
     }
 
-    public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
+    public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener onEntryLoadListener) {
 
         if (!isValidOTTPlayer())
             return;
 
         prepareLoadMedia(mediaOptions);
 
-        if (loadMediaFromCache(mediaOptions, mediaOptions.getOttMediaAsset().getUUID(), mediaOptions.startPosition, listener)) {
+        if (loadMediaFromCache(mediaOptions, mediaOptions.getOttMediaAsset().getUUID(), mediaOptions.startPosition, onEntryLoadListener)) {
             return;
         }
 
@@ -1086,14 +1086,14 @@ public abstract class KalturaPlayer {
                     }
                     populatePartnersValues();
                     final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
-                    provider.load(response -> mediaLoadCompleted(mediaOptions, response, listener));
+                    provider.load(response -> mediaLoadCompleted(mediaOptions, response, onEntryLoadListener));
                 }
             }
 
             @Override
             public void onFinish() {
                 log.e("KalturaPlayerNotInitializedError");
-                listener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
+                onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
             }
         }.start();
     }
