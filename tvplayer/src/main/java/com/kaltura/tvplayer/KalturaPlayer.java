@@ -32,6 +32,9 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.ads.Advertising;
+import com.kaltura.playkit.ads.PKAdvertising;
+import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -123,9 +126,11 @@ public abstract class KalturaPlayer {
 
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
+    private PKAdvertisingController pkAdvertisingController;
     private PlayerInitOptions initOptions;
     private PlaylistController playlistController;
     private OfflineManager offlineManager;
+    private Advertising advertisingConfig;
 
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
@@ -490,6 +495,33 @@ public abstract class KalturaPlayer {
         }
     }
 
+    public void setAdvertising(Advertising advertisingConfig) {
+        if (advertisingConfig == null) {
+            log.w("Advertising config should not be null.");
+            return;
+        }
+
+        String imaPlugin = KnownPlugin.ima.name();
+        if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
+            pkAdvertisingController = new PKAdvertisingController();
+            this.advertisingConfig = advertisingConfig;
+        } else {
+            log.w("IMAPlugin needs to be configured in order to use Advertsing feature. \n " +
+                    "You can pass empty adtag url while configuring IMAPlugin");
+        }
+    }
+
+//    private void checkAndPlayAdvertising() {
+//        String imaPlugin = KnownPlugin.ima.name();
+//        if (!initOptions.pluginConfigs.hasConfig(imaPlugin)) {
+//            log.w("IMAPlugin is required to work for Advertising configuration.");
+//            return;
+//        }
+//
+//        PKAdvertisingController pkAdvertisingController = new PKAdvertisingController(KalturaPlayer.this, advertisingConfig);
+//        pkAdvertisingController.playAdNow();
+//    }
+
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
         if (entryList == null || entryList.isEmpty()) {
             log.e("entryList does not contain any source");
@@ -534,7 +566,22 @@ public abstract class KalturaPlayer {
                 .setMediaEntry(mediaEntry)
                 .setStartPosition(startPosition);
 
+        if (pkAdvertisingController != null && advertisingConfig != null) {
+            pkPlayer.setAdvertising(advertisingConfig, pkAdvertisingController);
+            pkAdvertisingController.setPlayer(pkPlayer);
+        }
+
         pkPlayer.prepare(config);
+
+        if (pkAdvertisingController != null) {
+            pkAdvertisingController.playAdNow();
+        }
+
+//        if (advertisingConfig != null) {
+//            log.d("Gourav: advertisingConfig");
+//            checkAndPlayAdvertising();
+//        }
+
         prepareState = PrepareState.preparing;
         pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent>() {
             @Override
@@ -543,9 +590,14 @@ public abstract class KalturaPlayer {
                 pkPlayer.removeListener(this);
             }
         });
+
         if (autoPlay) {
             pkPlayer.play();
         }
+    }
+
+    public PKAdvertising getAdvertisingController() {
+        return pkAdvertisingController;
     }
 
     public PKMediaEntry getMediaEntry() {
