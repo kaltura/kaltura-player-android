@@ -32,7 +32,7 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
-import com.kaltura.playkit.ads.Advertising;
+import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertising;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
@@ -130,7 +130,7 @@ public abstract class KalturaPlayer {
     private PlayerInitOptions initOptions;
     private PlaylistController playlistController;
     private OfflineManager offlineManager;
-    private Advertising advertisingConfig;
+    private AdvertisingConfig advertisingConfig;
 
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
@@ -495,7 +495,7 @@ public abstract class KalturaPlayer {
         }
     }
 
-    public void setAdvertising(Advertising advertisingConfig) {
+    public void setAdvertisingConfig(AdvertisingConfig advertisingConfig) {
         if (advertisingConfig == null) {
             log.w("Advertising config should not be null.");
             return;
@@ -506,21 +506,10 @@ public abstract class KalturaPlayer {
             pkAdvertisingController = new PKAdvertisingController();
             this.advertisingConfig = advertisingConfig;
         } else {
-            log.w("IMAPlugin needs to be configured in order to use Advertsing feature. \n " +
+            log.w("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
                     "You can pass empty adtag url while configuring IMAPlugin");
         }
     }
-
-//    private void checkAndPlayAdvertising() {
-//        String imaPlugin = KnownPlugin.ima.name();
-//        if (!initOptions.pluginConfigs.hasConfig(imaPlugin)) {
-//            log.w("IMAPlugin is required to work for Advertising configuration.");
-//            return;
-//        }
-//
-//        PKAdvertisingController pkAdvertisingController = new PKAdvertisingController(KalturaPlayer.this, advertisingConfig);
-//        pkAdvertisingController.playAdNow();
-//    }
 
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
         if (entryList == null || entryList.isEmpty()) {
@@ -558,7 +547,7 @@ public abstract class KalturaPlayer {
         }
 
         if (mediaEntry == null) {
-            log.w("player prepare was called with null mediaEntry");
+            log.w("playser prepare was called with null mediaEntry");
             return;
         }
 
