@@ -563,13 +563,8 @@ public abstract class KalturaPlayer {
         pkPlayer.prepare(config);
 
         if (pkAdvertisingController != null) {
-            pkAdvertisingController.playAdNow();
+            pkAdvertisingController.playAdvertising();
         }
-
-//        if (advertisingConfig != null) {
-//            log.d("Gourav: advertisingConfig");
-//            checkAndPlayAdvertising();
-//        }
 
         prepareState = PrepareState.preparing;
         pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent>() {
