@@ -562,10 +562,6 @@ public abstract class KalturaPlayer {
 
         pkPlayer.prepare(config);
 
-        if (pkAdvertisingController != null) {
-            pkAdvertisingController.playAdvertising();
-        }
-
         prepareState = PrepareState.preparing;
         pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent>() {
             @Override
@@ -574,6 +570,10 @@ public abstract class KalturaPlayer {
                 pkPlayer.removeListener(this);
             }
         });
+
+        if (pkAdvertisingController != null) {
+            pkAdvertisingController.playAdvertising();
+        }
 
         if (autoPlay) {
             pkPlayer.play();
