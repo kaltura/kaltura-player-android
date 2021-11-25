@@ -1,9 +1,11 @@
 language: android
+jdk:
+  - oraclejdk11
 android:
   components:
     - tools
-    - build-tools-27.0.3
-    - android-28
+    - build-tools-31.0.3
+    - android-31
 before_script:
   - curl https://kaltura.github.io/fe-tools/android/license.sh | sh
 script:
