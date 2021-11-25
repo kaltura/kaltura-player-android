@@ -495,10 +495,47 @@ public abstract class KalturaPlayer {
         }
     }
 
+    /**
+     * Advertising Configuration with JSON
+     * @param advertisingJson AdvertisingConfig JSON
+     */
+    public void setAdvertisingConfig(String advertisingJson) {
+        if (TextUtils.isEmpty(advertisingJson)) {
+            log.w("Advertising config should not be null.");
+            return;
+        }
+
+        if (pkAdvertisingController != null) {
+            throw new IllegalStateException("App can not configure Advertising using Object and JSON both.");
+        }
+
+        String imaPlugin = KnownPlugin.ima.name();
+        if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
+            AdvertisingConfig advertisingConfig = new Gson().fromJson(advertisingJson, AdvertisingConfig.class);
+            if (advertisingConfig != null) {
+                pkAdvertisingController = new PKAdvertisingController();
+                this.advertisingConfig = advertisingConfig;
+            } else {
+                log.w("Malformed AdvertisingConfig Json");
+            }
+        } else {
+            log.w("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
+                    "You can pass empty adtag url while configuring IMAPlugin");
+        }
+    }
+
+    /**
+     * Advertising Configuration with AdvertisingConfig object
+     * @param advertisingConfig AdvertisingConfig object
+     */
     public void setAdvertisingConfig(AdvertisingConfig advertisingConfig) {
         if (advertisingConfig == null) {
             log.w("Advertising config should not be null.");
             return;
+        }
+
+        if (pkAdvertisingController != null) {
+            throw new IllegalStateException("App can not configure Advertising using Object and JSON both.");
         }
 
         String imaPlugin = KnownPlugin.ima.name();
