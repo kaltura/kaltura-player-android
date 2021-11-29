@@ -126,7 +126,7 @@ public abstract class KalturaPlayer {
 
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
-    private PKAdvertisingController pkAdvertisingController;
+    private @Nullable PKAdvertisingController pkAdvertisingController;
     private PlayerInitOptions initOptions;
     private PlaylistController playlistController;
     private OfflineManager offlineManager;
@@ -143,7 +143,7 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
-        
+
         if (initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
             this.entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryCacheConfig.getTimeoutMs());
         }
@@ -495,25 +495,32 @@ public abstract class KalturaPlayer {
         }
     }
 
+    private PKAdvertisingController getPkAdvertisingController() {
+        if (pkAdvertisingController == null) {
+            pkAdvertisingController = new PKAdvertisingController();
+        }
+        return pkAdvertisingController;
+    }
+
     /**
      * Advertising Configuration with JSON
      * @param advertisingJson AdvertisingConfig JSON
      */
-    public void setAdvertisingConfig(String advertisingJson) {
+    public void setAdvertisingConfig(@Nullable String advertisingJson) {
         if (TextUtils.isEmpty(advertisingJson)) {
-            log.w("Advertising config should not be null.");
+            log.w("Advertising config is empty. Hence clearing the current advertising config.");
+            this.advertisingConfig = null;
             return;
         }
 
-        if (pkAdvertisingController != null) {
-            throw new IllegalStateException("App can not configure Advertising using Object and JSON both.");
+        if (this.advertisingConfig != null) {
+            this.advertisingConfig = null;
         }
 
         String imaPlugin = KnownPlugin.ima.name();
         if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
             AdvertisingConfig advertisingConfig = new Gson().fromJson(advertisingJson, AdvertisingConfig.class);
             if (advertisingConfig != null) {
-                pkAdvertisingController = new PKAdvertisingController();
                 this.advertisingConfig = advertisingConfig;
             } else {
                 log.w("Malformed AdvertisingConfig Json");
@@ -528,19 +535,19 @@ public abstract class KalturaPlayer {
      * Advertising Configuration with AdvertisingConfig object
      * @param advertisingConfig AdvertisingConfig object
      */
-    public void setAdvertisingConfig(AdvertisingConfig advertisingConfig) {
+    public void setAdvertisingConfig(@Nullable AdvertisingConfig advertisingConfig) {
         if (advertisingConfig == null) {
-            log.w("Advertising config should not be null.");
+            log.w("Advertising config is null. Hence clearing the current advertising config.");
+            this.advertisingConfig = null;
             return;
         }
 
-        if (pkAdvertisingController != null) {
-            throw new IllegalStateException("App can not configure Advertising using Object and JSON both.");
+        if (this.advertisingConfig != null) {
+            this.advertisingConfig = null;
         }
 
         String imaPlugin = KnownPlugin.ima.name();
         if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
-            pkAdvertisingController = new PKAdvertisingController();
             this.advertisingConfig = advertisingConfig;
         } else {
             log.w("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
@@ -592,10 +599,8 @@ public abstract class KalturaPlayer {
                 .setMediaEntry(mediaEntry)
                 .setStartPosition(startPosition);
 
-        if (pkAdvertisingController != null && advertisingConfig != null) {
-            pkAdvertisingController.setPlayer(pkPlayer, messageBus);
-            pkPlayer.setAdvertising(advertisingConfig, pkAdvertisingController);
-        }
+        pkPlayer.setAdvertising(advertisingConfig, getPkAdvertisingController());
+        getPkAdvertisingController().setPlayer(pkPlayer, messageBus);
 
         pkPlayer.prepare(config);
 
@@ -608,8 +613,10 @@ public abstract class KalturaPlayer {
             }
         });
 
-        if (pkAdvertisingController != null) {
-            pkAdvertisingController.playAdvertising();
+        if (advertisingConfig != null) {
+            getPkAdvertisingController().playAdvertising();
+        } else {
+            pkAdvertisingController = null;
         }
 
         if (autoPlay) {
@@ -617,7 +624,7 @@ public abstract class KalturaPlayer {
         }
     }
 
-    public PKAdvertising getAdvertisingController() {
+    public @Nullable PKAdvertising getAdvertisingController() {
         return pkAdvertisingController;
     }
 
