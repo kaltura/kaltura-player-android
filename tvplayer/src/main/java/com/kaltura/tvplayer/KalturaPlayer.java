@@ -636,6 +636,10 @@ public abstract class KalturaPlayer {
             playlistController.release();
             playlistController = null;
         }
+        if (pkAdvertisingController != null) {
+            pkAdvertisingController.release();
+            pkAdvertisingController = null;
+        }
         messageBus = null;
     }
 
