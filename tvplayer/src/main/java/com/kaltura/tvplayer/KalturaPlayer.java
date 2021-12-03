@@ -531,7 +531,7 @@ public abstract class KalturaPlayer {
         }
 
         if (mediaEntry == null) {
-            log.w("playser prepare was called with null mediaEntry");
+            log.w("player prepare was called with null mediaEntry");
             return;
         }
 
@@ -540,7 +540,7 @@ public abstract class KalturaPlayer {
                 .setStartPosition(startPosition);
 
         pkPlayer.setAdvertising(advertisingConfig, getPkAdvertisingController());
-        getPkAdvertisingController().setPlayer(pkPlayer, messageBus);
+        getPkAdvertisingController().setPlayer(pkPlayer, messageBus, config);
 
         pkPlayer.prepare(config);
 
