@@ -127,11 +127,11 @@ public abstract class KalturaPlayer {
 
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
-    private @Nullable PKAdvertisingController pkAdvertisingController;
+    private PKAdvertisingController pkAdvertisingController = new PKAdvertisingController();
     private PlayerInitOptions initOptions;
     private PlaylistController playlistController;
     private OfflineManager offlineManager;
-    private AdvertisingConfig advertisingConfig;
+    private @Nullable AdvertisingConfig advertisingConfig;
 
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
@@ -540,8 +540,8 @@ public abstract class KalturaPlayer {
                 .setMediaEntry(mediaEntry)
                 .setStartPosition(startPosition);
 
-        pkPlayer.setAdvertising(advertisingConfig, getPkAdvertisingController());
-        getPkAdvertisingController().setPlayer(pkPlayer, messageBus, config);
+        pkPlayer.setAdvertising(advertisingConfig, pkAdvertisingController);
+        pkAdvertisingController.setPlayer(pkPlayer, messageBus, config);
 
         pkPlayer.prepare(config);
 
@@ -555,9 +555,7 @@ public abstract class KalturaPlayer {
         });
 
         if (advertisingConfig != null) {
-            getPkAdvertisingController().playAdvertising();
-        } else {
-            pkAdvertisingController = null;
+            pkAdvertisingController.loadAdvertising();
         }
 
         if (autoPlay) {
@@ -641,6 +639,7 @@ public abstract class KalturaPlayer {
             pkAdvertisingController.release();
             pkAdvertisingController = null;
         }
+        advertisingConfig = null;
         messageBus = null;
     }
 
@@ -1333,23 +1332,21 @@ public abstract class KalturaPlayer {
         NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST, sessionId);
     }
 
-    private PKAdvertisingController getPkAdvertisingController() {
-        if (pkAdvertisingController == null) {
-            pkAdvertisingController = new PKAdvertisingController();
-        }
-        return pkAdvertisingController;
-    }
-
     /**
      * Advertising Configuration with JSON
      * Set null in case if App does not want to configure anything
      * for the next media playback (ChangeMedia)
      *
-     * @param advertisingJson AdvertisingConfig JSON
+     * *WARNING*: In case if app is passing object null for the changeMedia
+     * and IMAConfig is set with the adTag then ad will be picked from IMAConfig
+     *
+     * @param advertising AdvertisingConfig Object {@link com.kaltura.playkit.ads.AdvertisingConfig} or JSON
      */
-    public void setAdvertisingConfig(@Nullable String advertisingJson) {
-        log.d("setAdvertisingConfig Json");
-        if (TextUtils.isEmpty(advertisingJson)) {
+    public void setAdvertisingConfig(@Nullable Object advertising) {
+        log.d("setAdvertisingConfig");
+        AdvertisingConfig advertisingConf;
+
+        if (advertising == null) {
             log.d("Advertising config is empty. Hence clearing the current advertising config.");
             this.advertisingConfig = null;
             return;
@@ -1361,47 +1358,25 @@ public abstract class KalturaPlayer {
 
         String imaPlugin = KnownPlugin.ima.name();
         if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
-            try {
-                AdvertisingConfig advertisingConfig = new Gson().fromJson(advertisingJson, AdvertisingConfig.class);
-                if (advertisingConfig != null) {
-                    this.advertisingConfig = advertisingConfig;
-                } else {
-                    log.e("Malformed AdvertisingConfig Json");
+            if (advertising instanceof String) {
+                try {
+                    advertisingConf = new Gson().fromJson((String) advertising, AdvertisingConfig.class);
+                    if (advertisingConf != null) {
+                        this.advertisingConfig = advertisingConf;
+                    } else {
+                        log.e("Malformed AdvertisingConfig Json");
+                    }
+                } catch (JsonSyntaxException e) {
+                    log.e("Malformed AdvertisingConfig Json Exception: " + e.getMessage());
                 }
-            } catch (JsonSyntaxException e) {
-                log.e("Malformed AdvertisingConfig Json Exception: " + e.getMessage());
+            } else if (advertising instanceof AdvertisingConfig) {
+                this.advertisingConfig = (AdvertisingConfig) advertising;
+            } else {
+                log.e("Advertising Config can be set using JSON or AdvertisingConfig object");
             }
         } else {
             log.e("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
-                    "You can pass empty adtag url while configuring IMAPlugin");
-        }
-    }
-
-    /**
-     * Advertising Configuration with AdvertisingConfig object
-     * Set null in case if App does not want to configure anything
-     * for the next media playback (ChangeMedia)
-     *
-     * @param advertisingConfig AdvertisingConfig object
-     */
-    public void setAdvertisingConfig(@Nullable AdvertisingConfig advertisingConfig) {
-        log.d("setAdvertisingConfig object");
-        if (advertisingConfig == null) {
-            log.d("Advertising config is null. Hence clearing the current advertising config.");
-            this.advertisingConfig = null;
-            return;
-        }
-
-        if (this.advertisingConfig != null) {
-            this.advertisingConfig = null;
-        }
-
-        String imaPlugin = KnownPlugin.ima.name();
-        if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
-            this.advertisingConfig = advertisingConfig;
-        } else {
-            log.e("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
-                    "You can pass empty adtag url while configuring IMAPlugin");
+                    "You can pass empty AdTag url or VAST response while configuring IMAPlugin");
         }
     }
 
