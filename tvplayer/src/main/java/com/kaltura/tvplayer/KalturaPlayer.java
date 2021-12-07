@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
@@ -1360,14 +1361,18 @@ public abstract class KalturaPlayer {
 
         String imaPlugin = KnownPlugin.ima.name();
         if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
-            AdvertisingConfig advertisingConfig = new Gson().fromJson(advertisingJson, AdvertisingConfig.class);
-            if (advertisingConfig != null) {
-                this.advertisingConfig = advertisingConfig;
-            } else {
-                log.e("Malformed AdvertisingConfig Json");
+            try {
+                AdvertisingConfig advertisingConfig = new Gson().fromJson(advertisingJson, AdvertisingConfig.class);
+                if (advertisingConfig != null) {
+                    this.advertisingConfig = advertisingConfig;
+                } else {
+                    log.e("Malformed AdvertisingConfig Json");
+                }
+            } catch (JsonSyntaxException e) {
+                log.e("Malformed AdvertisingConfig Json Exception: " + e.getMessage());
             }
         } else {
-            log.w("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
+            log.e("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
                     "You can pass empty adtag url while configuring IMAPlugin");
         }
     }
@@ -1395,7 +1400,7 @@ public abstract class KalturaPlayer {
         if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
             this.advertisingConfig = advertisingConfig;
         } else {
-            log.w("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
+            log.e("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
                     "You can pass empty adtag url while configuring IMAPlugin");
         }
     }
