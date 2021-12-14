@@ -541,7 +541,7 @@ public abstract class KalturaPlayer {
                 .setStartPosition(startPosition);
 
         if (pkAdvertisingController != null) {
-            pkPlayer.setAdvertising(advertisingConfig, pkAdvertisingController);
+            pkPlayer.setAdvertising(pkAdvertisingController, advertisingConfig);
             pkAdvertisingController.setPlayer(pkPlayer, messageBus, config);
         }
 
