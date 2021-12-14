@@ -540,8 +540,10 @@ public abstract class KalturaPlayer {
                 .setMediaEntry(mediaEntry)
                 .setStartPosition(startPosition);
 
-        pkPlayer.setAdvertising(advertisingConfig, pkAdvertisingController);
-        pkAdvertisingController.setPlayer(pkPlayer, messageBus, config);
+        if (pkAdvertisingController != null) {
+            pkPlayer.setAdvertising(advertisingConfig, pkAdvertisingController);
+            pkAdvertisingController.setPlayer(pkPlayer, messageBus, config);
+        }
 
         pkPlayer.prepare(config);
 
@@ -554,7 +556,7 @@ public abstract class KalturaPlayer {
             }
         });
 
-        if (advertisingConfig != null) {
+        if (pkAdvertisingController != null && advertisingConfig != null) {
             pkAdvertisingController.loadAdvertising();
         }
 
@@ -1359,12 +1361,14 @@ public abstract class KalturaPlayer {
         if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
 
             if (advertising instanceof AdvertisingConfig) {
+                initializeAdvertisingController();
                 this.advertisingConfig = (AdvertisingConfig) advertising;
                 return;
             } else if (advertising instanceof String) {
                 try {
                     AdvertisingConfig advertisingConf = new Gson().fromJson((String) advertising, AdvertisingConfig.class);
                     if (advertisingConf != null) {
+                        initializeAdvertisingController();
                         this.advertisingConfig = advertisingConf;
                         return;
                     }
@@ -1381,6 +1385,12 @@ public abstract class KalturaPlayer {
                     "You have to pass empty adTag url while configuring IMAPlugin config");
         }
         this.advertisingConfig = null;
+    }
+
+    private void initializeAdvertisingController() {
+        if (pkAdvertisingController == null) {
+            pkAdvertisingController = new PKAdvertisingController();
+        }
     }
 
     public interface OnEntryLoadListener {
