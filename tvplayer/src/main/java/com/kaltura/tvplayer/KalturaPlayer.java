@@ -1344,7 +1344,6 @@ public abstract class KalturaPlayer {
      */
     public void setAdvertisingConfig(@Nullable Object advertising) {
         log.d("setAdvertisingConfig");
-        AdvertisingConfig advertisingConf;
 
         if (advertising == null) {
             log.d("Advertising config is empty. Hence clearing the current advertising config.");
@@ -1353,31 +1352,35 @@ public abstract class KalturaPlayer {
         }
 
         if (this.advertisingConfig != null) {
-            this.advertisingConfig = null;
+            this.advertisingConfig = null; // Reset the existing advertisingConfig
         }
 
         String imaPlugin = KnownPlugin.ima.name();
         if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
-            if (advertising instanceof String) {
+
+            if (advertising instanceof AdvertisingConfig) {
+                this.advertisingConfig = (AdvertisingConfig) advertising;
+                return;
+            } else if (advertising instanceof String) {
                 try {
-                    advertisingConf = new Gson().fromJson((String) advertising, AdvertisingConfig.class);
+                    AdvertisingConfig advertisingConf = new Gson().fromJson((String) advertising, AdvertisingConfig.class);
                     if (advertisingConf != null) {
                         this.advertisingConfig = advertisingConf;
-                    } else {
-                        log.e("Malformed AdvertisingConfig Json");
+                        return;
                     }
-                } catch (JsonSyntaxException e) {
-                    log.e("Malformed AdvertisingConfig Json Exception: " + e.getMessage());
+
+                    log.e("AdvertisingConfig Json String is invalid");
+                } catch (Exception e) {
+                    log.e("AdvertisingConfig Json Exception: " + e.getMessage());
                 }
-            } else if (advertising instanceof AdvertisingConfig) {
-                this.advertisingConfig = (AdvertisingConfig) advertising;
             } else {
                 log.e("Advertising Config can be set using JSON or AdvertisingConfig object");
             }
         } else {
             log.e("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
-                    "You can pass empty AdTag url or VAST response while configuring IMAPlugin");
+                    "You have to pass empty adTag url while configuring IMAPlugin config");
         }
+        this.advertisingConfig = null;
     }
 
     public interface OnEntryLoadListener {
