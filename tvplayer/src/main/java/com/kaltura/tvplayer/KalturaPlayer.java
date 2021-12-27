@@ -557,7 +557,7 @@ public abstract class KalturaPlayer {
         });
 
         if (pkAdvertisingController != null && advertisingConfig != null) {
-            pkAdvertisingController.loadAdvertising();
+            pkAdvertisingController.loadAdvertising(startPosition);
         }
 
         if (autoPlay) {
