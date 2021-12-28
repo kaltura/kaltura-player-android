@@ -565,7 +565,7 @@ public abstract class KalturaPlayer {
         }
     }
 
-    public @Nullable PKAdvertising getAdvertisingController() {
+    public @NonNull PKAdvertising getAdvertisingController() {
         return pkAdvertisingController;
     }
 
