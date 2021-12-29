@@ -1335,14 +1335,14 @@ public abstract class KalturaPlayer {
     }
 
     /**
-     * Advertising Configuration with JSON
+     * Advertising Configuration
      * Set null in case if App does not want to configure anything
      * for the next media playback (ChangeMedia)
      *
      * *WARNING*: In case if app is passing object null for the changeMedia
      * and IMAConfig is set with the adTag then ad will be picked from IMAConfig
      *
-     * @param advertising AdvertisingConfig Object {@link com.kaltura.playkit.ads.AdvertisingConfig} or JSON
+     * @param advertising {@link com.kaltura.playkit.ads.AdvertisingConfig} Object or {@link com.kaltura.playkit.ads.AdvertisingConfig} JSON
      */
     public void setAdvertisingConfig(@Nullable Object advertising) {
         log.d("setAdvertisingConfig");
