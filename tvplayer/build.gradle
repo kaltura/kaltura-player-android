@@ -62,5 +62,5 @@ repositories {
 if (!ext.libVersion.contains('dev')) {
     apply from: './gradle-mvn-push.gradle'
 } else {
-    apply from: './gradle-mvn-push.local'
+    apply from: './gradle-mvn-local.gradle'
 }
