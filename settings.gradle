@@ -10,4 +10,3 @@ include ':tvplayer'
 //project(':kava').projectDir = new File(settingsDir,'../playkit-android-kava/kavaplugin')
 //include ':dtglib'
 //project(':dtglib').projectDir = new File(settingsDir,'../playkit-dtg-android/dtglib')
-
