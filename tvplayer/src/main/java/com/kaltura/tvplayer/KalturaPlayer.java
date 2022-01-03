@@ -643,7 +643,6 @@ public abstract class KalturaPlayer {
         advertisingConfig = null;
         messageBus = null;
     }
-    
 
     public void stop() {
         pkPlayer.stop();
