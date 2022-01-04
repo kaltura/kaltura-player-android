@@ -132,7 +132,6 @@ public abstract class KalturaPlayer {
     private OfflineManager offlineManager;
     private @Nullable AdvertisingConfig advertisingConfig;
 
-    
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
         this.context = context;
