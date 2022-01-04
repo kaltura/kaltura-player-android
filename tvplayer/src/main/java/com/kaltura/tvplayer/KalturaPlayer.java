@@ -32,6 +32,9 @@ import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
+import com.kaltura.playkit.ads.AdvertisingConfig;
+import com.kaltura.playkit.ads.PKAdvertising;
+import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -123,9 +126,11 @@ public abstract class KalturaPlayer {
 
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
+    private PKAdvertisingController pkAdvertisingController = new PKAdvertisingController();
     private PlayerInitOptions initOptions;
     private PlaylistController playlistController;
     private OfflineManager offlineManager;
+    private @Nullable AdvertisingConfig advertisingConfig;
 
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
@@ -138,7 +143,7 @@ public abstract class KalturaPlayer {
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
         }
-        
+
         if (initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
             this.entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryCacheConfig.getTimeoutMs());
         }
@@ -534,7 +539,13 @@ public abstract class KalturaPlayer {
                 .setMediaEntry(mediaEntry)
                 .setStartPosition(startPosition);
 
+        if (pkAdvertisingController != null) {
+            pkPlayer.setAdvertising(pkAdvertisingController, advertisingConfig);
+            pkAdvertisingController.setPlayer(pkPlayer, messageBus, config);
+        }
+
         pkPlayer.prepare(config);
+
         prepareState = PrepareState.preparing;
         pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent>() {
             @Override
@@ -543,9 +554,18 @@ public abstract class KalturaPlayer {
                 pkPlayer.removeListener(this);
             }
         });
+
+        if (pkAdvertisingController != null && advertisingConfig != null) {
+            pkAdvertisingController.loadAdvertising(startPosition);
+        }
+
         if (autoPlay) {
             pkPlayer.play();
         }
+    }
+
+    public @NonNull PKAdvertising getAdvertisingController() {
+        return pkAdvertisingController;
     }
 
     public PKMediaEntry getMediaEntry() {
@@ -616,6 +636,11 @@ public abstract class KalturaPlayer {
             playlistController.release();
             playlistController = null;
         }
+        if (pkAdvertisingController != null) {
+            pkAdvertisingController.release();
+            pkAdvertisingController = null;
+        }
+        advertisingConfig = null;
         messageBus = null;
     }
 
@@ -1306,6 +1331,65 @@ public abstract class KalturaPlayer {
         }
 
         NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST, sessionId);
+    }
+
+    /**
+     * Advertising Configuration
+     * Set null in case if App does not want to configure anything
+     * for the next media playback (ChangeMedia)
+     *
+     * *WARNING*: In case if app is passing object null for the changeMedia
+     * and IMAConfig is set with the adTag then ad will be picked from IMAConfig
+     *
+     * @param advertising {@link com.kaltura.playkit.ads.AdvertisingConfig} Object or {@link com.kaltura.playkit.ads.AdvertisingConfig} JSON
+     */
+    public void setAdvertisingConfig(@Nullable Object advertising) {
+        log.d("setAdvertisingConfig");
+
+        if (advertising == null) {
+            log.d("Advertising config is empty. Hence clearing the current advertising config.");
+            this.advertisingConfig = null;
+            return;
+        }
+
+        if (this.advertisingConfig != null) {
+            this.advertisingConfig = null; // Reset the existing advertisingConfig
+        }
+
+        String imaPlugin = KnownPlugin.ima.name();
+        if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
+
+            if (advertising instanceof AdvertisingConfig) {
+                initializeAdvertisingController();
+                this.advertisingConfig = (AdvertisingConfig) advertising;
+                return;
+            } else if (advertising instanceof String) {
+                try {
+                    AdvertisingConfig advertisingConf = new Gson().fromJson((String) advertising, AdvertisingConfig.class);
+                    if (advertisingConf != null) {
+                        initializeAdvertisingController();
+                        this.advertisingConfig = advertisingConf;
+                        return;
+                    }
+
+                    log.e("AdvertisingConfig Json String is invalid");
+                } catch (Exception e) {
+                    log.e("AdvertisingConfig Json Exception: " + e.getMessage());
+                }
+            } else {
+                log.e("Advertising Config can be set using JSON or AdvertisingConfig object");
+            }
+        } else {
+            log.e("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
+                    "You have to pass empty adTag url while configuring IMAPlugin config");
+        }
+        this.advertisingConfig = null;
+    }
+
+    private void initializeAdvertisingController() {
+        if (pkAdvertisingController == null) {
+            pkAdvertisingController = new PKAdvertisingController();
+        }
     }
 
     public interface OnEntryLoadListener {
