@@ -307,6 +307,7 @@ public abstract class KalturaPlayer {
         if (initOptions.forceWidevineL3Playback != null) {
             pkPlayer.getSettings().forceWidevineL3Playback(initOptions.forceWidevineL3Playback);
         }
+        
 
         if (initOptions.enableDecoderFallback != null) {
             pkPlayer.getSettings().enableDecoderFallback(initOptions.enableDecoderFallback);
