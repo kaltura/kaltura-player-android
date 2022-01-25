@@ -296,8 +296,16 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setPreferredMediaFormat(initOptions.preferredMediaFormat);
         }
 
+        if (initOptions.drmSettings != null) {
+            pkPlayer.getSettings().setDRMSettings(initOptions.drmSettings);
+        }
+
         if (initOptions.allowClearLead != null) {
             pkPlayer.getSettings().allowClearLead(initOptions.allowClearLead);
+        }
+
+        if (initOptions.forceWidevineL3Playback != null) {
+            pkPlayer.getSettings().forceWidevineL3Playback(initOptions.forceWidevineL3Playback);
         }
 
         if (initOptions.enableDecoderFallback != null) {
@@ -354,10 +362,6 @@ public abstract class KalturaPlayer {
 
         if (initOptions.forceSinglePlayerEngine != null) {
             pkPlayer.getSettings().forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
-        }
-
-        if (initOptions.forceWidevineL3Playback != null) {
-            pkPlayer.getSettings().forceWidevineL3Playback(initOptions.forceWidevineL3Playback);
         }
 
         if (initOptions.cea608CaptionsEnabled != null) {

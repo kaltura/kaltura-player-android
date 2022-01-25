@@ -9,6 +9,7 @@ import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.player.AudioCodecSettings;
+import com.kaltura.playkit.player.DRMSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
@@ -45,6 +46,7 @@ public class PlayerInitOptions {
     public Boolean isVideoViewHidden;
     public Boolean forceSinglePlayerEngine;
     public Boolean forceWidevineL3Playback;
+    public DRMSettings drmSettings;
     public SubtitleStyleSettings setSubtitleStyle;
     public PKAspectRatioResizeMode aspectRatioResizeMode;
     public PKRequestParams.Adapter contentRequestAdapter;
@@ -230,6 +232,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions forceWidevineL3Playback(Boolean forceWidevineL3Playback) {
         if (forceWidevineL3Playback != null) {
             this.forceWidevineL3Playback = forceWidevineL3Playback;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setDrmSettings(DRMSettings drmSettings) {
+        if (drmSettings != null) {
+            this.drmSettings = drmSettings;
         }
         return this;
     }
