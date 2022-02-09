@@ -49,9 +49,9 @@ public class ExoDownloadService extends DownloadService {
         customNotification = notification;
     }
 
-    @Override
     @NonNull
-    protected Notification getForegroundNotification(@NonNull List<Download> downloads) {
+    @Override
+    protected Notification getForegroundNotification(@NonNull List<Download> downloads, int i) {
         if (customNotification != null) {
             return customNotification.buildNotification(this, null, FOREGROUND_NOTIFICATION_ID, downloads);
         }
