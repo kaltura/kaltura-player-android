@@ -2,7 +2,7 @@
 
     <style name="AppTheme" parent="Theme.MaterialComponents.Light" />
 
-    <style name="AppTheme.NoActionBar">
+    <style name="AppTheme">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

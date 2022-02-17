@@ -20,7 +20,6 @@ import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
-import com.kaltura.android.exoplayer2.database.ExoDatabaseProvider;
 import com.kaltura.android.exoplayer2.database.StandaloneDatabaseProvider;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
