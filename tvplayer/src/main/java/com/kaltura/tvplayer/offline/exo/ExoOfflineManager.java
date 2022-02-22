@@ -927,8 +927,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         MediaItem localMediaItem = download.request.toMediaItem();
         MediaItem.Builder builder = localMediaItem.buildUpon();
 
+        MediaItem.DrmConfiguration drmConfiguration = new MediaItem.DrmConfiguration
+                .Builder(MediaSupport.WIDEVINE_UUID)
+                .setLicenseRequestHeaders(Collections.emptyMap())
+                .build();
+
         builder.setMediaId(download.request.id)
-                .setDrmLicenseRequestHeaders(null);
+                .setDrmConfiguration(drmConfiguration);
 
         final PKMediaSource localMediaSource = lam.getLocalMediaSource(assetId, builder.build());
 
