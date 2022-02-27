@@ -52,7 +52,7 @@ public class ExoDownloadService extends DownloadService {
 
     @NonNull
     @Override
-    protected Notification getForegroundNotification(@NonNull List<Download> downloads,@Requirements.RequirementFlags int notMetRequirements) {
+    protected Notification getForegroundNotification(@NonNull List<Download> downloads, @Requirements.RequirementFlags int notMetRequirements) {
         if (customNotification != null) {
             return customNotification.buildNotification(this, null, FOREGROUND_NOTIFICATION_ID, downloads);
         }
