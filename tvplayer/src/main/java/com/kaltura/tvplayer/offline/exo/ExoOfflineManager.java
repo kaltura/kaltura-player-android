@@ -358,8 +358,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                 builder.setRoleFlags(pkExternalSubtitle.getRoleFlag());
                 builder.setLabel(pkExternalSubtitle.getLabel());
 
-                MediaItem.SubtitleConfiguration subtitleMediaItem = builder.build();
-                subtitleList.add(subtitleMediaItem);
+                subtitleList.add(builder.build());
             }
         }
         return subtitleList;
@@ -484,9 +483,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                     drmConfigurationBuilder.setForcedSessionTrackTypes(tracks);
                 }
 
-                MediaItem.DrmConfiguration drmConfiguration = drmConfigurationBuilder.build();
-
-                builder.setDrmConfiguration(drmConfiguration);
+                builder.setDrmConfiguration(drmConfigurationBuilder.build());
             }
         }
 
