@@ -9,6 +9,7 @@ import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadManager;
 import com.kaltura.android.exoplayer2.offline.DownloadService;
 import com.kaltura.android.exoplayer2.scheduler.PlatformScheduler;
+import com.kaltura.android.exoplayer2.scheduler.Requirements;
 import com.kaltura.android.exoplayer2.util.Util;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.R;
@@ -51,7 +52,7 @@ public class ExoDownloadService extends DownloadService {
 
     @NonNull
     @Override
-    protected Notification getForegroundNotification(@NonNull List<Download> downloads, int i) {
+    protected Notification getForegroundNotification(@NonNull List<Download> downloads,@Requirements.RequirementFlags int notMetRequirements) {
         if (customNotification != null) {
             return customNotification.buildNotification(this, null, FOREGROUND_NOTIFICATION_ID, downloads);
         }
