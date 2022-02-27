@@ -152,8 +152,7 @@ public class PlaybackControlsView extends LinearLayout {
     /**
      * Component Listener for Default time bar from ExoPlayer UI
      */
-    private final class ComponentListener
-            implements Player.Listener, TimeBar.OnScrubListener, OnClickListener {
+    private final class ComponentListener implements Player.Listener, TimeBar.OnScrubListener, OnClickListener {
 
         @Override
         public void onScrubStart(@NonNull TimeBar timeBar, long position) {
@@ -181,7 +180,7 @@ public class PlaybackControlsView extends LinearLayout {
         }
 
         @Override
-        public void onPositionDiscontinuity(@NonNull com.kaltura.android.exoplayer2.Player.PositionInfo oldPosition, @NonNull com.kaltura.android.exoplayer2.Player.PositionInfo newPosition, int reason) {
+        public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, int reason) {
             updateProgress();
         }
 
