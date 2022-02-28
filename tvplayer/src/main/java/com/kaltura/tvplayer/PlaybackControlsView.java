@@ -53,7 +53,6 @@ public class PlaybackControlsView extends LinearLayout {
 
     private final Runnable updateProgressAction = this::updateProgress;
 
-
     public PlaybackControlsView(Context context) {
         this(context, null);
     }
@@ -216,7 +215,6 @@ public class PlaybackControlsView extends LinearLayout {
     }
 
     private String stringForTime(long timeMs) {
-
         long totalSeconds = (timeMs + 500) / 1000;
         long seconds = totalSeconds % 60;
         long minutes = (totalSeconds / 60) % 60;
@@ -264,7 +262,6 @@ public class PlaybackControlsView extends LinearLayout {
     }
 
     private boolean setIdleStateAfterPostroll(KalturaPlayer player, PlayerEvent.StateChanged stateChanged) {
-
         boolean setIdleStateAfterPostroll = false;
         if (stateChanged.newState != PlayerState.IDLE) {
             return setIdleStateAfterPostroll;
