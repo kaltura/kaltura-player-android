@@ -20,7 +20,7 @@ import com.kaltura.android.exoplayer2.ExoPlayerLibraryInfo;
 import com.kaltura.android.exoplayer2.Format;
 import com.kaltura.android.exoplayer2.MediaItem;
 import com.kaltura.android.exoplayer2.database.DatabaseProvider;
-import com.kaltura.android.exoplayer2.database.ExoDatabaseProvider;
+import com.kaltura.android.exoplayer2.database.StandaloneDatabaseProvider;
 import com.kaltura.android.exoplayer2.drm.DrmInitData;
 import com.kaltura.android.exoplayer2.drm.DrmSessionManager;
 import com.kaltura.android.exoplayer2.ext.okhttp.OkHttpDataSource;
@@ -239,7 +239,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }
         File downloadContentDirectory = new File(downloadDirectory, DOWNLOAD_CONTENT_DIRECTORY);
 
-        databaseProvider = new ExoDatabaseProvider(context);
+        databaseProvider = new StandaloneDatabaseProvider(context);
         downloadCache = new SimpleCache(downloadContentDirectory, new NoOpCacheEvictor(), databaseProvider);
 
         downloadManager = new DownloadManager(
@@ -341,20 +341,24 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         }, delayMillis);
     }
 
-    private List<MediaItem.Subtitle> buildSubtitlesList(List<PKExternalSubtitle> externalSubtitleList) {
-        List<MediaItem.Subtitle> subtitleList = new ArrayList<>();
+    private List<MediaItem.SubtitleConfiguration> buildSubtitlesList(List<PKExternalSubtitle> externalSubtitleList) {
+        List<MediaItem.SubtitleConfiguration> subtitleList = new ArrayList<>();
 
         if (externalSubtitleList != null && externalSubtitleList.size() > 0) {
             for (int subtitlePosition = 0 ; subtitlePosition < externalSubtitleList.size() ; subtitlePosition ++) {
                 PKExternalSubtitle pkExternalSubtitle = externalSubtitleList.get(subtitlePosition);
                 String subtitleMimeType = pkExternalSubtitle.getMimeType() == null ? "Unknown" : pkExternalSubtitle.getMimeType();
-                MediaItem.Subtitle subtitleMediaItem = new MediaItem.Subtitle(Uri.parse(pkExternalSubtitle.getUrl()),
-                        subtitleMimeType,
-                        pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType,
-                        pkExternalSubtitle.getSelectionFlags(),
-                        pkExternalSubtitle.getRoleFlag(),
-                        pkExternalSubtitle.getLabel());
-                subtitleList.add(subtitleMediaItem);
+
+                MediaItem.SubtitleConfiguration.Builder builder = new MediaItem.SubtitleConfiguration.Builder(Uri.parse(pkExternalSubtitle.getUrl()));
+                builder.setMimeType(subtitleMimeType);
+                // "-" is important to be added between lang and mimetype
+                // This is how we understand that this is external subtitle in TrackSelectionHelper
+                builder.setLanguage(pkExternalSubtitle.getLanguage() + "-" + subtitleMimeType);
+                builder.setSelectionFlags(pkExternalSubtitle.getSelectionFlags());
+                builder.setRoleFlags(pkExternalSubtitle.getRoleFlag());
+                builder.setLabel(pkExternalSubtitle.getLabel());
+
+                subtitleList.add(builder.build());
             }
         }
         return subtitleList;
@@ -443,13 +447,18 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         uri = downloadRequestParams.url;
         uri = replaceQueryParam(uri);
 
+        MediaItem.ClippingConfiguration clippingConfiguration = new MediaItem.ClippingConfiguration
+                .Builder()
+                .setStartPositionMs(0L)
+                .setEndPositionMs(C.TIME_END_OF_SOURCE)
+                .build();
+
         MediaItem.Builder builder =
                 new MediaItem.Builder()
                         .setUri(uri)
                         .setMimeType(mediaFormat.mimeType)
-                        .setSubtitles(buildSubtitlesList(mediaEntry.getExternalSubtitleList()))
-                        .setClipStartPositionMs(0L)
-                        .setClipEndPositionMs(C.TIME_END_OF_SOURCE);
+                        .setSubtitleConfigurations(buildSubtitlesList(mediaEntry.getExternalSubtitleList()))
+                        .setClippingConfiguration(clippingConfiguration);
 
         if (mediaFormat == PKMediaFormat.dash || mediaFormat == PKMediaFormat.hls) {
             if (drmData != null) {
@@ -460,18 +469,21 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
                 Map<String, String> headers = new HashMap<>(); //requestParams.headers;
 
-                builder
-                        .setDrmUuid((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
-                        .setDrmLicenseUri(licenseUri)
-                        .setDrmMultiSession(false)
-                        .setDrmForceDefaultLicenseUri(false)
-                        .setDrmLicenseRequestHeaders(headers);
+                MediaItem.DrmConfiguration.Builder drmConfigurationBuilder = new MediaItem.DrmConfiguration
+                        .Builder((scheme == PKDrmParams.Scheme.WidevineCENC) ? MediaSupport.WIDEVINE_UUID : MediaSupport.PLAYREADY_UUID)
+                        .setLicenseUri(licenseUri)
+                        .setMultiSession(false)
+                        .setForceDefaultLicenseUri(false)
+                        .setLicenseRequestHeaders(headers);
+
                 if (setDrmSessionForClearTypes) {
                     List<Integer> tracks = new ArrayList<>();
                     tracks.add(C.TRACK_TYPE_VIDEO);
                     tracks.add(C.TRACK_TYPE_AUDIO);
-                    builder.setDrmSessionForClearTypes(tracks);
+                    drmConfigurationBuilder.setForcedSessionTrackTypes(tracks);
                 }
+
+                builder.setDrmConfiguration(drmConfigurationBuilder.build());
             }
         }
 
@@ -912,8 +924,13 @@ public class ExoOfflineManager extends AbstractOfflineManager {
         MediaItem localMediaItem = download.request.toMediaItem();
         MediaItem.Builder builder = localMediaItem.buildUpon();
 
+        MediaItem.DrmConfiguration drmConfiguration = new MediaItem.DrmConfiguration
+                .Builder(MediaSupport.WIDEVINE_UUID)
+                .setLicenseRequestHeaders(Collections.emptyMap())
+                .build();
+
         builder.setMediaId(download.request.id)
-                .setDrmLicenseRequestHeaders(null);
+                .setDrmConfiguration(drmConfiguration);
 
         final PKMediaSource localMediaSource = lam.getLocalMediaSource(assetId, builder.build());
 

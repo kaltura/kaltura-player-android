@@ -8,8 +8,9 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 
+import com.kaltura.android.exoplayer2.Player;
 import com.kaltura.android.exoplayer2.Timeline;
 import com.kaltura.android.exoplayer2.ui.DefaultTimeBar;
 import com.kaltura.android.exoplayer2.ui.TimeBar;
@@ -38,8 +39,8 @@ public class PlaybackControlsView extends LinearLayout {
     private PlayerState playerState;
     private boolean isError;
 
-    private Formatter formatter;
-    private StringBuilder formatBuilder;
+    private final Formatter formatter;
+    private final StringBuilder formatBuilder;
 
     private ImageButton playPauseToggle;
     private DefaultTimeBar seekBar;
@@ -48,10 +49,9 @@ public class PlaybackControlsView extends LinearLayout {
     private boolean dragging = false;
     private boolean adTagHasPostroll;
 
-    private ComponentListener componentListener;
+    private final ComponentListener componentListener;
 
-    private Runnable updateProgressAction = () -> updateProgress();
-
+    private final Runnable updateProgressAction = this::updateProgress;
 
     public PlaybackControlsView(Context context) {
         this(context, null);
@@ -78,15 +78,7 @@ public class PlaybackControlsView extends LinearLayout {
             }
             togglePlayPauseClick();
         });
-//        this.findViewById(R.id.playback_controls_layout).setOnClickListener(new OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if (playerState == null) {
-//                      return;
-//                }
-//                togglePlayPauseClick();
-//            }
-//        });
+
         seekBar = this.findViewById(R.id.kexo_progress);
         seekBar.addListener(componentListener);
 
@@ -159,23 +151,22 @@ public class PlaybackControlsView extends LinearLayout {
     /**
      * Component Listener for Default time bar from ExoPlayer UI
      */
-    private final class ComponentListener
-            implements com.kaltura.android.exoplayer2.Player.EventListener, TimeBar.OnScrubListener, OnClickListener {
+    private final class ComponentListener implements Player.Listener, TimeBar.OnScrubListener, OnClickListener {
 
         @Override
-        public void onScrubStart(TimeBar timeBar, long position) {
+        public void onScrubStart(@NonNull TimeBar timeBar, long position) {
             dragging = true;
         }
 
         @Override
-        public void onScrubMove(TimeBar timeBar, long position) {
+        public void onScrubMove(@NonNull TimeBar timeBar, long position) {
             if (player != null) {
                 tvCurTime.setText(stringForTime(position));
             }
         }
 
         @Override
-        public void onScrubStop(TimeBar timeBar, long position, boolean canceled) {
+        public void onScrubStop(@NonNull TimeBar timeBar, long position, boolean canceled) {
             dragging = false;
             if (player != null) {
                 player.seekTo(position);
@@ -183,23 +174,22 @@ public class PlaybackControlsView extends LinearLayout {
         }
 
         @Override
-        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        public void onPlaybackStateChanged(int playbackState) {
             updateProgress();
         }
 
         @Override
-        public void onPositionDiscontinuity(@com.kaltura.android.exoplayer2.Player.DiscontinuityReason int reason) {
+        public void onPositionDiscontinuity(@NonNull Player.PositionInfo oldPosition, @NonNull Player.PositionInfo newPosition, int reason) {
             updateProgress();
         }
 
         @Override
-        public void onTimelineChanged(Timeline timeline, int reason) {
+        public void onTimelineChanged(@NonNull Timeline timeline, int reason) {
             updateProgress();
         }
 
         @Override
-        public void onClick(View view) {
-        }
+        public void onClick(View view) { }
     }
 
     private int progressBarValue(long position) {
@@ -225,7 +215,6 @@ public class PlaybackControlsView extends LinearLayout {
     }
 
     private String stringForTime(long timeMs) {
-
         long totalSeconds = (timeMs + 500) / 1000;
         long seconds = totalSeconds % 60;
         long minutes = (totalSeconds / 60) % 60;
@@ -273,7 +262,6 @@ public class PlaybackControlsView extends LinearLayout {
     }
 
     private boolean setIdleStateAfterPostroll(KalturaPlayer player, PlayerEvent.StateChanged stateChanged) {
-
         boolean setIdleStateAfterPostroll = false;
         if (stateChanged.newState != PlayerState.IDLE) {
             return setIdleStateAfterPostroll;
