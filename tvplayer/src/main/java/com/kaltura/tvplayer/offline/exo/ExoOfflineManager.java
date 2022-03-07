@@ -36,8 +36,8 @@ import com.kaltura.android.exoplayer2.source.TrackGroupArray;
 import com.kaltura.android.exoplayer2.source.dash.DashUtil;
 import com.kaltura.android.exoplayer2.source.dash.manifest.DashManifest;
 import com.kaltura.android.exoplayer2.source.hls.HlsManifest;
-import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMasterPlaylist;
 import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMediaPlaylist;
+import com.kaltura.android.exoplayer2.source.hls.playlist.HlsMultivariantPlaylist;
 import com.kaltura.android.exoplayer2.source.hls.playlist.HlsPlaylist;
 import com.kaltura.android.exoplayer2.source.hls.playlist.HlsPlaylistParser;
 import com.kaltura.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -96,6 +96,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+
 public class ExoOfflineManager extends AbstractOfflineManager {
 
     private static final PKLog log = PKLog.get("ExoOfflineManager");
@@ -123,7 +125,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
     private final String userAgent = Utils.getUserAgent(appContext) + " ExoDownloadPlayerLib/" + ExoPlayerLibraryInfo.VERSION;
 
-    private final OkHttpDataSource.Factory httpDataSourceFactory = new OkHttpDataSource.Factory(PKHttpClientManager.newClientBuilder()
+    private final OkHttpDataSource.Factory httpDataSourceFactory = new OkHttpDataSource.Factory((Call.Factory) PKHttpClientManager.newClientBuilder()
             .cookieJar(NativeCookieJarBridge.sharedCookieJar)
             .followRedirects(true)
             .followSslRedirects(offlineManagerSettings != null ?
@@ -1258,8 +1260,8 @@ public class ExoOfflineManager extends AbstractOfflineManager {
                         new HlsPlaylistParser(),
                         Uri.parse(contentUri),
                         C.DATA_TYPE_MANIFEST);
-                if (hlsPlaylist instanceof HlsMasterPlaylist) {
-                    HlsMasterPlaylist hlsMasterPlaylist = (HlsMasterPlaylist) hlsPlaylist;
+                if (hlsPlaylist instanceof HlsMultivariantPlaylist) {
+                    HlsMultivariantPlaylist hlsMasterPlaylist = (HlsMultivariantPlaylist) hlsPlaylist;
 
                     if (!hlsMasterPlaylist.variants.isEmpty()) {
                         int index = findDownloadedVariantIndexForHls(cacheDataSource, hlsMasterPlaylist);
@@ -1292,7 +1294,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
      *
      * @return index of the very first variant video track which is available in the cache
      */
-    private int findDownloadedVariantIndexForHls(CacheDataSource cacheDataSource, HlsMasterPlaylist hlsMasterPlaylist) {
+    private int findDownloadedVariantIndexForHls(CacheDataSource cacheDataSource, HlsMultivariantPlaylist hlsMasterPlaylist) {
         Set<String> downloadedKeys = cacheDataSource.getCache().getKeys();
 
         for (int variantCount = 0; variantCount < hlsMasterPlaylist.variants.size(); variantCount++) {
