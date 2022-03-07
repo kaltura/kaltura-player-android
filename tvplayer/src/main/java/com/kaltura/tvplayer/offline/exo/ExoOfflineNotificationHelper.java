@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.kaltura.android.exoplayer2.offline.Download;
 import com.kaltura.android.exoplayer2.offline.DownloadManager;
+import com.kaltura.android.exoplayer2.scheduler.Requirements;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.List;
@@ -23,7 +24,7 @@ import java.util.List;
  * In case app uses any other ChannelId then app may see unusual behavior/crashes.
  *
  * The limitation here is that app can create only one notification. That's why in
- * {@link #buildNotification(Context, PendingIntent, int, List)} only one notification is being returned
+ * {@link #buildNotification(Context, PendingIntent, int, List, int)} only one notification is being returned
  * instead of List of notifications for each download.
  * For more reference: https://github.com/google/ExoPlayer/issues/8297#issuecomment-736487275
  *
@@ -62,9 +63,14 @@ public abstract class ExoOfflineNotificationHelper extends ExoNotificationHelper
      * @param contentIntent contentId what app wants if notification is clicked
      * @param notificationId NotificationId, it is fixed
      * @param downloads List of downloads
+     * @param notMetRequirements Any requirements for downloads that are not currently met.
      * @return Single Notification
      */
-    public abstract Notification buildNotification(Context context,@Nullable PendingIntent contentIntent, int notificationId, @NonNull List<Download> downloads);
+    public abstract Notification buildNotification(Context context,
+                                                   @Nullable PendingIntent contentIntent,
+                                                   int notificationId,
+                                                   @NonNull List<Download> downloads,
+                                                   @Requirements.RequirementFlags int notMetRequirements);
 
     /**
      * A required downloadManager listener {@link DownloadManager.Listener}

@@ -54,7 +54,7 @@ public class ExoDownloadService extends DownloadService {
     @Override
     protected Notification getForegroundNotification(@NonNull List<Download> downloads, @Requirements.RequirementFlags int notMetRequirements) {
         if (customNotification != null) {
-            return customNotification.buildNotification(this, null, FOREGROUND_NOTIFICATION_ID, downloads);
+            return customNotification.buildNotification(this, null, FOREGROUND_NOTIFICATION_ID, downloads, notMetRequirements);
         }
 
         return getDownloadNotificationHelper(/* context= */ this)
@@ -63,7 +63,8 @@ public class ExoDownloadService extends DownloadService {
                         R.drawable.ic_cloud_download_black_24dp,
                         /* contentIntent= */ null,
                         /* message= */ null,
-                        downloads);
+                        downloads,
+                        notMetRequirements);
     }
 
     public static synchronized ExoNotificationHelper getDownloadNotificationHelper(Context context) {
