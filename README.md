@@ -18,6 +18,7 @@
 * Multiple Codecs support
 * Live / Live DVR
 * TrackSelection (Video/Audio/Text)
+* External subtitles
 * Player Rate
 * ABR Configuration
 * VR /360
