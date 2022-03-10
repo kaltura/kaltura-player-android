@@ -7,6 +7,63 @@
 
 **Kaltura Player**  - This `Playkit` wrapper simplifies the player integration so that client applications will require less boilerplate code, which ensures a faster integration.
 
+## Kaltura Player Features:
+
+#### Playback:
+
+* DASH
+* HLS
+* MP4
+* MP3
+* Multiple Codecs support
+* Live / Live DVR
+* TrackSelection (Video/Audio/Text)
+* External subtitles
+* Player Rate
+* ABR Configuration
+* VR /360
+* Dash Instream Thumbnails
+* Change Media
+* Playlist
+* ID3 Timed Metadata
+* Screen recording blocking
+* Playback Adapter - allow app to change the manifest url query param or headers changes
+
+#### DRM:
+
+* Widevine
+* Playready
+* DRM Adapter - allow app to change license url query param or headers changes
+
+#### Analytics:
+
+* Kaltura Kava (Kaltura Advanced Video Analytics)
+* Phoenix Analytics
+* Youbora (NPAW)
+
+#### Monitization:
+* IMA 
+* DAI
+* Ad Schedualer
+* Ad Warterfalling
+* Ad-Hoc Ad playback
+
+#### CDN:
+
+* Broadpeak
+* NPAW Smart Switch
+
+#### Offline:
+* Download to go 
+* Prefetch (preloading)
+
+#### Casting:
+* Google Cast
+
+
+----------
+
+
 Gradle Dependency:  `implementation 'com.kaltura.player:tvplayer:4.x.x'` + add mavenCentral() in repositories section
 
 This dependency already includes **Playkit, Kava Analytics Player Providers and Download-to-Go libraries** internally, so no need to add them to the client app's `build.gradle`.
