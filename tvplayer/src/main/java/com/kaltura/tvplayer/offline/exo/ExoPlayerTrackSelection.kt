@@ -556,7 +556,7 @@ class ExoPlayerTrackSelection(
 
     private fun isDownloadableTrackType(mappedTrackInfo: MappingTrackSelector.MappedTrackInfo, rendererIndex: Int): Boolean {
         val trackGroupArray: TrackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex)
-        if (trackGroupArray.length === 0) {
+        if (trackGroupArray.length == 0) {
             return false
         }
         val trackType: Int = mappedTrackInfo.getRendererType(rendererIndex)
