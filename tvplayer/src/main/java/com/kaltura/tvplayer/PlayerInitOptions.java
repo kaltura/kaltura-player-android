@@ -46,6 +46,7 @@ public class PlayerInitOptions {
     public Boolean isVideoViewHidden;
     public Boolean forceSinglePlayerEngine;
     public Boolean forceWidevineL3Playback;
+    public Boolean allowChunklessPreparation = true;
     public DRMSettings drmSettings;
     public SubtitleStyleSettings setSubtitleStyle;
     public PKAspectRatioResizeMode aspectRatioResizeMode;
@@ -207,7 +208,7 @@ public class PlayerInitOptions {
         }
         return this;
     }
-    
+
     public PlayerInitOptions setPKRequestConfig(PKRequestConfig pkRequestConfig) {
         if (pkRequestConfig != null) {
             this.pkRequestConfig = pkRequestConfig;
@@ -225,6 +226,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions forceSinglePlayerEngine(Boolean forceSinglePlayerEngine) {
         if (forceSinglePlayerEngine != null) {
             this.forceSinglePlayerEngine = forceSinglePlayerEngine;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions allowChunklessPreparation(Boolean allowChunklessPreparation) {
+        if (allowChunklessPreparation != null) {
+            this.allowChunklessPreparation = allowChunklessPreparation;
         }
         return this;
     }

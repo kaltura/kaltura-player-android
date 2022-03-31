@@ -364,6 +364,10 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
         }
 
+        if (initOptions.allowChunklessPreparation != null) {
+            pkPlayer.getSettings().allowChunklessPreparation(initOptions.allowChunklessPreparation);
+        }
+
         if (initOptions.cea608CaptionsEnabled != null) {
             pkPlayer.getSettings().setCea608CaptionsEnabled(initOptions.cea608CaptionsEnabled);
         }
