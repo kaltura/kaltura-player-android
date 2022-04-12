@@ -19,7 +19,7 @@ class PlayerTokenResolver extends MapTokenResolver {
 
         removeAll(entryKeys);
 
-        if (mediaEntry != null) {
+        if (mediaEntry != null && mediaEntry.getId() != null) {
             Map<String, String> mediaEntryMetadata = mediaEntry.getMetadata();
             if (mediaEntryMetadata != null) {
                 for (Map.Entry<String, String> metadataEntry : mediaEntryMetadata.entrySet()) {
@@ -85,5 +85,4 @@ class PlayerTokenResolver extends MapTokenResolver {
 
         rebuild();
     }
-
 }

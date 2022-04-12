@@ -5,16 +5,11 @@
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
-
-    <application
-        android:theme="@style/AppTheme"
-        android:networkSecurityConfig="@xml/network_security_config"
-        >
+    <application>
         <activity
             android:name=".offline.PlayActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="Play"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:label="Play">
         </activity>
     </application>
 

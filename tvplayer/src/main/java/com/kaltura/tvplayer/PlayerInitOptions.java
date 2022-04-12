@@ -2,18 +2,23 @@ package com.kaltura.tvplayer;
 
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.PKRequestConfig;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.PKWakeMode;
 import com.kaltura.playkit.player.AudioCodecSettings;
+import com.kaltura.playkit.player.DRMSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
+import com.kaltura.playkit.player.MulticastSettings;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.PKMaxVideoSize;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
 import com.kaltura.playkit.player.VideoCodecSettings;
 import com.kaltura.playkit.player.vr.VRSettings;
+import com.kaltura.tvplayer.config.MediaEntryCacheConfig;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
 public class PlayerInitOptions {
@@ -26,6 +31,7 @@ public class PlayerInitOptions {
     public Boolean autoplay = true;
     public Boolean preload = true;
     public String referrer;
+    public Boolean redirectFromEntryId = true;
     public PKTrackConfig.Mode audioLanguageMode;
     public String audioLanguage;
     public PKTrackConfig.Mode textLanguageMode;
@@ -39,6 +45,9 @@ public class PlayerInitOptions {
     public Boolean vrPlayerEnabled;
     public Boolean isVideoViewHidden;
     public Boolean forceSinglePlayerEngine;
+    public Boolean forceWidevineL3Playback;
+    public Boolean allowChunklessPreparation = true;
+    public DRMSettings drmSettings;
     public SubtitleStyleSettings setSubtitleStyle;
     public PKAspectRatioResizeMode aspectRatioResizeMode;
     public PKRequestParams.Adapter contentRequestAdapter;
@@ -46,6 +55,8 @@ public class PlayerInitOptions {
     public LoadControlBuffers loadControlBuffers;
     public ABRSettings abrSettings;
     public VRSettings vrSettings;
+    public PKLowLatencyConfig pkLowLatencyConfig;
+    public PKRequestConfig pkRequestConfig;
     public Boolean cea608CaptionsEnabled;
     public Boolean mpgaAudioFormatEnabled;
     public Boolean useTextureView;
@@ -61,6 +72,10 @@ public class PlayerInitOptions {
     public Integer maxVideoBitrate;
     public Integer maxAudioBitrate;
     public Integer maxAudioChannelCount;
+    public MulticastSettings multicastSettings;
+
+    public MediaEntryCacheConfig mediaEntryCacheConfig;
+    public OfflineManager.OfflineProvider offlineProvider = OfflineManager.OfflineProvider.DTG;
 
     public PlayerInitOptions() {
         partnerId = null;
@@ -103,6 +118,13 @@ public class PlayerInitOptions {
         return this;
     }
 
+    public PlayerInitOptions setRedirectFromEntryId(Boolean redirectFromEntryId) {
+        if (redirectFromEntryId != null) {
+            this.redirectFromEntryId = redirectFromEntryId;
+        }
+        return this;
+    }
+
     public PlayerInitOptions setAudioLanguage(String audioLanguage, PKTrackConfig.Mode audioLanguageMode) {
         if (audioLanguage != null && audioLanguageMode != null) {
             this.audioLanguage = audioLanguage;
@@ -119,6 +141,11 @@ public class PlayerInitOptions {
         return this;
     }
 
+    /**
+     * This method is deprecated.
+     * Please use {@link com.kaltura.playkit.PKRequestConfig} in order to set crossProtocolRedirect
+     */
+    @Deprecated
     public PlayerInitOptions setAllowCrossProtocolEnabled(Boolean allowCrossProtocolEnabled) {
         if (allowCrossProtocolEnabled != null) {
             this.allowCrossProtocolEnabled = allowCrossProtocolEnabled;
@@ -175,6 +202,20 @@ public class PlayerInitOptions {
         return this;
     }
 
+    public PlayerInitOptions setPKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        if (pkLowLatencyConfig != null) {
+            this.pkLowLatencyConfig = pkLowLatencyConfig;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setPKRequestConfig(PKRequestConfig pkRequestConfig) {
+        if (pkRequestConfig != null) {
+            this.pkRequestConfig = pkRequestConfig;
+        }
+        return this;
+    }
+
     public PlayerInitOptions setIsVideoViewHidden(Boolean isVideoViewHidden) {
         if (isVideoViewHidden != null) {
             this.isVideoViewHidden = isVideoViewHidden;
@@ -185,6 +226,27 @@ public class PlayerInitOptions {
     public PlayerInitOptions forceSinglePlayerEngine(Boolean forceSinglePlayerEngine) {
         if (forceSinglePlayerEngine != null) {
             this.forceSinglePlayerEngine = forceSinglePlayerEngine;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions allowChunklessPreparation(Boolean allowChunklessPreparation) {
+        if (allowChunklessPreparation != null) {
+            this.allowChunklessPreparation = allowChunklessPreparation;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions forceWidevineL3Playback(Boolean forceWidevineL3Playback) {
+        if (forceWidevineL3Playback != null) {
+            this.forceWidevineL3Playback = forceWidevineL3Playback;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setDrmSettings(DRMSettings drmSettings) {
+        if (drmSettings != null) {
+            this.drmSettings = drmSettings;
         }
         return this;
     }
@@ -335,6 +397,25 @@ public class PlayerInitOptions {
         }
         return this;
     }
+
+    public PlayerInitOptions setMulticastSettings(MulticastSettings multicastSettings) {
+        if (multicastSettings != null) {
+            this.multicastSettings = multicastSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMediaEntryCacheConfig(MediaEntryCacheConfig mediaEntryCacheConfig) {
+        if (mediaEntryCacheConfig != null) {
+            this.mediaEntryCacheConfig = mediaEntryCacheConfig;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setOfflineProvider(OfflineManager.OfflineProvider offlineProvider) {
+        if (offlineProvider != null) {
+            this.offlineProvider = offlineProvider;
+        }
+        return this;
+    }
 }
-
-

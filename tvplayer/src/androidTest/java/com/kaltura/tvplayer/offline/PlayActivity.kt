@@ -10,7 +10,6 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_LONG
 import androidx.appcompat.app.AppCompatActivity
 import com.kaltura.playkit.PKLog
-import com.kaltura.playkit.PlayerEvent
 import com.kaltura.playkit.PlayerEvent.*
 import com.kaltura.tvplayer.KalturaBasicPlayer
 import com.kaltura.tvplayer.KalturaPlayer
@@ -24,8 +23,6 @@ import java.util.concurrent.TimeUnit
 private val log = PKLog.get("PlayActivity")
 
 class PlayActivity : AppCompatActivity() {
-
-    class Destroyed
 
     private lateinit var player: KalturaPlayer
     private lateinit var playDrawable: Drawable
@@ -51,7 +48,7 @@ class PlayActivity : AppCompatActivity() {
         setContentView(player.playerView)
 
 
-        val manager = OfflineManager.getInstance(this)
+        val manager = OfflineManager.getInstance(this, OfflineManager.OfflineProvider.DTG)
 
         intent.dataString?.let {
             val entry = manager.getLocalPlaybackEntry(it)
@@ -61,7 +58,7 @@ class PlayActivity : AppCompatActivity() {
         }
 
         // Check duration
-        player.addListener(this, PlayerEvent.durationChanged) {
+        player.addListener(this, durationChanged) {
             assertEquals(intent.getLongExtra("expectedDuration", 0), it.duration)
         }
 

@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.gson.Gson;
 import com.kaltura.netkit.connect.executor.APIOkRequestsExecutor;
 import com.kaltura.netkit.connect.response.ResultElement;
 import com.kaltura.netkit.utils.ErrorElement;
@@ -25,17 +26,23 @@ import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPlaylist;
 import com.kaltura.playkit.PKPlaylistMedia;
 import com.kaltura.playkit.PKPluginConfigs;
+import com.kaltura.playkit.PKRequestConfig;
 import com.kaltura.playkit.PKTrackConfig;
 import com.kaltura.playkit.PlayKitManager;
 import com.kaltura.playkit.Player;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.ads.AdController;
-
+import com.kaltura.playkit.ads.AdvertisingConfig;
+import com.kaltura.playkit.ads.PKAdvertising;
+import com.kaltura.playkit.ads.PKAdvertisingController;
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
 import com.kaltura.playkit.player.PKHttpClientManager;
+import com.kaltura.playkit.player.PKLowLatencyConfig;
 import com.kaltura.playkit.player.SubtitleStyleSettings;
+import com.kaltura.playkit.player.thumbnail.ThumbnailInfo;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsConfig;
 import com.kaltura.playkit.plugins.kava.KavaAnalyticsPlugin;
 import com.kaltura.playkit.plugins.ott.PhoenixAnalyticsConfig;
@@ -46,6 +53,7 @@ import com.kaltura.playkit.providers.MediaEntryProvider;
 import com.kaltura.playkit.providers.PlaylistProvider;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
 import com.kaltura.playkit.utils.Consts;
+import com.kaltura.playkit.utils.NetworkUtils;
 import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.playlist.BasicMediaOptions;
 import com.kaltura.tvplayer.playlist.BasicPlaylistOptions;
@@ -55,10 +63,9 @@ import com.kaltura.tvplayer.playlist.OVPPlaylistOptions;
 import com.kaltura.tvplayer.playlist.PKBasicPlaylist;
 import com.kaltura.tvplayer.playlist.PKPlaylistType;
 import com.kaltura.tvplayer.playlist.PlaylistController;
-
 import com.kaltura.tvplayer.playlist.PlaylistEvent;
 import com.kaltura.tvplayer.utils.ConfigResolver;
-import com.kaltura.tvplayer.utils.NetworkUtils;
+import com.kaltura.tvplayer.utils.TimeExpiringLruCache;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -80,6 +87,7 @@ public abstract class KalturaPlayer {
     private static final String KALTURA_PLAYLIST_INIT_EXCEPTION = "KalturaPlayer.initialize() was not called or hasn't finished.";
     public static ErrorElement KalturaPlayerNotInitializedError = new ErrorElement("KalturaPlayerNotInitializedError", KALTURA_PLAYER_INIT_EXCEPTION, 777);
     public static ErrorElement KalturaPlaylistInitializedError = new ErrorElement("KalturaPlayerPlaylistInitializedError", KALTURA_PLAYLIST_INIT_EXCEPTION, 778);
+    private boolean isSendKavaPlayRequestOnPlay = false;
 
     private enum PrepareState {
         not_prepared,
@@ -95,6 +103,7 @@ public abstract class KalturaPlayer {
 
     private MessageBus messageBus;
     private boolean pluginsRegistered;
+    private PKPluginConfigs combinedPluginConfigs;
     private Type tvPlayerType;
 
     private Integer partnerId;
@@ -109,22 +118,34 @@ public abstract class KalturaPlayer {
     private boolean preload;
     private Long startPosition;
     private List<PKExternalSubtitle> externalSubtitles;
+    private String externalVttThumbnailUrl;
     private View view;
     private PKMediaEntry mediaEntry;
+
+    private TimeExpiringLruCache<String, String> entriesCache;
+
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
+    private PKAdvertisingController pkAdvertisingController = new PKAdvertisingController();
     private PlayerInitOptions initOptions;
     private PlaylistController playlistController;
+    private OfflineManager offlineManager;
+    private @Nullable AdvertisingConfig advertisingConfig;
 
     KalturaPlayer(Context context, Type tvPlayerType, PlayerInitOptions initOptions) {
 
         this.context = context;
+        offlineManager = OfflineManager.getInstance(context, initOptions.offlineProvider);
         this.tvPlayerType = tvPlayerType;
         this.initOptions = initOptions;
         this.preload = initOptions.preload != null ? initOptions.preload : true;
         this.autoPlay = initOptions.autoplay != null ? initOptions.autoplay : true;
         if (this.autoPlay) {
             this.preload = true; // autoplay implies preload
+        }
+
+        if (initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
+            this.entriesCache = new TimeExpiringLruCache<>(initOptions.mediaEntryCacheConfig.getMaxMediaEntryCacheSize(), initOptions.mediaEntryCacheConfig.getTimeoutMs());
         }
 
         messageBus = new MessageBus();
@@ -242,11 +263,11 @@ public abstract class KalturaPlayer {
 
     private void loadPlayer() {
         tokenResolver.update(initOptions);
-        PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
+        setupPluginsConfiguration();
         pkPlayer = PlayKitManager.loadPlayer(context, combinedPluginConfigs, messageBus);
         updatePlayerSettings();
-        if (!combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName()) && Integer.valueOf(KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID).equals(ovpPartnerId)) {
-            NetworkUtils.sendKavaImpression(context);
+        if (Type.basic.equals(tvPlayerType) && !combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName())) {
+            NetworkUtils.sendKavaAnalytics(context, KavaAnalyticsConfig.DEFAULT_KAVA_PARTNER_ID, KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID, NetworkUtils.KAVA_EVENT_IMPRESSION, pkPlayer.getSessionId());
         }
     }
 
@@ -264,15 +285,27 @@ public abstract class KalturaPlayer {
         }
 
         if (initOptions.allowCrossProtocolEnabled != null) {
-            pkPlayer.getSettings().setAllowCrossProtocolRedirect(initOptions.allowCrossProtocolEnabled);
+            pkPlayer.getSettings().setPKRequestConfig(new PKRequestConfig(initOptions.allowCrossProtocolEnabled));
+        }
+
+        if (initOptions.pkRequestConfig != null) {
+            pkPlayer.getSettings().setPKRequestConfig(initOptions.pkRequestConfig);
         }
 
         if (initOptions.preferredMediaFormat != null) {
             pkPlayer.getSettings().setPreferredMediaFormat(initOptions.preferredMediaFormat);
         }
 
+        if (initOptions.drmSettings != null) {
+            pkPlayer.getSettings().setDRMSettings(initOptions.drmSettings);
+        }
+
         if (initOptions.allowClearLead != null) {
             pkPlayer.getSettings().allowClearLead(initOptions.allowClearLead);
+        }
+
+        if (initOptions.forceWidevineL3Playback != null) {
+            pkPlayer.getSettings().forceWidevineL3Playback(initOptions.forceWidevineL3Playback);
         }
 
         if (initOptions.enableDecoderFallback != null) {
@@ -323,8 +356,16 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setVRSettings(initOptions.vrSettings);
         }
 
+        if (initOptions.pkLowLatencyConfig != null) {
+            pkPlayer.getSettings().setPKLowLatencyConfig(initOptions.pkLowLatencyConfig);
+        }
+
         if (initOptions.forceSinglePlayerEngine != null) {
             pkPlayer.getSettings().forceSinglePlayerEngine(initOptions.forceSinglePlayerEngine);
+        }
+
+        if (initOptions.allowChunklessPreparation != null) {
+            pkPlayer.getSettings().allowChunklessPreparation(initOptions.allowChunklessPreparation);
         }
 
         if (initOptions.cea608CaptionsEnabled != null) {
@@ -382,12 +423,15 @@ public abstract class KalturaPlayer {
         if (initOptions.maxAudioChannelCount != null) {
             pkPlayer.getSettings().setMaxAudioChannelCount(initOptions.maxAudioChannelCount);
         }
+        if (initOptions.multicastSettings != null) {
+            pkPlayer.getSettings().setMulticastSettings(initOptions.multicastSettings);
+        }
     }
 
     @NonNull
     private PKPluginConfigs setupPluginsConfiguration() {
         PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
-        PKPluginConfigs combinedPluginConfigs = new PKPluginConfigs();
+        combinedPluginConfigs = new PKPluginConfigs();
 
         if (pluginConfigs != null) {
             for (Map.Entry<String, Object> entry : pluginConfigs) {
@@ -414,7 +458,18 @@ public abstract class KalturaPlayer {
         this.view = pkPlayer.getView();
     }
 
-    public void setMedia(@NonNull PKMediaEntry mediaEntry) {
+    public void setMedia(PKMediaEntry mediaEntry) {
+        if (mediaEntry != null && mediaEntry.hasSources()) {
+            applyMediaEntryInterceptors(mediaEntry, () ->
+                    mainHandler.post(() -> {
+                        setMediaInternal(mediaEntry);
+                    }));
+        } else {
+            log.e("mediaEntry does not contain any source");
+        }
+    }
+
+    private void setMediaInternal(@NonNull PKMediaEntry mediaEntry) {
         tokenResolver.update(mediaEntry, getKS());
 
         if (externalSubtitles != null) {
@@ -425,17 +480,35 @@ public abstract class KalturaPlayer {
             }
         }
 
+        if (externalVttThumbnailUrl != null) {
+            if (mediaEntry.getExternalVttThumbnailUrl() == null) {
+                mediaEntry.setExternalVttThumbnailUrl(externalVttThumbnailUrl);
+            }
+        }
+        if (autoPlay) {
+            sendKavaPlayRequest(mediaEntry.getId());
+        } else {
+            sendKavaPlayRequestOnPlay();
+        }
+
         if (preload) {
             this.mediaEntry = mediaEntry;
             this.prepareState = PrepareState.not_prepared;
             PKPluginConfigs combinedPluginConfigs = setupPluginsConfiguration();
             updateKalturaPluginConfigs(combinedPluginConfigs);
+            if (offlineManager != null && offlineManager.getDownloadCache() != null) {
+                pkPlayer.setDownloadCache(offlineManager.getDownloadCache());
+            }
             prepare();
         }
     }
 
-
     public void setPlaylist(List<PKMediaEntry> entryList, Long startPosition) {
+        if (entryList == null || entryList.isEmpty()) {
+            log.e("entryList does not contain any source");
+            return;
+        }
+
         externalSubtitles = null;
         if (startPosition != null) {
             setStartPosition(startPosition);
@@ -465,11 +538,22 @@ public abstract class KalturaPlayer {
             return;
         }
 
+        if (mediaEntry == null) {
+            log.w("player prepare was called with null mediaEntry");
+            return;
+        }
+
         final PKMediaConfig config = new PKMediaConfig()
                 .setMediaEntry(mediaEntry)
                 .setStartPosition(startPosition);
 
+        if (pkAdvertisingController != null) {
+            pkPlayer.setAdvertising(pkAdvertisingController, advertisingConfig);
+            pkAdvertisingController.setPlayer(pkPlayer, messageBus, config);
+        }
+
         pkPlayer.prepare(config);
+
         prepareState = PrepareState.preparing;
         pkPlayer.addListener(this, PlayerEvent.canPlay, new PKEvent.Listener<PlayerEvent>() {
             @Override
@@ -478,9 +562,18 @@ public abstract class KalturaPlayer {
                 pkPlayer.removeListener(this);
             }
         });
+
+        if (pkAdvertisingController != null && advertisingConfig != null) {
+            pkAdvertisingController.loadAdvertising(startPosition);
+        }
+
         if (autoPlay) {
             pkPlayer.play();
         }
+    }
+
+    public @NonNull PKAdvertising getAdvertisingController() {
+        return pkAdvertisingController;
     }
 
     public PKMediaEntry getMediaEntry() {
@@ -498,9 +591,27 @@ public abstract class KalturaPlayer {
         pkPlayer.updatePluginConfig(pluginName, pluginConfig);
     }
 
+    public void updateABRSettings(@NonNull ABRSettings abrSettings) {
+        if (pkPlayer != null && abrSettings != null) {
+            pkPlayer.updateABRSettings(abrSettings);
+        }
+    }
+
+    public void resetABRSettings() {
+        if (pkPlayer != null) {
+            pkPlayer.resetABRSettings();
+        }
+    }
+
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (pkPlayer != null) {
             pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
+        }
+    }
+
+    public void updatePKLowLatencyConfig(PKLowLatencyConfig pkLowLatencyConfig) {
+        if (pkPlayer != null && pkLowLatencyConfig != null) {
+            pkPlayer.updatePKLowLatencyConfig(pkLowLatencyConfig);
         }
     }
 
@@ -533,6 +644,11 @@ public abstract class KalturaPlayer {
             playlistController.release();
             playlistController = null;
         }
+        if (pkAdvertisingController != null) {
+            pkAdvertisingController.release();
+            pkAdvertisingController = null;
+        }
+        advertisingConfig = null;
         messageBus = null;
     }
 
@@ -549,6 +665,11 @@ public abstract class KalturaPlayer {
             prepare();
         }
         if (pkPlayer != null) {
+            if (isSendKavaPlayRequestOnPlay) {
+                sendKavaPlayRequest(mediaEntry.getId());
+                isSendKavaPlayRequestOnPlay = false;
+            }
+
             pkPlayer.play();
         }
     }
@@ -607,6 +728,12 @@ public abstract class KalturaPlayer {
         return pkPlayer.isLive();
     }
 
+    public long getCurrentLiveOffset() {
+        return pkPlayer.getCurrentLiveOffset();
+    }
+
+    public ThumbnailInfo getThumbnailInfo(long ... positionMS) { return pkPlayer.getThumbnailInfo(positionMS); }
+
     public <E extends PKEvent> void addListener(Object groupId, Class<E> type, PKEvent.Listener<E> listener) {
         pkPlayer.addListener(groupId, type, listener);
     }
@@ -629,6 +756,16 @@ public abstract class KalturaPlayer {
 
     public void seekTo(long position) {
         pkPlayer.seekTo(position);
+    }
+
+    public void seekToLiveDefaultPosition() {
+        pkPlayer.seekToLiveDefaultPosition();
+    }
+
+    public void clearMediaEntryCache() {
+        if (entriesCache != null) {
+            entriesCache.evictAll();
+        }
     }
 
     public AdController getAdController() {
@@ -691,17 +828,38 @@ public abstract class KalturaPlayer {
     }
 
     // Called by implementation of loadMedia()
-    private void mediaLoadCompleted(final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
+    private void mediaLoadCompleted(final MediaOptions mediaOptions, final ResultElement<PKMediaEntry> response, final OnEntryLoadListener onEntryLoadListener) {
 
         final PKMediaEntry entry = response.getResponse();
         if (entry != null) {
+            insertMediaEnteryIntoCache(mediaOptions, entry);
+
             applyMediaEntryInterceptors(entry, () ->
                     mainHandler.post(() -> {
-                        setMedia(entry);
-                        onEntryLoadListener.onEntryLoadComplete(entry, response.getError());
+                        setMediaInternal(entry);
+                        if (onEntryLoadListener != null) {
+                            onEntryLoadListener.onEntryLoadComplete(mediaOptions, entry, response.getError());
+                        }
                     }));
         } else {
-            onEntryLoadListener.onEntryLoadComplete(null, response.getError());
+            if (onEntryLoadListener != null) {
+                onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, response.getError());
+            }
+        }
+    }
+
+    private void insertMediaEnteryIntoCache(MediaOptions mediaOptions, PKMediaEntry entry) {
+        String mediaAssetUUID = "";
+        if (mediaOptions instanceof OVPMediaOptions) {
+            mediaAssetUUID = ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().getUUID();
+        } else if (mediaOptions instanceof OTTMediaOptions) {
+            mediaAssetUUID = ((OTTMediaOptions) mediaOptions).getOttMediaAsset().getUUID();
+        }
+
+        if (entriesCache != null && initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching() && !TextUtils.isEmpty(mediaAssetUUID)) {
+            log.d("Add Entry to Cache: key = " + mediaAssetUUID + " name = " + entry.getName() + " mediaId = " + entry.getId());
+            String mediaEntryJson = new Gson().toJson(entry);
+            entriesCache.put(mediaAssetUUID, mediaEntryJson);
         }
     }
 
@@ -713,9 +871,15 @@ public abstract class KalturaPlayer {
     private void applyMediaEntryInterceptor(List<PKMediaEntryInterceptor> localInterceptors,
                                             PKMediaEntry mediaEntry,
                                             PKMediaEntryInterceptor.Listener listener) {
+
         if (localInterceptors.isEmpty()) {
             listener.onComplete();
             return;
+        }
+
+        String broadpeakPlugin = KnownPlugin.broadpeak.name();
+        if (initOptions.pluginConfigs.hasConfig(broadpeakPlugin)) {
+            updateInternalPluginConfig(broadpeakPlugin, initOptions.pluginConfigs.getPluginConfig(broadpeakPlugin));
         }
 
         PKMediaEntryInterceptor interceptor = localInterceptors.get(0);
@@ -757,7 +921,7 @@ public abstract class KalturaPlayer {
         } else {
             this.partnerId = initOptions.partnerId;
             if (Type.ott.equals(tvPlayerType)) {
-                this.ovpPartnerId = (initOptions.tvPlayerParams != null &&
+                this.ovpPartnerId = (initOptions.tvPlayerParams instanceof PhoenixTVPlayerParams &&
                         ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId != null &&
                         ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId > 0) ? ((PhoenixTVPlayerParams) initOptions.tvPlayerParams).ovpPartnerId : null;
             } else {
@@ -805,7 +969,6 @@ public abstract class KalturaPlayer {
             }
         }.start();
     }
-
 
     public void loadPlaylist(@NonNull OVPPlaylistOptions playlistOptions, @NonNull final OnPlaylistControllerListener controllerListener) {
 
@@ -938,12 +1101,16 @@ public abstract class KalturaPlayer {
         playlistController.playItem(playlistOptions.startIndex, autoPlay);
     }
 
-    public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
+    public void loadMedia(@NonNull OTTMediaOptions mediaOptions, @NonNull final OnEntryLoadListener onEntryLoadListener) {
 
         if (!isValidOTTPlayer())
             return;
 
         prepareLoadMedia(mediaOptions);
+
+        if (loadMediaFromCache(mediaOptions, mediaOptions.getOttMediaAsset().getUUID(), mediaOptions.startPosition, onEntryLoadListener)) {
+            return;
+        }
 
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
             @Override
@@ -956,24 +1123,49 @@ public abstract class KalturaPlayer {
                     }
                     populatePartnersValues();
                     final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
-                    provider.load(response -> mediaLoadCompleted(response, listener));
+                    provider.load(response -> mediaLoadCompleted(mediaOptions, response, onEntryLoadListener));
                 }
             }
 
             @Override
             public void onFinish() {
                 log.e("KalturaPlayerNotInitializedError");
-                listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError);
+                if (onEntryLoadListener != null) {
+                    onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
+                }
             }
         }.start();
     }
 
-    public void loadMedia(@NonNull OVPMediaOptions mediaOptions, @NonNull final OnEntryLoadListener listener) {
+    private boolean loadMediaFromCache(@NonNull MediaOptions mediaOptions, @NonNull String mediaEntryCacheKey, Long startPosition, @NonNull final OnEntryLoadListener onEntryLoadListener) {
+
+        if (entriesCache != null && initOptions.mediaEntryCacheConfig != null && initOptions.mediaEntryCacheConfig.getAllowMediaEntryCaching()) {
+            String mediaEntryJson = entriesCache.get(mediaEntryCacheKey);
+            if (!TextUtils.isEmpty(mediaEntryJson)) {
+                PKMediaEntry pkMediaEntry = new Gson().fromJson(mediaEntryJson, PKMediaEntry.class);
+                if (pkMediaEntry != null) {
+                    log.d("LoadMedia from Cache: key = " + mediaEntryCacheKey + " name = " + pkMediaEntry.getName() + " mediaId = " + pkMediaEntry.getId());
+                    setMedia(pkMediaEntry, startPosition);
+                    entriesCache.put(mediaEntryCacheKey, mediaEntryJson); // restart cache revoke timer
+                    if (onEntryLoadListener != null) {
+                        onEntryLoadListener.onEntryLoadComplete(mediaOptions, pkMediaEntry, null);
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void loadMedia(@NonNull OVPMediaOptions mediaOptions, @NonNull final OnEntryLoadListener onEntryLoadListener) {
 
         if (!isValidOVPPlayer())
             return;
 
         prepareLoadMedia(mediaOptions);
+        if (loadMediaFromCache(mediaOptions, mediaOptions.getOvpMediaAsset().getUUID(), mediaOptions.startPosition, onEntryLoadListener)) {
+            return;
+        }
 
         new CountDownTimer(COUNT_DOWN_TOTAL, COUNT_DOWN_INTERVAL) {
             @Override
@@ -986,14 +1178,16 @@ public abstract class KalturaPlayer {
                     }
                     populatePartnersValues();
                     final MediaEntryProvider provider = mediaOptions.buildMediaProvider(getServerUrl(), getPartnerId());
-                    provider.load(response -> mediaLoadCompleted(response, listener));
+                    provider.load(response -> mediaLoadCompleted(mediaOptions, response, onEntryLoadListener));
                 }
             }
 
             @Override
             public void onFinish() {
                 log.e("KalturaPlayerNotInitializedError");
-                listener.onEntryLoadComplete(null, KalturaPlayerNotInitializedError);
+                if (onEntryLoadListener != null) {
+                    onEntryLoadListener.onEntryLoadComplete(mediaOptions, null, KalturaPlayerNotInitializedError);
+                }
             }
         }.start();
     }
@@ -1024,15 +1218,26 @@ public abstract class KalturaPlayer {
             externalSubtitles = mediaOptions.externalSubtitles;
         }
 
+        externalVttThumbnailUrl = null;
+        if (mediaOptions.externalVttThumbnailUrl != null) {
+            externalVttThumbnailUrl = mediaOptions.externalVttThumbnailUrl;
+        }
+
         ks = null;
         String mediaKS = null;
         if (isValidOVPPlayer()) {
             if (((OVPMediaOptions) mediaOptions).getOvpMediaAsset() != null) {
                 mediaKS = ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().getKs();
+                if (TextUtils.isEmpty(mediaKS)) {
+                    ((OVPMediaOptions) mediaOptions).getOvpMediaAsset().setKs(initOptions.ks);
+                }
             }
         } else if (isValidOTTPlayer()) {
             if (((OTTMediaOptions) mediaOptions).getOttMediaAsset() != null) {
                 mediaKS = ((OTTMediaOptions) mediaOptions).getOttMediaAsset().getKs();
+                if (TextUtils.isEmpty(mediaKS)) {
+                    ((OTTMediaOptions) mediaOptions).getOttMediaAsset().setKs(initOptions.ks);
+                }
             }
         }
         if (!TextUtils.isEmpty(mediaKS)) {
@@ -1077,6 +1282,9 @@ public abstract class KalturaPlayer {
     private void updateKalturaPluginConfigs(PKPluginConfigs combined) {
         log.d("updateKalturaPluginConfigs");
         for (Map.Entry<String, Object> plugin : combined) {
+            if (plugin.getKey().equals(KnownPlugin.broadpeak.name())) {
+                continue;
+            }
             updateInternalPluginConfig(plugin.getKey(), plugin.getValue());
         }
     }
@@ -1092,8 +1300,108 @@ public abstract class KalturaPlayer {
         return new PhoenixAnalyticsConfig(getPartnerId(), getServerUrl(), getKS(), Consts.DEFAULT_ANALYTICS_TIMER_INTERVAL_HIGH_SEC);
     }
 
+    private void sendKavaPlayRequestOnPlay() {
+
+        boolean isKavaPluginAvailable = combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName());
+        if (isKavaPluginAvailable) {
+            return;
+        }
+        isSendKavaPlayRequestOnPlay = true;
+    }
+
+    private void sendKavaPlayRequest(String entryId) {
+        boolean isKavaPluginAvailable = combinedPluginConfigs.hasConfig(KavaAnalyticsPlugin.factory.getName());
+        if (isKavaPluginAvailable) {
+            return;
+        }
+
+        String sessionId = (pkPlayer != null && pkPlayer.getSessionId() != null) ? pkPlayer.getSessionId() : "";
+
+        int partnerId = 0;
+        populatePartnersValues();
+
+        switch (tvPlayerType) {
+            case ott:
+                if (this.partnerId != null && this.partnerId > 0) {
+                    partnerId = this.partnerId;
+                }
+                break;
+            case ovp:
+                if (this.ovpPartnerId != null && this.ovpPartnerId > 0) {
+                    partnerId = this.ovpPartnerId;
+                }
+                break;
+        }
+
+        if (TextUtils.isEmpty(entryId) || partnerId <= 0) {
+            partnerId = NetworkUtils.DEFAULT_KAVA_PARTNER_ID;
+            entryId = KavaAnalyticsConfig.DEFAULT_KAVA_ENTRY_ID;
+        }
+
+        NetworkUtils.sendKavaAnalytics(context, partnerId, entryId, NetworkUtils.KAVA_EVENT_PLAY_REQUEST, sessionId);
+    }
+
+    /**
+     * Advertising Configuration
+     * Set null in case if App does not want to configure anything
+     * for the next media playback (ChangeMedia)
+     *
+     * *WARNING*: In case if app is passing object null for the changeMedia
+     * and IMAConfig is set with the adTag then ad will be picked from IMAConfig
+     *
+     * @param advertising {@link com.kaltura.playkit.ads.AdvertisingConfig} Object or {@link com.kaltura.playkit.ads.AdvertisingConfig} JSON
+     */
+    public void setAdvertisingConfig(@Nullable Object advertising) {
+        log.d("setAdvertisingConfig");
+
+        if (advertising == null) {
+            log.d("Advertising config is empty. Hence clearing the current advertising config.");
+            this.advertisingConfig = null;
+            return;
+        }
+
+        if (this.advertisingConfig != null) {
+            this.advertisingConfig = null; // Reset the existing advertisingConfig
+        }
+
+        String imaPlugin = KnownPlugin.ima.name();
+        if (initOptions.pluginConfigs != null && initOptions.pluginConfigs.hasConfig(imaPlugin)) {
+
+            if (advertising instanceof AdvertisingConfig) {
+                initializeAdvertisingController();
+                this.advertisingConfig = (AdvertisingConfig) advertising;
+                return;
+            } else if (advertising instanceof String) {
+                try {
+                    AdvertisingConfig advertisingConf = new Gson().fromJson((String) advertising, AdvertisingConfig.class);
+                    if (advertisingConf != null) {
+                        initializeAdvertisingController();
+                        this.advertisingConfig = advertisingConf;
+                        return;
+                    }
+
+                    log.e("AdvertisingConfig Json String is invalid");
+                } catch (Exception e) {
+                    log.e("AdvertisingConfig Json Exception: " + e.getMessage());
+                }
+            } else {
+                log.e("Advertising Config can be set using JSON or AdvertisingConfig object");
+            }
+        } else {
+            log.e("IMAPlugin needs to be configured in order to use Advertising feature. \n " +
+                    "You have to pass empty adTag url while configuring IMAPlugin config");
+        }
+        this.advertisingConfig = null;
+    }
+
+    private void initializeAdvertisingController() {
+        if (pkAdvertisingController == null) {
+            pkAdvertisingController = new PKAdvertisingController();
+        }
+    }
+
     public interface OnEntryLoadListener {
-        void onEntryLoadComplete(PKMediaEntry entry, ErrorElement error);
+        void onEntryLoadComplete(MediaOptions mediaOptions, PKMediaEntry entry, @Nullable ErrorElement error);
     }
 
     public interface OnPlaylistLoadListener {
@@ -1104,3 +1412,4 @@ public abstract class KalturaPlayer {
         void onPlaylistControllerComplete(PlaylistController playlistController, ErrorElement error);
     }
 }
+

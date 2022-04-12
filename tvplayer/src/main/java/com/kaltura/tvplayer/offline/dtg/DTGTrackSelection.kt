@@ -79,18 +79,7 @@ class DTGTrackSelection(
 
         var tracks = videoTracks.filter { !it.usesUnsupportedCodecs() }
 
-        prefs.videoHeight?.let { videoHeight ->
-            tracks = filterTracks(tracks, Track.heightComparator, { it.height >= videoHeight} )
-        }
-
-        prefs.videoWidth?.let { videoWidth ->
-            tracks = filterTracks(tracks, Track.widthComparator, { it.width >= videoWidth} )
-        }
-
-        prefs.videoBitrate?.let { videoBitrate ->
-            tracks = filterTracks(tracks, Track.bitrateComparator, { it.bitrate >= videoBitrate} )
-        }
-
+        tracks = filterVideoTracks(tracks, prefs)
 
         val videoBitrates = videoBitratePrefsPerCodec()
 
@@ -114,6 +103,32 @@ class DTGTrackSelection(
         }
 
         return null
+    }
+
+    private fun filterVideoTracks(tracks: List<Track>, selectionPrefs: SelectionPrefs): List<Track> {
+
+        selectionPrefs.videoHeight?.let { videoHeight ->
+            selectionPrefs.videoWidth?.let { videoWidth ->
+                return filterTracks(
+                    tracks,
+                    Track.pixelComparator,
+                    { it.width * it.height >= videoWidth * videoHeight })
+            }
+        }
+
+        selectionPrefs.videoHeight?.let { videoHeight ->
+            return filterTracks(tracks, Track.heightComparator, { it.height >= videoHeight })
+        }
+
+        selectionPrefs.videoWidth?.let { videoWidth ->
+            return filterTracks(tracks, Track.widthComparator, { it.width >= videoWidth })
+        }
+
+        selectionPrefs.videoBitrate?.let { videoBitrate ->
+            return filterTracks(tracks, Track.bitrateComparator, { it.bitrate >= videoBitrate })
+        }
+
+        return tracks
     }
 
     private fun videoBitratePrefsPerCodec(): HashMap<TrackCodec, Int> {
@@ -200,7 +215,6 @@ class DTGTrackSelection(
                 // If no codec is specified, assume avc1/mp4a
                 mainTracks[AVC1.tag()]?.add(s)
                 hasVideo = true
-
             }
 
             val videoCodec = s.videoCodec()
@@ -224,13 +238,8 @@ class DTGTrackSelection(
         if (hasResolution) {
             // Don't sort/filter by resolution if not set
             for (c in videoCodecTags) {
-                val height = prefs.videoHeight
-                if (height != null) {
-                    mainTracks[c] = filterTracks(mainTracks[c]!!, Track.heightComparator, {it.height >= height}).toMutableList()
-                }
-                val width = prefs.videoWidth
-                if (width != null) {
-                    mainTracks[c] = filterTracks(mainTracks[c]!!, Track.widthComparator, {it.width >= width}).toMutableList()
+                mainTracks[c]?.let {
+                    mainTracks[c] = filterVideoTracks(it, prefs).toMutableList()
                 }
             }
         }
@@ -279,7 +288,7 @@ class DTGTrackSelection(
 
         val filtered = sorted.filter(predicate)
 
-        return if (filtered.isEmpty()) sorted.subList(0, 1) else filtered
+        return if (filtered.isEmpty()) sorted.asReversed().subList(0, 1) else filtered
     }
 
     private fun Track.usesUnsupportedCodecs(): Boolean {

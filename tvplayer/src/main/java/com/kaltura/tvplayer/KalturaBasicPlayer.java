@@ -2,6 +2,8 @@ package com.kaltura.tvplayer;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import com.kaltura.playkit.PKLog;
 
 public class KalturaBasicPlayer extends KalturaPlayer {
@@ -12,7 +14,7 @@ public class KalturaBasicPlayer extends KalturaPlayer {
         super(context, Type.basic, initOptions);
     }
 
-    public static KalturaBasicPlayer create(Context context, PlayerInitOptions initOptions) {
+    public static KalturaBasicPlayer create(@NonNull Context context, @NonNull PlayerInitOptions initOptions) {
         KalturaPlayer.initializeDrm(context);
         return new KalturaBasicPlayer(context, initOptions);
     }

@@ -2,16 +2,15 @@
 
 buildscript {
     
-    ext.kotlin_version = '1.4.10'
+    ext.kotlin_version = '1.5.20'
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven { url 'https://jitpack.io' }
     }
     
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.2'
-        classpath 'com.novoda:bintray-release:0.9.1'
+        classpath 'com.android.tools.build:gradle:7.0.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -19,7 +18,7 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven { url 'https://jitpack.io' }
     }
 }

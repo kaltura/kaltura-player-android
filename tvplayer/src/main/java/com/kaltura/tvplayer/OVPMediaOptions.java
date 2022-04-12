@@ -16,8 +16,19 @@ public class OVPMediaOptions extends MediaOptions {
     public OVPMediaOptions(String entryId, String referenceId, String ks, String referrer) {
         ovpMediaAsset = new OVPMediaAsset();
         ovpMediaAsset.setEntryId(entryId);
+        ovpMediaAsset.setKs(ks);
         ovpMediaAsset.setReferenceId(referenceId);
         ovpMediaAsset.setReferrer(referrer);
+        ovpMediaAsset.setRedirectFromEntryId(true);
+    }
+
+    public OVPMediaOptions(String entryId, String referenceId, String ks, String referrer, boolean redirectFromEntryId) {
+        ovpMediaAsset = new OVPMediaAsset();
+        ovpMediaAsset.setEntryId(entryId);
+        ovpMediaAsset.setKs(ks);
+        ovpMediaAsset.setReferenceId(referenceId);
+        ovpMediaAsset.setReferrer(referrer);
+        ovpMediaAsset.setRedirectFromEntryId(redirectFromEntryId);
     }
 
     public OVPMediaOptions(String entryId, String ks) {
@@ -51,7 +62,11 @@ public class OVPMediaOptions extends MediaOptions {
     @Override
     public MediaEntryProvider buildMediaProvider(String serverUrl, int partnerId) {
         return new KalturaOvpMediaProvider(serverUrl, partnerId, ovpMediaAsset.getKs())
-                .setEntryId(ovpMediaAsset.getEntryId()).setReferenceId(ovpMediaAsset.getReferenceId()).setUseApiCaptions(this.useApiCaptions).setReferrer(ovpMediaAsset.getReferrer());
+                .setEntryId(ovpMediaAsset.getEntryId())
+                .setReferenceId(ovpMediaAsset.getReferenceId())
+                .setUseApiCaptions(this.useApiCaptions)
+                .setReferrer(ovpMediaAsset.getReferrer())
+                .setRedirectFromEntryId(ovpMediaAsset.getRedirectFromEntryId());
     }
 }
 
