@@ -1,8 +1,8 @@
 <p>
-<h2 style="text-align:center" >Kaltura Player Design Checklist</h2>
+<h2 style="text-align:center" >Started Guide / Design Checklist</h2>
 </p>
 
-Before delving into setting up player in your app or if you are currently using our player; we want you to please go through this simple doc where we have explained the key features of player and will talk about critical points to take an account. We tried explaining this based on our prior experience with customers.
+Before delving into setting up player in your app or if you are currently using our player; we want you to go through this simple doc where we have explained the key features of player and will talk about critical points to take an account. 
 
 [Kaltura-Player](https://kaltura.github.io/playkit/guide/android/migration/KalturaPlayer.html) - If you are using Kaltura backend then you might want to check 
 [OTT Backend Customer Sample Code](https://github.com/kaltura/kaltura-player-android-samples/tree/develop/OTTSamples) OR
@@ -27,7 +27,7 @@ In Kaltura Player, you can add extra plugins as per your requirement [IMA SDK](h
 
 3. You need to configure Plugins. [Code Sample](https://github.com/kaltura/kaltura-player-android-samples/blob/78c1f6b4f3898c301d394947061b4a458ab284ea/AdvancedSamples/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.kt#L674).
 
-4. You need to create an object of `PlayerInitOptions`, this has the same properties like `PlayerSettings`.
+4. You need to create an object of `PlayerInitOptions`, this has the same properties like `PlayerSettings` of Playkit.
 
 5. Create KalturaPlayer based on your requirement [Code Sample](https://github.com/kaltura/kaltura-player-android-samples/blob/78c1f6b4f3898c301d394947061b4a458ab284ea/AdvancedSamples/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.kt#L306).
 
@@ -50,7 +50,7 @@ In Kaltura Player, you can add extra plugins as per your requirement [IMA SDK](h
 We have defined Steps to check and use the following while integrating to your application.
 
 1. You can use our customized Log levels. [Check this Page](https://kaltura.github.io/playkit/guide/android/core/logging.html) [ Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L117).
-2. You need to check if the device supports DRM or not. If you are lookging to play DRM protected content. [Check this page](https://kaltura.github.io/playkit/guide/android/core/drm.html) [ Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L318).
+2. You need to check if the device supports DRM or not. If you are looking to play DRM protected content. [Check this page](https://kaltura.github.io/playkit/guide/android/core/drm.html) [ Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L318).
 3. You need to register the plugins as per your requirement. [Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L287).
 4. Get the media source and DRM info from Kaltura Backend. If you are a Kaltura backend customer,
  - **OTT Backend Customer** This uses our OTT backend. You need to pass, OTT partner Id, OTT BE url, OTT Kaltura Session(KS), format and MediaId [Code Sample](https://github.com/kaltura/playkit-android-samples/blob/1141bd1d95edf4dc172b3e8dad3b3c7eb78676ab/FullDemo/playkitdemo/src/main/java/com/kaltura/playkitdemo/MainActivity.java#L357).
