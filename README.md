@@ -15,6 +15,7 @@
 * HLS
 * MP4
 * MP3
+* Multicast(udp)
 * Multiple Codecs support
 * Live / Live DVR
 * TrackSelection (Video/Audio/Text)
