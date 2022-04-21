@@ -5,7 +5,7 @@
 
 # Kaltura Player for Android
 
-**Kaltura Player**  - This `Playkit` wrapper simplifies the player integration so that client applications will require less boilerplate code, which ensures a faster integration.
+**Kaltura Player**  - This [`Playkit`](https://github.com/kaltura/playkit-android) wrapper simplifies the player integration so that client applications will require less boilerplate code, which ensures a faster integration.
 
 ## Kaltura Player Features:
 
@@ -15,15 +15,16 @@
 * HLS
 * MP4
 * MP3
-* Multicast(udp)
+* Multicast(UDP)
 * Multiple Codecs support
 * Live / Live DVR
 * TrackSelection (Video/Audio/Text)
-* External subtitles
-* Player Rate
+* External subtitles / Subtitle positioning and styling
+* Playback Rate
 * ABR Configuration
-* VR /360
+* VR /360 media playback
 * Dash Instream Thumbnails
+* External Sprite Image support for Thumbnails
 * Change Media
 * Playlist
 * ID3 Timed Metadata
@@ -45,9 +46,10 @@
 #### Monitization:
 * IMA 
 * DAI
-* Ad Schedualer
-* Ad Warterfalling
-* Ad-Hoc Ad playback
+* [Ad Layout Configuration](https://kaltura.github.io/playkit/guide/android/core/advertising-layout.html) 
+  - Ad Warterfalling
+  - Ad Schedualer
+  - Ad-Hoc Ad playback
 
 #### CDN:
 
@@ -69,7 +71,7 @@ Gradle Dependency:  `implementation 'com.kaltura.player:tvplayer:4.x.x'` + add m
 
 This dependency already includes **Playkit, Kava Analytics Player Providers and Download-to-Go libraries** internally, so no need to add them to the client app's `build.gradle`.
 
-[Kaltura Player Migration Guide](https://kaltura.github.io/playkit/guide/android)
+[Kaltura Player Migration Guide](https://kaltura.github.io/playkit/guide/android/migration/KalturaPlayer.html)
 
 [Kaltura Player Docs](https://developer.kaltura.com/player/android/getting-started-android)
 
@@ -80,6 +82,8 @@ This dependency already includes **Playkit, Kava Analytics Player Providers and 
 [Kaltura Player Basic Player Samples](https://github.com/kaltura/kaltura-player-android-samples/tree/master/BasicSamples)
 
 [Kaltura Player Advanced Samples](https://github.com/kaltura/kaltura-player-android-samples/tree/master/AdvancedSamples)
+
+Kaltura Player Advanced Samples includes the advanced features like AdLayout, MediaPreviewSample for showing the thumbanail image on seekbar using external sprite image URL, RecyclerView Sample for showing media autoplay feature, DashThumbnail sample for showing in-stream image thumbnails.
 
 [Kaltura Player Offline Sample](https://github.com/kaltura/kaltura-player-android-samples/tree/master/OfflineDemo)
 
@@ -93,9 +97,9 @@ Client application should call a mandatory initialization method calls at the ti
 `KalturaPlayer.initializeOTT(this, OTT_PARNTER_ID, OTT_SERVER_URL);`
 `KalturaPlayer.initializeOVP(this, OVP_PARNTER_ID, OVP_SERVER_URL);`
 
-###### OTT Ex.
-`public static final String OTT_SERVER_URL = "https://rest-us.ott.kaltura.com/v4_5/";`
-`public static final int OTT_PARNTER_ID = 3009;`
+###### OTT
+`public static final String OTT_SERVER_URL = "https://url_of_kaltura_be";`
+`public static final int OTT_PARNTER_ID = kaltura_partner_id;`
 
 #### Note: 
 Without calling the initialization code on startup `KalturaPlayerNotInitializedError`, error will be fired on the `player.loadMedia` callback phase.
@@ -170,7 +174,7 @@ OR
     }
 ```
 
-#### PlayerInitOptions
+## `PlayerInitOptions`
 
 `PlayerInitOptions` is an important API to get most of the Player. If you are currently using `Playkit` then it is similar to `PlayerSettings` there.
 
@@ -332,9 +336,3 @@ Please check the `MulticastSettings` class for more details.
 ##### `setOfflineProvider(OfflineManager.OfflineProvider offlineProvider)`
 
 
-
-**Notes** 
-
-In `playerInitOptions` the default value for player autoplay is true.
-
-In `playerInitOptions` the default value for player media preload from the BE is true.
