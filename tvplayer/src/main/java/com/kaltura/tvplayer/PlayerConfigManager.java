@@ -106,7 +106,7 @@ public class PlayerConfigManager {
      * @param partnerId incoming partnerId
      * @param serverUrl incoming server url
      * @param cachedConfig cached config for this partnerId
-     * @return `true` cached and incoming config are same else `false`
+     * @return `true` if cached and incoming config are same else `false`
      */
     private static boolean isCachedAndIncomingConfigSame(KalturaPlayer.Type playerType, int partnerId, String serverUrl, CachedConfig cachedConfig) {
         TVPlayerParams playerParams = null;
@@ -117,10 +117,8 @@ public class PlayerConfigManager {
         }
 
         if (playerParams != null) {
-            log.d("Cached partnerId " + playerParams.partnerId);
-            log.d("Cached serviceUrl " + playerParams.serviceUrl);
-            log.d("Incoming partnerId " + partnerId);
-            log.d("Incoming serviceUrl " + serverUrl);
+            log.d("Cached partnerId " + playerParams.partnerId + " and serviceUrl " + playerParams.serviceUrl);
+            log.d("Incoming partnerId " + partnerId + " and serviceUrl " + serverUrl);
             return playerParams.partnerId == partnerId && TextUtils.equals(playerParams.serviceUrl, serverUrl);
         }
         return false;
