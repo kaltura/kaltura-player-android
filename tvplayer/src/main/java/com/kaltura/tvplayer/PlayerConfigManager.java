@@ -49,7 +49,7 @@ public class PlayerConfigManager {
         final CachedConfig cachedConfig = loadFromCache(partnerId);
         serverUrl = KalturaPlayer.safeServerUrl(playerType, serverUrl, KalturaPlayer.Type.ovp.equals(playerType) ? KalturaPlayer.DEFAULT_OVP_SERVER_URL : null);
 
-        if (cachedConfig == null) {
+        if (cachedConfig == null || !isCachedAndIncomingConfigSame(playerType, partnerId, serverUrl, cachedConfig)) {
             refreshCache(context, playerType, partnerId, serverUrl, null, onPlayerConfigLoaded);
             return;
         }
@@ -95,6 +95,35 @@ public class PlayerConfigManager {
             }
             onPlayerConfigLoaded.onConfigLoadComplete(playerParams, null, cachedConfig.freshness);
         }
+    }
+
+    /**
+     * We check the config based on partnerId && serverUrl
+     * if it is false then try to fetch the config from DMS for the incoming config
+     * and override the existing one
+     *
+     * @param playerType OTT or OVP
+     * @param partnerId incoming partnerId
+     * @param serverUrl incoming server url
+     * @param cachedConfig cached config for this partnerId
+     * @return `true` cached and incoming config are same else `false`
+     */
+    private static boolean isCachedAndIncomingConfigSame(KalturaPlayer.Type playerType, int partnerId, String serverUrl, CachedConfig cachedConfig) {
+        TVPlayerParams playerParams = null;
+        if (KalturaPlayer.Type.ovp.equals(playerType)) {
+            playerParams = gson.fromJson(cachedConfig.json, TVPlayerParams.class);
+        } else  if (KalturaPlayer.Type.ott.equals(playerType)) {
+            playerParams = gson.fromJson(cachedConfig.json, PhoenixTVPlayerParams.class);
+        }
+
+        if (playerParams != null) {
+            log.d("Cached partnerId " + playerParams.partnerId);
+            log.d("Cached serviceUrl " + playerParams.serviceUrl);
+            log.d("Incoming partnerId " + partnerId);
+            log.d("Incoming serviceUrl " + serverUrl);
+            return playerParams.partnerId == partnerId && TextUtils.equals(playerParams.serviceUrl, serverUrl);
+        }
+        return false;
     }
 
     private static void refreshCache(Context context, KalturaPlayer.Type playerType, int partnerId, String serverUrl, final CachedConfig cachedConfig, final OnPlayerConfigLoaded onPlayerConfigLoaded) {
