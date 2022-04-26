@@ -117,8 +117,8 @@ public class PlayerConfigManager {
         }
 
         if (playerParams != null) {
-            log.d("Cached partnerId " + playerParams.partnerId + " and serviceUrl " + playerParams.serviceUrl);
-            log.d("Incoming partnerId " + partnerId + " and serviceUrl " + serverUrl);
+            //log.d("Cached partnerId " + playerParams.partnerId + " and serviceUrl " + playerParams.serviceUrl);
+            //log.d("Incoming partnerId " + partnerId + " and serviceUrl " + serverUrl);
             return playerParams.partnerId == partnerId && TextUtils.equals(playerParams.serviceUrl, serverUrl);
         }
         return false;
