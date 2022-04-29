@@ -338,9 +338,7 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     }
 
     private void maybeRegisterDrmAsset(String assetId, DownloadType downloadType, int delayMillis) {
-        bgHandler.postDelayed(() -> {
-            registerDrmAsset(assetId, downloadType);
-        }, delayMillis);
+        bgHandler.postDelayed(() -> registerDrmAsset(assetId, downloadType), delayMillis);
     }
 
     private List<MediaItem.SubtitleConfiguration> buildSubtitlesList(List<PKExternalSubtitle> externalSubtitleList) {
@@ -538,7 +536,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
 
 
                 final ExoAssetInfo assetInfo = new ExoAssetInfo(selectionPrefs.downloadType, assetId, AssetDownloadState.none, selectedSize, -1, downloadHelper);
-                if ((mediaFormat == PKMediaFormat.dash || mediaFormat == PKMediaFormat.hls) && drmData != null) {
+                if ((mediaFormat == PKMediaFormat.dash || mediaFormat == PKMediaFormat.hls) &&
+                        format != null &&
+                        format.drmInitData != null &&
+                        drmData != null) {
                     DrmRegistrationMetaData drmRegistrationMetaData = new DrmRegistrationMetaData(format, false);
                     pendingDrmRegistration.put(assetId, new Pair<>(source, drmRegistrationMetaData));
                 }
@@ -1246,6 +1247,10 @@ public class ExoOfflineManager extends AbstractOfflineManager {
     private DrmInitData fetchDrmInitData(PKMediaFormat pkMediaFormat, String contentUri, CacheDataSource.Factory dataSourceFactory) throws IOException, InterruptedException {
         DrmInitData drmInitData = null;
         final CacheDataSource cacheDataSource = dataSourceFactory.createDataSourceForRemovingDownload();
+
+        if (pkMediaFormat == null) {
+            return null;
+        }
 
         switch (pkMediaFormat) {
             case dash: {
