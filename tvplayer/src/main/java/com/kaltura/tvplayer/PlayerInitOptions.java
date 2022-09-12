@@ -6,8 +6,8 @@ import com.kaltura.playkit.PKRequestConfig;
 import com.kaltura.playkit.PKRequestParams;
 import com.kaltura.playkit.PKSubtitlePreference;
 import com.kaltura.playkit.PKTrackConfig;
-import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.PKWakeMode;
+import com.kaltura.playkit.player.ABRSettings;
 import com.kaltura.playkit.player.AudioCodecSettings;
 import com.kaltura.playkit.player.DRMSettings;
 import com.kaltura.playkit.player.LoadControlBuffers;
@@ -370,6 +370,11 @@ public class PlayerInitOptions {
         return this;
     }
 
+    /**
+     * Please Use {@link #setAbrSettings(com.kaltura.playkit.player.ABRSettings)}
+     * to achieve this functionality.
+     */
+    @Deprecated
     public PlayerInitOptions setMaxVideoSize(PKMaxVideoSize maxVideoSize) {
         if (maxVideoSize != null) {
             this.maxVideoSize = maxVideoSize;
@@ -377,6 +382,11 @@ public class PlayerInitOptions {
         return this;
     }
 
+    /**
+     * Please Use {@link #setAbrSettings(com.kaltura.playkit.player.ABRSettings)}
+     * to achieve this functionality.
+     */
+    @Deprecated
     public PlayerInitOptions setMaxVideoBitrate(Integer maxVideoBitrate) {
         if (maxVideoBitrate != null) {
             this.maxVideoBitrate = maxVideoBitrate;
