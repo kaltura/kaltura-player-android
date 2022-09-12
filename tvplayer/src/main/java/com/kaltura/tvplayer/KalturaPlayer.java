@@ -417,7 +417,7 @@ public abstract class KalturaPlayer {
         }
 
         if (initOptions.maxAudioBitrate != null) {
-            pkPlayer.getSettings().setMaxVideoBitrate(initOptions.maxAudioBitrate);
+            pkPlayer.getSettings().setMaxAudioBitrate(initOptions.maxAudioBitrate);
         }
 
         if (initOptions.maxAudioChannelCount != null) {
