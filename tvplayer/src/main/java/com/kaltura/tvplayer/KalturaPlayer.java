@@ -603,6 +603,14 @@ public abstract class KalturaPlayer {
         }
     }
 
+    @Nullable
+    public Object getCurrentMediaManifest() {
+        if (pkPlayer != null) {
+            return pkPlayer.getCurrentMediaManifest();
+        }
+        return null;
+    }
+
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (pkPlayer != null) {
             pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
