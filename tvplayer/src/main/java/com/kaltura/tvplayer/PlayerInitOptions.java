@@ -47,6 +47,7 @@ public class PlayerInitOptions {
     public Boolean forceSinglePlayerEngine;
     public Boolean forceWidevineL3Playback;
     public Boolean allowChunklessPreparation = true;
+    public Boolean constrainAudioChannelCountToDeviceCapabilities;
     public DRMSettings drmSettings;
     public SubtitleStyleSettings setSubtitleStyle;
     public PKAspectRatioResizeMode aspectRatioResizeMode;
@@ -233,6 +234,13 @@ public class PlayerInitOptions {
     public PlayerInitOptions allowChunklessPreparation(Boolean allowChunklessPreparation) {
         if (allowChunklessPreparation != null) {
             this.allowChunklessPreparation = allowChunklessPreparation;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions constrainAudioChannelCountToDeviceCapabilities(Boolean enabled) {
+        if (constrainAudioChannelCountToDeviceCapabilities != null) {
+            this.constrainAudioChannelCountToDeviceCapabilities = enabled;
         }
         return this;
     }
