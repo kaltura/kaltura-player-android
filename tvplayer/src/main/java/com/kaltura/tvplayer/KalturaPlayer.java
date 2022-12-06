@@ -368,6 +368,10 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().allowChunklessPreparation(initOptions.allowChunklessPreparation);
         }
 
+        if (initOptions.constrainAudioChannelCountToDeviceCapabilities != null) {
+            pkPlayer.getSettings().constrainAudioChannelCountToDeviceCapabilities(initOptions.constrainAudioChannelCountToDeviceCapabilities);
+        }
+
         if (initOptions.cea608CaptionsEnabled != null) {
             pkPlayer.getSettings().setCea608CaptionsEnabled(initOptions.cea608CaptionsEnabled);
         }
@@ -601,6 +605,14 @@ public abstract class KalturaPlayer {
         if (pkPlayer != null) {
             pkPlayer.resetABRSettings();
         }
+    }
+
+    @Nullable
+    public Object getCurrentMediaManifest() {
+        if (pkPlayer != null) {
+            return pkPlayer.getCurrentMediaManifest();
+        }
+        return null;
     }
 
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
