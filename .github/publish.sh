@@ -55,7 +55,7 @@ set_version() {
 
 build() {
     chmod +x gradlew
-    ./gradlew publishToSonatype #closeAndReleaseSonatypeStagingRepository
+    ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
 }
 
 release_and_tag() {
