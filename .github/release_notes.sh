@@ -54,5 +54,5 @@ echo "### Plugin's Version" >> $RELEASE_NOTES
 echo "$nl* \`implementation 'com.kaltura.player:tvplayer:$NEW_VERSION"\'\` >> $RELEASE_NOTES
 echo "$nl* \`implementation 'com.kaltura.playkit:imaplugin:$NEW_VERSION"\'\` >> $RELEASE_NOTES
 echo "$nl* \`implementation 'com.kaltura.playkit:youboraplugin:$NEW_VERSION"\'\` >> $RELEASE_NOTES
-echo "$nl* \`implementation 'com.kaltura.playkit:youboraplugin:$NEW_VERSION"\'\` >> $RELEASE_NOTES
+echo "$nl* \`implementation 'com.kaltura.playkit:vrplugin:$NEW_VERSION"\'\` >> $RELEASE_NOTES
 echo "$nl* \`implementation 'com.kaltura.playkit:googlecast:$NEW_VERSION"\'\` >> $RELEASE_NOTES
