@@ -1,4 +1,4 @@
-[![CI Status](https://travis-ci.org/kaltura/kaltura-player-android.svg?branch=develop)](https://travis-ci.org/kaltura/kaltura-player-android)
+[![CI Status](https://github.com/kaltura/kaltura-player-android/actions/workflows/build.yml/badge.svg)](https://github.com/kaltura/kaltura-player-android/actions/workflows/build.yml)
 [![Download](https://img.shields.io/maven-central/v/com.kaltura.player/tvplayer?label=Download)](https://search.maven.org/artifact/com.kaltura.player/tvplayer/)
 [![License](https://img.shields.io/badge/license-AGPLv3-black.svg)](https://github.com/kaltura/playkit-android/blob/master/LICENSE)
 ![Android](https://img.shields.io/badge/platform-android-green.svg)
@@ -105,7 +105,7 @@ Without calling the initialization code on startup `KalturaPlayerNotInitializedE
 
 Application can use the warmup connections for its specific `CDN` servers URLs where the medias are hosted so a connection to the hosts will be opened and ready for use so all handshake process will be saved and media playback will be faster.
 
-There should be only one URL per host, and the URLs should resolve to a valid pathnames. A good choice might be `favicon.ico` or `crossdomain.xml` after the host name.
+There should be only one URL per host, and the URLs should resolve to a valid path names. A good choice might be `favicon.ico` or `crossdomain.xml` after the host name.
 
 If application wants to use connection warmer mechanism then this call will be placed at the time of application Launch or in the project's `Application` class file.
 
