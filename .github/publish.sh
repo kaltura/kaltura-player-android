@@ -38,9 +38,9 @@ set_version() {
     # Changing the version in build.gradle file
     if [[ "$RELEASE_TYPE" == "Patch" || "$RELEASE_TYPE" == "Update" ]]; then
        echo "RELEASE_TYPE = '$RELEASE_TYPE'"
-       perl -pi -e "s/playkit:playkit:$PLAYKIT_PREV_VERSION/playkit:playkit:$NEW_VERSION/" $BUILD_GRADLE
-       perl -pi -e "s/playkit:playkitproviders:$PLAYKIT_PREV_VERSION/playkit:playkitproviders:$NEW_VERSION/" $BUILD_GRADLE
-       perl -pi -e "s/playkit:kavaplugin:$PLAYKIT_PREV_VERSION/playkit:kavaplugin:$NEW_VERSION/" $BUILD_GRADLE
+       perl -pi -e "s/playkit:playkit:$PREV_VERSION/playkit:playkit:$NEW_VERSION/" $BUILD_GRADLE
+       perl -pi -e "s/playkit:playkitproviders:$PREV_VERSION/playkit:playkitproviders:$NEW_VERSION/" $BUILD_GRADLE
+       perl -pi -e "s/playkit:kavaplugin:$PREV_VERSION/playkit:kavaplugin:$NEW_VERSION/" $BUILD_GRADLE
        perl -pi -e "s/dtg:dtglib:$DTG_PREV_VERSION/dtg:dtglib:$DTG_VERSION/" $BUILD_GRADLE
     fi
 
