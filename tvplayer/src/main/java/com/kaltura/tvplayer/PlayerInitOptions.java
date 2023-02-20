@@ -66,6 +66,8 @@ public class PlayerInitOptions {
     public Boolean isTunneledAudioPlayback;
     public Boolean handleAudioBecomingNoisyEnabled;
     public Boolean handleAudioFocus;
+    public Boolean allowDisableVideoTrack;
+    public Boolean allowDisableAudioTrack;
     public PKWakeMode wakeMode;
     public PKSubtitlePreference subtitlePreference;
 
@@ -360,6 +362,20 @@ public class PlayerInitOptions {
     public PlayerInitOptions setHandleAudioFocus(Boolean handleAudioFocus) {
         if (handleAudioFocus != null) {
             this.handleAudioFocus = handleAudioFocus;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions allowDisableVideoTrack(Boolean allowDisableVideoTrack) {
+        if (allowDisableVideoTrack != null) {
+            this.allowDisableVideoTrack = allowDisableVideoTrack;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions allowDisableAudioTrack(Boolean allowDisableAudioTrack) {
+        if (allowDisableAudioTrack != null) {
+            this.allowDisableAudioTrack = allowDisableAudioTrack;
         }
         return this;
     }

@@ -121,9 +121,7 @@ public abstract class KalturaPlayer {
     private String externalVttThumbnailUrl;
     private View view;
     private PKMediaEntry mediaEntry;
-
     private TimeExpiringLruCache<String, String> entriesCache;
-
     private PrepareState prepareState = PrepareState.not_prepared;
     private PlayerTokenResolver tokenResolver = new PlayerTokenResolver();
     private PKAdvertisingController pkAdvertisingController = new PKAdvertisingController();
@@ -408,6 +406,14 @@ public abstract class KalturaPlayer {
             pkPlayer.getSettings().setHandleAudioFocus(initOptions.handleAudioFocus);
         }
 
+        if (initOptions.allowDisableVideoTrack != null) {
+            pkPlayer.getSettings().setAllowDisableVideoTrack(initOptions.allowDisableVideoTrack);
+        }
+
+        if (initOptions.allowDisableAudioTrack != null) {
+            pkPlayer.getSettings().setAllowDisableAudioTrack(initOptions.allowDisableAudioTrack);
+        }
+        
         if (initOptions.subtitlePreference != null) {
             pkPlayer.getSettings().setSubtitlePreference(initOptions.subtitlePreference);
         }
