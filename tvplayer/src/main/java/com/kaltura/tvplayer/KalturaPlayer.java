@@ -36,6 +36,7 @@ import com.kaltura.playkit.ads.AdvertisingConfig;
 import com.kaltura.playkit.ads.PKAdvertising;
 import com.kaltura.playkit.ads.PKAdvertisingController;
 import com.kaltura.playkit.player.ABRSettings;
+import com.kaltura.playkit.player.LoadControlBuffers;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.PKAspectRatioResizeMode;
 import com.kaltura.playkit.player.PKExternalSubtitle;
@@ -432,6 +433,18 @@ public abstract class KalturaPlayer {
         }
     }
 
+    public void setDisableAudioTracks(boolean isDisabled) {
+        pkPlayer.disableAudioTracks(isDisabled);
+    }
+
+    public void setDisableVideoTracks(boolean isDisabled) {
+        pkPlayer.disableVideoTracks(isDisabled);
+    }
+
+    public void setDisableTextTracks(boolean isDisabled) {
+        pkPlayer.disableTextTracks(isDisabled);
+    }
+
     @NonNull
     private PKPluginConfigs setupPluginsConfiguration() {
         PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
@@ -598,6 +611,12 @@ public abstract class KalturaPlayer {
     public void updateABRSettings(@NonNull ABRSettings abrSettings) {
         if (pkPlayer != null && abrSettings != null) {
             pkPlayer.updateABRSettings(abrSettings);
+        }
+    }
+
+    public void updateLoadControlBuffers(@NonNull LoadControlBuffers loadControlBuffers) {
+        if (pkPlayer != null && loadControlBuffers != null) {
+            pkPlayer.updateLoadControlBuffers(loadControlBuffers);
         }
     }
 
