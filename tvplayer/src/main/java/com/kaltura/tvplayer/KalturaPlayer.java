@@ -607,8 +607,7 @@ public abstract class KalturaPlayer {
             pkPlayer.updateLoadControlBuffers(loadControlBuffers);
         }
     }
-
-
+    
     public void setDisableAudioTracks(boolean isDisabled) {
         pkPlayer.disableAudioTracks(isDisabled);
     }
