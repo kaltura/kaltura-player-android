@@ -433,18 +433,6 @@ public abstract class KalturaPlayer {
         }
     }
 
-    public void setDisableAudioTracks(boolean isDisabled) {
-        pkPlayer.disableAudioTracks(isDisabled);
-    }
-
-    public void setDisableVideoTracks(boolean isDisabled) {
-        pkPlayer.disableVideoTracks(isDisabled);
-    }
-
-    public void setDisableTextTracks(boolean isDisabled) {
-        pkPlayer.disableTextTracks(isDisabled);
-    }
-
     @NonNull
     private PKPluginConfigs setupPluginsConfiguration() {
         PKPluginConfigs pluginConfigs = initOptions.pluginConfigs;
@@ -618,6 +606,19 @@ public abstract class KalturaPlayer {
         if (pkPlayer != null && loadControlBuffers != null) {
             pkPlayer.updateLoadControlBuffers(loadControlBuffers);
         }
+    }
+
+
+    public void setDisableAudioTracks(boolean isDisabled) {
+        pkPlayer.disableAudioTracks(isDisabled);
+    }
+
+    public void setDisableVideoTracks(boolean isDisabled) {
+        pkPlayer.disableVideoTracks(isDisabled);
+    }
+
+    public void setDisableTextTracks(boolean isDisabled) {
+        pkPlayer.disableTextTracks(isDisabled);
     }
 
     public void resetABRSettings() {
