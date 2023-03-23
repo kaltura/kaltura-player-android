@@ -48,6 +48,13 @@ class ExoPlayerTrackSelection(
         "none"
     )
 
+    private val lastDisabledTrackIds = arrayOf(
+        "none",
+        "none",
+        "none",
+        "none"
+    )
+
     companion object {
         @JvmStatic fun selectTracks(
             appContext: Context,
@@ -97,7 +104,7 @@ class ExoPlayerTrackSelection(
     private fun applyPlayerSettings(): PlayerSettings {
         val playerSettings = PlayerSettings()
         val trackSelector = DefaultTrackSelector(appContext)
-        trackSelectionHelper = TrackSelectionHelper(appContext, trackSelector, lastSelectedTrackIds)
+        trackSelectionHelper = TrackSelectionHelper(appContext, trackSelector, lastSelectedTrackIds, lastDisabledTrackIds)
         trackSelectionHelper.setMappedTrackInfo(downloadHelper.getMappedTrackInfo(0))
 
         val videoCodecSettings = VideoCodecSettings()
