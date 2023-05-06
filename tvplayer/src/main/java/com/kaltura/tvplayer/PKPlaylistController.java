@@ -43,6 +43,7 @@ public class PKPlaylistController implements PlaylistController {
     private @Nullable CountDownOptions playlistCountDownOptions;
 
     private int currentPlayingIndex = -1;
+    private int positionMargin = 999; // in Ms
     private boolean playlistAutoContinue = true;
     private boolean loopEnabled;
     private boolean recoverOnError;
@@ -697,7 +698,10 @@ public class PKPlaylistController implements PlaylistController {
                     kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownStart(currentPlayingIndex, playlistCountDownOptions));
                     playlistCountDownOptions.setEventSent(true);
                     preloadNext();
-                } else if (event.position >= Math.min(playlistCountDownOptions.getTimeToShowMS() + playlistCountDownOptions.getDurationMS(), event.duration)) {
+                } else if (event.position + positionMargin >= Math.min(playlistCountDownOptions.getTimeToShowMS() + playlistCountDownOptions.getDurationMS(), event.duration)) {
+                    // FEC-11354 : Adding positionMargin with event.position is a workaround because getCurrentPosition() on Player is not accurate.
+                    // Always it has some difference(2-100ms) with getDuration(). Hence kept 999 ms value so that if it is in the same second or not
+
                     kalturaPlayer.getMessageBus().post(new PlaylistEvent.PlaylistCountDownEnd(currentPlayingIndex, playlistCountDownOptions));
                     //log.d("playhead updated handlePlaylistMediaEnded");
                     handlePlaylistMediaEnded();
