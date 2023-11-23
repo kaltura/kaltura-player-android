@@ -75,6 +75,8 @@ public class PlayerInitOptions {
     public Integer maxAudioChannelCount;
     public MulticastSettings multicastSettings;
 
+    public Boolean shutterStaysOnRenderedFirstFrame;
+
     public MediaEntryCacheConfig mediaEntryCacheConfig;
     public OfflineManager.OfflineProvider offlineProvider = OfflineManager.OfflineProvider.DTG;
 

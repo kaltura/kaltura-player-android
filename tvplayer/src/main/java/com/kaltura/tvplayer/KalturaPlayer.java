@@ -431,6 +431,9 @@ public abstract class KalturaPlayer {
         if (initOptions.multicastSettings != null) {
             pkPlayer.getSettings().setMulticastSettings(initOptions.multicastSettings);
         }
+        if (initOptions.shutterStaysOnRenderedFirstFrame != null) {
+            pkPlayer.getSettings().setShutterStaysOnRenderedFirstFrame(initOptions.shutterStaysOnRenderedFirstFrame);
+        }
     }
 
     @NonNull
