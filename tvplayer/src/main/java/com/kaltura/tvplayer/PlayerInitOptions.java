@@ -74,7 +74,6 @@ public class PlayerInitOptions {
     public Integer maxAudioBitrate;
     public Integer maxAudioChannelCount;
     public MulticastSettings multicastSettings;
-
     public Boolean shutterStaysOnRenderedFirstFrame;
 
     public MediaEntryCacheConfig mediaEntryCacheConfig;
@@ -423,6 +422,12 @@ public class PlayerInitOptions {
             this.multicastSettings = multicastSettings;
         }
         return this;
+    }
+
+    public void setShutterStaysOnRenderedFirstFrame(Boolean shutterStaysOnRenderedFirstFrame) {
+        if (shutterStaysOnRenderedFirstFrame != null) {
+            this.shutterStaysOnRenderedFirstFrame = shutterStaysOnRenderedFirstFrame;
+        }
     }
 
     public PlayerInitOptions setMediaEntryCacheConfig(MediaEntryCacheConfig mediaEntryCacheConfig) {
