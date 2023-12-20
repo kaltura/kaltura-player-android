@@ -66,7 +66,7 @@
             android:layout_marginStart="4dp"
             android:textColor="#FFBEBEBE"/>
 
-        <com.kaltura.android.exoplayer2.ui.DefaultTimeBar
+        <com.kaltura.androidx.media3.exoplayer.ui.DefaultTimeBar
             android:id="@id/kexo_progress"
             android:layout_width="0dp"
             android:layout_weight="1"

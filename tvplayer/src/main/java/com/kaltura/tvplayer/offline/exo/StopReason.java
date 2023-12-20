@@ -1,6 +1,6 @@
 package com.kaltura.tvplayer.offline.exo;
 
-import com.kaltura.android.exoplayer2.offline.Download;
+import com.kaltura.androidx.media3.exoplayer.offline.Download;
 
 enum StopReason {
     none,       // 0 = Download.STOP_REASON_NONE
