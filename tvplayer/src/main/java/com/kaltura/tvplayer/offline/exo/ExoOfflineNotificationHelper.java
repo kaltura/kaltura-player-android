@@ -8,9 +8,9 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.offline.Download;
-import com.kaltura.android.exoplayer2.offline.DownloadManager;
-import com.kaltura.android.exoplayer2.scheduler.Requirements;
+import com.kaltura.androidx.media3.exoplayer.offline.Download;
+import com.kaltura.androidx.media3.exoplayer.offline.DownloadManager;
+import com.kaltura.androidx.media3.exoplayer.scheduler.Requirements;
 import com.kaltura.playkit.utils.Consts;
 
 import java.util.List;

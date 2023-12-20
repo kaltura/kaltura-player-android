@@ -5,8 +5,8 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.kaltura.android.exoplayer2.database.DatabaseProvider;
-import com.kaltura.android.exoplayer2.upstream.cache.Cache;
+import com.kaltura.androidx.media3.database.DatabaseProvider;
+import com.kaltura.androidx.media3.datasource.cache.Cache;
 import com.kaltura.playkit.PKDrmParams;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.PKMediaFormat;

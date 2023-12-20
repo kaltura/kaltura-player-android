@@ -5,12 +5,12 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.offline.Download;
-import com.kaltura.android.exoplayer2.offline.DownloadManager;
-import com.kaltura.android.exoplayer2.offline.DownloadService;
-import com.kaltura.android.exoplayer2.scheduler.PlatformScheduler;
-import com.kaltura.android.exoplayer2.scheduler.Requirements;
-import com.kaltura.android.exoplayer2.util.Util;
+import com.kaltura.androidx.media3.exoplayer.offline.Download;
+import com.kaltura.androidx.media3.exoplayer.offline.DownloadManager;
+import com.kaltura.androidx.media3.exoplayer.offline.DownloadService;
+import com.kaltura.androidx.media3.exoplayer.scheduler.PlatformScheduler;
+import com.kaltura.androidx.media3.exoplayer.scheduler.Requirements;
+import com.kaltura.androidx.media3.common.util.Util;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.R;
 

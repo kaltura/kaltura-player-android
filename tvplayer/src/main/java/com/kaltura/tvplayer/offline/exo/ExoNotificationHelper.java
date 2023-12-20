@@ -10,11 +10,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.core.app.NotificationCompat;
 
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.offline.Download;
-import com.kaltura.android.exoplayer2.offline.DownloadManager;
-import com.kaltura.android.exoplayer2.scheduler.Requirements;
-import com.kaltura.android.exoplayer2.util.NotificationUtil;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.exoplayer.offline.Download;
+import com.kaltura.androidx.media3.exoplayer.offline.DownloadManager;
+import com.kaltura.androidx.media3.exoplayer.scheduler.Requirements;
+import com.kaltura.androidx.media3.common.util.NotificationUtil;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.R;
 

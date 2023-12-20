@@ -10,10 +10,10 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.kaltura.android.exoplayer2.Player;
-import com.kaltura.android.exoplayer2.Timeline;
-import com.kaltura.android.exoplayer2.ui.DefaultTimeBar;
-import com.kaltura.android.exoplayer2.ui.TimeBar;
+import com.kaltura.androidx.media3.common.Player;
+import com.kaltura.androidx.media3.common.Timeline;
+import com.kaltura.androidx.media3.ui.DefaultTimeBar;
+import com.kaltura.androidx.media3.ui.TimeBar;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PlayerEvent;
 import com.kaltura.playkit.PlayerState;
