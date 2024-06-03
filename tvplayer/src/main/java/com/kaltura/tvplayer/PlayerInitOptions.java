@@ -74,8 +74,9 @@ public class PlayerInitOptions {
     public Integer maxAudioBitrate;
     public Integer maxAudioChannelCount;
     public MulticastSettings multicastSettings;
-
     public Boolean shutterStaysOnRenderedFirstFrame;
+    public  Integer codecFailureRetryCount;
+    public Integer codecFailureRetryTimeout;
 
     public MediaEntryCacheConfig mediaEntryCacheConfig;
     public OfflineManager.OfflineProvider offlineProvider = OfflineManager.OfflineProvider.DTG;
