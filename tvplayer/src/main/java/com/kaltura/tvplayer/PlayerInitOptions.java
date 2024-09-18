@@ -78,7 +78,7 @@ public class PlayerInitOptions {
     public  Integer codecFailureRetryCount;
     public Integer codecFailureRetryTimeout;
     public Boolean muteWhenShutterVisible;
-    public Boolean doNotReuseVideoCodecOnMediaChange;
+    public Boolean canReuseCodec;
 
     public MediaEntryCacheConfig mediaEntryCacheConfig;
     public OfflineManager.OfflineProvider offlineProvider = OfflineManager.OfflineProvider.DTG;
@@ -424,6 +424,41 @@ public class PlayerInitOptions {
     public PlayerInitOptions setMulticastSettings(MulticastSettings multicastSettings) {
         if (multicastSettings != null) {
             this.multicastSettings = multicastSettings;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setShutterStaysOnRenderedFirstFrame(Boolean shutterStaysOnRenderedFirstFrame) {
+        if (shutterStaysOnRenderedFirstFrame != null) {
+            this.shutterStaysOnRenderedFirstFrame = shutterStaysOnRenderedFirstFrame;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setCodecFailureRetryCount(Integer codecFailureRetryCount) {
+        if (codecFailureRetryCount != null) {
+            this.codecFailureRetryCount = codecFailureRetryCount;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setCodecFailureRetryTimeout(Integer codecFailureRetryTimeout) {
+        if (codecFailureRetryTimeout != null) {
+            this.codecFailureRetryTimeout = codecFailureRetryTimeout;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setMuteWhenShutterVisible(Boolean muteWhenShutterVisible) {
+        if (muteWhenShutterVisible != null) {
+            this.muteWhenShutterVisible = muteWhenShutterVisible;
+        }
+        return this;
+    }
+
+    public PlayerInitOptions setCanReuseCodec(Boolean canReuseCodec) {
+        if (canReuseCodec != null) {
+            this.canReuseCodec = canReuseCodec;
         }
         return this;
     }

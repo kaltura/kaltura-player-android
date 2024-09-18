@@ -443,8 +443,8 @@ public abstract class KalturaPlayer {
         if (initOptions.muteWhenShutterVisible != null) {
             pkPlayer.getSettings().setMuteWhenShutterVisible(initOptions.muteWhenShutterVisible);
         }
-        if (initOptions.doNotReuseVideoCodecOnMediaChange != null) {
-            pkPlayer.getSettings().setDoNotReuseVideoCodecOnMediaChange(initOptions.doNotReuseVideoCodecOnMediaChange);
+        if (initOptions.canReuseCodec != null) {
+            pkPlayer.getSettings().setCanReuseCodec(initOptions.canReuseCodec);
         }
     }
 
