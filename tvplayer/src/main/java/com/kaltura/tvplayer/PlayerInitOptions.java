@@ -77,6 +77,8 @@ public class PlayerInitOptions {
     public Boolean shutterStaysOnRenderedFirstFrame;
     public  Integer codecFailureRetryCount;
     public Integer codecFailureRetryTimeout;
+    public Boolean muteWhenShutterVisible;
+    public Boolean doNotReuseVideoCodecOnMediaChange;
 
     public MediaEntryCacheConfig mediaEntryCacheConfig;
     public OfflineManager.OfflineProvider offlineProvider = OfflineManager.OfflineProvider.DTG;
