@@ -426,6 +426,12 @@ public class PlayerInitOptions {
         return this;
     }
 
+    public void setShutterStaysOnRenderedFirstFrame(Boolean shutterStaysOnRenderedFirstFrame) {
+        if (shutterStaysOnRenderedFirstFrame != null) {
+            this.shutterStaysOnRenderedFirstFrame = shutterStaysOnRenderedFirstFrame;
+        }
+    }
+
     public PlayerInitOptions setMediaEntryCacheConfig(MediaEntryCacheConfig mediaEntryCacheConfig) {
         if (mediaEntryCacheConfig != null) {
             this.mediaEntryCacheConfig = mediaEntryCacheConfig;
