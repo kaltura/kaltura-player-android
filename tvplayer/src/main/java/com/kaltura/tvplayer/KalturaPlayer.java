@@ -436,6 +436,12 @@ public abstract class KalturaPlayer {
         if (initOptions.shutterStaysOnRenderedFirstFrame != null) {
             pkPlayer.getSettings().setShutterStaysOnRenderedFirstFrame(initOptions.shutterStaysOnRenderedFirstFrame);
         }
+        if (initOptions.codecFailureRetryCount != null) {
+            pkPlayer.getSettings().setCodecFailureRetryCount(initOptions.codecFailureRetryCount);
+        }
+        if (initOptions.codecFailureRetryTimeout != null) {
+            pkPlayer.getSettings().setCodecFailureRetryTimeout(initOptions.codecFailureRetryTimeout);
+        }
     }
 
     @NonNull

@@ -67,7 +67,7 @@ public class DTGOfflineManager extends AbstractOfflineManager {
 
             postEvent(() -> getListener().onStateChanged(assetId, DownloadType.FULL, new DTGAssetInfo(item, AssetDownloadState.started)));
 
-            postEventDelayed(() -> registerDrmAsset(assetId, true), 4000);
+            postEventDelayed(() -> registerDrmAsset(assetId, true), 7000);
         }
 
         @Override
