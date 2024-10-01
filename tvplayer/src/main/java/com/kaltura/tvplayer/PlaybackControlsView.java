@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 
 import com.kaltura.androidx.media3.common.Player;
 import com.kaltura.androidx.media3.common.Timeline;
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.androidx.media3.ui.DefaultTimeBar;
 import com.kaltura.androidx.media3.ui.TimeBar;
 import com.kaltura.playkit.PKLog;
@@ -27,7 +28,7 @@ import java.util.Locale;
 import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.DvrLive;
 import static com.kaltura.playkit.PKMediaEntry.MediaEntryType.Live;
 
-
+@UnstableApi
 public class PlaybackControlsView extends LinearLayout {
 
     private static final PKLog log = PKLog.get("PlaybackControlsView");
@@ -79,7 +80,7 @@ public class PlaybackControlsView extends LinearLayout {
             togglePlayPauseClick();
         });
 
-        seekBar = this.findViewById(R.id.kexo_progress);
+        seekBar = this.findViewById(com.kaltura.androidx.media3.R.id.kexo_progress);
         seekBar.addListener(componentListener);
 
         tvCurTime = this.findViewById(R.id.time_current);

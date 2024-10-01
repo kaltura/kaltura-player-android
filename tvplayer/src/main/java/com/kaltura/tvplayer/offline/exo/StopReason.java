@@ -1,7 +1,9 @@
 package com.kaltura.tvplayer.offline.exo;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.androidx.media3.exoplayer.offline.Download;
 
+@UnstableApi
 enum StopReason {
     none,       // 0 = Download.STOP_REASON_NONE
     unknown,    // 10

@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKError;
 import com.kaltura.playkit.PKLog;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@UnstableApi
 public class PKPlaylistController implements PlaylistController {
 
     private static final PKLog log = PKLog.get("PlaylistController");

@@ -16,6 +16,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.kaltura.androidx.media3.common.C;
 import com.kaltura.androidx.media3.common.MediaLibraryInfo;
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.androidx.media3.exoplayer.DefaultRenderersFactory;
 import com.kaltura.androidx.media3.common.Format;
 import com.kaltura.androidx.media3.common.MediaItem;
@@ -98,6 +99,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 
+@UnstableApi
 public class ExoOfflineManager extends AbstractOfflineManager {
 
     private static final PKLog log = PKLog.get("ExoOfflineManager");

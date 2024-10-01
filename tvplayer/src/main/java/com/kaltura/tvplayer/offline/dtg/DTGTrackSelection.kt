@@ -2,6 +2,7 @@
 
 package com.kaltura.tvplayer.offline.dtg
 
+import com.kaltura.androidx.media3.common.util.UnstableApi
 import com.kaltura.dtg.AssetFormat
 import com.kaltura.dtg.CodecSupport
 import com.kaltura.dtg.DownloadItem
@@ -17,7 +18,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-
+@UnstableApi
 fun selectTracks(
         assetFormat: AssetFormat,
         trackSelector: TrackSelector,
@@ -28,6 +29,7 @@ fun selectTracks(
 
 private val log = PKLog.get("DTGTrackSelection")
 
+@UnstableApi
 class DTGTrackSelection(
         private val assetFormat: AssetFormat,
         private val prefs: SelectionPrefs,
@@ -383,8 +385,8 @@ class DTGTrackSelection(
 
 }
 
-private val videoCodecs = listOf(HEVC, AVC1)
-private val audioCodecs = listOf(EAC3, AC3, MP4A)
+@UnstableApi private val videoCodecs = listOf(HEVC, AVC1)
+@UnstableApi private val audioCodecs = listOf(EAC3, AC3, MP4A)
 
 private typealias CodecTag = String
 

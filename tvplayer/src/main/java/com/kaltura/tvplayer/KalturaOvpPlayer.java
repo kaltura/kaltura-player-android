@@ -5,8 +5,10 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.playkit.PKLog;
 
+@UnstableApi
 public class KalturaOvpPlayer extends KalturaPlayer {
 
     private static final PKLog log = PKLog.get("KalturaOvpPlayer");

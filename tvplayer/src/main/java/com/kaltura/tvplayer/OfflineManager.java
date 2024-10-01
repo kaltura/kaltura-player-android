@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.androidx.media3.database.DatabaseProvider;
 import com.kaltura.androidx.media3.datasource.cache.Cache;
 import com.kaltura.playkit.PKDrmParams;
@@ -28,6 +29,7 @@ import java.util.Map;
 
 
 @SuppressWarnings({"WeakerAccess", "unused", "JavaDoc"})
+@UnstableApi
 public abstract class OfflineManager {
 
     protected String kalturaServerUrl = KalturaPlayer.DEFAULT_OVP_SERVER_URL;

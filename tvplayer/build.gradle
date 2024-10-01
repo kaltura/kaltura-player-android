@@ -4,14 +4,15 @@ apply from: 'version.gradle'
 
 
 android {
-    compileSdkVersion 33
+    namespace 'com.kaltura.tvplayer'
+    compileSdk 34
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
     defaultConfig {
-        minSdkVersion 17
-        targetSdkVersion 33
+        minSdkVersion 21
+        targetSdkVersion 34
         versionCode 1
         versionName "1.0"
         multiDexEnabled true
@@ -26,13 +27,22 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildFeatures {
+        buildConfig = true
+    }
+    publishing {
+        publishing {
+            singleVariant('release') {
+            }
+        }
+    }
 }
 
 dependencies {
 
-    api 'com.kaltura:playkit-android:dev-SNAPSHOT'
-    api 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
-    api 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
+    api 'com.kaltura:playkit-android:KUX-1761-SNAPSHOT'
+    api 'com.kaltura:playkit-android-providers:KUX-1761-SNAPSHOT'
+    api 'com.kaltura:playkit-android-kava:KUX-1761-SNAPSHOT'
     api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT'
 
 //    api project(":playkit")

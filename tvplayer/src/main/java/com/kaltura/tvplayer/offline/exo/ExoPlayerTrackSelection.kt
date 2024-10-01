@@ -3,6 +3,7 @@ package com.kaltura.tvplayer.offline.exo
 import android.content.Context
 import android.text.TextUtils
 import com.kaltura.androidx.media3.common.C
+import com.kaltura.androidx.media3.common.util.UnstableApi
 import com.kaltura.androidx.media3.exoplayer.offline.DownloadHelper
 import com.kaltura.androidx.media3.exoplayer.source.TrackGroupArray
 import com.kaltura.androidx.media3.exoplayer.trackselection.DefaultTrackSelector
@@ -25,6 +26,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
+@UnstableApi
 class ExoPlayerTrackSelection(
     private val appContext: Context,
     private val downloadHelper: DownloadHelper,
@@ -580,8 +582,8 @@ class ExoPlayerTrackSelection(
     }
 }
 
-private val videoCodecs = listOf(HEVC, AVC1)
-private val audioCodecs = listOf(EAC3, AC3, MP4A)
+@UnstableApi private val videoCodecs = listOf(HEVC, AVC1)
+@UnstableApi private val audioCodecs = listOf(EAC3, AC3, MP4A)
 
 private typealias CodecTag = String
 

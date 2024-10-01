@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.androidx.media3.exoplayer.offline.Download;
 import com.kaltura.androidx.media3.exoplayer.offline.DownloadManager;
 import com.kaltura.androidx.media3.exoplayer.scheduler.Requirements;
@@ -38,6 +39,7 @@ import java.util.List;
  * {@link com.kaltura.tvplayer.OfflineManager#setForegroundNotification(ExoOfflineNotificationHelper)}
  */
 
+@UnstableApi
 public abstract class ExoOfflineNotificationHelper extends ExoNotificationHelper {
 
     public ExoOfflineNotificationHelper(Context context, String channelId) {

@@ -5,6 +5,7 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.androidx.media3.exoplayer.offline.Download;
 import com.kaltura.androidx.media3.exoplayer.offline.DownloadManager;
 import com.kaltura.androidx.media3.exoplayer.offline.DownloadService;
@@ -16,6 +17,7 @@ import com.kaltura.tvplayer.R;
 
 import java.util.List;
 
+@UnstableApi
 public class ExoDownloadService extends DownloadService {
 
     private static final int JOB_ID = 1;
@@ -28,7 +30,7 @@ public class ExoDownloadService extends DownloadService {
                 FOREGROUND_NOTIFICATION_ID,
                 DEFAULT_FOREGROUND_NOTIFICATION_UPDATE_INTERVAL,
                 Consts.EXO_DOWNLOAD_CHANNEL_ID,
-                R.string.exo_download_notification_channel_name,
+                com.kaltura.androidx.media3.R.string.exo_download_notification_channel_name,
                 /* channelDescriptionResourceId= */ 0);
     }
 
