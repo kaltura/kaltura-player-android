@@ -43,7 +43,7 @@ dependencies {
     api 'com.kaltura:playkit-android:KUX-1761-SNAPSHOT'
     api 'com.kaltura:playkit-android-providers:KUX-1761-SNAPSHOT'
     api 'com.kaltura:playkit-android-kava:KUX-1761-SNAPSHOT'
-    api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT'
+    api 'com.kaltura.dtg:dtglib:2.6.16'
 
 //    api project(":playkit")
 //    api project(":providers")
