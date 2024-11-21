@@ -30,9 +30,9 @@ android {
 
 dependencies {
 
-    api 'com.kaltura:playkit-android:no_vcodec_reuse-SNAPSHOT'
-    api 'com.kaltura:playkit-android-providers:SUP-42513-SNAPSHOT'
-    api 'com.kaltura:playkit-android-kava:SUP-42513-SNAPSHOT'
+    api 'com.kaltura:playkit-android:dev-SNAPSHOT'
+    api 'com.kaltura:playkit-android-providers:develop-SNAPSHOT'
+    api 'com.kaltura:playkit-android-kava:develop-SNAPSHOT'
     api 'com.kaltura:playkit-dtg-android:current-SNAPSHOT'
 
 //    api project(":playkit")
