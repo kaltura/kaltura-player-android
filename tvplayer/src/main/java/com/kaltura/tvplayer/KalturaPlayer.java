@@ -442,6 +442,12 @@ public abstract class KalturaPlayer {
         if (initOptions.codecFailureRetryTimeout != null) {
             pkPlayer.getSettings().setCodecFailureRetryTimeout(initOptions.codecFailureRetryTimeout);
         }
+        if (initOptions.muteWhenShutterVisible != null) {
+            pkPlayer.getSettings().setMuteWhenShutterVisible(initOptions.muteWhenShutterVisible);
+        }
+        if (initOptions.canReuseCodec != null) {
+            pkPlayer.getSettings().setCanReuseCodec(initOptions.canReuseCodec);
+        }
     }
 
     @NonNull
