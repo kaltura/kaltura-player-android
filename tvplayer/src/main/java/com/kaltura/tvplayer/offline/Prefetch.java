@@ -2,6 +2,7 @@ package com.kaltura.tvplayer.offline;
 
 import androidx.annotation.NonNull;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.tvplayer.KalturaPlayer;
 import com.kaltura.tvplayer.MediaOptions;
@@ -10,6 +11,7 @@ import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
 import java.util.List;
 
+@UnstableApi
 public interface Prefetch {
 
     /**

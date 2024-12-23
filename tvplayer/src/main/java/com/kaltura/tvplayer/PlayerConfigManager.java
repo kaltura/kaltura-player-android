@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.netkit.utils.ErrorElement;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.providers.api.ovp.OvpConfigs;
@@ -26,6 +27,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+@UnstableApi
 public class PlayerConfigManager {
 
     private static final PKLog log = PKLog.get("PlayerConfigManager");

@@ -2,12 +2,13 @@ package com.kaltura.tvplayer.offline.dtg;
 
 import androidx.annotation.NonNull;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.dtg.DownloadItem;
 import com.kaltura.tvplayer.OfflineManager;
 import com.kaltura.tvplayer.OfflineManager.AssetDownloadState;
 import com.kaltura.tvplayer.offline.exo.PrefetchConfig;
 
-
+@UnstableApi
 class DTGAssetInfo extends OfflineManager.AssetInfo {
 
     final private String itemId;

@@ -8,7 +8,7 @@ ext["signingPassword"] = System.getenv('SIGNING_PASSWORD')
 
 buildscript {
     
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.8.0'
     repositories {
         google()
         mavenCentral()
@@ -16,7 +16,7 @@ buildscript {
     }
     
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.1'
+        classpath 'com.android.tools.build:gradle:8.3.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'io.github.gradle-nexus:publish-plugin:1.1.0'
     }

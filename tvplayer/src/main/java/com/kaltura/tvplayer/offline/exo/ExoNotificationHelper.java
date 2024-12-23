@@ -10,11 +10,12 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.core.app.NotificationCompat;
 
-import com.kaltura.android.exoplayer2.C;
-import com.kaltura.android.exoplayer2.offline.Download;
-import com.kaltura.android.exoplayer2.offline.DownloadManager;
-import com.kaltura.android.exoplayer2.scheduler.Requirements;
-import com.kaltura.android.exoplayer2.util.NotificationUtil;
+import com.kaltura.androidx.media3.common.C;
+import com.kaltura.androidx.media3.common.util.UnstableApi;
+import com.kaltura.androidx.media3.exoplayer.offline.Download;
+import com.kaltura.androidx.media3.exoplayer.offline.DownloadManager;
+import com.kaltura.androidx.media3.exoplayer.scheduler.Requirements;
+import com.kaltura.androidx.media3.common.util.NotificationUtil;
 import com.kaltura.playkit.utils.Consts;
 import com.kaltura.tvplayer.R;
 
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+@UnstableApi
 class ExoNotificationHelper {
 
     private static final @StringRes int NULL_STRING_ID = 0;
@@ -93,20 +95,20 @@ class ExoNotificationHelper {
         int titleStringId;
         boolean showProgress = true;
         if (haveDownloadingTasks) {
-            titleStringId = R.string.exo_download_downloading;
+            titleStringId = com.kaltura.androidx.media3.R.string.exo_download_downloading;
         } else if (haveQueuedTasks && notMetRequirements != 0) {
             showProgress = false;
             if ((notMetRequirements & Requirements.NETWORK_UNMETERED) != 0) {
                 // Note: This assumes that "unmetered" == "WiFi", since it provides a clearer message that's
                 // correct in the majority of cases.
-                titleStringId = R.string.exo_download_paused_for_wifi;
+                titleStringId = com.kaltura.androidx.media3.R.string.exo_download_paused_for_wifi;
             } else if ((notMetRequirements & Requirements.NETWORK) != 0) {
-                titleStringId = R.string.exo_download_paused_for_network;
+                titleStringId = com.kaltura.androidx.media3.R.string.exo_download_paused_for_network;
             } else {
-                titleStringId = R.string.exo_download_paused;
+                titleStringId = com.kaltura.androidx.media3.R.string.exo_download_paused;
             }
         } else if (haveRemovingTasks) {
-            titleStringId = R.string.exo_download_removing;
+            titleStringId = com.kaltura.androidx.media3.R.string.exo_download_removing;
         } else {
             // There are either no downloads, or all downloads are in terminal states.
             titleStringId = NULL_STRING_ID;
@@ -181,7 +183,7 @@ class ExoNotificationHelper {
             @DrawableRes int smallIcon,
             @Nullable PendingIntent contentIntent,
             @Nullable String message) {
-        int titleStringId = R.string.exo_download_completed;
+        int titleStringId = com.kaltura.androidx.media3.R.string.exo_download_completed;
         return buildEndStateNotification(context, smallIcon, contentIntent, message, titleStringId);
     }
 
@@ -199,7 +201,7 @@ class ExoNotificationHelper {
             @DrawableRes int smallIcon,
             @Nullable PendingIntent contentIntent,
             @Nullable String message) {
-        @StringRes int titleStringId = R.string.exo_download_failed;
+        @StringRes int titleStringId = com.kaltura.androidx.media3.R.string.exo_download_failed;
         return buildEndStateNotification(context, smallIcon, contentIntent, message, titleStringId);
     }
 

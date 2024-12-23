@@ -1,5 +1,6 @@
 package com.kaltura.tvplayer;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.playkit.PKMediaFormat;
 import com.kaltura.playkit.PKPluginConfigs;
 import com.kaltura.playkit.PKRequestConfig;
@@ -21,6 +22,7 @@ import com.kaltura.playkit.player.vr.VRSettings;
 import com.kaltura.tvplayer.config.MediaEntryCacheConfig;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
+@UnstableApi
 public class PlayerInitOptions {
 
     public final Integer partnerId;

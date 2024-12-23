@@ -2,6 +2,7 @@ package com.kaltura.tvplayer;
 
 import android.text.TextUtils;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.utils.MapTokenResolver;
@@ -10,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@UnstableApi
 class PlayerTokenResolver extends MapTokenResolver {
 
     private List<String> entryKeys = new ArrayList<>();

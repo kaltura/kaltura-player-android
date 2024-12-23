@@ -6,10 +6,12 @@ import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.kaltura.android.exoplayer2.offline.Download;
-import com.kaltura.android.exoplayer2.offline.DownloadHelper;
+import com.kaltura.androidx.media3.common.util.UnstableApi;
+import com.kaltura.androidx.media3.exoplayer.offline.Download;
+import com.kaltura.androidx.media3.exoplayer.offline.DownloadHelper;
 import com.kaltura.tvplayer.OfflineManager;
 
+@UnstableApi
 class ExoAssetInfo extends OfflineManager.AssetInfo {
 
     private final String assetId;

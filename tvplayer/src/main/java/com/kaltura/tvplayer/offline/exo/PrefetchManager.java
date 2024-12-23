@@ -6,6 +6,7 @@ import android.os.HandlerThread;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.playkit.PKLog;
 import com.kaltura.playkit.PKMediaEntry;
 import com.kaltura.playkit.providers.MediaEntryProvider;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+@UnstableApi
 public class PrefetchManager implements Prefetch {
 
     private static final PKLog log = PKLog.get("PrefetchManager");

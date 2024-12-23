@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.kaltura.androidx.media3.common.util.UnstableApi;
 import com.kaltura.playkit.*;
 import com.kaltura.playkit.player.MediaSupport;
 import com.kaltura.playkit.player.SourceSelector;
@@ -23,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+@UnstableApi
 public abstract class AbstractOfflineManager extends OfflineManager {
     private static final PKLog log = PKLog.get("AbstractOfflineManager");
 
