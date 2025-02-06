@@ -458,6 +458,7 @@ public abstract class KalturaPlayer {
                 String pluginName = entry.getKey();
                 combinedPluginConfigs.setPluginConfig(pluginName, resolve(entry.getValue()));
             }
+            combinedPluginConfigs.setPlayerActivity(pluginConfigs.getPlayerActivity());
         }
         addKalturaPluginConfigs(combinedPluginConfigs);
         return combinedPluginConfigs;
