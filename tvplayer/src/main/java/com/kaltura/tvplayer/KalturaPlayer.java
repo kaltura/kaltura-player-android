@@ -652,6 +652,10 @@ public abstract class KalturaPlayer {
         return null;
     }
 
+    public Player getPlaykitPlayer() {
+        return pkPlayer;
+    }
+
     public void updateSubtitleStyle(SubtitleStyleSettings subtitleStyleSettings) {
         if (pkPlayer != null) {
             pkPlayer.updateSubtitleStyle(subtitleStyleSettings);
