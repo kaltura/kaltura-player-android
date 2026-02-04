@@ -209,6 +209,13 @@ public class PlayerConfigManager {
             writer.write(json);
         } catch (IOException e) {
             log.e("Failed to write config cache " + file, e);
+            if (file.exists()) {
+                try {
+                    file.delete();
+                } catch (Exception ex) {
+                    log.e("Exception trying to clear existing cache: " + e);
+                }
+            }
         }
     }
 
