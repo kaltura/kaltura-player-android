@@ -22,10 +22,13 @@ import com.kaltura.tvplayer.config.PhoenixTVPlayerParams;
 import com.kaltura.tvplayer.config.TVPlayerParams;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 
 @UnstableApi
 public class PlayerConfigManager {
@@ -112,10 +115,16 @@ public class PlayerConfigManager {
      */
     private static boolean isCachedAndIncomingConfigSame(KalturaPlayer.Type playerType, int partnerId, String serverUrl, CachedConfig cachedConfig) {
         TVPlayerParams playerParams = null;
-        if (KalturaPlayer.Type.ovp.equals(playerType)) {
-            playerParams = gson.fromJson(cachedConfig.json, TVPlayerParams.class);
-        } else  if (KalturaPlayer.Type.ott.equals(playerType)) {
-            playerParams = gson.fromJson(cachedConfig.json, PhoenixTVPlayerParams.class);
+        try {
+            if (KalturaPlayer.Type.ovp.equals(playerType)) {
+                playerParams = gson.fromJson(cachedConfig.json, TVPlayerParams.class);
+            } else if (KalturaPlayer.Type.ott.equals(playerType)) {
+                playerParams = gson.fromJson(cachedConfig.json, PhoenixTVPlayerParams.class);
+            }
+        } catch (Exception e) {
+            log.e("Failed to parse cachedConfig JSON: " + e);
+            deleteFromCache(partnerId);
+            return false;
         }
 
         if (playerParams != null) {
@@ -194,20 +203,25 @@ public class PlayerConfigManager {
 
         final File file = new File(dataDir, id + ".json");
 
-        FileWriter writer = null;
-        try {
-            writer = new FileWriter(file);
+        try (FileOutputStream fos = new FileOutputStream(file);
+             OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+             BufferedWriter writer = new BufferedWriter(osw)) {
             writer.write(json);
         } catch (IOException e) {
-            log.e ("Failed to write config cache " + file, e);
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            log.e("Failed to write config cache " + file, e);
+        }
+    }
+
+    private static void deleteFromCache(int partnerId) {
+        final File file = new File(dataDir, partnerId + ".json");
+        if (file.exists()) {
+            try {
+                file.delete();
+            } catch (Exception e) {
+                log.e("Exception trying tp delete existing cache config: " + e);
             }
+        } else {
+            log.d("Cache config file does not exist");
         }
     }
 
