@@ -43,10 +43,10 @@ android {
 
 dependencies {
 
-    api 'com.github.kaltura:playkit-android:PLAYEROTT-60-SNAPSHOT'
-    api 'com.github.kaltura:playkit-android-providers:develop-SNAPSHOT'
-    api 'com.github.kaltura:playkit-android-kava:develop-SNAPSHOT'
-    api 'com.github.kaltura:playkit-dtg-android:current-SNAPSHOT'
+    api 'com.kaltura.playkit:playkit:5.0.5-rc1'
+    api 'com.kaltura.playkit:playkitproviders:5.0.5-rc1'
+    api 'com.kaltura.playkit:kavaplugin:5.0.5-rc1'
+    api 'com.kaltura.dtg:dtglib:2.6.16'
 
 //    api project(":playkit")
 //    api project(":providers")
