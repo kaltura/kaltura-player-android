@@ -745,6 +745,13 @@ public abstract class KalturaPlayer {
         return pkPlayer.getCurrentPosition();
     }
 
+    public int getCurrentPeriodIndex() {
+        if (pkPlayer != null) {
+            return pkPlayer.getCurrentPeriodIndex();
+        }
+        return 0;
+    }
+
     public long getDuration() {
         return pkPlayer.getDuration();
     }
