@@ -46,10 +46,10 @@ set_version() {
 
     if [ "$RELEASE_TYPE" == "Full" ]; then
        echo "RELEASE_TYPE = '$RELEASE_TYPE'"
-       perl -pi -e "s/:playkit-android:.*?-SNAPSHOT/.playkit:playkit:$NEW_VERSION/" $BUILD_GRADLE
-       perl -pi -e "s/:playkit-android-providers:.*?-SNAPSHOT/.playkit:playkitproviders:$NEW_VERSION/" $BUILD_GRADLE
-       perl -pi -e "s/:playkit-android-kava:.*?-SNAPSHOT/.playkit:kavaplugin:$NEW_VERSION/" $BUILD_GRADLE
-       perl -pi -e "s/:playkit-dtg-android:.*?-SNAPSHOT/.dtg:dtglib:$DTG_VERSION/" $BUILD_GRADLE
+       perl -pi -e "s/com.github.kaltura:playkit-android:.*?-SNAPSHOT/com.kaltura.playkit:playkit:$NEW_VERSION/" $BUILD_GRADLE
+       perl -pi -e "s/com.github.kaltura:playkit-android-providers:.*?-SNAPSHOT/com.kaltura.playkit:playkitproviders:$NEW_VERSION/" $BUILD_GRADLE
+       perl -pi -e "s/com.github.kaltura:playkit-android-kava:.*?-SNAPSHOT/com.kaltura.playkit:kavaplugin:$NEW_VERSION/" $BUILD_GRADLE
+       perl -pi -e "s/com.github.kaltura:playkit-dtg-android:.*?-SNAPSHOT/com.kaltura.dtg:dtglib:$DTG_VERSION/" $BUILD_GRADLE
     fi
 }
 
