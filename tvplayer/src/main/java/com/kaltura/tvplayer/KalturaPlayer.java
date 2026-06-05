@@ -1456,6 +1456,11 @@ public abstract class KalturaPlayer {
         }
     }
 
+    public void setPreferredAudioLanguage(PKTrackConfig.Mode audioMode, String audioLanguage) {
+        log.v("setPreferredAudioLanguage" + " audioMode: " + audioMode + " audioLanguage: " + audioLanguage);
+        pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(audioMode).setTrackLanguage(audioLanguage));
+    }
+
     public interface OnEntryLoadListener {
         void onEntryLoadComplete(MediaOptions mediaOptions, PKMediaEntry entry, @Nullable ErrorElement error);
     }
