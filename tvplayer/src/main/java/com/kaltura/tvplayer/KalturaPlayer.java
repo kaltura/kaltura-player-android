@@ -1456,6 +1456,18 @@ public abstract class KalturaPlayer {
         }
     }
 
+    public void setPreferredAudioLanguage(PKTrackConfig.Mode audioMode, String audioLanguage) {
+        log.v("setPreferredAudioLanguage" + " audioMode: " + audioMode + " audioLanguage: " + audioLanguage);
+        pkPlayer.getSettings().setPreferredAudioTrack(new PKTrackConfig().setPreferredMode(audioMode).setTrackLanguage(audioLanguage));
+        pkPlayer.updatePreferredTracksLanguage();
+    }
+
+    public void setPreferredTextLanguage(PKTrackConfig.Mode textMode, String textLanguage) {
+        log.v("setPreferredTextLanguage" + " textMode: " + textMode + " textLanguage: " + textLanguage);
+        pkPlayer.getSettings().setPreferredTextTrack(new PKTrackConfig().setPreferredMode(textMode).setTrackLanguage(textLanguage));
+        pkPlayer.updatePreferredTracksLanguage();
+    }
+
     public interface OnEntryLoadListener {
         void onEntryLoadComplete(MediaOptions mediaOptions, PKMediaEntry entry, @Nullable ErrorElement error);
     }
